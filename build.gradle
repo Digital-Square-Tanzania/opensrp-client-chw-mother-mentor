@@ -79,6 +79,16 @@ subprojects {
 
     configurations.all {
         resolutionStrategy.force 'net.zetetic:sqlcipher-android:4.5.4'
+        resolutionStrategy.force 'com.fasterxml.jackson.core:jackson-annotations:2.13.5'
+        resolutionStrategy.force 'com.fasterxml.jackson.core:jackson-core:2.13.5'
+        resolutionStrategy.force 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
+        resolutionStrategy.dependencySubstitution {
+            substitute module('org.smartregister:opensrp-client-configurable-views') using module('io.github.bluecodesystems:opensrp-configurable-views:1.2.0')
+            substitute module('org.smartregister:opensrp-client-utils') using module('io.github.bluecodesystems:opensrp-client-utils:0.0.6')
+            substitute module('org.smartregister:opensrp-plan-evaluator') using module('io.github.bluecodesystems:opensrp-plan-evaluator:1.7.0')
+            substitute module('org.smartregister:opensrp-client-simprints') using module('io.github.bluecodesystems:opensrp-client-simprints:1.1.0')
+            substitute module('org.smartregister:opensrp-client-materialedittext') using module('io.github.bluecodesystems:materialedittext:3.1.6')
+        }
     }
 
     // Improve build server performance by allowing disabling of pre-dexing

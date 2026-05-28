@@ -203,7 +203,7 @@ dependencies {
     }
     implementation 'com.emredavarci:circleprogressbar:1.0.8-SNAPSHOT'
 
-    implementation('org.smartregister:opensrp-client-configurable-views:1.1.5-SNAPSHOT@aar') {
+    implementation('io.github.bluecodesystems:opensrp-configurable-views:1.2.0') {
         transitive = true
         exclude group: 'org.smartregister', module: 'opensrp-client-core'
         exclude group: 'org.smartregister', module: 'opensrp-client-native-form'
