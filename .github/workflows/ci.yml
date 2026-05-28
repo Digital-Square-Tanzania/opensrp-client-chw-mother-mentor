@@ -4,6 +4,9 @@ on:
     branches: [master, main]
   pull_request:
     branches: [master, main]
+permissions:
+  contents: read
+  packages: read
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +22,8 @@ jobs:
       - name: Compile library and sample
         run: ./gradlew :opensrp-chw-mother-mentor:compileDebugJavaWithJavac :sample:compileDebugJavaWithJavac --stacktrace
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_ACTOR: ${{ secrets.GPR_USER || github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GPR_API_KEY || github.token }}
 #      - name: Upload coverage to Coveralls with Gradle
 #        run: ./gradlew coveralls --stacktrace
 #        env:

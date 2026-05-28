@@ -27,6 +27,22 @@ configure(allprojects) { project ->
 
 project.ext.preDexLibs = !project.hasProperty('disablePreDex')
 
+def githubProperties = new Properties()
+if (rootProject.file("github.properties").exists()) {
+    githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+}
+
+def addGithubPackagesRepository = { RepositoryHandler repositories, String repositoryName ->
+    repositories.maven {
+        name = "GitHubPackages-${repositoryName}"
+        url = uri("https://maven.pkg.github.com/Digital-Square-Tanzania/${repositoryName}")
+        credentials {
+            username = githubProperties['gpr.usr'] ?: System.getenv("GITHUB_ACTOR")
+            password = githubProperties['gpr.key'] ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
 subprojects {
 
     group = 'org.smartregister'
@@ -49,6 +65,16 @@ subprojects {
         maven { url "https://cloudant.github.io/cloudant-sync-eap/repository" }
         maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
         mavenLocal()
+        [
+                'CircleProgressbar.git',
+                'opensrp-client-core',
+                'opensrp-client-native-form',
+                'opensrp-client-configurable-views',
+                'opensrp-client-utils',
+                'opensrp-plan-evaluator',
+                'opensrp-client-simprints',
+                'opensrp-client-materialedittext'
+        ].each { addGithubPackagesRepository(repositories, it) }
     }
 
     configurations.all {
