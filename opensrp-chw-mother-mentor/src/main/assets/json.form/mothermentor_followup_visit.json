@@ -1,0 +1,440 @@
+{
+  "validate_on_submit": true,
+  "count": "1",
+  "encounter_type": "MotherMentor Follow-up Visit",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "163149AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "163150AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "163151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "163152AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "TB and MotherMentor Follow-up",
+    "fields": [
+      {
+        "key": "follow_up_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_reason",
+        "type": "native_radio",
+        "label": "Reason for follow-up",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "options": [
+          {
+            "key": "interrupted_treatment",
+            "text": "Interrupted treatment",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "interrupted_treatment"
+          },
+          {
+            "key": "never_started_treatment",
+            "text": "Never started treatment",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "never_started_treatment"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        }
+      },
+      {
+        "key": "follow_up_outcome",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_outcome",
+        "label": "Follow-up outcome",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "client_found",
+            "text": "Client found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "client_found"
+          },
+          {
+            "key": "client_not_found",
+            "text": "Client not found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "client_not_found"
+          },
+          {
+            "key": "client_deceased",
+            "text": "Client deceased",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "client_deceased"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        }
+      },
+      {
+        "key": "reason_client_not_found",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "reason_client_not_found",
+        "type": "edit_text",
+        "hint": "Specify the reason the client was not found",
+        "edit_type": "name",
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "returned_to_treatment",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "returned_to_treatment",
+        "label": "Has the client resumed treatment?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_treatment_initiated",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_treatment_initiated",
+        "label": "Has DS TB/DR TB treatment been initiated?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_treatment_start_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_treatment_start_date",
+        "type": "date_picker",
+        "hint": "Select TB treatment start date",
+        "label": "TB treatment start date",
+        "label_text_size": "18px",
+        "expanded": false,
+        "max_date": "today",
+        "v_required": {
+          "value": "true",
+          "err": "Please specify the start date"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_client_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_client_number",
+        "type": "mask_edit_text",
+        "mask": "############-#/KK/####/###",
+        "mask_hint": "00000000000000000000",
+        "allowed_chars": "0123456789",
+        "hint": "TB client number",
+        "v_regex": {
+          "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
+          "err": "TB client number should follow this format (070201100097-5/KK/2025/431)"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "service_access_challenges",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "service_access_challenges",
+        "label": "Is the client facing challenges accessing services?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "reasons_for_not_returning_to_services_while_not_facing_challenges",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "reasons_for_not_returning_to_services_while_not_facing_challenges",
+        "type": "edit_text",
+        "hint": "Specify the reason for not resuming treatment",
+        "edit_type": "name",
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "client_challenge_types",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "client_challenge_types",
+        "type": "check_box",
+        "label": "Select the types of challenges the client faced",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "combine_checkbox_option_values": "true",
+        "exclusive": [
+          "none"
+        ],
+        "options": [
+          {
+            "key": "family_challenges",
+            "text": "Within the family",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "family_challenges"
+          },
+          {
+            "key": "health_facility_challenges",
+            "text": "At the health facility",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "health_facility_challenges"
+          },
+          {
+            "key": "community_challenges",
+            "text": "Within the community",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "community_challenges"
+          },
+          {
+            "key": "other",
+            "text": "Other challenges",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "health_facility_challenges_detail",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "health_facility_challenges_detail",
+        "type": "check_box",
+        "label": "Specify the challenges at the health facility",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "combine_checkbox_option_values": "true",
+        "options": [
+          {
+            "key": "verbal_abuse",
+            "text": "Verbal abuse/scolding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "verbal_abuse"
+          },
+          {
+            "key": "denied_information_on_condition",
+            "text": "Denied information on condition or treatment",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "denied_information_on_condition"
+          },
+          {
+            "key": "neglected_or_delayed",
+            "text": "Neglected or delayed",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "neglected_or_delayed"
+          },
+          {
+            "key": "limited_service_access",
+            "text": "Limited access to services",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "limited_service_access"
+          },
+          {
+            "key": "discriminated",
+            "text": "Discriminated against",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "discriminated"
+          },
+          {
+            "key": "medication_denied",
+            "text": "Denied medication",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medication_denied"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "return_to_treatment_prompt",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "person_attribute",
+        "openmrs_entity_id": "return_to_treatment_prompt",
+        "type": "toaster_notes",
+        "text": "Counsel the client to resume treatment.",
+        "text_color": "#CF0800",
+        "toaster_type": "info",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_followup_visit.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

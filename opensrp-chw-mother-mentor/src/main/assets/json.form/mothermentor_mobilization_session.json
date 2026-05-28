@@ -1,0 +1,362 @@
+{
+  "count": "1",
+  "encounter_type": "MotherMentor Mobilization Session",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "163149AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "163150AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "163151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "163152AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "MotherMentor Mobilization",
+    "fields": [
+      {
+        "key": "mobilization_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mobilization_date",
+        "type": "date_picker",
+        "hint": "Mobilization date",
+        "expanded": false,
+        "max_date": "today",
+          "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        }
+      },
+      {
+        "key": "mobilization_topics",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mobilization_topics",
+        "type": "check_box",
+        "label": "Mobilization Topics",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "combine_checkbox_option_values": "true",
+        "options": [
+          {
+            "key": "tb",
+            "text": "TB",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tb"
+          },
+          {
+            "key": "mother_mentor",
+            "text": "MotherMentor",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mother_mentor"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please fill this question"
+        }
+      },
+      {
+        "key": "mobilization_area",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mobilization_area",
+        "label": "Mobilization area",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "addo_pharmacy",
+            "text": "ADDO/Pharmacy",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "addo_pharmacy"
+          },
+          {
+            "key": "traditional_healer",
+            "text": "Traditional healers",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "traditional_healer"
+          },
+          {
+            "key": "mines",
+            "text": "Mines",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mines"
+          },
+          {
+            "key": "public_meeting",
+            "text": "Public Meeting",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "public_meeting"
+          },
+          {
+            "key": "prisons",
+            "text": "Prison Premises",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "prisons"
+          },
+          {
+            "key": "church_mosque",
+            "text": "Church/Mosques",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "church_mosque"
+          },
+          {
+            "key": "schools_college",
+            "text": "Schools/College",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "schools_college"
+          },
+          {
+            "key": "market",
+            "text": "Market",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "market"
+          },
+          {
+            "key": "drug_house",
+            "text": "Drug House",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "drug_house"
+          },
+          {
+            "key": "elderly_camp",
+            "text": "Elderly Camp",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "elderly_camp"
+          },
+          {
+            "key": "ovc",
+            "text": "Orphan and Vulnerable Children (OVC)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "ovc"
+          },
+          {
+            "key": "nomadic_population",
+            "text": "Nomadic Population",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nomadic_population"
+          },
+          {
+            "key": "health_facility",
+            "text": "Health Facility",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "health_facility"
+          },
+          {
+            "key": "refugee_camp",
+            "text": "Refugee Camp",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "refugee_camp"
+          },
+          {
+            "key": "fishing_communities",
+            "text": "Fishing Communities",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "fishing_communities"
+          },
+          {
+            "key": "local_clubs_breweries",
+            "text": "Local Clubs and Breweries (Vilabu vya Pombe hasa asili)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "local_clubs_breweries"
+          },
+          {
+            "key": "house_to_house",
+            "text": "House to House",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "house_to_house"
+          },
+          {
+            "key": "other",
+            "text": "Other",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        }
+      },
+      {
+        "key": "other_mobilization_area",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "other_mobilization_area",
+        "hint": "Specify",
+        "text_color": "#000000",
+        "type": "edit_text",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mobilization.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "female_clients_reached",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "female_clients_reached",
+        "type": "edit_text",
+        "hint": "Number of Female clients reached",
+        "v_numeric": {
+          "value": "true",
+          "err": "Please enter a valid number"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "The number must be equal or greater than 0"
+        },
+        "v_max_length": {
+          "value": "3",
+          "is_fixed_size": "true",
+          "err": "The number of female clients reached must be less than or equal to 999"
+        },
+        "v_required": {
+          "value": true,
+          "err": "Please enter the number"
+        }
+      },
+      {
+        "key": "male_clients_reached",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "male_clients_reached",
+        "type": "edit_text",
+        "hint": "Number of Male clients reached",
+        "v_numeric": {
+          "value": "true",
+          "err": "Please enter a valid number"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "The number must be equal or greater than 0"
+        },
+        "v_max_length": {
+          "value": "3",
+          "is_fixed_size": "true",
+          "err": "The number of male clients reached must be less than or equal to 999"
+        },
+        "v_required": {
+          "value": true,
+          "err": "Please enter the number"
+        }
+      },
+      {
+        "key": "gps",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "gps",
+        "openmrs_data_type": "text",
+        "type": "gps"
+      },
+      {
+        "key": "population_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "population_type",
+        "hint": "Population Type",
+        "text_color": "#000000",
+        "type": "edit_text",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mobilization_population_type.yml"
+            }
+          }
+        },
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        }
+      },
+      {
+        "key": "other_population_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "other_population_type",
+        "hint": "Specify",
+        "text_color": "#000000",
+        "type": "edit_text",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mobilization.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "number_of_IEC_materials_provided",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "number_of_IEC_materials_provided",
+        "hint": "Number of IEC Materials Provided",
+        "text_color": "#000000",
+        "type": "edit_text",
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "v_numeric": {
+          "value": "true",
+          "err": ""
+        }
+      }
+    ]
+  }
+}

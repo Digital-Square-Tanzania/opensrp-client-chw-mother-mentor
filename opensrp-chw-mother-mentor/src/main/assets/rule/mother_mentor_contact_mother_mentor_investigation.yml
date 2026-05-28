@@ -1,0 +1,15 @@
+---
+name: step1_presumptive_mother_mentor_prompt
+description: show presumptive mother_mentor prompt when any sign is selected
+priority: 1
+condition: "!step1_mother_mentor_interview_findings.contains('no_mother_mentor_signs')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_not_presumptive_mother_mentor_prompt
+description: show not presumptive prompt when no signs are present
+priority: 1
+condition: "step1_mother_mentor_interview_findings.contains('no_mother_mentor_signs')"
+actions:
+  - "isRelevant = true"

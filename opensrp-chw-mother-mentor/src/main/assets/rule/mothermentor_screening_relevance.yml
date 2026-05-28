@@ -1,0 +1,105 @@
+---
+name: step1_contact_lives_with_patient_type
+description: show contact options when client lives with patient
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_do_you_know_clients_number
+description: do_you_know_clients_number
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes') && (step1_contact_lives_with_patient_type.contains('tb') || step1_contact_lives_with_patient_type.contains('mother_mentor'))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_tb_index_client_number
+description: enter tb client id
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes') && step1_contact_lives_with_patient_type.contains('tb') && step1_do_you_know_clients_number.contains('yes')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_tb_client_names
+description: capture tb client names when id unknown
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes') && step1_contact_lives_with_patient_type.contains('tb') && step1_do_you_know_clients_number.contains('no')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mother_mentor_index_client_number
+description: enter mother_mentor client id
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes') && step1_contact_lives_with_patient_type.contains('mother_mentor') && step1_do_you_know_clients_number.contains('yes')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mother_mentor_client_names
+description: capture mother_mentor client names when id unknown
+priority: 1
+condition: "step1_living_with_mother_mentor_patient.contains('yes') && step1_contact_lives_with_patient_type.contains('mother_mentor') && step1_do_you_know_clients_number.contains('no')"
+actions:
+  - "isRelevant = true"
+---
+name: step2_client_special_group
+description: enter mother_mentor client id
+priority: 1
+condition: "step2_belongs_to_special_group.contains('yes')"
+actions:
+  - "isRelevant = true"
+---
+name: step2_other_special_group
+description: enter mother_mentor client id
+priority: 1
+condition: "step2_client_special_group.contains('other')"
+actions:
+  - "isRelevant = true"
+---
+name: step2_other_screening_location
+description: enter mother_mentor client id
+priority: 1
+condition: "step2_screening_location.contains('other_location')"
+actions:
+  - "isRelevant = true"
+---
+name: step3_tb_screening_findings
+description: enter mother_mentor client id
+priority: 1
+condition: "step3_selected_investigation_type.contains('tb')"
+actions:
+  - "isRelevant = true"
+---
+name: step3_mother_mentor_screening_findings
+description: enter mother_mentor client id
+priority: 1
+condition: "step3_selected_investigation_type.contains('mother_mentor')"
+actions:
+  - "isRelevant = true"
+---
+name: step3_mother_mentor_referral_prompt
+description: prompt referral when client is presumptive for mother_mentor
+priority: 1
+condition: "step3_screening_status != null && step3_screening_status.contains('mother_mentor_presumptive')"
+actions:
+  - "isRelevant = true"
+---
+name: step3_non_presumptive_prompt
+description: notify when client is not presumptive for both tb and mother_mentor
+priority: 1
+condition: "step3_selected_investigation_type.contains('tb') && step3_selected_investigation_type.contains('mother_mentor') && step3_tb_screening_findings != null && !step3_tb_screening_findings.isEmpty() && step3_mother_mentor_screening_findings != null && !step3_mother_mentor_screening_findings.isEmpty() && step3_screening_status != null && step3_screening_status == '-'"
+actions:
+  - "isRelevant = true"
+---
+name: step3_non_presumptive_tb_prompt
+description: notify when client is not presumptive for tb only
+priority: 1
+condition: "step3_selected_investigation_type.contains('tb') && !step3_selected_investigation_type.contains('mother_mentor') && step3_tb_screening_findings != null && !step3_tb_screening_findings.isEmpty() && step3_screening_status != null && step3_screening_status == '-'"
+actions:
+  - "isRelevant = true"
+---
+name: step3_non_presumptive_mother_mentor_prompt
+description: notify when client is not presumptive for mother_mentor only
+priority: 1
+condition: "!step3_selected_investigation_type.contains('tb') && step3_selected_investigation_type.contains('mother_mentor') && step3_mother_mentor_screening_findings != null && !step3_mother_mentor_screening_findings.isEmpty() && step3_screening_status != null && step3_screening_status == '-'"
+actions:
+  - "isRelevant = true"

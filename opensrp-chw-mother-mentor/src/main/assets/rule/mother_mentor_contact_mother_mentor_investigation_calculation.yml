@@ -1,0 +1,7 @@
+---
+name: step1_screening_status
+description: screening status calculation
+priority: 1
+condition: "true"
+actions:
+  - "calculation = step1_mother_mentor_interview_findings != null && !step1_mother_mentor_interview_findings.isEmpty() && !step1_mother_mentor_interview_findings.contains('no_mother_mentor_signs') ? 'mother_mentor_presumptive' : '-' "

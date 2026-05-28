@@ -1,0 +1,99 @@
+---
+name: step1_live_with_mothermentor_patient
+description: Living with or near Mother Mentor Patient
+priority: 1
+condition: "step1_mother_mentor_screening=='client_type_screening_location'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mothermentor_screening
+description: Mother Mentor Screening
+priority: 1
+condition: "step1_mother_mentor_screening=='screen_for_mothermentor'"
+actions:
+  - "isRelevant = true "
+
+---
+name: step1_tested_hiv
+description: Tested for HIV
+priority: 1
+condition: "step1_mother_mentor_screening=='hiv_tested'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_patient_type
+description: Patient Type
+priority: 1
+condition: "step1_live_with_mothermentor_patient=='yes_live_with_mothermentor_patient'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mothermentor_id
+description: Patient Type
+priority: 1
+condition: "step1_live_with_mothermentor_patient=='yes_live_with_mothermentor_patient'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_is_kvp_client
+description: Check if it is KVP client
+priority: 1
+condition: "step1_mother_mentor_screening=='client_type_screening_location'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_kvp_group
+description: KVP Group
+priority: 1
+condition: "step1_is_kvp_client=='yes_kvp_client'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mother_mentor_screening_symptoms
+description: MotherMentor Screening Symptoms
+priority: 1
+condition: "step1_mothermentor_screening.contains('mother_mentor_screening')"
+actions:
+  - "isRelevant = true "
+---
+name: step1_tb_screening_symptoms
+description: MotherMentor Screening Symptoms
+priority: 1
+condition: "step1_mothermentor_screening.contains('tb_screening')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_screen_location
+description: MotherMentor Screening Symptoms
+priority: 1
+condition: "step1_mother_mentor_screening=='client_type_screening_location'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_specify_screening_location
+description: Specify screening location
+priority: 1
+condition: "step1_screen_location=='other_screening_location'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_specify_kvp_group
+description: Specify KVP Group
+priority: 1
+condition: "step1_kvp_group=='other_kvp_group'"
+actions:
+  - "isRelevant = true"
+
+
+
+
+

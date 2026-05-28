@@ -1,0 +1,648 @@
+{
+  "validate_on_submit": true,
+  "count": "1",
+  "encounter_type": "MOTHERMENTOR Observation Results",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "163149AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "163150AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "163151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "163152AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Investigation Results",
+    "fields": [
+      {
+        "key": "investigation_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "investigation_type",
+        "type": "check_box",
+        "label": "Investigation type",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "combine_checkbox_option_values": "true",
+        "options": [
+          {
+            "key": "tb",
+            "text": "Tuberculosis (TB)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tb"
+          },
+          {
+            "key": "mother_mentor",
+            "text": "MotherMentor",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mother_mentor"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        }
+      },
+      {
+        "key": "tb_preliminary_investigation_tests",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_preliminary_investigation_tests",
+        "type": "native_radio",
+        "label": "Select initial TB investigation tests",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "combine_checkbox_option_values": "true",
+        "options": [
+          {
+            "key": "screening_questionnaire",
+            "text": "Screening questionnaire",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "screening_questionnaire"
+          },
+          {
+            "key": "xray",
+            "text": "X-ray (+\\- CAD)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "xray"
+          },
+          {
+            "key": "treatment_decision_algorithm",
+            "text": "Treatment Decision Algorithm  (TDA) ",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "treatment_decision_algorithm"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select at least one option"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_preliminary_investigation_results",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_preliminary_investigation_results",
+        "label": "Initial TB investigation results",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "tb_indicative",
+            "text": "Suggestive of TB",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tb_indicative"
+          },
+          {
+            "key": "no_tb_indications",
+            "text": "Not suggestive of TB",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no_tb_indications"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_diagnostic_test_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_diagnostic_test_type",
+        "label": "Diagnostic test used to assess TB",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "genexpert",
+            "text": "GeneXpert",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "genexpert"
+          },
+          {
+            "key": "trunati",
+            "text": "Trunati",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "trunati"
+          },
+          {
+            "key": "smear_microscopy",
+            "text": "Smear Microscopy",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "smear_microscopy"
+          },
+          {
+            "key": "lflam",
+            "text": "LFLAM",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "lflam"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_sample_test_results",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_sample_test_results",
+        "label": "TB sample test results",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "pulmonary_tb",
+            "text": "Pulmonary TB",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pulmonary_tb"
+          },
+          {
+            "key": "extra_pulmonary_tb",
+            "text": "Extra-pulmonary TB",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "extra_pulmonary_tb"
+          },
+          {
+            "key": "drug_resistant_tb",
+            "text": "Drug-resistant TB (DR-TB)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "drug_resistant_tb"
+          },
+          {
+            "key": "tb_dr_tb_undetected",
+            "text": "Does not have TB",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tb_dr_tb_undetected"
+          },
+          {
+            "key": "poor_quality_sample",
+            "text": "Poor quality sample",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "poor_quality_sample"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "clinical_decision",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "clinical_decision",
+        "label": "Clinical decision",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "suggestive",
+            "text": "Suggestive",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "suggestive"
+          },
+          {
+            "key": "non_suggestive",
+            "text": "Non suggestive",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "non_suggestive"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please specify"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mother_mentor_diagnostic_method",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_mentor_diagnostic_method",
+        "label": "Diagnostic method used to assess mother_mentor",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "hadubini",
+            "text": "Microscopy",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "microscopy"
+          },
+          {
+            "key": "clinical_decision_method",
+            "text": "Clinical decision",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "clinical_decision_method"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mother_mentor_investigation_results",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_mentor_investigation_results",
+        "label": "MotherMentor investigation results",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "mother_mentor_confirmed",
+            "text": "MotherMentor confirmed",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mother_mentor_confirmed"
+          },
+          {
+            "key": "no_mother_mentor_detected",
+            "text": "No mother_mentor detected",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no_mother_mentor_detected"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tb_treatment_initiated",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_treatment_initiated",
+        "label": "Has DS TB/DR TB treatment been initiated?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mother_mentor_treatment_initiated",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_mentor_treatment_initiated",
+        "label": "Has mother_mentor treatment been initiated?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "eligible_for_tpt",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "eligible_for_tpt",
+        "label": "Is the client eligible for TPT?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "tpt_initiation_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tpt_initiation_date",
+        "type": "date_picker",
+        "hint": "Select TPT initiation date",
+        "label_text_size": "18px",
+        "expanded": false,
+        "max_date": "today",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        },
+        "label": "TPT initiation date"
+      },
+      {
+        "key": "tb_treatment_start_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_treatment_start_date",
+        "type": "date_picker",
+        "hint": "Select TB treatment start date",
+        "label_text_size": "18px",
+        "expanded": false,
+        "max_date": "today",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        },
+        "label": "TB treatment start date"
+      },
+      {
+        "key": "tb_client_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "tb_client_number",
+        "type": "mask_edit_text",
+        "mask": "############-#/KK/####/###",
+        "mask_hint": "00000000000000000000",
+        "allowed_chars": "0123456789",
+        "hint": "TB client number",
+        "v_regex": {
+          "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
+          "err": "TB client number should follow this format (070201100097-5/KK/2025/431)"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mother_mentor_treatment_start_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_mentor_treatment_start_date",
+        "type": "date_picker",
+        "hint": "Select mother_mentor treatment start date",
+        "label_text_size": "18px",
+        "expanded": false,
+        "max_date": "today",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        },
+        "label": "MotherMentor treatment start date"
+      },
+      {
+        "key": "mother_mentor_client_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_mentor_client_number",
+        "type": "mask_edit_text",
+        "mask": "############-#/UK/####/###",
+        "mask_hint": "00000000000000000000",
+        "allowed_chars": "0123456789",
+        "hint": "MotherMentor client number",
+        "v_regex": {
+          "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
+          "err": "MotherMentor client number should follow this format (070201100097-5/UK/2025/431)"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "hiv_tested",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hiv_tested",
+        "label": "Has the client tested for HIV?",
+        "label_text_style": "bold",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes_hiv_tested",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes_hiv_tested"
+          },
+          {
+            "key": "no_hiv_not_tested",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no_hiv_not_tested"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "poor_sample_quality_prompt",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "person_attribute",
+        "openmrs_entity_id": "poor_sample_quality_prompt",
+        "type": "toaster_notes",
+        "text": "Collect a new client sample to repeat the TB test.",
+        "text_color": "#CF0800",
+        "toaster_type": "info",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_observation_results.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

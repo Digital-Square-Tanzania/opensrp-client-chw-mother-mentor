@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">opensrp-chw-testing</string>
+    <string name="action_settings">Settings</string>
+    <string name="mothermentor_client_profile">New Mother Mentor Client Profile</string>
+    <string name="mothermentor_contact_profile">Mother Mentor Contact Profile</string>
+    <string name="mothermentor_update_member_profile">Mother Mentor Update Profile</string>
+
+    <string name="mothermentor_follow_up_visit">Follow up MOTHERMENTOR Client Profile</string>
+
+<!--    <string name="mothermentor_record_contact_follow_up_visit">Record Mother Mentor Contact Follow up Visit</string>-->
+
+    <string name="mothermentor_contact_visit">"Record Mother Mentor Contact Visit"</string>
+
+    <string name="mothermentor_screening">Mother Mentor screening</string>
+    <string name="mothermentor_visit_record">Mother Mentor Visit Record</string>
+    <string name="mothermentor_mobilization">Mother Mentor Mobilization</string>
+
+
+    <string name="mothermentor_observation_results">Matokeo ya Uchunguzi</string>
+    <string name="mothermentor_observation_results_contact">Matokeo ya Uchunguzi ya Contact</string>
+    <string name="mothermentor_followup_visit">Ufuatiliaji wa mteja</string>
+    <string name="provide_contact_visit">Provide Contact Visit</string>
+
+</resources>

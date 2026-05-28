@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name" translatable="false">mothermentor</string>
+    <string name="error_unable_to_start_form">An error occurred when starting the form</string>
+    <string name="error_unable_to_save_form">An error occurred when saving the form</string>
+    <string name="mothermentor">Mother Mentor</string>
+    <string name="add_member">Add Member</string>
+    <string name="sort">Sort</string>
+    <string name="home">Home</string>
+    <string name="add_family">Add family</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="job_aids">Job Aids</string>
+    <string name="saving_dialog_title">Saving</string>
+    <string name="interpunct" translatable="false">\u00b7</string>
+    <string name="record_mothermentor">Record Mother Mentor Visit</string>
+    <string name="record_mothermentor_contact_visit">Record Mother Mentor Contact Visit</string>
+    <string name="record_mothermentor_client_followup_visit">Record Mother Mentor FollowUp Visit</string>
+    <string name="register_mother_mentor_contact">Register Mother Mentor Contact</string>
+    <string name="record_mothermentor_contact_visit_followup">Record Mother Mentor Contact Visit FollowUp</string>
+    <string name="provide_contact_visit">Provide Contact Visit</string>
+    <string name="manual_process_visit">Process Visit</string>
+    <string name="continue_visit">Continue</string>
+    <string name="edit_visit">Edit</string>
+    <string name="view_medical_history">View services history</string>
+    <string name="mothermentor_visit_in_progress">Visit In Progress</string>
+    <string name="mothermentor_service_visit_in_progress">Mother Mentor Service In Progress</string>
+    <string name="mothermentor_procedure_visit_in_progress">Mother Mentor Procedure In Progress</string>
+    <string name="mothermentor_visit_conducted">Mother Mentor Visit Conducted</string>
+
+    <string name="mothermentor_profile">Mother Mentor Profile</string>
+
+    <string name="mothermentor_medical_history">Medical History</string>
+    <string name="mothermentor_followup_visit">Follow Up Visit</string>
+    <string name="mothermentor_physical_examination">Physical Examination</string>
+    <string name="mothermentor_hts">Mother Mentor Counseling</string>
+
+    <string name="mothermentor_contact_tb_investigation">Mother Mentor Investigation</string>
+    <string name="mothermentor_contact_mother_mentor_investigation">Mother Mentor Investigation</string>
+    <string name="mothermentor_sample">Mother Mentor Service</string>
+    <string name="mothermentor_source">Type of Contact</string>
+
+
+
+
+    <string name="optional">Optional</string>
+    <string name="error_unable_save_visit">Unable to save visit</string>
+    <string name="return_to_previous_page">Return all Mother Mentor Clients</string>
+    <string name="last_visit_40_days_ago">Last visit %1$s ago</string>
+    <string name="view_visit_history">View Visit history</string>
+    <string name="mothermentor_family_member">Family Member</string>
+    <string name="mothermentor_existing_client">Existing Client</string>
+    <string name="mothermentor_contact_registration_success">Mother Mentor contact saved</string>
+    <string name="mothermentor_no_contacts_available">No eligible contacts available</string>
+    <string name="mothermentor_contact_option_family">Family members</string>
+    <string name="mothermentor_contact_option_all_clients">All other clients</string>
+    <string name="mothermentor_contact_option_new_client">Register new client</string>
+    <string name="observation_results">View Visit History</string>
+    <string name="call_no_number_provided">(no number provided)</string>
+    <string name="record_observation_results">Record Observation Results</string>
+    <string name="record_mother_mentor_treatment_start_date">Record Mother Mentor Start Date</string>
+    <string name="view_observation_results">View Service History</string>
+    <string name="family_has_nothing_due">Family has nothing due</string>
+    <string name="go_to_family_s_profile">Go to family\'s profile</string>
+    <string name="family_has_services_due">Family has services due</string>
+    <string name="primary_care_giver">PRIMARY CARE GIVER</string>
+    <string name="family_head">FAMILY HEAD</string>
+    <string name="family_has_service_overdue"><![CDATA[Family has <font color=#FF0000>services overdue</font></b>]]></string>
+    <string name="vaccine_service_upcoming"><![CDATA[%1$s <font color=#7f7f7f>upcoming (%2$s)</font></b>]]></string>
+    <string name="vaccine_service_overdue"><![CDATA[%1$s <font color=#f04646>overdue (%2$s)</font></b>]]></string>
+    <string name="vaccine_service_due"><![CDATA[%1$s <font color=#000000>due (%2$s)</font></b>]]></string>
+    <string name="call_mothermentor_client">Mother Mentor Client</string>
+    <string name="head_of_family">Head of family</string>
+    <string name="mothermentor_client">Mother Mentor Client</string>
+    <string name="mothermentor_contraindication">Clear Contraindication first, to proceed with MC procedure</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copied_phone_number">PhoneNumber copied to clipboard</string>
+    <string name="call">Call</string>
+    <string name="refer_to_facility">Refer to facility</string>
+    <string name="record_anc">Record ANC visit</string>
+    <string name="record_anc_visit_not_done">ANC visit not done</string>
+    <string name="not_visiting_this_month">Not visiting this month</string>
+    <string name="undo">UNDO</string>
+    <string name="call_family_head">Head of Family</string>
+    <string name="no_phone_number">No Phone Number</string>
+    <string name="call_primary_caregiver">Primary Caregiver</string>
+    <string name="call_anc_client">ANC Client</string>
+    <string name="call_pnc_client">PNC Client</string>
+    <string name="call_head_of_family">Call Head of Family</string>
+    <string name="view_mothermentor_test_result">View Mother Mentor results</string>
+    <string name="mothermentor_positive">Mother Mentor positive</string>
+    <string name="anc_string">ANC</string>
+    <string name="pnc_string">PNC</string>
+    <string name="visit_done">Visit Done</string>
+    <string name="edit">EDIT</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="return_to_mothermentor_clients">Return to Mother Mentor Clients</string>
+    <string name="number_not_filled">client phone number, not filled</string>
+    <string name="view_upcoming_services">View Upcoming Services</string>
+
+    <string name="mothermentor_session">Mother Mentor Session</string>
+    <string name="participants">Participants:</string>
+    <string name="date">Date:</string>
+    <string name="issued_condoms">Condoms Issued:</string>
+
+    <string name="mobilization_session_participants">Participants: %s</string>
+    <string name="mobilization_condoms_issued">Condoms Issued: %s</string>
+    <string name="mobilziation_session_date">Date: %s</string>
+
+    <string name="mothermentor_sessions">Mother Mentor Sessions</string>
+
+    <string name="mothermentor_mobilization">Mobilization</string>
+    <string name="mothermentor_contact">Contacts</string>
+    <string name="usajili_wa_contacts">Contacts Registration</string>
+    <string name="mothermentor_issue_referral_action">Issue</string>
+    <string name="mothermentor_pending_issuing_of_referral">Pending Issuing of Referral</string>
+    <string name="mothermentor_issue_referral_toast">Issue referral</string>
+
+    <string name="hivst_kit_code">Service Code</string>
+    <string name="collectiondate">Collection Date</string>
+    <string name="kit_for">Service For</string>
+    <string name="hivst_result">Service Result</string>
+    <string name="record_result">Record Result</string>
+
+
+</resources>

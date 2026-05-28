@@ -1,0 +1,7 @@
+---
+name: step3_screening_status
+description: screening status calculation
+priority: 1
+condition: "true"
+actions:
+  - "calculation = ((step3_tb_screening_findings != null && !step3_tb_screening_findings.isEmpty() && !(step3_tb_screening_findings.size() == 1 && step3_tb_screening_findings.contains('no_tb_signs'))) ? ((step3_mother_mentor_screening_findings != null && !step3_mother_mentor_screening_findings.isEmpty() && !(step3_mother_mentor_screening_findings.size() == 1 && step3_mother_mentor_screening_findings.contains('no_mother_mentor_signs'))) ? 'tb_presumptive,mother_mentor_presumptive' : 'tb_presumptive') : ((step3_mother_mentor_screening_findings != null && !step3_mother_mentor_screening_findings.isEmpty() && !(step3_mother_mentor_screening_findings.size() == 1 && step3_mother_mentor_screening_findings.contains('no_mother_mentor_signs'))) ? 'mother_mentor_presumptive' : '-'))"

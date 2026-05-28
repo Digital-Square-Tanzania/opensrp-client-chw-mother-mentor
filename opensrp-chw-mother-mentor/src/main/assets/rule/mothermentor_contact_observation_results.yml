@@ -1,0 +1,41 @@
+name: step1_has_tb_treatment_started
+description:  kama matokeo ya uchunguzi ni tb ya mafau au nje ya mapafu au kifua kikuu sugu swali litakuwa ameanza tiba ya tb
+priority: 1
+condition: "step1_tb_investigation_results.equalsIgnoreCase('pulmonary_tb') || step1_tb_investigation_results.equalsIgnoreCase('extra_pulmonary_tb') || step1_tb_investigation_results.equalsIgnoreCase('drug_resistant_tb')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_tb_treatment_start_date
+description:  kama ameanza tib ya TB ni Ndiyo,fahamu tarehe ya kuanza matibabu
+priority: 1
+condition: "step1_has_tb_treatment_started.equalsIgnoreCase('yes_tb_treatment_started')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_eligible_for_tb_preventive_therapy
+description:  kama matokeo ya uchunguzi ya kifua kikuu ni hana TB
+priority: 1
+condition: "step1_tb_investigation_results.equalsIgnoreCase('no_tb_detected')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_has_tb_preventive_therapy_started
+description:  kama anastahili kutumia tiba kinga jibu ni Ndiyo,tupate swali ameanza tiba kinga
+priority: 1
+condition: "step1_eligible_for_tb_preventive_therapy.equalsIgnoreCase('yes_eligible_for_tpt')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_tpt_start_date
+description:  kama anastahili kutumia tiba kinga jibu ni Ndiyo,tupate swali ameanza tiba kinga
+priority: 1
+condition: "step1_has_tb_preventive_therapy_started.equalsIgnoreCase('yes_tpt_started')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_poor_sample_quality_prompt
+description:  kama matokeo ya uchunguzi ni sampuli haina ubora
+priority: 1
+condition: "step1_tb_investigation_results.equalsIgnoreCase('poor_quality_sample')"
+actions:
+  - "isRelevant = true"
