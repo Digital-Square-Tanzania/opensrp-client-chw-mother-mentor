@@ -5,13 +5,17 @@ import android.content.Context;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.smartregister.AllConstants;
+import org.smartregister.CoreLibrary;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor_sample.BuildConfig;
 import org.smartregister.chw.mothermentor_sample.application.SampleApplication;
+import org.smartregister.exception.DatabaseMigrationException;
 import org.smartregister.repository.EventClientRepository;
 import org.smartregister.repository.Repository;
 import org.smartregister.repository.SettingsRepository;
 import org.smartregister.repository.UniqueIdRepository;
+
+import java.io.File;
 
 import timber.log.Timber;
 
@@ -86,6 +90,9 @@ public class SampleRepository extends Repository {
                 readableDatabase = super.getReadableDatabase();
             }
             return readableDatabase;
+        } catch (DatabaseMigrationException e) {
+            Timber.e(e);
+            return recreateReadableDatabase();
         } catch (Exception e) {
             Timber.e("Database Error. " + e.getMessage());
             return null;
@@ -94,13 +101,48 @@ public class SampleRepository extends Repository {
     }
 
     public synchronized SQLiteDatabase getWritableDatabase(String password) {
-        if (writableDatabase == null || !writableDatabase.isOpen()) {
-            if (writableDatabase != null) {
-                writableDatabase.close();
+        try {
+            if (writableDatabase == null || !writableDatabase.isOpen()) {
+                if (writableDatabase != null) {
+                    writableDatabase.close();
+                }
+                writableDatabase = super.getWritableDatabase();
             }
-            writableDatabase = super.getWritableDatabase();
+            return writableDatabase;
+        } catch (DatabaseMigrationException e) {
+            Timber.e(e);
+            return recreateWritableDatabase();
         }
+    }
+
+    private SQLiteDatabase recreateReadableDatabase() {
+        resetSampleDatabase();
+        readableDatabase = super.getReadableDatabase();
+        return readableDatabase;
+    }
+
+    private SQLiteDatabase recreateWritableDatabase() {
+        resetSampleDatabase();
+        writableDatabase = super.getWritableDatabase();
         return writableDatabase;
+    }
+
+    private void resetSampleDatabase() {
+        close();
+        readableDatabase = null;
+        writableDatabase = null;
+        context.deleteDatabase(AllConstants.DATABASE_NAME);
+        deleteDatabaseFile(context.getDatabasePath(AllConstants.DATABASE_NAME));
+        deleteDatabaseFile(new File(context.getDatabasePath(AllConstants.DATABASE_NAME).getPath() + "-journal"));
+        deleteDatabaseFile(new File(context.getDatabasePath(AllConstants.DATABASE_NAME).getPath() + "-wal"));
+        deleteDatabaseFile(new File(context.getDatabasePath(AllConstants.DATABASE_NAME).getPath() + "-shm"));
+        CoreLibrary.getInstance().context().allSharedPreferences().setMigratedToSqlite4();
+    }
+
+    private void deleteDatabaseFile(File file) {
+        if (file.exists() && !file.delete()) {
+            Timber.w("Could not delete sample database file: %s", file.getPath());
+        }
     }
 
     @Override

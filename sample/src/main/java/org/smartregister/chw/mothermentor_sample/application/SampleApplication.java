@@ -40,19 +40,18 @@ public class SampleApplication extends DrishtiApplication {
         context.updateApplicationContext(getApplicationContext());
         context.updateCommonFtsObject(createCommonFtsObject());
 
+        // Auto login by default
+        String password = "pwd";
+        context.session().start(context.session().lengthInMilliseconds());
+        setPassword(password);
+        context.session().setPassword(password);
+
         //Initialize Modules
         CoreLibrary.init(context);
         ConfigurableViewsLibrary.init(context);
         MotherMentorLibrary.init(context, getRepository(), BuildConfig.VERSION_CODE, BuildConfig.DATABASE_VERSION);
 
         SyncStatusBroadcastReceiver.init(this);
-
-        //Auto login by default
-        String password = "pwd";
-        context.session().start(context.session().lengthInMilliseconds());
-        context.configuration().getDrishtiApplication().setPassword(password);
-        context.session().setPassword(password);
-
 
         //init Job Manager
         JobManager.create(this).addJobCreator(new SampleJobCreator());

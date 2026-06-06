@@ -34,7 +34,7 @@ public class BaseMotherMentorRegisterFragmentPresenter implements MotherMentorRe
 
     @Override
     public String getMainCondition() {
-        return " " + getMainTable() + ".is_closed = 0 AND (" + getMainTable() + ".status IS NULL OR " + getMainTable() + ".status = 'client') AND  screening_status != '-'";
+        return " " + getMainTable() + ".is_closed = 0";
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BaseMotherMentorRegisterFragmentPresenter implements MotherMentorRe
 
     @Override
     public String getMainTable() {
-        return Constants.TABLES.MOTHERMENTOR_SCREENING;
+        return Constants.TABLES.MOTHERMENTOR_ENROLLMENT;
     }
 
     @Override

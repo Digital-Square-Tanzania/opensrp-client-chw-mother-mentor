@@ -108,7 +108,7 @@ public class MotherMentorJsonFormUtils extends org.smartregister.util.JsonFormUt
         String encounter_type = jsonForm.optString(Constants.JSON_FORM_EXTRA.ENCOUNTER_TYPE);
 
         if (Constants.EVENT_TYPE.MOTHER_MENTOR_SCREENING.equals(encounter_type)) {
-            encounter_type = Constants.TABLES.MOTHERMENTOR_SCREENING;
+            encounter_type = Constants.TABLES.MOTHERMENTOR_ENROLLMENT;
         } else if (Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(encounter_type)) {
             encounter_type = Constants.TABLES.MOTHERMENTOR_SERVICES;
         } else if (Constants.EVENT_TYPE.MOTHERMENTOR_CONTACTS.equals(encounter_type)) {

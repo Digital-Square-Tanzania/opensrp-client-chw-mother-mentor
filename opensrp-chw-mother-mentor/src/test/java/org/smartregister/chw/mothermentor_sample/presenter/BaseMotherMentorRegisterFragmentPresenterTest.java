@@ -38,7 +38,7 @@ public class BaseMotherMentorRegisterFragmentPresenterTest {
 
     @Test
     public void getMainCondition() {
-        Assert.assertEquals(" ec_mothermentor_screening.is_closed = 0 ", baseMotherMentorRegisterFragmentPresenter.getMainCondition());
+        Assert.assertEquals(" ec_mothermentor_enrollment.is_closed = 0 ", baseMotherMentorRegisterFragmentPresenter.getMainCondition());
     }
 
     @Test
@@ -48,20 +48,20 @@ public class BaseMotherMentorRegisterFragmentPresenterTest {
 
     @Test
     public void getDefaultSortQuery() {
-        Assert.assertEquals(Constants.TABLES.MOTHERMENTOR_SCREENING + "." + DBConstants.KEY.LAST_INTERACTED_WITH + " DESC ", baseMotherMentorRegisterFragmentPresenter.getDefaultSortQuery());
+        Assert.assertEquals(Constants.TABLES.MOTHERMENTOR_ENROLLMENT + "." + DBConstants.KEY.LAST_INTERACTED_WITH + " DESC ", baseMotherMentorRegisterFragmentPresenter.getDefaultSortQuery());
     }
 
     @Test
     public void getMainTable() {
-        Assert.assertEquals(Constants.TABLES.MOTHERMENTOR_SCREENING, baseMotherMentorRegisterFragmentPresenter.getMainTable());
+        Assert.assertEquals(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseMotherMentorRegisterFragmentPresenter.getMainTable());
     }
 
     @Test
     public void initializeQueries() {
         Set<View> visibleColumns = new TreeSet<>();
         baseMotherMentorRegisterFragmentPresenter.initializeQueries(null);
-        Mockito.doNothing().when(view).initializeQueryParams(Constants.TABLES.MOTHERMENTOR_SCREENING, null, null);
-        Mockito.verify(view).initializeQueryParams(Constants.TABLES.MOTHERMENTOR_SCREENING, null, null);
+        Mockito.doNothing().when(view).initializeQueryParams(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, null, null);
+        Mockito.verify(view).initializeQueryParams(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, null, null);
         Mockito.verify(view).initializeAdapter(visibleColumns);
         Mockito.verify(view).countExecute();
         Mockito.verify(view).filterandSortInInitializeQueries();

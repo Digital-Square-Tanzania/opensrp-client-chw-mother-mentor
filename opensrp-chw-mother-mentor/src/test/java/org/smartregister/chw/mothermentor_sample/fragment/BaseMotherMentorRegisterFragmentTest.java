@@ -29,7 +29,8 @@ public class BaseMotherMentorRegisterFragmentTest {
         Whitebox.invokeMethod(baseTestRegisterFragment, "openProfile", client);
         PowerMockito.mockStatic(BaseMotherMentorProfileActivity.class);
         BaseMotherMentorProfileActivity.startProfileActivity(null, null);
-        PowerMockito.verifyStatic(times(1));
+        PowerMockito.verifyStatic(BaseMotherMentorProfileActivity.class, times(1));
+        BaseMotherMentorProfileActivity.startProfileActivity(null, null);
 
     }
 }

@@ -1,7 +1,7 @@
 {
   "bindobjects": [
     {
-      "name": "ec_mothermentor_screening",
+      "name": "ec_mothermentor_enrollment",
       "columns": [
         {
           "column_name": "base_entity_id",

@@ -2,6 +2,7 @@
     <string name="app_name" translatable="false">mothermentor</string>
     <string name="error_unable_to_start_form">An error occurred when starting the form</string>
     <string name="error_unable_to_save_form">An error occurred when saving the form</string>
+    <string name="error_unable_to_open_profile">Unable to open profile</string>
     <string name="mothermentor">Mother Mentor</string>
     <string name="add_member">Add Member</string>
     <string name="sort">Sort</string>

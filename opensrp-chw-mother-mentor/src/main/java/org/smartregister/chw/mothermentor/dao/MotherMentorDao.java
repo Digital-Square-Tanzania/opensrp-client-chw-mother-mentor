@@ -69,7 +69,10 @@ public class MotherMentorDao extends AbstractDao {
     };
 
     public static String getMotherMentorClientStatus(String baseEntityId) {
-        String status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_SCREENING, baseEntityId);
+        String status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
+        if (StringUtils.isBlank(status)) {
+            status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_SCREENING, baseEntityId);
+        }
 
         if (StringUtils.isBlank(status)) {
             if (getContact(baseEntityId) != null) {
@@ -94,7 +97,10 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getTbScreeningStatus(String baseEntityId) {
-        String sql = "SELECT screening_status FROM ec_mothermentor_screening WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql = "SELECT screening_status, last_interacted_with FROM ec_mothermentor_enrollment WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' " +
+                "UNION ALL " +
+                "SELECT screening_status, last_interacted_with FROM ec_mothermentor_screening WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' " +
+                "ORDER BY last_interacted_with DESC LIMIT 1";
 
         DataMap<String> dataMap = cursor -> getCursorValue(cursor, "screening_status");
         List<String> res = readData(sql, dataMap);
@@ -255,7 +261,7 @@ public class MotherMentorDao extends AbstractDao {
      * open observation, follow-up, and visit records are closed alongside the screening row.
      */
     public static void closeTbNegativeClients() {
-        String baseEntitySubQuery = "SELECT scr.base_entity_id FROM ec_mothermentor_screening scr " +
+        String baseEntitySubQuery = "SELECT scr.base_entity_id FROM ec_mothermentor_enrollment scr " +
                 "  INNER JOIN (" +
                 "    SELECT latest.entity_id, latest.last_interacted_with, " +
                 "           lower(ifnull(latest.tb_sample_test_results, '')) AS tb_result, " +
@@ -290,7 +296,7 @@ public class MotherMentorDao extends AbstractDao {
                 "WHERE is_closed = 0 AND entity_id IN (" + joinedIds + ")";
         updateDB(closeVisitSql);
 
-        String closeScreeningSql = "UPDATE ec_mothermentor_screening SET is_closed = 1 " +
+        String closeScreeningSql = "UPDATE ec_mothermentor_enrollment SET is_closed = 1 " +
                 "WHERE is_closed = 0 AND base_entity_id IN (" + joinedIds + ")";
         updateDB(closeScreeningSql);
     }
@@ -403,7 +409,8 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Date getLatestMotherMentorScreeningDate(String baseEntityId) {
-        return getLatestEventDate(Constants.TABLES.MOTHERMENTOR_SCREENING, "base_entity_id", baseEntityId);
+        Date screeningDate = getLatestEventDate(Constants.TABLES.MOTHERMENTOR_SCREENING, "base_entity_id", baseEntityId);
+        return screeningDate != null ? screeningDate : getLatestEventDate(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, "base_entity_id", baseEntityId);
     }
 
     private static Date getLatestEventDate(String tableName, String entityColumn, String baseEntityId) {
@@ -477,7 +484,7 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Date getMotherMentorTestDate(String baseEntityID) {
-        String sql = "select mothermentor_test_date from ec_mothermentor_screening where is_closed = 0 AND base_entity_id = '" + baseEntityID + "'";
+        String sql = "select mothermentor_test_date from ec_mothermentor_enrollment where is_closed = 0 AND base_entity_id = '" + baseEntityID + "'";
 
         DataMap<Date> dataMap = cursor -> getCursorValueAsDate(cursor, "mothermentor_test_date", getNativeFormsDateFormat());
 
@@ -489,7 +496,7 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getClientMotherMentorID(String baseEntityId) {
-        String sql = "SELECT mothermentor_client_id FROM ec_mothermentor_screening p " +
+        String sql = "SELECT mothermentor_client_id FROM ec_mothermentor_enrollment p " +
                 " WHERE p.is_closed = 0 AND p.base_entity_id = '" + baseEntityId + "' ORDER BY enrollment_date DESC LIMIT 1";
 
         DataMap<String> dataMap = cursor -> getCursorValue(cursor, "mothermentor_client_id");
@@ -522,7 +529,7 @@ public class MotherMentorDao extends AbstractDao {
             return null;
         }
 
-        String sql = "SELECT tb_client_number, mother_mentor_client_number FROM ec_mothermentor_screening WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql = "SELECT tb_client_number, mother_mentor_client_number FROM ec_mothermentor_enrollment WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
 
         DataMap<ClientNumberInfo> dataMap = cursor -> new ClientNumberInfo(
                 getCursorValue(cursor, "tb_client_number"),
@@ -537,7 +544,7 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getEnrollmentDate(String baseEntityId) {
-        String sql = "SELECT enrollment_date FROM ec_mothermentor_screening p " +
+        String sql = "SELECT enrollment_date FROM ec_mothermentor_enrollment p " +
                 " WHERE p.is_closed = 0 AND p.base_entity_id = '" + baseEntityId + "' ORDER BY enrollment_date DESC LIMIT 1";
 
         DataMap<String> dataMap = cursor -> getCursorValue(cursor, "enrollment_date");
@@ -561,8 +568,13 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static boolean isRegisteredForMotherMentor(String baseEntityID) {
-        String sql = "SELECT count(p.base_entity_id) count FROM ec_mothermentor_screening p " +
-                "WHERE p.base_entity_id = '" + baseEntityID + "' AND p.is_closed = 0  AND screening_status != '-' ";
+        String sql = "SELECT SUM(count) count FROM (" +
+                "SELECT count(p.base_entity_id) count FROM ec_mothermentor_enrollment p " +
+                "WHERE p.base_entity_id = '" + baseEntityID + "' AND p.is_closed = 0 AND ifnull(p.screening_status, '') != '-' " +
+                "UNION ALL " +
+                "SELECT count(s.base_entity_id) count FROM ec_mothermentor_screening s " +
+                "WHERE s.base_entity_id = '" + baseEntityID + "' AND s.is_closed = 0 AND ifnull(s.screening_status, '') != '-' " +
+                ")";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
@@ -574,7 +586,7 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Integer getMotherMentorFamilyMembersCount(String familyBaseEntityId) {
-        String sql = "SELECT count(emc.base_entity_id) count FROM ec_mothermentor_screening emc " +
+        String sql = "SELECT count(emc.base_entity_id) count FROM ec_mothermentor_enrollment emc " +
                 "INNER Join ec_family_member fm on fm.base_entity_id = emc.base_entity_id " +
                 "WHERE fm.relational_id = '" + familyBaseEntityId + "' AND fm.is_closed = 0 " +
                 "AND emc.is_closed = 0 AND emc.mothermentor = 1";
@@ -588,6 +600,11 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static MemberObject getMember(String baseEntityID) {
+        MemberObject memberObject = getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
+        return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_SCREENING);
+    }
+
+    private static MemberObject getMember(String baseEntityID, String tableName) {
         String sql = "select " +
                 "m.base_entity_id , " +
                 "m.unique_id , " +
@@ -616,7 +633,7 @@ public class MotherMentorDao extends AbstractDao {
                 "mr.* " +
                 "from ec_family_member m " +
                 "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join ec_mothermentor_screening mr on mr.base_entity_id = m.base_entity_id " +
+                "inner join " + tableName + " mr on mr.base_entity_id = m.base_entity_id " +
                 "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
                 "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
                 "where mr.is_closed = 0 AND m.base_entity_id ='" + baseEntityID + "' ";
@@ -696,7 +713,7 @@ public class MotherMentorDao extends AbstractDao {
                 "mr.* " +
                 "from ec_family_member m " +
                 "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join ec_mothermentor_screening mr on mr.base_entity_id = m.base_entity_id " +
+                "inner join ec_mothermentor_enrollment mr on mr.base_entity_id = m.base_entity_id " +
                 "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
                 "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
                 "where mr.is_closed = 0 AND m.is_closed = 0 AND f.is_closed = 0 ";

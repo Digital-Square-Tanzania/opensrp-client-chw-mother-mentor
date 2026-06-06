@@ -187,7 +187,7 @@ dependencies {
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
 
-    implementation 'net.zetetic:sqlcipher-android:4.5.4'
+    implementation 'net.zetetic:sqlcipher-android:4.13.0'
 
     implementation group: 'id.zelory', name: 'compressor', version: '3.0.1'
 

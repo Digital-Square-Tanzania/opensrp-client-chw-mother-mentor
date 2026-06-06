@@ -36,7 +36,7 @@ public class MotherMentorDaoTest extends MotherMentorDao {
     public void testIsRegisteredForMotherMentor() {
         Mockito.doReturn(database).when(repository).getReadableDatabase();
         boolean registered = MotherMentorDao.isRegisteredForMotherMentor("12345");
-        Mockito.verify(database).rawQuery(Mockito.contains("SELECT count(p.base_entity_id) count FROM ec_mothermentor_screening p WHERE p.base_entity_id = '12345' AND p.is_closed = 0"), Mockito.any());
+        Mockito.verify(database).rawQuery(Mockito.contains("SELECT count(p.base_entity_id) count FROM ec_mothermentor_enrollment p WHERE p.base_entity_id = '12345' AND p.is_closed = 0"), Mockito.any());
         Assert.assertFalse(registered);
     }
 
@@ -44,7 +44,7 @@ public class MotherMentorDaoTest extends MotherMentorDao {
     public void testGetMotherMentorTestDate() {
         Mockito.doReturn(database).when(repository).getReadableDatabase();
         Date testDate = MotherMentorDao.getMotherMentorTestDate("34233");
-        Mockito.verify(database).rawQuery(Mockito.contains("select mothermentor_test_date from ec_mothermentor_screening where base_entity_id = '34233'"), Mockito.any());
+        Mockito.verify(database).rawQuery(Mockito.contains("select mothermentor_test_date from ec_mothermentor_enrollment where base_entity_id = '34233'"), Mockito.any());
     }
 
 

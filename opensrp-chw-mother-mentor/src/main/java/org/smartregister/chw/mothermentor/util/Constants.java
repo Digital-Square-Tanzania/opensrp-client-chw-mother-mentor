@@ -17,6 +17,7 @@ public interface Constants {
 
     interface EVENT_TYPE {
         String MOTHER_MENTOR_SCREENING = "MotherMentor Screening";
+        String MOTHER_MENTOR_ENROLLMENT = "MotherMentor Enrollment";
         String MOTHER_MENTOR_SERVICES = "MotherMentor Services";
         String MOTHER_MENTOR_FOLLOW_UP_VISIT = "MotherMentor Follow-up Visit";
         String VOID_EVENT = "Void Event";
@@ -32,7 +33,8 @@ public interface Constants {
     }
 
     interface FORMS {
-        String MOTHER_MENTOR_SCREENING = "mothermentor_screening";
+        String MOTHER_MENTOR_SCREENING = "mothermentor_enrollment";
+        String MOTHER_MENTOR_ENROLLMENT = "mothermentor_enrollment";
         String MOTHERMENTOR_MOBILIZATION_SESSION = "mothermentor_mobilization_session";
         String MOTHERMENTOR_CONTACT_REGISTRATION = "mothermentor_contact_registration";
         String RECORD_MOTHERMENTOR_VISIT = "mothermentor_record_visit";
@@ -52,6 +54,7 @@ public interface Constants {
     }
 
     interface TABLES {
+        String MOTHERMENTOR_ENROLLMENT = "ec_mothermentor_enrollment";
         String MOTHERMENTOR_SCREENING = "ec_mothermentor_screening";
         String MOTHERMENTOR_CONTACTS = "ec_mothermentor_contacts";
         String MOTHERMENTOR_SERVICES = "ec_mothermentor_services";
@@ -75,7 +78,7 @@ public interface Constants {
     }
 
     interface CONFIGURATION {
-        String MOTHERMENTOR_ENROLLMENT = "mothermentor_screening";
+        String MOTHERMENTOR_ENROLLMENT = "mothermentor_enrollment";
     }
 
     interface MOTHERMENTOR_MEMBER_OBJECT {

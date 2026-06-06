@@ -138,7 +138,7 @@ public class MotherMentorUtil {
         Event closeMotherMentorEvent = new Gson().
                 fromJson(jsonString, Event.class);
 
-        closeMotherMentorEvent.setEntityType(Constants.TABLES.MOTHERMENTOR_SCREENING);
+        closeMotherMentorEvent.setEntityType(Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
         closeMotherMentorEvent.setEventType(Constants.EVENT_TYPE.CLOSE_MOTHER_MENTOR_SERVICE);
         closeMotherMentorEvent.setBaseEntityId(baseEntityId);
         closeMotherMentorEvent.setFormSubmissionId(JsonFormUtils.
