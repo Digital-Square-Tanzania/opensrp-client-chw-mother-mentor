@@ -71,7 +71,7 @@ public class MotherMentorDao extends AbstractDao {
     public static String getMotherMentorClientStatus(String baseEntityId) {
         String status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
         if (StringUtils.isBlank(status)) {
-            status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_SCREENING, baseEntityId);
+            status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
         }
 
         if (StringUtils.isBlank(status)) {
@@ -409,7 +409,7 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Date getLatestMotherMentorScreeningDate(String baseEntityId) {
-        Date screeningDate = getLatestEventDate(Constants.TABLES.MOTHERMENTOR_SCREENING, "base_entity_id", baseEntityId);
+        Date screeningDate = getLatestEventDate(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, "base_entity_id", baseEntityId);
         return screeningDate != null ? screeningDate : getLatestEventDate(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, "base_entity_id", baseEntityId);
     }
 
@@ -570,10 +570,10 @@ public class MotherMentorDao extends AbstractDao {
     public static boolean isRegisteredForMotherMentor(String baseEntityID) {
         String sql = "SELECT SUM(count) count FROM (" +
                 "SELECT count(p.base_entity_id) count FROM ec_mothermentor_enrollment p " +
-                "WHERE p.base_entity_id = '" + baseEntityID + "' AND p.is_closed = 0 AND ifnull(p.screening_status, '') != '-' " +
+                "WHERE p.base_entity_id = '" + baseEntityID + "' AND p.is_closed = 0 " +
                 "UNION ALL " +
-                "SELECT count(s.base_entity_id) count FROM ec_mothermentor_screening s " +
-                "WHERE s.base_entity_id = '" + baseEntityID + "' AND s.is_closed = 0 AND ifnull(s.screening_status, '') != '-' " +
+                "SELECT count(s.base_entity_id) count FROM ec_mothermentor_enrollment s " +
+                "WHERE s.base_entity_id = '" + baseEntityID + "' AND s.is_closed = 0 " +
                 ")";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
@@ -601,7 +601,7 @@ public class MotherMentorDao extends AbstractDao {
 
     public static MemberObject getMember(String baseEntityID) {
         MemberObject memberObject = getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
-        return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_SCREENING);
+        return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
     }
 
     private static MemberObject getMember(String baseEntityID, String tableName) {
