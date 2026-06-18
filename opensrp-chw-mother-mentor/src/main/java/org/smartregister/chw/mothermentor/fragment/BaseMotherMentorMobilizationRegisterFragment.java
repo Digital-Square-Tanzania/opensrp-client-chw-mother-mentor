@@ -202,7 +202,7 @@ public class BaseMotherMentorMobilizationRegisterFragment extends BaseMotherMent
             syncButton.setOnClickListener(view -> {
                 JSONObject form;
                 try {
-                    form = (new FormUtils()).getFormJsonFromRepositoryOrAssets(requireActivity(), Constants.FORMS.MOTHERMENTOR_MOBILIZATION_SESSION);
+                    form = (new FormUtils()).getFormJson(requireActivity(), Constants.FORMS.MOTHERMENTOR_MOBILIZATION_SESSION);
                     if (form != null) {
                         String randomId = generateRandomUUIDString();
                         form.put(ENTITY_ID, randomId);

@@ -113,6 +113,8 @@ public class MotherMentorJsonFormUtils extends org.smartregister.util.JsonFormUt
             encounter_type = Constants.TABLES.MOTHERMENTOR_SERVICES;
         } else if (Constants.EVENT_TYPE.MOTHERMENTOR_CONTACTS.equals(encounter_type)) {
             encounter_type = Constants.TABLES.MOTHERMENTOR_CONTACTS;
+        } else if (Constants.EVENT_TYPE.MOTHER_MENTOR_MOBILIZATION.equals(encounter_type)) {
+            encounter_type = Constants.TABLES.MOTHERMENTOR_MOBILIZATION;
         }
         return org.smartregister.util.JsonFormUtils.createEvent(fields, getJSONObject(jsonForm, METADATA), formTag(allSharedPreferences), entityId, getString(jsonForm, ENCOUNTER_TYPE), encounter_type);
     }

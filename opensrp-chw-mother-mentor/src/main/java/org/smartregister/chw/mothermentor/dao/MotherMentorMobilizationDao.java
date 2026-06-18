@@ -29,16 +29,64 @@ public class MotherMentorMobilizationDao extends AbstractDao {
         updateDB(sql);
     }
 
+    public static void saveMobilizationSession(String baseEntityId,
+                                               String shTarehe,
+                                               String shAina,
+                                               String shAinaOther,
+                                               String gps,
+                                               String shMada,
+                                               String shMadaOther,
+                                               String elimM,
+                                               String elimF,
+                                               String elimTotal,
+                                               String maoni,
+                                               long lastInteractedWith) {
+        String sql = "INSERT INTO ec_mothermentor_mobilization " +
+                "           (id, base_entity_id, sh_tarehe, sh_aina, sh_aina_other, gps, sh_mada, sh_mada_other, elim_m, elim_f, elim_total, maoni, last_interacted_with) " +
+                "           VALUES (" +
+                sqlValue(baseEntityId) + ", " +
+                sqlValue(baseEntityId) + ", " +
+                sqlValue(shTarehe) + ", " +
+                sqlValue(shAina) + ", " +
+                sqlValue(shAinaOther) + ", " +
+                sqlValue(gps) + ", " +
+                sqlValue(shMada) + ", " +
+                sqlValue(shMadaOther) + ", " +
+                sqlValue(elimM) + ", " +
+                sqlValue(elimF) + ", " +
+                sqlValue(elimTotal) + ", " +
+                sqlValue(maoni) + ", " +
+                lastInteractedWith + ") " +
+                " ON CONFLICT (id) DO UPDATE SET " +
+                "base_entity_id = EXCLUDED.base_entity_id, " +
+                "sh_tarehe = EXCLUDED.sh_tarehe, " +
+                "sh_aina = EXCLUDED.sh_aina, " +
+                "sh_aina_other = EXCLUDED.sh_aina_other, " +
+                "gps = EXCLUDED.gps, " +
+                "sh_mada = EXCLUDED.sh_mada, " +
+                "sh_mada_other = EXCLUDED.sh_mada_other, " +
+                "elim_m = EXCLUDED.elim_m, " +
+                "elim_f = EXCLUDED.elim_f, " +
+                "elim_total = EXCLUDED.elim_total, " +
+                "maoni = EXCLUDED.maoni, " +
+                "last_interacted_with = EXCLUDED.last_interacted_with;";
+
+        updateDB(sql);
+    }
+
     public static List<MotherMentorMobilizationModel> getMobilizationSessions() {
-        String sql = "SELECT *,  substr(mobilization_date, 7, 4)||'-'|| " +
-                "                substr(mobilization_date, 4,2)||'-'|| " +
-                "                substr(mobilization_date, 1,2) as orderDate FROM " + Constants.TABLES.MOTHERMENTOR_MOBILIZATION + " ORDER BY julianday(orderDate)  DESC";
+        String sql = "SELECT *, " +
+                "CASE WHEN sh_tarehe LIKE '____-__-__' THEN sh_tarehe " +
+                "ELSE substr(sh_tarehe, 7, 4)||'-'||substr(sh_tarehe, 4, 2)||'-'||substr(sh_tarehe, 1, 2) END as orderDate " +
+                "FROM " + Constants.TABLES.MOTHERMENTOR_MOBILIZATION + " " +
+                "WHERE sh_tarehe IS NOT NULL AND sh_tarehe != '' " +
+                "ORDER BY julianday(orderDate) DESC, last_interacted_with DESC";
 
         @SuppressLint("Range") DataMap<MotherMentorMobilizationModel> dataMap = cursor -> {
             MotherMentorMobilizationModel tbMotherMentorMobilizationModel = new MotherMentorMobilizationModel();
             tbMotherMentorMobilizationModel.setSessionId(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.BASE_ENTITY_ID)));
-            tbMotherMentorMobilizationModel.setSessionDate(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.MOBILIZATION_DATE)));
-            tbMotherMentorMobilizationModel.setSessionParticipants(computeSessionParticipants(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.FEMALE_CLIENTS_REACHED)), cursor.getString(cursor.getColumnIndex(DBConstants.KEY.MALE_CLIENTS_REACHED))));
+            tbMotherMentorMobilizationModel.setSessionDate(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_TAREHE)));
+            tbMotherMentorMobilizationModel.setSessionParticipants(computeSessionParticipants(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_F)), cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_M))));
             return tbMotherMentorMobilizationModel;
         };
 
@@ -68,5 +116,8 @@ public class MotherMentorMobilizationDao extends AbstractDao {
         }
     }
 
+    private static String sqlValue(String value) {
+        return value == null ? "NULL" : "'" + value.replace("'", "''") + "'";
+    }
 
 }

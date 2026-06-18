@@ -1,14 +1,14 @@
 ---
-name: step1_other_mobilization_area
-description: other_mobilization_area
+name: step1_sh_aina_other
+description: show activity type specify field
 priority: 1
-condition: "step1_mobilization_area.contains('other')"
+condition: "step1_sh_aina != null && step1_sh_aina.equalsIgnoreCase('nyingine')"
 actions:
-  - "isRelevant = true "
+  - "isRelevant = true"
 ---
-name: step1_other_population_type
-description: other_population_type
+name: step1_sh_mada_other
+description: show education topic specify field
 priority: 1
-condition: "step1_mobilization_area.contains('other')"
+condition: "step1_sh_mada != null && step1_sh_mada.contains('nyingine')"
 actions:
-  - "isRelevant = true "
+  - "isRelevant = true"
