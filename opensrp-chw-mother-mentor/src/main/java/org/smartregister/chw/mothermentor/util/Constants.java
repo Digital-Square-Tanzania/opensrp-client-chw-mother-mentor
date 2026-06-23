@@ -29,6 +29,7 @@ public interface Constants {
         String MOTHER_MENTOR_CLIENT_OBSERVATION = "MOTHERMENTOR Observation Results";
         String MOTHERMENTOR_CONTACTS = "MotherMentor Contact Registration";
         String RECORD_LEPROSY_TREATMENT_START_DATE = "Record MotherMentor Treatment Start Date";
+        String MAMA_KINARA_HOUSEHOLD_ENROLMENT = "mama_kinara_household_enrolment";
         String MOTHER_MENTOR_ENROLL_IIT = "Mother Mentor Enroll IIT";
         String MOTHER_MENTOR_ENROLL_PARTNER = "Mother Mentor Enroll Partner";
         String MOTHER_MENTOR_ENROLL_CHILD_EID = "Mother Mentor Enroll Child Eid";
@@ -41,6 +42,7 @@ public interface Constants {
         String MOTHERMENTOR_ENROLL_IIT = "mothermentor_enroll_iit";
         String MOTHERMENTOR_ENROLL_PARTNER = "mothermentor_enroll_partner";
         String MOTHERMENTOR_ENROLL_CHILD_EID = "mothermentor_enroll_child_eid";
+        String MAMA_KINARA_HOUSEHOLD_ENROLMENT = "mama_kinara_household_enrolment";
         String MOTHERMENTOR_MOBILIZATION_SESSION = "mothermentor_mobilization_session";
         String MOTHERMENTOR_CONTACT_REGISTRATION = "mothermentor_contact_registration";
         String RECORD_MOTHERMENTOR_VISIT = "mothermentor_record_visit";
@@ -68,6 +70,7 @@ public interface Constants {
         String MOTHERMENTOR_ENROLL_IIT = "ec_mothermentor_enroll_it";
         String MOTHERMENTOR_ENROLL_PARTNER = "ec_mothermentor_enroll_partner";
         String MOTHERMENTOR_ENROLL_CHILD_EID = "ec_mothermentor_enroll_child_eid";
+        String MAMA_KINARA_HOUSEHOLD_ENROLMENT = "ec_mothermentor_household_enrolment";
     }
 
     interface ACTIVITY_PAYLOAD {
