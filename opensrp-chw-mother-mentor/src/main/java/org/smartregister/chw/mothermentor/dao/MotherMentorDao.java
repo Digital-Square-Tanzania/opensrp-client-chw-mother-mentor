@@ -585,6 +585,20 @@ public class MotherMentorDao extends AbstractDao {
         return res.get(0) > 0;
     }
 
+    public static boolean isHouseholdEnrolledForMotherMentor(String householdBaseEntityId) {
+        String sql = "SELECT count(p.base_entity_id) count FROM " + Constants.TABLES.MAMA_KINARA_HOUSEHOLD_ENROLMENT + " p " +
+                "WHERE p.base_entity_id = '" + householdBaseEntityId + "' AND p.is_closed = 0 AND p.consent = 'ndiyo'";
+
+        DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
+
+        List<Integer> res = readData(sql, dataMap);
+        if (res == null || res.isEmpty()) {
+            return false;
+        }
+
+        return res.get(0) > 0;
+    }
+
     public static Integer getMotherMentorFamilyMembersCount(String familyBaseEntityId) {
         String sql = "SELECT count(emc.base_entity_id) count FROM ec_mothermentor_enrollment emc " +
                 "INNER Join ec_family_member fm on fm.base_entity_id = emc.base_entity_id " +
