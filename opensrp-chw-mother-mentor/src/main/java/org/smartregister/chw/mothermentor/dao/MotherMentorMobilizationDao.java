@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.dao;
 
 
 import android.annotation.SuppressLint;
+import android.database.Cursor;
 
 import org.smartregister.chw.mothermentor.model.MotherMentorMobilizationModel;
 import org.smartregister.chw.mothermentor.util.Constants;
@@ -76,17 +77,21 @@ public class MotherMentorMobilizationDao extends AbstractDao {
 
     public static List<MotherMentorMobilizationModel> getMobilizationSessions() {
         String sql = "SELECT *, " +
-                "CASE WHEN sh_tarehe LIKE '____-__-__' THEN sh_tarehe " +
-                "ELSE substr(sh_tarehe, 7, 4)||'-'||substr(sh_tarehe, 4, 2)||'-'||substr(sh_tarehe, 1, 2) END as orderDate " +
+                "CASE WHEN COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')) LIKE '____-__-__' THEN COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')) " +
+                "ELSE substr(COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')), 7, 4)||'-'||substr(COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')), 4, 2)||'-'||substr(COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')), 1, 2) END as orderDate " +
                 "FROM " + Constants.TABLES.MOTHERMENTOR_MOBILIZATION + " " +
-                "WHERE sh_tarehe IS NOT NULL AND sh_tarehe != '' " +
+                "WHERE COALESCE(NULLIF(sh_tarehe, ''), NULLIF(mobilization_date, '')) IS NOT NULL " +
                 "ORDER BY julianday(orderDate) DESC, last_interacted_with DESC";
 
         @SuppressLint("Range") DataMap<MotherMentorMobilizationModel> dataMap = cursor -> {
             MotherMentorMobilizationModel tbMotherMentorMobilizationModel = new MotherMentorMobilizationModel();
             tbMotherMentorMobilizationModel.setSessionId(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.BASE_ENTITY_ID)));
-            tbMotherMentorMobilizationModel.setSessionDate(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_TAREHE)));
-            tbMotherMentorMobilizationModel.setSessionParticipants(computeSessionParticipants(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_F)), cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_M))));
+            tbMotherMentorMobilizationModel.setSessionDate(firstNonBlank(cursorString(cursor, DBConstants.KEY.SH_TAREHE), cursorString(cursor, DBConstants.KEY.MOBILIZATION_DATE)));
+            tbMotherMentorMobilizationModel.setSessionParticipants(computeSessionParticipants(
+                    firstNonBlank(cursorString(cursor, DBConstants.KEY.ELIM_F), cursorString(cursor, DBConstants.KEY.FEMALE_CLIENTS_REACHED)),
+                    firstNonBlank(cursorString(cursor, DBConstants.KEY.ELIM_M), cursorString(cursor, DBConstants.KEY.MALE_CLIENTS_REACHED))));
+            tbMotherMentorMobilizationModel.setActivityType(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_AINA)));
+            tbMotherMentorMobilizationModel.setEducationTopics(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_MADA)));
             return tbMotherMentorMobilizationModel;
         };
 
@@ -94,6 +99,34 @@ public class MotherMentorMobilizationDao extends AbstractDao {
         if (res == null || res.isEmpty())
             return null;
         return res;
+    }
+
+    public static MotherMentorMobilizationModel getMobilizationSession(String sessionId) {
+        String sql = "SELECT * FROM " + Constants.TABLES.MOTHERMENTOR_MOBILIZATION +
+                " WHERE base_entity_id = '" + sessionId.replace("'", "''") + "' OR id = '" + sessionId.replace("'", "''") + "' LIMIT 1";
+
+        DataMap<MotherMentorMobilizationModel> dataMap = cursor -> {
+            MotherMentorMobilizationModel model = new MotherMentorMobilizationModel();
+            model.setSessionId(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.BASE_ENTITY_ID)));
+            model.setSessionDate(firstNonBlank(cursorString(cursor, DBConstants.KEY.SH_TAREHE), cursorString(cursor, DBConstants.KEY.MOBILIZATION_DATE)));
+            model.setActivityType(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_AINA)));
+            model.setActivityTypeOther(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_AINA_OTHER)));
+            model.setGps(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.GPS)));
+            model.setEducationTopics(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_MADA)));
+            model.setEducationTopicsOther(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.SH_MADA_OTHER)));
+            model.setMenEducated(firstNonBlank(cursorString(cursor, DBConstants.KEY.ELIM_M), cursorString(cursor, DBConstants.KEY.MALE_CLIENTS_REACHED)));
+            model.setWomenEducated(firstNonBlank(cursorString(cursor, DBConstants.KEY.ELIM_F), cursorString(cursor, DBConstants.KEY.FEMALE_CLIENTS_REACHED)));
+            model.setTotalEducated(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_TOTAL)));
+            model.setComments(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.MAONI)));
+            model.setSessionParticipants(computeSessionParticipants(model.getWomenEducated(), model.getMenEducated()));
+            return model;
+        };
+
+        List<MotherMentorMobilizationModel> res = readData(sql, dataMap);
+        if (res == null || res.isEmpty()) {
+            return null;
+        }
+        return res.get(0);
     }
 
     private static String computeSessionParticipants(String femaleParticipants, String maleParticipants) {
@@ -114,6 +147,15 @@ public class MotherMentorMobilizationDao extends AbstractDao {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    private static String cursorString(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return index == -1 ? null : cursor.getString(index);
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        return first == null || first.trim().isEmpty() ? second : first;
     }
 
     private static String sqlValue(String value) {

@@ -108,6 +108,32 @@
     <string name="mobilziation_session_date">Date: %s</string>
 
     <string name="mothermentor_sessions">Mother Mentor Sessions</string>
+    <string name="mothermentor_mobilization_session_details">Mother Mentor Session Details</string>
+    <string name="mothermentor_activity_date">Activity date</string>
+    <string name="mothermentor_activity_type">Activity type</string>
+    <string name="mothermentor_activity_type_other">Specify activity type</string>
+    <string name="mothermentor_recorded_location">Recorded location</string>
+    <string name="mothermentor_education_topics_provided">Education topics provided</string>
+    <string name="mothermentor_education_topics_other">Specify other topic</string>
+    <string name="mothermentor_men_educated">Number of men educated</string>
+    <string name="mothermentor_women_educated">Number of women educated</string>
+    <string name="mothermentor_total_educated">Total community members educated</string>
+    <string name="mothermentor_comments">Comments</string>
+    <string name="mothermentor_activity_type_baraza">Community meeting</string>
+    <string name="mothermentor_activity_type_anc">ANC group meeting</string>
+    <string name="mothermentor_activity_type_dini">Religious gathering</string>
+    <string name="mothermentor_activity_type_kampeni">Mobilization campaign</string>
+    <string name="mothermentor_activity_type_shule">School activity</string>
+    <string name="mothermentor_other_specify">Other (specify)</string>
+    <string name="mothermentor_topic_pmtct">Prevention of mother-to-child transmission of HIV, syphilis and hepatitis B (PMTCT)</string>
+    <string name="mothermentor_topic_hiv">HIV and AIDS</string>
+    <string name="mothermentor_topic_syphilis">Syphilis</string>
+    <string name="mothermentor_topic_hepb">Hepatitis B</string>
+    <string name="mothermentor_topic_fp">Family planning</string>
+    <string name="mothermentor_topic_nutrition">Maternal and child nutrition</string>
+    <string name="mothermentor_topic_tb">Tuberculosis</string>
+    <string name="mothermentor_topic_gbv">Gender-based violence</string>
+    <string name="no_record">No record</string>
 
     <string name="mothermentor_mobilization">Mobilization</string>
     <string name="mothermentor_contact">Contacts</string>

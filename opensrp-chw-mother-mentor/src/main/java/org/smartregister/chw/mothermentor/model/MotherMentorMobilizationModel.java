@@ -5,6 +5,15 @@ public class MotherMentorMobilizationModel {
     private String sessionId;
     private String sessionParticipants;
     private String condomsIssued;
+    private String activityType;
+    private String activityTypeOther;
+    private String gps;
+    private String educationTopics;
+    private String educationTopicsOther;
+    private String menEducated;
+    private String womenEducated;
+    private String totalEducated;
+    private String comments;
 
     public MotherMentorMobilizationModel() {
     }
@@ -47,5 +56,77 @@ public class MotherMentorMobilizationModel {
 
     public void setCondomsIssued(String condomsIssued) {
         this.condomsIssued = condomsIssued;
+    }
+
+    public String getActivityType() {
+        return activityType;
+    }
+
+    public void setActivityType(String activityType) {
+        this.activityType = activityType;
+    }
+
+    public String getActivityTypeOther() {
+        return activityTypeOther;
+    }
+
+    public void setActivityTypeOther(String activityTypeOther) {
+        this.activityTypeOther = activityTypeOther;
+    }
+
+    public String getGps() {
+        return gps;
+    }
+
+    public void setGps(String gps) {
+        this.gps = gps;
+    }
+
+    public String getEducationTopics() {
+        return educationTopics;
+    }
+
+    public void setEducationTopics(String educationTopics) {
+        this.educationTopics = educationTopics;
+    }
+
+    public String getEducationTopicsOther() {
+        return educationTopicsOther;
+    }
+
+    public void setEducationTopicsOther(String educationTopicsOther) {
+        this.educationTopicsOther = educationTopicsOther;
+    }
+
+    public String getMenEducated() {
+        return menEducated;
+    }
+
+    public void setMenEducated(String menEducated) {
+        this.menEducated = menEducated;
+    }
+
+    public String getWomenEducated() {
+        return womenEducated;
+    }
+
+    public void setWomenEducated(String womenEducated) {
+        this.womenEducated = womenEducated;
+    }
+
+    public String getTotalEducated() {
+        return totalEducated;
+    }
+
+    public void setTotalEducated(String totalEducated) {
+        this.totalEducated = totalEducated;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

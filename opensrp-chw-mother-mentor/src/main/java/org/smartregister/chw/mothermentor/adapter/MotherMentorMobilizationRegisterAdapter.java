@@ -1,5 +1,6 @@
 package org.smartregister.chw.mothermentor.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.smartregister.chw.mothermentor.R;
+import org.smartregister.chw.mothermentor.activity.MotherMentorMobilizationSessionDetailsActivity;
 import org.smartregister.chw.mothermentor.model.MotherMentorMobilizationModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MotherMentorMobilizationRegisterAdapter extends RecyclerView.Adapter<MotherMentorMobilizationRegisterAdapter.MotherMentorMobilzationViewHolder> {
@@ -21,7 +24,7 @@ public class MotherMentorMobilizationRegisterAdapter extends RecyclerView.Adapte
 
 
     public MotherMentorMobilizationRegisterAdapter(List<MotherMentorMobilizationModel> tbMotherMentorMobilizationModels, Context context) {
-        this.tbMotherMentorMobilizationModels = tbMotherMentorMobilizationModels;
+        this.tbMotherMentorMobilizationModels = new ArrayList<>(tbMotherMentorMobilizationModels);
         this.context = context;
     }
 
@@ -43,6 +46,12 @@ public class MotherMentorMobilizationRegisterAdapter extends RecyclerView.Adapte
         return tbMotherMentorMobilizationModels.size();
     }
 
+    public void updateData(List<MotherMentorMobilizationModel> mobilizationModels) {
+        tbMotherMentorMobilizationModels.clear();
+        tbMotherMentorMobilizationModels.addAll(mobilizationModels);
+        notifyDataSetChanged();
+    }
+
     protected class MotherMentorMobilzationViewHolder extends RecyclerView.ViewHolder {
         public TextView mobilizationSessionDate;
         public TextView mobilizationSessionParticipants;
@@ -60,6 +69,7 @@ public class MotherMentorMobilizationRegisterAdapter extends RecyclerView.Adapte
             mobilizationSessionDate.setText(context.getString(R.string.mobilziation_session_date, tbMotherMentorMobilizationModel.getSessionDate()));
             mobilizationSessionParticipants.setText(context.getString(R.string.mobilization_session_participants, tbMotherMentorMobilizationModel.getSessionParticipants()));
 //            mobilizationSessionCondomsIssued.setText(context.getString(R.string.mobilization_condoms_issued, tbMotherMentorMobilizationModel.getCondomsIssued()));
+            itemView.setOnClickListener(view -> MotherMentorMobilizationSessionDetailsActivity.startMe((Activity) context, tbMotherMentorMobilizationModel.getSessionId()));
         }
     }
 }
