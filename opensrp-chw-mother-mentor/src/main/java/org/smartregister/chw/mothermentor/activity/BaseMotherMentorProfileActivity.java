@@ -91,6 +91,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     private TextView tvFamilyStatus;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
     private ProgressBar progressBar;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public static void startProfileActivity(Activity activity, String baseEntityId) {
         Intent intent = new Intent(activity, BaseMotherMentorProfileActivity.class);
@@ -182,6 +183,10 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
 
         imageRenderHelper = new ImageRenderHelper(this);
         memberObject = getMemberObject(baseEntityId);
+        if (memberObject == null) {
+            handleMissingMemberObject(baseEntityId);
+            return;
+        }
         initializePresenter();
         profilePresenter.fillProfileData(memberObject);
         setupViews();
@@ -192,17 +197,26 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     protected void onResume() {
         super.onResume();
         MotherMentorDao.closeTbNegativeClients();
-        new Handler(Looper.getMainLooper()).postDelayed(this::setupViews, 200);
+        if (memberObject == null || isFinishing()) {
+            return;
+        }
+        handler.postDelayed(this::setupViews, 200);
     }
 
     @Override
     protected void onResumption() {
         super.onResumption();
+        if (memberObject == null || isFinishing()) {
+            return;
+        }
         setupViews();
     }
 
     @Override
     protected void setupViews() {
+        if (memberObject == null || isFinishing()) {
+            return;
+        }
         initializeFloatingMenu();
         setupButtons();
     }
@@ -274,12 +288,21 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     }
 
     public void initializeFloatingMenu() {
+        if (memberObject == null) {
+            return;
+        }
         if (StringUtils.isNotBlank(memberObject.getPhoneNumber())) {
             baseMotherMentorFloatingMenu = new BaseMotherMentorFloatingMenu(this, memberObject);
             baseMotherMentorFloatingMenu.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
             LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
             addContentView(baseMotherMentorFloatingMenu, linearLayoutParams);
         }
+    }
+
+    protected void handleMissingMemberObject(@Nullable String baseEntityId) {
+        Timber.w("Unable to open Mother Mentor profile. No member found for baseEntityId=%s", baseEntityId);
+        Toast.makeText(getApplicationContext(), R.string.error_unable_to_open_profile, Toast.LENGTH_SHORT).show();
+        finish();
     }
 
 
@@ -333,6 +356,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
 
     @Override
     protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
 

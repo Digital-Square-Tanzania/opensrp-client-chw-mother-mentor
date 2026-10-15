@@ -34,7 +34,7 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
 
     @Override
     public String getMainCondition() {
-        return " "+getMainTable()+".is_closed = 0 AND screening_status IS NULL";
+        return " "+getMainTable()+".is_closed = 0";
     }
 
     @Override

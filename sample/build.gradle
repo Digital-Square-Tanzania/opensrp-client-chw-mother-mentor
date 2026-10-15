@@ -149,7 +149,7 @@ dependencies {
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
-    implementation 'net.zetetic:sqlcipher-android:4.5.4'
+    implementation 'net.zetetic:sqlcipher-android:4.13.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'

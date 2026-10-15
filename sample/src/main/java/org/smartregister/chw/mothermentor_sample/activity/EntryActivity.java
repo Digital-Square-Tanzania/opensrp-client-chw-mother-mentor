@@ -68,7 +68,7 @@ public class EntryActivity extends SecuredActivity implements View.OnClickListen
         setSupportActionBar(toolbar);
 
         findViewById(R.id.mothermentor_activity).setOnClickListener(this);
-        findViewById(R.id.mothermentor_screening).setOnClickListener(this);
+        findViewById(R.id.mothermentor_enrollment).setOnClickListener(this);
         findViewById(R.id.mothermentor_visit_record).setOnClickListener(this);
         findViewById(R.id.mothermentor_mobilization).setOnClickListener(this);
         findViewById(R.id.mothermentor_observation_results).setOnClickListener(this);
@@ -120,9 +120,9 @@ public class EntryActivity extends SecuredActivity implements View.OnClickListen
             case R.id.mothermentor_contact_visit:
                 MotherMentorServiceActivity.startMotherMentorVisitActivity(this, "98765", false);
                 break;
-            case R.id.mothermentor_screening:
+            case R.id.mothermentor_enrollment:
                 try {
-                    startForm("mothermentor_screening");
+                    startForm("mothermentor_enrollment");
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

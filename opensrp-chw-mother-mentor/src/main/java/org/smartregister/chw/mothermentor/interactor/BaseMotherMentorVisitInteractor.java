@@ -378,6 +378,6 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
     }
 
     protected String getTableName() {
-        return Constants.TABLES.MOTHERMENTOR_SCREENING;
+        return Constants.TABLES.MOTHERMENTOR_ENROLLMENT;
     }
 }

@@ -2,6 +2,7 @@
     <string name="app_name" translatable="false">mothermentor</string>
     <string name="error_unable_to_start_form">An error occurred when starting the form</string>
     <string name="error_unable_to_save_form">An error occurred when saving the form</string>
+    <string name="error_unable_to_open_profile">Unable to open profile</string>
     <string name="mothermentor">Mother Mentor</string>
     <string name="add_member">Add Member</string>
     <string name="sort">Sort</string>
@@ -102,14 +103,40 @@
     <string name="date">Date:</string>
     <string name="issued_condoms">Condoms Issued:</string>
 
-    <string name="mobilization_session_participants">Participants: %s</string>
+    <string name="mobilization_session_participants">Educated: %s</string>
     <string name="mobilization_condoms_issued">Condoms Issued: %s</string>
     <string name="mobilziation_session_date">Date: %s</string>
 
     <string name="mothermentor_sessions">Mother Mentor Sessions</string>
+    <string name="mothermentor_mobilization_session_details">Mother Mentor Session Details</string>
+    <string name="mothermentor_activity_date">Activity date</string>
+    <string name="mothermentor_activity_type">Activity type</string>
+    <string name="mothermentor_activity_type_other">Specify activity type</string>
+    <string name="mothermentor_recorded_location">Recorded location</string>
+    <string name="mothermentor_education_topics_provided">Education topics provided</string>
+    <string name="mothermentor_education_topics_other">Specify other topic</string>
+    <string name="mothermentor_men_educated">Number of men educated</string>
+    <string name="mothermentor_women_educated">Number of women educated</string>
+    <string name="mothermentor_total_educated">Total community members educated</string>
+    <string name="mothermentor_comments">Comments</string>
+    <string name="mothermentor_activity_type_baraza">Community meeting</string>
+    <string name="mothermentor_activity_type_anc">ANC group meeting</string>
+    <string name="mothermentor_activity_type_dini">Religious gathering</string>
+    <string name="mothermentor_activity_type_kampeni">Mobilization campaign</string>
+    <string name="mothermentor_activity_type_shule">School activity</string>
+    <string name="mothermentor_other_specify">Other (specify)</string>
+    <string name="mothermentor_topic_pmtct">Prevention of mother-to-child transmission of HIV, syphilis and hepatitis B (PMTCT)</string>
+    <string name="mothermentor_topic_hiv">HIV and AIDS</string>
+    <string name="mothermentor_topic_syphilis">Syphilis</string>
+    <string name="mothermentor_topic_hepb">Hepatitis B</string>
+    <string name="mothermentor_topic_fp">Family planning</string>
+    <string name="mothermentor_topic_nutrition">Maternal and child nutrition</string>
+    <string name="mothermentor_topic_tb">Tuberculosis</string>
+    <string name="mothermentor_topic_gbv">Gender-based violence</string>
+    <string name="no_record">No record</string>
 
     <string name="mothermentor_mobilization">Mobilization</string>
-    <string name="mothermentor_contact">Contacts</string>
+    <string name="mothermentor_contact">Household</string>
     <string name="usajili_wa_contacts">Contacts Registration</string>
     <string name="mothermentor_issue_referral_action">Issue</string>
     <string name="mothermentor_pending_issuing_of_referral">Pending Issuing of Referral</string>
