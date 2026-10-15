@@ -1,0 +1,7 @@
+---
+name: step1_elim_total
+description: total educated community members
+priority: 1
+condition: "step1_elim_m != null && step1_elim_m != '' && step1_elim_f != null && step1_elim_f != ''"
+actions:
+  - "calculation = Integer.parseInt(step1_elim_m) + Integer.parseInt(step1_elim_f)"

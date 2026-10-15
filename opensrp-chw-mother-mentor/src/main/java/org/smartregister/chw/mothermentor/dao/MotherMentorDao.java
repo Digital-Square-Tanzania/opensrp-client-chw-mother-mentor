@@ -618,6 +618,62 @@ public class MotherMentorDao extends AbstractDao {
         return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
     }
 
+    public static MemberObject getSecondaryEnrollmentMember(String baseEntityID) {
+        MemberObject memberObject = getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_IIT);
+        if (memberObject != null) {
+            return memberObject;
+        }
+
+        memberObject = getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER);
+        if (memberObject != null) {
+            return memberObject;
+        }
+
+        return getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
+    }
+
+    private static MemberObject getSecondaryEnrollmentMember(String baseEntityID, String tableName) {
+        String sql = "select " +
+                "m.base_entity_id , " +
+                "m.unique_id , " +
+                "m.relational_id , " +
+                "f.base_entity_id as family_base_entity_id, " +
+                "m.dob , " +
+                "m.first_name , " +
+                "m.middle_name , " +
+                "m.last_name , " +
+                "m.gender , " +
+                "m.marital_status , " +
+                "m.phone_number , " +
+                "m.other_phone_number , " +
+                "f.first_name as family_name ," +
+                "f.primary_caregiver , " +
+                "f.family_head , " +
+                "f.village_town ," +
+                "fh.first_name as family_head_first_name , " +
+                "fh.middle_name as family_head_middle_name , " +
+                "fh.last_name as family_head_last_name, " +
+                "fh.phone_number as family_head_phone_number ,  " +
+                "pcg.first_name as pcg_first_name , " +
+                "pcg.last_name as pcg_last_name , " +
+                "pcg.middle_name as pcg_middle_name , " +
+                "pcg.phone_number as  pcg_phone_number , " +
+                "mr.* " +
+                "from ec_family_member m " +
+                "inner join ec_family f on m.relational_id = f.base_entity_id " +
+                "inner join " + tableName + " mr on mr.base_entity_id = m.base_entity_id " +
+                "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
+                "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
+                "where mr.is_closed = 0 AND m.is_closed = 0 AND f.is_closed = 0 " +
+                "AND m.base_entity_id = '" + baseEntityID + "' " +
+                "ORDER BY mr.last_interacted_with DESC LIMIT 1";
+        List<MemberObject> res = readData(sql, memberObjectMap);
+        if (res == null || res.isEmpty())
+            return null;
+
+        return res.get(0);
+    }
+
     private static MemberObject getMember(String baseEntityID, String tableName) {
         String sql = "select " +
                 "m.base_entity_id , " +

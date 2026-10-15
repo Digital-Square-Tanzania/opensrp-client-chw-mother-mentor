@@ -43,256 +43,87 @@
   },
   "global": {},
   "step1": {
-    "title": "Uhamasishaji wa Kifua Kikuu na Ukoma",
+    "title": "Shughuli mpya",
     "fields": [
       {
-        "key": "mobilization_date",
+        "key": "sh_tarehe",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "mobilization_date",
+        "openmrs_entity_id": "sh_tarehe",
         "type": "date_picker",
-        "hint": "Tarehe ya uhamasishaji",
+        "hint": "Tarehe ya shughuli",
         "expanded": false,
         "max_date": "today",
-          "v_required": {
-          "value": "true",
-          "err": "Tafadhali chagua jibu"
-        }
-      },
-      {
-        "key": "mobilization_topics",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "mobilization_topics",
-        "type": "check_box",
-        "label": "Aina ya uhamasishaji uliotolewa",
-        "label_text_style": "bold",
-        "text_color": "#000000",
-        "combine_checkbox_option_values": "true",
-        "options": [
-          {
-            "key": "tb",
-            "text": "Kifua Kikuu (TB)",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "tb"
-          },
-          {
-            "key": "mother_mentor",
-            "text": "Ukoma",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "mother_mentor"
-          }
-        ],
         "v_required": {
           "value": "true",
-          "err": "Tafadhali taja"
+          "err": "Tafadhali chagua tarehe ya shughuli"
         }
       },
       {
-        "key": "mobilization_area",
+        "key": "sh_aina",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "mobilization_area",
-        "label": "Eneo la uhamasishaji",
-        "text_color": "#000000",
+        "openmrs_entity_id": "sh_aina",
         "type": "native_radio",
+        "label": "Aina ya shughuli",
+        "text_color": "#000000",
         "options": [
           {
-            "key": "addo_pharmacy",
-            "text": "Duka la Dawa Muhimu (DLDLM)",
-            "openmrs_entity_parent": "",
+            "key": "baraza",
+            "text": "Baraza la wananchi",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "addo_pharmacy"
+            "openmrs_entity_id": "baraza"
           },
           {
-            "key": "traditional_healer",
-            "text": "Waganga wa Jadi",
-            "openmrs_entity_parent": "",
+            "key": "anc",
+            "text": "Mkutano wa vikundi vya ANC",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "traditional_healer"
+            "openmrs_entity_id": "anc"
           },
           {
-            "key": "mines",
-            "text": "Migodi",
-            "openmrs_entity_parent": "",
+            "key": "dini",
+            "text": "Mkusanyiko wa kidini",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "mines"
+            "openmrs_entity_id": "dini"
           },
           {
-            "key": "public_meeting",
-            "text": "Mkutano wa hadhara",
-            "openmrs_entity_parent": "",
+            "key": "kampeni",
+            "text": "Kampeni ya uhamasishaji",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "public_meeting"
+            "openmrs_entity_id": "kampeni"
           },
           {
-            "key": "prisons",
-            "text": "Magereza",
-            "openmrs_entity_parent": "",
+            "key": "shule",
+            "text": "Shughuli ya shule",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "prisons"
+            "openmrs_entity_id": "shule"
           },
           {
-            "key": "church_mosque",
-            "text": "Kanisani/Msikiti",
-            "openmrs_entity_parent": "",
+            "key": "nyingine",
+            "text": "Nyingine (taja)",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "church_mosque"
-          },
-          {
-            "key": "schools_college",
-            "text": "Shule/Chuo",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "schools_college"
-          },
-          {
-            "key": "market",
-            "text": "Sokoni",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "market"
-          },
-          {
-            "key": "drug_house",
-            "text": "Makazi ya Waraibu",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "drug_house"
-          },
-          {
-            "key": "elderly_camp",
-            "text": "Kambi/Nyumba ya Wazee",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "elderly_camp"
-          },
-          {
-            "key": "ovc",
-            "text": "Makazi ya Watoto Yatima",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "ovc"
-          },
-          {
-            "key": "nomadic_population",
-            "text": "Wafugaji wanaohama",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "nomadic_population"
-          },
-          {
-            "key": "health_facility",
-            "text": "Kituo cha Afya",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "health_facility"
-          },
-          {
-            "key": "refugee_camp",
-            "text": "Kambi ya Wakimbizi",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "refugee_camp"
-          },
-          {
-            "key": "fishing_communities",
-            "text": "Jamii ya Wavuvi",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "fishing_communities"
-          },
-          {
-            "key": "local_clubs_breweries",
-            "text": "Vilabu Vya Pombe",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "local_clubs_breweries"
-          },
-          {
-            "key": "house_to_house",
-            "text": "Nyumba kwa Nyumba",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "house_to_house"
-          },
-          {
-            "key": "other",
-            "text": "Nyinginezo",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "other"
+            "openmrs_entity_id": "nyingine"
           }
         ],
         "v_required": {
           "value": "true",
-          "err": "Tafadhali chagua jibu"
+          "err": "Tafadhali chagua aina ya shughuli"
         }
       },
       {
-        "key": "other_mobilization_area",
+        "key": "sh_aina_other",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "other_mobilization_area",
-        "hint": "Taja",
-        "text_color": "#000000",
+        "openmrs_entity_id": "sh_aina_other",
         "type": "edit_text",
+        "hint": "Taja aina ya shughuli",
+        "text_color": "#000000",
         "relevance": {
           "rules-engine": {
             "ex-rules": {
               "rules-file": "mothermentor_mobilization.yml"
             }
           }
-        }
-      },
-      {
-        "key": "female_clients_reached",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "female_clients_reached",
-        "type": "edit_text",
-        "hint": "Idadi ya wateja wa kike waliofikiwa",
-        "v_numeric": {
-          "value": "true",
-          "err": "Tafadhali ingiza namba sahihi"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Namba lazima iwe sawa au kubwa kuliko 0"
-        },
-        "v_max_length": {
-          "value": "3",
-          "is_fixed_size": "true",
-          "err": "Idadi ya wateja wa kike waliofikiwa lazima iwe ndogo au sawa na 999"
-        },
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali ingiza namba"
-        }
-      },
-      {
-        "key": "male_clients_reached",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "male_clients_reached",
-        "type": "edit_text",
-        "hint": "Idadi ya wateja wa kiume waliofikiwa",
-        "v_numeric": {
-          "value": "true",
-          "err": "Tafadhali ingiza namba sahihi"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Namba lazima iwe sawa au kubwa kuliko 0"
-        },
-        "v_max_length": {
-          "value": "3",
-          "is_fixed_size": "true",
-          "err": "Idadi ya wateja wa kiume waliofikiwa lazima iwe ndogo au sawa na 999"
-        },
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali ingiza namba"
         }
       },
       {
@@ -304,34 +135,84 @@
         "type": "gps"
       },
       {
-        "key": "population_type",
+        "key": "sh_mada",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "population_type",
-        "hint": "Aina ya kundi la watu",
+        "openmrs_entity_id": "sh_mada",
+        "type": "check_box",
+        "label": "Mada za elimu zilizotolewa",
+        "label_text_style": "bold",
         "text_color": "#000000",
-        "type": "edit_text",
-        "read_only": true,
-        "calculation": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mobilization_population_type_sw.yml"
-            }
+        "combine_checkbox_option_values": "true",
+        "options": [
+          {
+            "key": "pmtct",
+            "text": "Kuzuia Maambukizi ya VVU, Kaswende na Homa ya Ini aina B kutoka kwa Mama kwenda kwa Mtoto (PMTCT)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pmtct"
+          },
+          {
+            "key": "hiv",
+            "text": "VVU na UKIMWI",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hiv"
+          },
+          {
+            "key": "syphilis",
+            "text": "Kaswende",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "syphilis"
+          },
+          {
+            "key": "hepb",
+            "text": "Homa ya Ini B",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hepb"
+          },
+          {
+            "key": "fp",
+            "text": "Uzazi wa mpango",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "fp"
+          },
+          {
+            "key": "nutrition",
+            "text": "Lishe ya mama na mtoto",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nutrition"
+          },
+          {
+            "key": "tb",
+            "text": "Kifua Kikuu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tb"
+          },
+          {
+            "key": "gbv",
+            "text": "Ukatili wa Kijinsia",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "gbv"
+          },
+          {
+            "key": "nyingine",
+            "text": "Nyingine (taja)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nyingine"
           }
-        },
+        ],
         "v_required": {
           "value": "true",
-          "err": "Tafadhali chagua jibu"
+          "err": "Tafadhali chagua angalau mada moja"
         }
       },
       {
-        "key": "other_population_type",
+        "key": "sh_mada_other",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "other_population_type",
-        "hint": "Taja",
-        "text_color": "#000000",
+        "openmrs_entity_id": "sh_mada_other",
         "type": "edit_text",
+        "hint": "Taja mada nyingine",
+        "text_color": "#000000",
         "relevance": {
           "rules-engine": {
             "ex-rules": {
@@ -341,21 +222,81 @@
         }
       },
       {
-        "key": "number_of_IEC_materials_provided",
+        "key": "educated_section",
+        "type": "label",
+        "text": "Walioelimishwa",
+        "hint_on_text": false,
+        "text_color": "#0F1A26",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "number_of_IEC_materials_provided",
-        "hint": "Idadi ya vifaa vya IEC vilivyotolewa",
-        "text_color": "#000000",
+        "openmrs_entity_id": "educated_section"
+      },
+      {
+        "key": "elim_m",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "elim_m",
         "type": "edit_text",
-        "v_required": {
-          "value": "true",
-          "err": "Tafadhali chagua jibu"
-        },
+        "edit_type": "number",
+        "hint": "Idadi ya wanaume walioelimishwa",
         "v_numeric": {
           "value": "true",
-          "err": ""
+          "err": "Tafadhali ingiza namba sahihi"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Namba lazima iwe sawa au kubwa kuliko 0"
+        },
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali ingiza idadi ya wanaume walioelimishwa"
         }
+      },
+      {
+        "key": "elim_f",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "elim_f",
+        "type": "edit_text",
+        "edit_type": "number",
+        "hint": "Idadi ya wanawake walioelimishwa",
+        "v_numeric": {
+          "value": "true",
+          "err": "Tafadhali ingiza namba sahihi"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Namba lazima iwe sawa au kubwa kuliko 0"
+        },
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali ingiza idadi ya wanawake walioelimishwa"
+        }
+      },
+      {
+        "key": "elim_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "elim_total",
+        "type": "edit_text",
+        "hint": "Idadi ya wanajamii walioelimishwa (jumla)",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mobilization_total.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "maoni",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "maoni",
+        "type": "edit_text",
+        "hint": "Andika maoni hapa...",
+        "text_color": "#000000"
       }
     ]
   }

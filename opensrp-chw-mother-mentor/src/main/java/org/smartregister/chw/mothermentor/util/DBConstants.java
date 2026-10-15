@@ -32,6 +32,16 @@ public class DBConstants {
         public static final String MOBILIZATION_DATE = "mobilization_date";
         public static final String FEMALE_CLIENTS_REACHED = "female_clients_reached";
         public static final String MALE_CLIENTS_REACHED = "male_clients_reached";
+        public static final String SH_TAREHE = "sh_tarehe";
+        public static final String SH_AINA = "sh_aina";
+        public static final String SH_AINA_OTHER = "sh_aina_other";
+        public static final String SH_MADA = "sh_mada";
+        public static final String SH_MADA_OTHER = "sh_mada_other";
+        public static final String ELIM_F = "elim_f";
+        public static final String ELIM_M = "elim_m";
+        public static final String ELIM_TOTAL = "elim_total";
+        public static final String GPS = "gps";
+        public static final String MAONI = "maoni";
 
 
         public static final String KIT_CODE = "kit_code";

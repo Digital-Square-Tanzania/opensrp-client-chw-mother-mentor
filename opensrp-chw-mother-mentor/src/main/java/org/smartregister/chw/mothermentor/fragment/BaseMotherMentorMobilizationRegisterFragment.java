@@ -29,6 +29,7 @@ import org.smartregister.cursoradapter.RecyclerViewPaginatedAdapter;
 import org.smartregister.view.activity.BaseRegisterActivity;
 import org.smartregister.view.customcontrols.CustomFontTextView;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,16 +53,22 @@ public class BaseMotherMentorMobilizationRegisterFragment extends BaseMotherMent
 
     protected void setUpAdapter() {
         List<MotherMentorMobilizationModel> tbMotherMentorMobilizationModels = MotherMentorMobilizationDao.getMobilizationSessions();
-        if (tbMotherMentorMobilizationModels != null && !tbMotherMentorMobilizationModels.isEmpty()) {
+        if (tbMotherMentorMobilizationModels == null) {
+            tbMotherMentorMobilizationModels = Collections.emptyList();
+        }
+
+        if (adapter == null) {
             adapter = new MotherMentorMobilizationRegisterAdapter(tbMotherMentorMobilizationModels, requireActivity());
             clientsView.setAdapter(adapter);
-            showEmptyState();
+        } else {
+            adapter.updateData(tbMotherMentorMobilizationModels);
         }
+        showEmptyState();
     }
 
     protected void showEmptyState() {
         if(emptyViewLayout != null){
-            if (adapter.getItemCount() >= 1 ) {
+            if (adapter != null && adapter.getItemCount() >= 1 ) {
                 emptyViewLayout.setVisibility(android.view.View.GONE);
             } else {
                 emptyViewLayout.setVisibility(android.view.View.VISIBLE);
@@ -202,7 +209,7 @@ public class BaseMotherMentorMobilizationRegisterFragment extends BaseMotherMent
             syncButton.setOnClickListener(view -> {
                 JSONObject form;
                 try {
-                    form = (new FormUtils()).getFormJsonFromRepositoryOrAssets(requireActivity(), Constants.FORMS.MOTHERMENTOR_MOBILIZATION_SESSION);
+                    form = (new FormUtils()).getFormJson(requireActivity(), Constants.FORMS.MOTHERMENTOR_MOBILIZATION_SESSION);
                     if (form != null) {
                         String randomId = generateRandomUUIDString();
                         form.put(ENTITY_ID, randomId);

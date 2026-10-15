@@ -94,7 +94,6 @@ public class MotherMentorRegisterProvider implements RecyclerViewProvider<Mother
             viewHolder.registerColumns.setOnClickListener(onClickListener);
 
             viewHolder.registerColumns.setOnClickListener(v -> viewHolder.patientColumn.performClick());
-            viewHolder.registerColumns.setOnClickListener(v -> viewHolder.dueButton.performClick());
 
         } catch (Exception e) {
             Timber.e(e);

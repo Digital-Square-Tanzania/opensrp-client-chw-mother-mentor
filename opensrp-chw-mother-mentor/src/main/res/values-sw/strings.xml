@@ -96,7 +96,7 @@
     <string name="mothermentor_source">Taarifa za mteja</string>
     <string name="view_upcoming_services">Angalia huduma zijazo</string>
 
-    <string name="mobilization_session_participants">Waliohamasishwa: %s</string>
+    <string name="mobilization_session_participants">Walioelimishwa: %s</string>
     <string name="mobilization_condoms_issued">Kondomu zilizogaiwa: %s</string>
     <string name="mobilziation_session_date">Tarehe: %s</string>
 
@@ -106,8 +106,34 @@
     <string name="issued_condoms">Kondomu zilizogaiwa:</string>
 
     <string name="mothermentor_sessions">Vipindi vya uhamasishaji wa Kifua Kikuu/Ukoma</string>
+    <string name="mothermentor_mobilization_session_details">Taarifa za shughuli</string>
+    <string name="mothermentor_activity_date">Tarehe ya shughuli</string>
+    <string name="mothermentor_activity_type">Aina ya shughuli</string>
+    <string name="mothermentor_activity_type_other">Taja aina ya shughuli</string>
+    <string name="mothermentor_recorded_location">Eneo lililorekodiwa</string>
+    <string name="mothermentor_education_topics_provided">Mada za elimu zilizotolewa</string>
+    <string name="mothermentor_education_topics_other">Taja mada nyingine</string>
+    <string name="mothermentor_men_educated">Idadi ya wanaume walioelimishwa</string>
+    <string name="mothermentor_women_educated">Idadi ya wanawake walioelimishwa</string>
+    <string name="mothermentor_total_educated">Idadi ya wanajamii walioelimishwa</string>
+    <string name="mothermentor_comments">Maoni</string>
+    <string name="mothermentor_activity_type_baraza">Baraza la wananchi</string>
+    <string name="mothermentor_activity_type_anc">Mkutano wa vikundi vya ANC</string>
+    <string name="mothermentor_activity_type_dini">Mkusanyiko wa kidini</string>
+    <string name="mothermentor_activity_type_kampeni">Kampeni ya uhamasishaji</string>
+    <string name="mothermentor_activity_type_shule">Shughuli ya shule</string>
+    <string name="mothermentor_other_specify">Nyingine (taja)</string>
+    <string name="mothermentor_topic_pmtct">Kuzuia Maambukizi ya VVU, Kaswende na Homa ya Ini aina B kutoka kwa Mama kwenda kwa Mtoto (PMTCT)</string>
+    <string name="mothermentor_topic_hiv">VVU na UKIMWI</string>
+    <string name="mothermentor_topic_syphilis">Kaswende</string>
+    <string name="mothermentor_topic_hepb">Homa ya Ini B</string>
+    <string name="mothermentor_topic_fp">Uzazi wa mpango</string>
+    <string name="mothermentor_topic_nutrition">Lishe ya mama na mtoto</string>
+    <string name="mothermentor_topic_tb">Kifua Kikuu</string>
+    <string name="mothermentor_topic_gbv">Ukatili wa Kijinsia</string>
+    <string name="no_record">Hakuna rekodi</string>
     <string name="mothermentor_mobilization">Uhamasishaji</string>
-    <string name="mothermentor_contact">Watu wa karibu</string>
+    <string name="mothermentor_contact">Kaya</string>
     <string name="usajili_wa_contacts">Usaliji wa mhisiwa wa Kifua Kikuu/Ukoma</string>
     <string name="mothermentor_issue_referral_action">Toa rufaa</string>
     <string name="mothermentor_pending_issuing_of_referral">Bado rufaa haijatolewa</string>
