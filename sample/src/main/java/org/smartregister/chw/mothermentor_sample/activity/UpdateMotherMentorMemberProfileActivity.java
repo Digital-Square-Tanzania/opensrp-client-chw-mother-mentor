@@ -58,7 +58,6 @@ public class UpdateMotherMentorMemberProfileActivity extends BaseMotherMentorPro
 
         if(StringUtils.isNotBlank(encounterType)){
             if(encounterType.equalsIgnoreCase(Constants.EVENT_TYPE.MOTHER_MENTOR_CLIENT_OBSERVATION)){
-                textViewRegisterMotherMentorContact.setVisibility(View.VISIBLE);
                 textViewRecordMotherMentor.setText("Record Mother Mentor Follow Up Visit");
             }
         }
@@ -102,11 +101,6 @@ public class UpdateMotherMentorMemberProfileActivity extends BaseMotherMentorPro
         }
     }
 
-
-    public void openMotherMentorContactRegister(){
-        Intent intent = new Intent(this, MotherMentorContactRegister.class);
-        startActivity(intent);
-    }
 
     @Override
     public void observationResults() {

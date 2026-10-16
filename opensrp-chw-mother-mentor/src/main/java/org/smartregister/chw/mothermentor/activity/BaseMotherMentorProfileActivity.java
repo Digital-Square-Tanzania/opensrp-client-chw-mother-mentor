@@ -64,7 +64,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     protected TextView textViewContinueMotherMentorService;
     protected TextView manualProcessVisit;
     protected TextView textview_positive_date;
-    protected TextView textViewRegisterMotherMentorContact;
     protected View view_last_visit_row;
     protected View view_most_due_overdue_row;
     protected View view_family_row;
@@ -100,8 +99,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     }
 
     public abstract void openObservationResults();
-
-    public abstract void openMotherMentorContactRegister();
 
     @Override
     protected void onCreation() {
@@ -156,7 +153,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         textViewRecordMotherMentorTreatmentStartDate = findViewById(R.id.textview_record_mother_mentor_start_date);
         textViewContinueMotherMentor = findViewById(R.id.textview_continue);
         textViewContinueMotherMentorService = findViewById(R.id.continue_mothermentor_service);
-        textViewRegisterMotherMentorContact = findViewById(R.id.textview_register_mother_mentor_contact);
         manualProcessVisit = findViewById(R.id.textview_manual_process);
         textViewRecordAnc = findViewById(R.id.textview_record_anc);
         textViewUndo = findViewById(R.id.textview_undo);
@@ -176,7 +172,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         textViewRecordTbContactVisit.setOnClickListener(this);
         textViewContinueMotherMentor.setOnClickListener(this);
         textViewContinueMotherMentorService.setOnClickListener(this);
-        textViewRegisterMotherMentorContact.setOnClickListener(this);
         manualProcessVisit.setOnClickListener(this);
         textViewRecordAnc.setOnClickListener(this);
         textViewUndo.setOnClickListener(this);
@@ -274,8 +269,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
             this.continueService();
         } else if (id == R.id.textview_continue) {
             this.continueContactVisit();
-        } else if (id == R.id.textview_register_mother_mentor_contact) {
-            this.openMotherMentorContactRegister();
         }
     }
 
