@@ -1,0 +1,686 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Visit Type",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "deviceid"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "subscriberid"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "simserial"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "phonenumber"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Aina ya Hudhurio",
+    "fields": [
+      {
+        "key": "attendance_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "attendance_type",
+        "label": "Aina ya Hudhurio",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "new",
+            "text": "Mpya",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "new"
+          },
+          {
+            "key": "repeat",
+            "text": "Marudio",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "repeat"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        }
+      },
+      {
+        "key": "follow_up_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_status",
+        "label": "Hali ya ufuatiliaji ",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "continuing_services",
+            "text": "Anaendelea na huduma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "continuing_services"
+          },
+          {
+            "key": "lost_to_follow_up",
+            "text": "Amepotea",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "lost_to_follow_up"
+          },
+          {
+            "key": "deceased",
+            "text": "Amefariki",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          },
+          {
+            "key": "relocated",
+            "text": "Amehama",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "relocated"
+          },
+          {
+            "key": "transferred_to_another_facility",
+            "text": "Amehamia kituo kingine",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transferred_to_another_facility"
+          },
+          {
+            "key": "stopped_services",
+            "text": "Ameacha huduma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stopped_services"
+          },
+          {
+            "key": "not_available",
+            "text": "Hajapatikana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_available"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mother_mentor_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "primary_mothermentor_client",
+        "type": "hidden",
+        "value": "false",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "primary_mothermentor_client",
+        "openmrs_entity_parent": ""
+      },
+      {
+        "key": "iit_enrolled",
+        "type": "hidden",
+        "value": "false",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_enrolled",
+        "openmrs_entity_parent": ""
+      },
+      {
+        "key": "visit_pregnancy_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "visit_pregnancy_status",
+        "type": "native_radio",
+        "label": "Hali ya ujauzito katika ziara hii",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "pregnant",
+            "text": "Mjamzito",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnant"
+          },
+          {
+            "key": "breast_feeding",
+            "text": "Ananyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breast_feeding"
+          },
+          {
+            "key": "not_pregnant",
+            "text": "Si mjamzito",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_pregnant"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "new_pmtct_art_initiation",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "new_pmtct_art_initiation",
+        "type": "native_radio",
+        "label": "Mteja mpya wa PMTCT ameanza ART katika ziara hii?",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "visit_art_start_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "visit_art_start_date",
+        "type": "date_picker",
+        "hint": "Tarehe ya kuanza ART",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "step1:new_pmtct_art_initiation": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "max_date": "today",
+        "expanded": false
+      },
+      {
+        "key": "iit_tracing_visit",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_tracing_visit",
+        "type": "native_radio",
+        "label": "Je, hii ilikuwa ziara ya ufuatiliaji wa aliyekatiza matibabu?",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "relevance": {
+          "step1:iit_enrolled": {
+            "type": "string",
+            "ex": "equalTo(., \"true\")"
+          }
+        }
+      },
+      {
+        "key": "iit_tracing_outcome",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_tracing_outcome",
+        "type": "native_radio",
+        "label": "Matokeo ya ufuatiliaji",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "found",
+            "text": "Amepatikana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Hajapatikana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          },
+          {
+            "key": "deceased",
+            "text": "Amefariki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          },
+          {
+            "key": "transferred",
+            "text": "Amehamishiwa kituo kingine",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transferred"
+          },
+          {
+            "key": "refused",
+            "text": "Amekataa kurudi",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "refused"
+          },
+          {
+            "key": "still_followed",
+            "text": "Bado anafuatiliwa",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "still_followed"
+          }
+        ],
+        "relevance": {
+          "step1:iit_tracing_visit": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "iit_interruption_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_interruption_reason",
+        "type": "native_radio",
+        "label": "Sababu ya kukatiza matibabu",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "side_effects",
+            "text": "Madhara ya dawa",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "side_effects"
+          },
+          {
+            "key": "forgot",
+            "text": "Amesahau",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "forgot"
+          },
+          {
+            "key": "travel",
+            "text": "Safari / kuhama",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travel"
+          },
+          {
+            "key": "no_transport_money",
+            "text": "Kukosa nauli",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no_transport_money"
+          },
+          {
+            "key": "overcrowding",
+            "text": "Msongamano kituoni",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "overcrowding"
+          },
+          {
+            "key": "stigma",
+            "text": "Unyanyapaa",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stigma"
+          },
+          {
+            "key": "other",
+            "text": "Nyingine (taja)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "relevance": {
+          "step1:iit_tracing_visit": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "iit_interruption_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_interruption_other",
+        "type": "edit_text",
+        "hint": "Taja sababu nyingine",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "step1:iit_interruption_reason": {
+            "type": "string",
+            "ex": "equalTo(., \"other\")"
+          }
+        }
+      },
+      {
+        "key": "returned_to_art",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "returned_to_art",
+        "type": "native_radio",
+        "label": "Amerudi kwenye matibabu ya ART?",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "relevance": {
+          "step1:iit_tracing_visit": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "art_return_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "art_return_date",
+        "type": "date_picker",
+        "hint": "Tarehe ya kurudi kwenye ART",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "step1:returned_to_art": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "max_date": "today",
+        "expanded": false
+      },
+      {
+        "key": "mothermentor_reporting_version",
+        "type": "hidden",
+        "value": "2",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mothermentor_reporting_version",
+        "openmrs_entity_parent": ""
+      },
+      {
+        "key": "partner_enrolled",
+        "type": "hidden",
+        "value": "false",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_enrolled",
+        "openmrs_entity_parent": ""
+      },
+      {
+        "key": "child_eid_enrolled",
+        "type": "hidden",
+        "value": "false",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_enrolled",
+        "openmrs_entity_parent": ""
+      },
+      {
+        "key": "partner_reached_facility",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_reached_facility",
+        "type": "native_radio",
+        "label": "Mwenza amefika kituoni kwa mara ya kwanza?",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "relevance": {
+          "step1:partner_enrolled": {
+            "type": "string",
+            "ex": "equalTo(., \"true\")"
+          }
+        }
+      },
+      {
+        "key": "partner_facility_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_facility_date",
+        "type": "date_picker",
+        "hint": "Tarehe mwenza alipofika kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "step1:partner_reached_facility": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "max_date": "today",
+        "expanded": false
+      },
+      {
+        "key": "child_followup_test_stage",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_followup_test_stage",
+        "type": "native_radio",
+        "label": "Kipimo cha mtoto kinachofuatiliwa",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "week_6",
+            "text": "Wiki 6",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "week_6"
+          },
+          {
+            "key": "month_9",
+            "text": "Miezi 9",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "month_9"
+          },
+          {
+            "key": "three_months_after_breastfeeding",
+            "text": "Miezi mitatu baada ya kuacha kunyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "three_months_after_breastfeeding"
+          },
+          {
+            "key": "month_18",
+            "text": "Miezi 18",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "month_18"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "relevance": {
+          "step1:child_eid_enrolled": {
+            "type": "string",
+            "ex": "equalTo(., \"true\")"
+          }
+        }
+      },
+      {
+        "key": "child_reached_facility",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_reached_facility",
+        "type": "native_radio",
+        "label": "Mtoto amefika kituoni?",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "relevance": {
+          "step1:child_eid_enrolled": {
+            "type": "string",
+            "ex": "equalTo(., \"true\")"
+          }
+        }
+      },
+      {
+        "key": "child_facility_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_facility_date",
+        "type": "date_picker",
+        "hint": "Tarehe mtoto alipofika kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "step1:child_reached_facility": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "max_date": "today",
+        "expanded": false
+      }
+    ]
+  }
+}

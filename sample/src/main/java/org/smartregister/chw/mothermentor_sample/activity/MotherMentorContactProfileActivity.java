@@ -107,11 +107,6 @@ public class MotherMentorContactProfileActivity extends BaseMotherMentorProfileA
     }
 
     @Override
-    public void openMotherMentorContactRegister() {
-
-    }
-
-    @Override
     public void openTbContactFollowUpVisit() {
       //Implementations Here
         try {

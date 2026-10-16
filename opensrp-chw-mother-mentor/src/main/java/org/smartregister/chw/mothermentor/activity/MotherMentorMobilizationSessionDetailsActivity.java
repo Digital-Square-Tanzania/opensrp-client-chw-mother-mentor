@@ -63,6 +63,11 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
             addDetail(content, R.string.mothermentor_men_educated, session.getMenEducated());
             addDetail(content, R.string.mothermentor_women_educated, session.getWomenEducated());
             addDetail(content, R.string.mothermentor_total_educated, StringUtils.defaultIfBlank(session.getTotalEducated(), session.getSessionParticipants()));
+            addDetail(content, R.string.mothermentor_referred_male, session.getReferredMen());
+            addDetail(content, R.string.mothermentor_referred_female, session.getReferredWomen());
+            addDetail(content, R.string.mothermentor_referred_total, session.getReferredTotal());
+            addDetail(content, R.string.mothermentor_facility_referral_services, translateReferralServices(session.getReferralServices()));
+            addDetail(content, R.string.mothermentor_facility_referral_other, session.getReferralOther());
             addDetail(content, R.string.mothermentor_comments, session.getComments());
         }
 
@@ -148,6 +153,25 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
         if ("gbv".equals(value)) return getString(R.string.mothermentor_topic_gbv);
         if ("nyingine".equals(value)) return getString(R.string.mothermentor_other_specify);
         return value;
+    }
+
+    private String translateReferralServices(String value) {
+        if (StringUtils.isBlank(value)) return value;
+        List<String> labels = new ArrayList<>();
+        for (String raw : value.replace("[", "").replace("]", "").replace("\"", "").split(",")) {
+            String key = raw.trim();
+            switch (key) {
+                case "hiv_testing": labels.add(getString(R.string.mothermentor_referral_hiv_testing)); break;
+                case "syphilis_testing": labels.add(getString(R.string.mothermentor_referral_syphilis_testing)); break;
+                case "hepatitis_b_testing": labels.add(getString(R.string.mothermentor_referral_hepatitis_b_testing)); break;
+                case "anc": labels.add(getString(R.string.mothermentor_referral_anc)); break;
+                case "ctc": labels.add(getString(R.string.mothermentor_referral_ctc)); break;
+                case "gbv": labels.add(getString(R.string.mothermentor_referral_gbv)); break;
+                case "other": labels.add(getString(R.string.mothermentor_referral_other)); break;
+                default: labels.add(key);
+            }
+        }
+        return StringUtils.join(labels, "\n");
     }
 
     private int dp(int value) {

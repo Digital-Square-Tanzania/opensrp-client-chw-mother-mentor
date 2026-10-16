@@ -1,0 +1,49 @@
+---
+name: step1_visit_pregnancy_status
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_primary_mothermentor_client == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'continuing_services'))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_new_pmtct_art_initiation
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_primary_mothermentor_client == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'continuing_services'))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_education_other
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_education_provided == 'yes' && step1_topics_being_provided != null && step1_topics_being_provided.contains('other')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_referral_other
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_referral_given == 'yes' && step1_type_of_referral_given != null && step1_type_of_referral_given.contains('other_specify')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_household_referral_other
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_household_referral_given == 'yes' && step1_household_referral_services != null && step1_household_referral_services.contains('other')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_facility_referral_services
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "(step1_referred_male != null && step1_referred_male != '' && Integer.parseInt(step1_referred_male) > 0) || (step1_referred_female != null && step1_referred_female != '' && Integer.parseInt(step1_referred_female) > 0)"
+actions:
+  - "isRelevant = true"
+---
+name: step1_facility_referral_other
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_facility_referral_services != null && step1_facility_referral_services.contains('other') && ((step1_referred_male != null && step1_referred_male != '' && Integer.parseInt(step1_referred_male) > 0) || (step1_referred_female != null && step1_referred_female != '' && Integer.parseInt(step1_referred_female) > 0))"
+actions:
+  - "isRelevant = true"

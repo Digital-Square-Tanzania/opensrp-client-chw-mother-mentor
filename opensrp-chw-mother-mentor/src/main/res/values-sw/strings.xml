@@ -14,7 +14,6 @@
     <string name="record_mothermentor">Hudhurio la Kifua Kikuu/Ukoma</string>
     <string name="record_mothermentor_contact_visit">Rekodi hudhurio la mhisiwa wa ugonjwa wa TB</string>
     <string name="record_mothermentor_client_followup_visit">Rekodi hudhurio la ufuatiliaji la Kifua Kikuu/Ukoma</string>
-    <string name="register_mother_mentor_contact">Sajili watu wa karibu wa mgonjwa wa Kifua Kikua/Ukoma</string>
     <string name="record_mothermentor_contact_visit_followup">Rekodi hudhurio la ufuatiliaji la mhisiwa wa ugonjwa wa TB</string>
     <string name="provide_contact_visit">Toa hudhurio kwa mhisiwa wa ugonjwa wa TB</string>
 
@@ -139,4 +138,17 @@
     <string name="mothermentor_pending_issuing_of_referral">Bado rufaa haijatolewa</string>
     <string name="mothermentor_issue_referral_toast">Toa rufaa</string>
 
+    <string name="mothermentor_visit_member_unavailable">Mteja hakuweza kupatikana. Fungua wasifu tena na ujaribu upya.</string>
+    <string name="mothermentor_referred_male">Wanaume waliopewa rufaa kwenda kituoni</string>
+    <string name="mothermentor_referred_female">Wanawake waliopewa rufaa kwenda kituoni</string>
+    <string name="mothermentor_referred_total">Jumla waliopewa rufaa</string>
+    <string name="mothermentor_facility_referral_services">Huduma za rufaa</string>
+    <string name="mothermentor_facility_referral_other">Huduma nyingine ya rufaa</string>
+    <string name="mothermentor_referral_hiv_testing">Upimaji wa VVU</string>
+    <string name="mothermentor_referral_syphilis_testing">Upimaji wa kaswende</string>
+    <string name="mothermentor_referral_hepatitis_b_testing">Upimaji wa homa ya ini B</string>
+    <string name="mothermentor_referral_anc">Kliniki ya wajawazito</string>
+    <string name="mothermentor_referral_ctc">Kliniki ya huduma na matibabu</string>
+    <string name="mothermentor_referral_gbv">Ukatili wa kijinsia</string>
+    <string name="mothermentor_referral_other">Nyingine</string>
 </resources>

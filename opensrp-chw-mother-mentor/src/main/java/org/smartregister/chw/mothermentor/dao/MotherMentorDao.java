@@ -618,6 +618,35 @@ public class MotherMentorDao extends AbstractDao {
         return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
     }
 
+    /** Visit participants can belong to any Mother Mentor enrollment register. */
+    public static java.util.Map<String, String> getVisitEnrollmentValues(String baseEntityID) {
+        String id = baseEntityID.replace("'", "''");
+        String sql = "SELECT e.pregnancy_status, e.art_start_date, "
+                + "EXISTS (SELECT 1 FROM ec_mothermentor_enroll_it i WHERE i.base_entity_id = m.base_entity_id) AS iit_enrolled, "
+                + "EXISTS (SELECT 1 FROM ec_mothermentor_enroll_partner p WHERE p.base_entity_id = m.base_entity_id) AS partner_enrolled, "
+                + "EXISTS (SELECT 1 FROM ec_mothermentor_enroll_child_eid c WHERE c.base_entity_id = m.base_entity_id) AS child_eid_enrolled, "
+                + "CASE WHEN e.base_entity_id IS NULL THEN 'false' ELSE 'true' END AS primary_client "
+                + "FROM ec_family_member m LEFT JOIN ec_mothermentor_enrollment e ON e.base_entity_id = m.base_entity_id "
+                + "WHERE m.base_entity_id = '" + id + "' LIMIT 1";
+        List<java.util.Map<String, String>> rows = readData(sql, cursor -> {
+            java.util.Map<String, String> result = new java.util.HashMap<>();
+            result.put("primary_mothermentor_client", getCursorValue(cursor, "primary_client"));
+            result.put("iit_enrolled", getCursorIntValue(cursor, "iit_enrolled") == 1 ? "true" : "false");
+            result.put("partner_enrolled", getCursorIntValue(cursor, "partner_enrolled") == 1 ? "true" : "false");
+            result.put("child_eid_enrolled", getCursorIntValue(cursor, "child_eid_enrolled") == 1 ? "true" : "false");
+            result.put("visit_pregnancy_status", getCursorValue(cursor, "pregnancy_status"));
+            result.put("visit_art_start_date", getCursorValue(cursor, "art_start_date"));
+            return result;
+        });
+        return rows == null || rows.isEmpty() ? new java.util.HashMap<>() : rows.get(0);
+    }
+
+    public static MemberObject getVisitMember(String baseEntityID) {
+        MemberObject member = getMember(baseEntityID);
+        if (member == null) member = getSecondaryEnrollmentMember(baseEntityID);
+        return member != null ? member : getContact(baseEntityID);
+    }
+
     public static MemberObject getSecondaryEnrollmentMember(String baseEntityID) {
         MemberObject memberObject = getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_IIT);
         if (memberObject != null) {

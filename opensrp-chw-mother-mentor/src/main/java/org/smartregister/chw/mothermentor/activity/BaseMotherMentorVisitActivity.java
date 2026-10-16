@@ -19,8 +19,6 @@ import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.domain.Form;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.Period;
 import org.json.JSONObject;
 import org.smartregister.AllConstants;
 import org.smartregister.chw.mothermentor.R;
@@ -150,6 +148,12 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
 
     @Override
     public void onMemberDetailsReloaded(MemberObject memberObject) {
+        if (memberObject == null) {
+            displayProgressBar(false);
+            displayToast(getString(R.string.mothermentor_visit_member_unavailable));
+            finish();
+            return;
+        }
         this.memberObject = memberObject;
         presenter.initialize();
         redrawHeader(memberObject);
@@ -225,8 +229,7 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
 
     @Override
     public void redrawHeader(MemberObject memberObject) {
-        int age = new Period(new DateTime(memberObject.getAge()),
-                new DateTime()).getYears();
+        int age = memberObject.getAge();
         tvTitle.setText(MessageFormat.format("{0}, {1}",
                 memberObject.getFullName(),
                 String.valueOf(age)));

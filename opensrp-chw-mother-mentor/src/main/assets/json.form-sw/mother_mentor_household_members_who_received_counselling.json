@@ -1,0 +1,234 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Household Visit Received Counselling",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "163149AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "163150AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "163151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "163152AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "encounter_location": "",
+    "look_up": {
+      "entity_id": "",
+      "value": ""
+    }
+  },
+  "global": {},
+  "step1": {
+    "title": "Wanakaya waliopewa ushauri",
+    "fields": [
+      {
+        "key": "household_members_found",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_members_found",
+        "type": "edit_text",
+        "hint": "Wanakaya waliopatikana",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number / Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter 0–99999 / Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Must be zero or more / Isipungue sifuri"
+        },
+        "v_relative_min": {
+          "value": "counselled_total",
+          "err": "Idadi ya waliopewa ushauri haiwezi kuzidi waliokutwa"
+        }
+      },
+      {
+        "key": "counselled_male",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_male",
+        "type": "edit_text",
+        "hint": "Wanaume/wavulana waliopewa ushauri",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number / Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter 0–99999 / Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Must be zero or more / Isipungue sifuri"
+        }
+      },
+      {
+        "key": "counselled_female",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_female",
+        "type": "edit_text",
+        "hint": "Wanawake/wasichana waliopewa ushauri",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number / Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter 0–99999 / Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Must be zero or more / Isipungue sifuri"
+        }
+      },
+      {
+        "key": "counselled_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_total",
+        "type": "edit_text",
+        "hint": "Jumla waliopewa ushauri",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "participants",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "participants",
+        "type": "check_box",
+        "label": "Participants",
+        "combine_checkbox_option_values": "true",
+        "label_text_style": "normal",
+        "text_color": "#C0C0C0",
+        "exclusive": [
+          "none"
+        ],
+        "options": [
+          {
+            "key": "mother",
+            "text": "Mama",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mother"
+          },
+          {
+            "key": "partner",
+            "text": "Mwenzi",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "partner"
+          },
+          {
+            "key": "child",
+            "text": "Mtoto",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "child"
+          },
+          {
+            "key": "relative",
+            "text": "Ndugu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "relative"
+          },
+          {
+            "key": "neighbour",
+            "text": "Jirani",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "neighbour"
+          },
+          {
+            "key": "other",
+            "text": "Mwingine (taja)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "none"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please pick at least one"
+        }
+      },
+      {
+        "key": "other",
+        "type": "edit_text",
+        "hint": "Mwingine (taja)",
+        "openmrs_entity_id": "other",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "v_required": {
+          "value": "true",
+          "err": "Please write an answer"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "other"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

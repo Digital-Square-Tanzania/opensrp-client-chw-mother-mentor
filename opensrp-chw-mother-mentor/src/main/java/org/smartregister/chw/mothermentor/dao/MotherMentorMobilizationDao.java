@@ -118,6 +118,12 @@ public class MotherMentorMobilizationDao extends AbstractDao {
             model.setWomenEducated(firstNonBlank(cursorString(cursor, DBConstants.KEY.ELIM_F), cursorString(cursor, DBConstants.KEY.FEMALE_CLIENTS_REACHED)));
             model.setTotalEducated(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.ELIM_TOTAL)));
             model.setComments(cursor.getString(cursor.getColumnIndex(DBConstants.KEY.MAONI)));
+            model.setReferredMen(cursorString(cursor, "referred_male"));
+            model.setReferredWomen(cursorString(cursor, "referred_female"));
+            model.setReferredTotal(cursorString(cursor, "referred_total"));
+            model.setReferralServices(cursorString(cursor, "facility_referral_services"));
+            model.setReferralOther(cursorString(cursor, "facility_referral_other"));
+
             model.setSessionParticipants(computeSessionParticipants(model.getWomenEducated(), model.getMenEducated()));
             return model;
         };

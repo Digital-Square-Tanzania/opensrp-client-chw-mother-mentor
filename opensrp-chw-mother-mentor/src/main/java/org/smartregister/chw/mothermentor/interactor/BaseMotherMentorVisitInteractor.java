@@ -74,13 +74,10 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
 
     @Override
     public void reloadMemberDetails(String memberID, String profileType, BaseMotherMentorVisitContract.InteractorCallBack callBack) {
-        memberObject = getMemberClient(memberID, profileType);
-        if (memberObject != null) {
-            final Runnable runnable = () -> {
-                appExecutors.mainThread().execute(() -> callBack.onMemberDetailsReloaded(memberObject));
-            };
-            appExecutors.diskIO().execute(runnable);
-        }
+        appExecutors.diskIO().execute(() -> {
+            memberObject = getMemberClient(memberID, profileType);
+            appExecutors.mainThread().execute(() -> callBack.onMemberDetailsReloaded(memberObject));
+        });
     }
 
     /**
@@ -92,7 +89,7 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
      */
     @Override
     public MemberObject getMemberClient(String memberID, String profileType) {
-        return MotherMentorDao.getMember(memberID);
+        return MotherMentorDao.getVisitMember(memberID);
     }
 
     @Override
