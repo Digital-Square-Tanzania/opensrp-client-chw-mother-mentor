@@ -60,6 +60,72 @@
         "type": "hidden"
       },
       {
+        "key": "mother_base_entity_id",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_base_entity_id",
+        "type": "hidden"
+      },
+      {
+        "key": "child_linking",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_linking",
+        "type": "hidden",
+        "value": "no"
+      },
+      {
+        "key": "child_name",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_name",
+        "type": "edit_text",
+        "hint": "Jina la mtoto",
+        "read_only": true,
+        "editable": false,
+        "text_color": "#000000",
+        "relevance": {
+          "step1:child_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "child_sex",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_sex",
+        "type": "edit_text",
+        "hint": "Jinsi",
+        "read_only": true,
+        "editable": false,
+        "text_color": "#000000",
+        "relevance": {
+          "step1:child_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "child_dob",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_dob",
+        "type": "edit_text",
+        "hint": "Tarehe ya kuzaliwa",
+        "read_only": true,
+        "editable": false,
+        "text_color": "#000000",
+        "relevance": {
+          "step1:child_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
         "key": "hei_registered",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
