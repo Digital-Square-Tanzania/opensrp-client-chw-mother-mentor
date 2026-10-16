@@ -1,1 +1,15 @@
+pluginManagement {
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            // AGP 7.4's bundled D8 crashes on unnamed MethodParameters in OpenSRP core.
+            // R8 fix: https://r8.googlesource.com/r8/+/4a20cbcf7330bd65271eb00eaf32dcdde0b3b716
+            classpath 'com.android.tools:r8:8.1.72'
+        }
+    }
+}
+
 include ':sample', ':opensrp-chw-mother-mentor'

@@ -1,0 +1,281 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Household Visit Topics Taught",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "deviceid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "deviceid",
+      "openmrs_entity_id": "163149AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "subscriberid": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "subscriberid",
+      "openmrs_entity_id": "163150AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "simserial": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "simserial",
+      "openmrs_entity_id": "163151AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "phonenumber": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "phonenumber",
+      "openmrs_entity_id": "163152AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "encounter_location": "",
+    "look_up": {
+      "entity_id": "",
+      "value": ""
+    }
+  },
+  "global": {},
+  "step1": {
+    "title": "Topics Taught",
+    "fields": [
+      {
+        "key": "topics_taught",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "topics_taught",
+        "type": "check_box",
+        "label": "Select the topics taught",
+        "combine_checkbox_option_values": "true",
+        "label_text_style": "normal",
+        "text_color": "#C0C0C0",
+        "exclusive": [],
+        "options": [
+          {
+            "key": "medication_adherence",
+            "text": "Medication adherence",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medication_adherence"
+          },
+          {
+            "key": "health_status_disclosure",
+            "text": "Disclosure of health status",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "health_status_disclosure"
+          },
+          {
+            "key": "infant_feeding",
+            "text": "Infant feeding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "infant_feeding"
+          },
+          {
+            "key": "family_planning",
+            "text": "Family planning",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "family_planning"
+          },
+          {
+            "key": "nutrition",
+            "text": "Nutrition",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nutrition"
+          },
+          {
+            "key": "tuberculosis",
+            "text": "Tuberculosis",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "tuberculosis"
+          },
+          {
+            "key": "gender_based_violence",
+            "text": "Gender-based violence",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "gender_based_violence"
+          },
+          {
+            "key": "mental_health",
+            "text": "Mental health",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mental_health"
+          },
+          {
+            "key": "viral_load",
+            "text": "Viral load",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "viral_load"
+          },
+          {
+            "key": "other",
+            "text": "Other",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select at least one topic"
+        }
+      },
+      {
+        "key": "other_topic",
+        "type": "edit_text",
+        "hint": "Please specify the other topic",
+        "openmrs_entity_id": "other_topic",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "v_required": {
+          "value": "true",
+          "err": "Please specify the other topic"
+        },
+        "relevance": {
+          "step1:topics_taught": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "other"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "household_referral_given",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_referral_given",
+        "type": "native_radio",
+        "label": "Referral provided?",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ]
+      },
+      {
+        "key": "household_referral_services",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_referral_services",
+        "type": "check_box",
+        "label": "Referral services",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "ctc",
+            "text": "CTC",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "ctc"
+          },
+          {
+            "key": "anc",
+            "text": "ANC",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "anc"
+          },
+          {
+            "key": "eid",
+            "text": "Early infant diagnosis (EID)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "eid"
+          },
+          {
+            "key": "hiv_testing",
+            "text": "HIV testing",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hiv_testing"
+          },
+          {
+            "key": "mental_health",
+            "text": "Mental health",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "mental_health"
+          },
+          {
+            "key": "gbv",
+            "text": "Gender-based violence",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "gbv"
+          },
+          {
+            "key": "nutrition",
+            "text": "Nutrition",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nutrition"
+          },
+          {
+            "key": "iga",
+            "text": "Income-generating activity",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "iga"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "combine_checkbox_option_values": "true",
+        "relevance": {
+          "step1:household_referral_given": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "household_referral_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_referral_other",
+        "type": "edit_text",
+        "hint": "Specify other referral service",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

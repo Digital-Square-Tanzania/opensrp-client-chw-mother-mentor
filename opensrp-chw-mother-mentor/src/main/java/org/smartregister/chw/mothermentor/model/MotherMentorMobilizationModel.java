@@ -129,4 +129,24 @@ public class MotherMentorMobilizationModel {
     public void setComments(String comments) {
         this.comments = comments;
     }
+    private String referredMen;
+    public String getReferredMen() { return referredMen; }
+    public void setReferredMen(String value) { referredMen = value; }
+
+    private String referredWomen;
+    public String getReferredWomen() { return referredWomen; }
+    public void setReferredWomen(String value) { referredWomen = value; }
+
+    private String referredTotal;
+    public String getReferredTotal() { return referredTotal; }
+    public void setReferredTotal(String value) { referredTotal = value; }
+
+    private String referralServices;
+    public String getReferralServices() { return referralServices; }
+    public void setReferralServices(String value) { referralServices = value; }
+
+    private String referralOther;
+    public String getReferralOther() { return referralOther; }
+    public void setReferralOther(String value) { referralOther = value; }
+
 }

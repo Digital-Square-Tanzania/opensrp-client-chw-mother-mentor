@@ -1,0 +1,14 @@
+---
+name: step1_counselled_total
+description: Sum of male and female counts
+priority: 1
+condition: "step1_counselled_male != null && step1_counselled_male != '' && step1_counselled_female != null && step1_counselled_female != ''"
+actions:
+  - "calculation = Integer.parseInt(step1_counselled_male) + Integer.parseInt(step1_counselled_female)"
+---
+name: step1_referred_total
+description: Sum of male and female counts
+priority: 1
+condition: "step1_referred_male != null && step1_referred_male != '' && step1_referred_female != null && step1_referred_female != ''"
+actions:
+  - "calculation = Integer.parseInt(step1_referred_male) + Integer.parseInt(step1_referred_female)"

@@ -290,6 +290,155 @@
         }
       },
       {
+        "key": "referred_male",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_male",
+        "type": "edit_text",
+        "hint": "Men referred to a facility",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number / Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter 0–99999 / Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Must be zero or more / Isipungue sifuri"
+        }
+      },
+      {
+        "key": "referred_female",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_female",
+        "type": "edit_text",
+        "hint": "Women referred to a facility",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number / Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter 0–99999 / Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Must be zero or more / Isipungue sifuri"
+        }
+      },
+      {
+        "key": "referred_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_total",
+        "type": "edit_text",
+        "hint": "Total referred to a facility",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_referral_services",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_referral_services",
+        "type": "check_box",
+        "label": "Facility referral services",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "hiv_testing",
+            "text": "HIV testing",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hiv_testing"
+          },
+          {
+            "key": "syphilis_testing",
+            "text": "Syphilis testing",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "syphilis_testing"
+          },
+          {
+            "key": "hepatitis_b_testing",
+            "text": "Hepatitis B testing",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hepatitis_b_testing"
+          },
+          {
+            "key": "anc",
+            "text": "ANC",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "anc"
+          },
+          {
+            "key": "ctc",
+            "text": "CTC",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "ctc"
+          },
+          {
+            "key": "gbv",
+            "text": "Gender-based violence",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "gbv"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "combine_checkbox_option_values": "true",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_referral_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_referral_other",
+        "type": "edit_text",
+        "hint": "Specify other referral service",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "maoni",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
