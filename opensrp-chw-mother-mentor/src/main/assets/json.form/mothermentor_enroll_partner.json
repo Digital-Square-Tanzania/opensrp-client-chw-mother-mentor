@@ -60,6 +60,89 @@
         "type": "hidden"
       },
       {
+        "key": "mother_base_entity_id",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_base_entity_id",
+        "type": "hidden"
+      },
+      {
+        "key": "partner_linking",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_linking",
+        "type": "hidden",
+        "value": "no"
+      },
+      {
+        "key": "partner_name",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_name",
+        "type": "edit_text",
+        "hint": "Partner name",
+        "read_only": true,
+        "editable": false,
+        "relevance": {
+          "step1:partner_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "text_color": "#000000"
+      },
+      {
+        "key": "partner_sex",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_sex",
+        "type": "edit_text",
+        "hint": "Sex",
+        "read_only": true,
+        "editable": false,
+        "relevance": {
+          "step1:partner_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "text_color": "#000000"
+      },
+      {
+        "key": "partner_dob",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_dob",
+        "type": "edit_text",
+        "hint": "Date of birth",
+        "read_only": true,
+        "editable": false,
+        "relevance": {
+          "step1:partner_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "text_color": "#000000"
+      },
+      {
+        "key": "partner_phone_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_phone_number",
+        "type": "edit_text",
+        "hint": "Phone number",
+        "read_only": true,
+        "editable": false,
+        "relevance": {
+          "step1:partner_linking": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "text_color": "#000000"
+      },
+      {
         "key": "mother_name",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
