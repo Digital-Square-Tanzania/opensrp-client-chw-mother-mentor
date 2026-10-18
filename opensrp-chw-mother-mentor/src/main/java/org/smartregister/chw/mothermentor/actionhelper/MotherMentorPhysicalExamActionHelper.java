@@ -11,16 +11,18 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
+
+import timber.log.Timber;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import timber.log.Timber;
-
-public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
+public class MotherMentorPhysicalExamActionHelper
+        implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
 
     protected String jsonPayload;
 
@@ -40,14 +42,14 @@ public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVis
 
     protected MemberObject memberObject;
 
-
     public MotherMentorPhysicalExamActionHelper(Context context, MemberObject memberObject) {
         this.context = context;
         this.memberObject = memberObject;
     }
 
     @Override
-    public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
+    public void onJsonFormLoaded(
+            String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
         this.jsonPayload = jsonPayload;
     }
 
@@ -57,14 +59,12 @@ public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVis
             JSONObject jsonObject = new JSONObject(jsonPayload);
             JSONObject global = jsonObject.getJSONObject("global");
 
-            int age = new Period(new DateTime(memberObject.getAge()),
-                    new DateTime()).getYears();
+            int age = new Period(new DateTime(memberObject.getAge()), new DateTime()).getYears();
 
-            String known_allergies = MotherMentorMedicalHistoryActionHelper
-                    .known_allergies;
+            String known_allergies = MotherMentorMedicalHistoryActionHelper.known_allergies;
 
             global.put("known_allergies", known_allergies);
-            global.put("age", age);
+            global.put(DBConstants.KEY.AGE, age);
             Timber.tag("AGE mtu").d(String.valueOf(age));
 
             return jsonObject.toString();
@@ -91,16 +91,38 @@ public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVis
 
             checkObject.clear();
 
-            checkObject.put("physical_abnormality", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "physical_abnormality")));
-            checkObject.put("client_weight", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "client_weight")));
-            checkObject.put("bmi", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "bmi")));
-            checkObject.put("pulse_rate", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "pulse_rate")));
-            checkObject.put("systolic", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "systolic")));
-            checkObject.put("diastolic", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "diastolic")));
-            checkObject.put("temperature", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "temperature")));
-            checkObject.put("respiration_rate", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "respiration_rate")));
-            checkObject.put("genital_examination", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "genital_examination")));
-            checkObject.put("preferred_client_mc_method", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "preferred_client_mc_method")));
+            checkObject.put(
+                    "physical_abnormality",
+                    StringUtils.isNotBlank(
+                            JsonFormUtils.getValue(jsonObject, "physical_abnormality")));
+            checkObject.put(
+                    "client_weight",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "client_weight")));
+            checkObject.put(
+                    "bmi", StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "bmi")));
+            checkObject.put(
+                    "pulse_rate",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "pulse_rate")));
+            checkObject.put(
+                    "systolic",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "systolic")));
+            checkObject.put(
+                    "diastolic",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "diastolic")));
+            checkObject.put(
+                    "temperature",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "temperature")));
+            checkObject.put(
+                    "respiration_rate",
+                    StringUtils.isNotBlank(JsonFormUtils.getValue(jsonObject, "respiration_rate")));
+            checkObject.put(
+                    "genital_examination",
+                    StringUtils.isNotBlank(
+                            JsonFormUtils.getValue(jsonObject, "genital_examination")));
+            checkObject.put(
+                    "preferred_client_mc_method",
+                    StringUtils.isNotBlank(
+                            JsonFormUtils.getValue(jsonObject, "preferred_client_mc_method")));
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -123,9 +145,12 @@ public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVis
         try {
             jsonObject = new JSONObject(jsonPayload);
             JSONArray fields = JsonFormUtils.fields(jsonObject);
-            JSONObject physcialExamCompletionStatus = JsonFormUtils.getFieldJSONObject(fields, "physical_exam_completion_status");
+            JSONObject physcialExamCompletionStatus =
+                    JsonFormUtils.getFieldJSONObject(fields, "physical_exam_completion_status");
             assert physcialExamCompletionStatus != null;
-            physcialExamCompletionStatus.put(com.vijay.jsonwizard.constants.JsonFormConstants.VALUE, VisitUtils.getActionStatus(checkObject));
+            physcialExamCompletionStatus.put(
+                    com.vijay.jsonwizard.constants.JsonFormConstants.VALUE,
+                    VisitUtils.getActionStatus(checkObject));
         } catch (JSONException e) {
             Timber.e(e);
         }
@@ -156,7 +181,6 @@ public class MotherMentorPhysicalExamActionHelper implements BaseMotherMentorVis
 
     @Override
     public void onPayloadReceived(BaseMotherMentorVisitAction baseMotherMentorVisitAction) {
-        //overridden
+        // overridden
     }
-
 }

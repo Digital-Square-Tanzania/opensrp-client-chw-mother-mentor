@@ -8,14 +8,16 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+
+import timber.log.Timber;
 
 import java.util.List;
 import java.util.Map;
 
-import timber.log.Timber;
-
-public class MotherMentorInvestigationActionHelper implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
+public class MotherMentorInvestigationActionHelper
+        implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
 
     protected String jsonPayload;
 
@@ -28,23 +30,22 @@ public class MotherMentorInvestigationActionHelper implements BaseMotherMentorVi
 
     protected MemberObject memberObject;
 
-
     public MotherMentorInvestigationActionHelper(Context context, MemberObject memberObject) {
         this.context = context;
         this.memberObject = memberObject;
     }
 
     @Override
-    public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
+    public void onJsonFormLoaded(
+            String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
         this.jsonPayload = jsonPayload;
         try {
             JSONObject jsonObject = new JSONObject(jsonPayload);
-            screeningStatus = JsonFormUtils.getValue(jsonObject, "screening_status");
+            screeningStatus = JsonFormUtils.getValue(jsonObject, DBConstants.KEY.SCREENING_STATUS);
         } catch (JSONException e) {
             Timber.e(e);
         }
     }
-
 
     @Override
     public String getPreProcessed() {
@@ -65,21 +66,24 @@ public class MotherMentorInvestigationActionHelper implements BaseMotherMentorVi
 
             mothermentorObservation = JsonFormUtils.getValue(jsonObject, "tb_screening_findings");
             if (StringUtils.isBlank(mothermentorObservation)) {
-                mothermentorObservation = JsonFormUtils.getValue(jsonObject, "majibu_ya_uchunguzi_tb");
+                mothermentorObservation =
+                        JsonFormUtils.getValue(jsonObject, "majibu_ya_uchunguzi_tb");
             }
 
-            if (StringUtils.isBlank(mothermentorObservation)){
-                mothermentorObservation = JsonFormUtils.getValue(jsonObject, "mother_mentor_interview_findings");
+            if (StringUtils.isBlank(mothermentorObservation)) {
+                mothermentorObservation =
+                        JsonFormUtils.getValue(jsonObject, "mother_mentor_interview_findings");
             }
 
-            if (StringUtils.isBlank(mothermentorObservation)){
-                mothermentorObservation = JsonFormUtils.getValue(jsonObject, "majibu_ya_uchunguzi_ukoma");
+            if (StringUtils.isBlank(mothermentorObservation)) {
+                mothermentorObservation =
+                        JsonFormUtils.getValue(jsonObject, "majibu_ya_uchunguzi_ukoma");
             }
 
-            screeningStatus = JsonFormUtils.getValue(jsonObject, "screening_status");
+            screeningStatus = JsonFormUtils.getValue(jsonObject, DBConstants.KEY.SCREENING_STATUS);
 
         } catch (JSONException e) {
-           Timber.e(e);
+            Timber.e(e);
         }
     }
 
@@ -105,7 +109,7 @@ public class MotherMentorInvestigationActionHelper implements BaseMotherMentorVi
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        if(StringUtils.isNotBlank(mothermentorObservation)){
+        if (StringUtils.isNotBlank(mothermentorObservation)) {
             return BaseMotherMentorVisitAction.Status.COMPLETED;
         }
         return BaseMotherMentorVisitAction.Status.PENDING;

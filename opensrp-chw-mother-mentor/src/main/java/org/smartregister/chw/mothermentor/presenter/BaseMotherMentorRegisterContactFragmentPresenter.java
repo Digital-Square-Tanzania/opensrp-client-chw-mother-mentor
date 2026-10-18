@@ -14,7 +14,8 @@ import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherMentorRegisterFragmentContract.Presenter {
+public class BaseMotherMentorRegisterContactFragmentPresenter
+        implements MotherMentorRegisterFragmentContract.Presenter {
 
     protected WeakReference<MotherMentorRegisterFragmentContract.View> viewReference;
 
@@ -25,7 +26,10 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
     protected Set<View> visibleColumns = new TreeSet<>();
     protected String viewConfigurationIdentifier;
 
-    public BaseMotherMentorRegisterContactFragmentPresenter(MotherMentorRegisterFragmentContract.View view, MotherMentorRegisterFragmentContract.Model model, String viewConfigurationIdentifier) {
+    public BaseMotherMentorRegisterContactFragmentPresenter(
+            MotherMentorRegisterFragmentContract.View view,
+            MotherMentorRegisterFragmentContract.Model model,
+            String viewConfigurationIdentifier) {
         this.viewReference = new WeakReference<>(view);
         this.model = model;
         this.viewConfigurationIdentifier = viewConfigurationIdentifier;
@@ -34,7 +38,7 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
 
     @Override
     public String getMainCondition() {
-        return " "+getMainTable()+".is_closed = 0";
+        return " " + getMainTable() + "." + DBConstants.KEY.IS_CLOSED + " = 0";
     }
 
     @Override
@@ -48,7 +52,8 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
             return;
         }
 
-        ViewConfiguration viewConfiguration = model.getViewConfiguration(viewConfigurationIdentifier);
+        ViewConfiguration viewConfiguration =
+                model.getViewConfiguration(viewConfigurationIdentifier);
         if (viewConfiguration != null) {
             config = (RegisterConfiguration) viewConfiguration.getMetadata();
             this.visibleColumns = model.getRegisterActiveColumns(viewConfigurationIdentifier);
@@ -77,21 +82,19 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
     }
 
     protected MotherMentorRegisterFragmentContract.View getView() {
-        if (viewReference != null)
-            return viewReference.get();
-        else
-            return null;
+        if (viewReference != null) return viewReference.get();
+        else return null;
     }
 
     @Override
     public void startSync() {
-//        implement
+        //        implement
 
     }
 
     @Override
     public void searchGlobally(String s) {
-//        implement
+        //        implement
 
     }
 
@@ -102,6 +105,13 @@ public class BaseMotherMentorRegisterContactFragmentPresenter implements MotherM
 
     @Override
     public String getDueFilterCondition() {
-        return " (cast( julianday(STRFTIME('%Y-%m-%d', datetime('now'))) -  julianday(IFNULL(SUBSTR(mothermentor_test_date,7,4)|| '-' || SUBSTR(mothermentor_test_date,4,2) || '-' || SUBSTR(mothermentor_test_date,1,2),'')) as integer) between 7 and 14) ";
+        return " (cast( julianday(STRFTIME('%Y-%m-%d', datetime('now'))) - "
+                + " julianday(IFNULL(SUBSTR("
+                + DBConstants.KEY.MOTHERMENTOR_TEST_DATE
+                + ",7,4)|| '-' || SUBSTR("
+                + DBConstants.KEY.MOTHERMENTOR_TEST_DATE
+                + ",4,2) || '-' || SUBSTR("
+                + DBConstants.KEY.MOTHERMENTOR_TEST_DATE
+                + ",1,2),'')) as integer) between 7 and 14) ";
     }
 }

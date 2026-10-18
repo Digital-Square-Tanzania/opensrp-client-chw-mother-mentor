@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMobilizationDao;
 import org.smartregister.chw.mothermentor.model.MotherMentorMobilizationModel;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,10 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         String sessionId = getIntent().getStringExtra(EXTRA_SESSION_ID);
-        MotherMentorMobilizationModel session = StringUtils.isBlank(sessionId) ? null : MotherMentorMobilizationDao.getMobilizationSession(sessionId);
+        MotherMentorMobilizationModel session =
+                StringUtils.isBlank(sessionId)
+                        ? null
+                        : MotherMentorMobilizationDao.getMobilizationSession(sessionId);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -47,27 +51,55 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
         int padding = dp(16);
         content.setPadding(padding, padding, padding, padding);
         scrollView.addView(content);
-        root.addView(scrollView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+        root.addView(
+                scrollView,
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
 
         if (session == null) {
             TextView empty = text(getString(R.string.no_record), 16, Color.DKGRAY, Typeface.NORMAL);
             empty.setGravity(Gravity.CENTER);
-            content.addView(empty, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            content.addView(
+                    empty,
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT));
         } else {
             addDetail(content, R.string.mothermentor_activity_date, session.getSessionDate());
-            addDetail(content, R.string.mothermentor_activity_type, translateActivityType(session.getActivityType()));
-            addDetail(content, R.string.mothermentor_activity_type_other, session.getActivityTypeOther());
+            addDetail(
+                    content,
+                    R.string.mothermentor_activity_type,
+                    translateActivityType(session.getActivityType()));
+            addDetail(
+                    content,
+                    R.string.mothermentor_activity_type_other,
+                    session.getActivityTypeOther());
             addDetail(content, R.string.mothermentor_recorded_location, session.getGps());
-            addDetail(content, R.string.mothermentor_education_topics_provided, translateEducationTopics(session.getEducationTopics()));
-            addDetail(content, R.string.mothermentor_education_topics_other, session.getEducationTopicsOther());
+            addDetail(
+                    content,
+                    R.string.mothermentor_education_topics_provided,
+                    translateEducationTopics(session.getEducationTopics()));
+            addDetail(
+                    content,
+                    R.string.mothermentor_education_topics_other,
+                    session.getEducationTopicsOther());
             addDetail(content, R.string.mothermentor_men_educated, session.getMenEducated());
             addDetail(content, R.string.mothermentor_women_educated, session.getWomenEducated());
-            addDetail(content, R.string.mothermentor_total_educated, StringUtils.defaultIfBlank(session.getTotalEducated(), session.getSessionParticipants()));
+            addDetail(
+                    content,
+                    R.string.mothermentor_total_educated,
+                    StringUtils.defaultIfBlank(
+                            session.getTotalEducated(), session.getSessionParticipants()));
             addDetail(content, R.string.mothermentor_referred_male, session.getReferredMen());
             addDetail(content, R.string.mothermentor_referred_female, session.getReferredWomen());
             addDetail(content, R.string.mothermentor_referred_total, session.getReferredTotal());
-            addDetail(content, R.string.mothermentor_facility_referral_services, translateReferralServices(session.getReferralServices()));
-            addDetail(content, R.string.mothermentor_facility_referral_other, session.getReferralOther());
+            addDetail(
+                    content,
+                    R.string.mothermentor_facility_referral_services,
+                    translateReferralServices(session.getReferralServices()));
+            addDetail(
+                    content,
+                    R.string.mothermentor_facility_referral_other,
+                    session.getReferralOther());
             addDetail(content, R.string.mothermentor_comments, session.getComments());
         }
 
@@ -86,8 +118,14 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
         back.setOnClickListener(view -> finish());
         header.addView(back, new LinearLayout.LayoutParams(dp(48), dp(56)));
 
-        TextView title = text(getString(R.string.mothermentor_mobilization_session_details), 18, Color.WHITE, Typeface.BOLD);
-        header.addView(title, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        TextView title =
+                text(
+                        getString(R.string.mothermentor_mobilization_session_details),
+                        18,
+                        Color.WHITE,
+                        Typeface.BOLD);
+        header.addView(
+                title, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
         return header;
     }
@@ -161,14 +199,29 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
         for (String raw : value.replace("[", "").replace("]", "").replace("\"", "").split(",")) {
             String key = raw.trim();
             switch (key) {
-                case "hiv_testing": labels.add(getString(R.string.mothermentor_referral_hiv_testing)); break;
-                case "syphilis_testing": labels.add(getString(R.string.mothermentor_referral_syphilis_testing)); break;
-                case "hepatitis_b_testing": labels.add(getString(R.string.mothermentor_referral_hepatitis_b_testing)); break;
-                case "anc": labels.add(getString(R.string.mothermentor_referral_anc)); break;
-                case "ctc": labels.add(getString(R.string.mothermentor_referral_ctc)); break;
-                case "gbv": labels.add(getString(R.string.mothermentor_referral_gbv)); break;
-                case "other": labels.add(getString(R.string.mothermentor_referral_other)); break;
-                default: labels.add(key);
+                case "hiv_testing":
+                    labels.add(getString(R.string.mothermentor_referral_hiv_testing));
+                    break;
+                case "syphilis_testing":
+                    labels.add(getString(R.string.mothermentor_referral_syphilis_testing));
+                    break;
+                case "hepatitis_b_testing":
+                    labels.add(getString(R.string.mothermentor_referral_hepatitis_b_testing));
+                    break;
+                case "anc":
+                    labels.add(getString(R.string.mothermentor_referral_anc));
+                    break;
+                case "ctc":
+                    labels.add(getString(R.string.mothermentor_referral_ctc));
+                    break;
+                case "gbv":
+                    labels.add(getString(R.string.mothermentor_referral_gbv));
+                    break;
+                case DBConstants.KEY.OTHER:
+                    labels.add(getString(R.string.mothermentor_referral_other));
+                    break;
+                default:
+                    labels.add(key);
             }
         }
         return StringUtils.join(labels, "\n");

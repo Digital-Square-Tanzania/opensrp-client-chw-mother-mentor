@@ -8,14 +8,16 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+
+import timber.log.Timber;
 
 import java.util.List;
 import java.util.Map;
 
-import timber.log.Timber;
-
-public class MotherMentorSampleActionHelper implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
+public class MotherMentorSampleActionHelper
+        implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
     protected String jsonPayload;
 
     protected String sampleCollection;
@@ -28,16 +30,22 @@ public class MotherMentorSampleActionHelper implements BaseMotherMentorVisitActi
     protected MemberObject memberObject;
     private MotherMentorInvestigationActionHelper tbInvestigationActionHelper;
 
-
-    public MotherMentorSampleActionHelper(Context context, MemberObject memberObject, MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
+    public MotherMentorSampleActionHelper(
+            Context context,
+            MemberObject memberObject,
+            MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
         this.context = context;
         this.memberObject = memberObject;
         this.tbInvestigationActionHelper = tbInvestigationActionHelper;
-        this.observation = tbInvestigationActionHelper != null ? tbInvestigationActionHelper.getScreeningStatus() : null;
+        this.observation =
+                tbInvestigationActionHelper != null
+                        ? tbInvestigationActionHelper.getScreeningStatus()
+                        : null;
     }
 
     @Override
-    public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
+    public void onJsonFormLoaded(
+            String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
         this.jsonPayload = jsonPayload;
     }
 
@@ -59,8 +67,8 @@ public class MotherMentorSampleActionHelper implements BaseMotherMentorVisitActi
     public void onPayloadReceived(String jsonPayload) {
         try {
             JSONObject jsonObject = new JSONObject(jsonPayload);
-            sampleCollection = JsonFormUtils.getValue(jsonObject, "has_sample_been_collected");
-
+            sampleCollection =
+                    JsonFormUtils.getValue(jsonObject, DBConstants.KEY.HAS_SAMPLE_BEEN_COLLECTED);
 
         } catch (JSONException e) {
             Timber.e(e);
@@ -90,12 +98,10 @@ public class MotherMentorSampleActionHelper implements BaseMotherMentorVisitActi
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
 
-
-        if(StringUtils.isNotBlank(sampleCollection)){
+        if (StringUtils.isNotBlank(sampleCollection)) {
             return BaseMotherMentorVisitAction.Status.COMPLETED;
         }
         return BaseMotherMentorVisitAction.Status.PENDING;
-
     }
 
     @Override
@@ -117,8 +123,12 @@ public class MotherMentorSampleActionHelper implements BaseMotherMentorVisitActi
         return StringUtils.defaultString(observation);
     }
 
-    public void setTbInvestigationActionHelper(MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
+    public void setTbInvestigationActionHelper(
+            MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
         this.tbInvestigationActionHelper = tbInvestigationActionHelper;
-        this.observation = tbInvestigationActionHelper != null ? tbInvestigationActionHelper.getScreeningStatus() : null;
+        this.observation =
+                tbInvestigationActionHelper != null
+                        ? tbInvestigationActionHelper.getScreeningStatus()
+                        : null;
     }
 }

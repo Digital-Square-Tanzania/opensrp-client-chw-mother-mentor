@@ -8,11 +8,10 @@ public interface Constants {
     String STEP_TWO = "step2";
     String MOTHERMENTOR_VISIT_GROUP = "mothermentor_visit_group";
 
-
     interface JSON_FORM_EXTRA {
         String JSON = "json";
         String ENCOUNTER_TYPE = "encounter_type";
-        String EVENT_TYPE = "eventType";
+        String EVENT_TYPE = DBConstants.KEY.EVENT_TYPE;
     }
 
     interface EVENT_TYPE {
@@ -33,7 +32,6 @@ public interface Constants {
         String MOTHER_MENTOR_ENROLL_IIT = "Mother Mentor Enroll IIT";
         String MOTHER_MENTOR_ENROLL_PARTNER = "Mother Mentor Enroll Partner";
         String MOTHER_MENTOR_ENROLL_CHILD_EID = "Mother Mentor Enroll Child Eid";
-
     }
 
     interface FORMS {
@@ -50,13 +48,13 @@ public interface Constants {
         String CONTACT_OBSERVATION_RESULTS = "mothermentor_contact_observation_results";
         String MOTHERMENTOR_FOLLOWUP_VISIT = "mothermentor_followup_visit";
         String RECORD_LEPROSY_TREATMENT_START_DATE = "mothermentor_record_mother_mentor_start_date";
-
     }
 
     interface MotherMentor_FOLLOWUP_FORMS {
 
         String MOTHERMENTOR_CONTACT_TB_INVESTIGATION = "mother_mentor_contact_tb_investigation";
-        String MOTHERMENTOR_CONTACT_LEPROSY_INVESTIGATION = "mother_mentor_contact_mother_mentor_investigation";
+        String MOTHERMENTOR_CONTACT_LEPROSY_INVESTIGATION =
+                "mother_mentor_contact_mother_mentor_investigation";
         String MOTHERMENTOR_INDEX_CLIENT_DETAILS_SOURCE = "mothermentor_index_client_details";
         String MOTHERMENTOR_SAMPLE = "mother_mentor_sample";
     }
@@ -66,6 +64,7 @@ public interface Constants {
         String MOTHERMENTOR_CONTACTS = "ec_mothermentor_contacts";
         String MOTHERMENTOR_SERVICES = "ec_mothermentor_services";
         String MOTHERMENTOR_MOBILIZATION = "ec_mothermentor_mobilization";
+        String MOTHERMENTOR_FOLLOWUP_VISIT = "ec_mothermentor_followup_visit";
         String MOTHERMENTOR_VISIT = "ec_mothermentor_visit";
         String MOTHERMENTOR_ENROLL_IIT = "ec_mothermentor_enroll_it";
         String MOTHERMENTOR_ENROLL_PARTNER = "ec_mothermentor_enroll_partner";
@@ -80,7 +79,6 @@ public interface Constants {
         String MEMBER_PROFILE_OBJECT = "MemberObject";
         String EDIT_MODE = "editMode";
         String PROFILE_TYPE = "profile_type";
-
     }
 
     interface ACTIVITY_PAYLOAD_TYPE {
@@ -99,5 +97,4 @@ public interface Constants {
     interface PROFILE_TYPES {
         String MOTHERMENTOR_PROFILE = "mothermentor_profile";
     }
-
 }

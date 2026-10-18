@@ -22,9 +22,11 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 import org.apache.commons.lang3.StringUtils;
-import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.contract.MotherMentorProfileContract;
 import org.smartregister.chw.mothermentor.custom_views.BaseMotherMentorFloatingMenu;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
@@ -33,21 +35,22 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.interactor.BaseMotherMentorProfileInteractor;
 import org.smartregister.chw.mothermentor.presenter.BaseMotherMentorProfilePresenter;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorUtil;
 import org.smartregister.domain.AlertStatus;
 import org.smartregister.helper.ImageRenderHelper;
 import org.smartregister.view.activity.BaseProfileActivity;
 import org.smartregister.view.customcontrols.CustomFontTextView;
 
+import timber.log.Timber;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-import timber.log.Timber;
-
-
-public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivity implements MotherMentorProfileContract.View, MotherMentorProfileContract.InteractorCallBack {
+public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivity
+        implements MotherMentorProfileContract.View,
+                MotherMentorProfileContract.InteractorCallBack {
 
     protected MemberObject memberObject;
     protected MotherMentorProfileContract.Presenter profilePresenter;
@@ -112,7 +115,8 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             Drawable upArrow = getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp);
-            upArrow.setColorFilter(getResources().getColor(R.color.text_blue), PorterDuff.Mode.SRC_ATOP);
+            upArrow.setColorFilter(
+                    getResources().getColor(R.color.text_blue), PorterDuff.Mode.SRC_ATOP);
             actionBar.setHomeAsUpIndicator(upArrow);
         }
 
@@ -143,14 +147,17 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         visitStatus = findViewById(R.id.record_visit_not_done_bar);
         visitDone = findViewById(R.id.visit_done_bar);
         visitInProgress = findViewById(R.id.record_visit_in_progress);
-        mothermentorServiceInProgress = findViewById(R.id.record_mothermentor_service_visit_in_progress);
+        mothermentorServiceInProgress =
+                findViewById(R.id.record_mothermentor_service_visit_in_progress);
         recordVisits = findViewById(R.id.record_visits);
         progressBar = findViewById(R.id.progress_bar);
         textViewRecordAncNotDone = findViewById(R.id.textview_record_anc_not_done);
         textViewVisitDoneEdit = findViewById(R.id.textview_edit);
         textViewRecordMotherMentor = findViewById(R.id.textview_record_mothermentor);
-        textViewRecordTbContactVisit = findViewById(R.id.textview_record_mothermentor_contact_visit);
-        textViewRecordMotherMentorTreatmentStartDate = findViewById(R.id.textview_record_mother_mentor_start_date);
+        textViewRecordTbContactVisit =
+                findViewById(R.id.textview_record_mothermentor_contact_visit);
+        textViewRecordMotherMentorTreatmentStartDate =
+                findViewById(R.id.textview_record_mother_mentor_start_date);
         textViewContinueMotherMentor = findViewById(R.id.textview_continue);
         textViewContinueMotherMentorService = findViewById(R.id.continue_mothermentor_service);
         manualProcessVisit = findViewById(R.id.textview_manual_process);
@@ -159,7 +166,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         imageView = findViewById(R.id.imageview_profile);
 
         ivViewHistoryArrow = findViewById(R.id.ivViewHistoryArrow);
-
 
         ivViewHistoryArrow.setOnClickListener(this);
         textViewRecordAncNotDone.setOnClickListener(this);
@@ -186,7 +192,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         profilePresenter.fillProfileData(memberObject);
         setupViews();
     }
-
 
     @Override
     protected void onResume() {
@@ -221,14 +226,16 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     }
 
     protected Visit getServiceVisit() {
-        return MotherMentorLibrary.getInstance().visitRepository().getLatestVisit(memberObject.getBaseEntityId(), Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
+        return MotherMentorLibrary.getInstance()
+                .visitRepository()
+                .getLatestVisit(
+                        memberObject.getBaseEntityId(),
+                        Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
     }
-
 
     protected void processMotherMentorService() {
         findViewById(R.id.family_mothermentor_head).setVisibility(View.VISIBLE);
     }
-
 
     protected MemberObject getMemberObject(String baseEntityId) {
         MemberObject member = MotherMentorDao.getMember(baseEntityId);
@@ -237,7 +244,6 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         }
 
         return MotherMentorDao.getContact(baseEntityId);
-
     }
 
     @Override
@@ -252,15 +258,25 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         } else if (id == R.id.rlFamilyServicesDue) {
             this.openFamilyDueServices();
         } else if (id == R.id.textview_record_mothermentor) {
-            if (textViewRecordMotherMentor.getText().equals(getString(R.string.record_mothermentor))) {
+            if (textViewRecordMotherMentor
+                    .getText()
+                    .equals(getString(R.string.record_mothermentor))) {
                 this.openRecordClientVisit();
-            } else if (textViewRecordMotherMentor.getText().equals(getString(R.string.record_mothermentor_contact_visit))) {
+            } else if (textViewRecordMotherMentor
+                    .getText()
+                    .equals(getString(R.string.record_mothermentor_contact_visit))) {
                 this.openRecordTbContactVisit();
-            } else if (textViewRecordMotherMentor.getText().equals(getString(R.string.record_mothermentor_client_followup_visit))) {
+            } else if (textViewRecordMotherMentor
+                    .getText()
+                    .equals(getString(R.string.record_mothermentor_client_followup_visit))) {
                 this.openFollowupVisit();
-            } else if (textViewRecordMotherMentor.getText().equals(getString(R.string.record_mothermentor_contact_visit_followup))) {
+            } else if (textViewRecordMotherMentor
+                    .getText()
+                    .equals(getString(R.string.record_mothermentor_contact_visit_followup))) {
                 this.openTbContactFollowUpVisit();
-            } else if (textViewRecordMotherMentor.getText().equals(getString(R.string.record_observation_results))) {
+            } else if (textViewRecordMotherMentor
+                    .getText()
+                    .equals(getString(R.string.record_observation_results))) {
                 this.openObservationResults();
             } else {
                 Toast.makeText(getApplicationContext(), "No click", Toast.LENGTH_SHORT).show();
@@ -275,7 +291,9 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     @Override
     protected void initializePresenter() {
         showProgressBar(true);
-        profilePresenter = new BaseMotherMentorProfilePresenter(this, new BaseMotherMentorProfileInteractor(), memberObject);
+        profilePresenter =
+                new BaseMotherMentorProfilePresenter(
+                        this, new BaseMotherMentorProfileInteractor(), memberObject);
         fetchProfileData();
         profilePresenter.refreshProfileBottom();
     }
@@ -287,49 +305,70 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         if (StringUtils.isNotBlank(memberObject.getPhoneNumber())) {
             baseMotherMentorFloatingMenu = new BaseMotherMentorFloatingMenu(this, memberObject);
             baseMotherMentorFloatingMenu.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
-            LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams linearLayoutParams =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
             addContentView(baseMotherMentorFloatingMenu, linearLayoutParams);
         }
     }
 
     protected void handleMissingMemberObject(@Nullable String baseEntityId) {
-        Timber.w("Unable to open Mother Mentor profile. No member found for baseEntityId=%s", baseEntityId);
-        Toast.makeText(getApplicationContext(), R.string.error_unable_to_open_profile, Toast.LENGTH_SHORT).show();
+        Timber.w(
+                "Unable to open Mother Mentor profile. No member found for "
+                        + DBConstants.KEY.EVENT_BASE_ENTITY_ID
+                        + "=%s",
+                baseEntityId);
+        Toast.makeText(
+                        getApplicationContext(),
+                        R.string.error_unable_to_open_profile,
+                        Toast.LENGTH_SHORT)
+                .show();
         finish();
     }
 
-
     @Override
     public void hideView() {
-        //Implement later
+        // Implement later
     }
 
     @Override
     public void openFollowupVisit() {
-        //Implement in application
+        // Implement in application
     }
 
     @SuppressLint("DefaultLocale")
     @Override
     public void setProfileViewWithData() {
-        textViewName.setText(String.format("%s %s %s, %d", memberObject.getFirstName(), memberObject.getMiddleName(), memberObject.getLastName(), memberObject.getAge()));
-        textViewGender.setText(MotherMentorUtil.getGenderTranslated(this, memberObject.getGender()));
+        textViewName.setText(
+                String.format(
+                        "%s %s %s, %d",
+                        memberObject.getFirstName(),
+                        memberObject.getMiddleName(),
+                        memberObject.getLastName(),
+                        memberObject.getAge()));
+        textViewGender.setText(
+                MotherMentorUtil.getGenderTranslated(this, memberObject.getGender()));
         textViewLocation.setText(memberObject.getAddress());
         textViewUniqueID.setText(memberObject.getUniqueId());
 
-        if (StringUtils.isNotBlank(memberObject.getPrimaryCareGiver()) && memberObject.getPrimaryCareGiver().equals(memberObject.getBaseEntityId())) {
+        if (StringUtils.isNotBlank(memberObject.getPrimaryCareGiver())
+                && memberObject.getPrimaryCareGiver().equals(memberObject.getBaseEntityId())) {
             findViewById(R.id.primary_mothermentor_caregiver).setVisibility(View.GONE);
         }
 
         if (memberObject.getMotherMentorTestDate() != null) {
-            textview_positive_date.setText(getString(R.string.mothermentor_positive) + " " + formatTime(memberObject.getMotherMentorTestDate()));
+            textview_positive_date.setText(
+                    getString(R.string.mothermentor_positive)
+                            + " "
+                            + formatTime(memberObject.getMotherMentorTestDate()));
         }
     }
 
     @Override
     public void setOverDueColor() {
-        textViewRecordMotherMentor.setBackground(getResources().getDrawable(R.drawable.record_btn_selector_overdue));
-
+        textViewRecordMotherMentor.setBackground(
+                getResources().getDrawable(R.drawable.record_btn_selector_overdue));
     }
 
     @Override
@@ -339,7 +378,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
 
     @Override
     protected void fetchProfileData() {
-        //fetch profile data
+        // fetch profile data
     }
 
     @Override
@@ -356,7 +395,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     @Override
     public void refreshMedicalHistory(boolean hasHistory) {
         showProgressBar(false);
-//       rlLastVisit.setVisibility(hasHistory ? View.VISIBLE : View.GONE);
+        //       rlLastVisit.setVisibility(hasHistory ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -367,9 +406,19 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         rlUpcomingServices.setVisibility(View.GONE);
 
         if (status == AlertStatus.upcoming) {
-            tvUpComingServices.setText(MotherMentorUtil.fromHtml(getString(R.string.vaccine_service_upcoming, service, dateFormat.format(date))));
+            tvUpComingServices.setText(
+                    MotherMentorUtil.fromHtml(
+                            getString(
+                                    R.string.vaccine_service_upcoming,
+                                    service,
+                                    dateFormat.format(date))));
         } else {
-            tvUpComingServices.setText(MotherMentorUtil.fromHtml(getString(R.string.vaccine_service_due, service, dateFormat.format(date))));
+            tvUpComingServices.setText(
+                    MotherMentorUtil.fromHtml(
+                            getString(
+                                    R.string.vaccine_service_due,
+                                    service,
+                                    dateFormat.format(date))));
         }
     }
 
@@ -381,7 +430,8 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         } else if (status == AlertStatus.normal) {
             setFamilyStatus(getString(R.string.family_has_services_due));
         } else if (status == AlertStatus.urgent) {
-            tvFamilyStatus.setText(MotherMentorUtil.fromHtml(getString(R.string.family_has_service_overdue)));
+            tvFamilyStatus.setText(
+                    MotherMentorUtil.fromHtml(getString(R.string.family_has_service_overdue)));
         }
     }
 
@@ -393,18 +443,18 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
 
     @Override
     public void openMedicalHistory() {
-        //implementation here
+        // implementation here
 
     }
 
     @Override
     public void openUpcomingService() {
-        //implement
+        // implement
     }
 
     @Override
     public void openFamilyDueServices() {
-        //implement
+        // implement
     }
 
     @Nullable
@@ -423,9 +473,8 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.REQUEST_CODE_GET_JSON && resultCode == RESULT_OK) {
             profilePresenter.saveForm(data.getStringExtra(Constants.JSON_FORM_EXTRA.JSON));
-//           finish();
+            //           finish();
             textViewRecordTbContactVisit.setVisibility(View.GONE);
-
         }
     }
 

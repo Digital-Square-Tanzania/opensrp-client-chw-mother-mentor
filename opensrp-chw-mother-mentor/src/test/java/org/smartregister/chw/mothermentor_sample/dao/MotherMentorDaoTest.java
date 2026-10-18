@@ -20,11 +20,9 @@ import java.util.Date;
 @RunWith(MockitoJUnitRunner.class)
 public class MotherMentorDaoTest extends MotherMentorDao {
 
-    @Mock
-    private Repository repository;
+    @Mock private Repository repository;
 
-    @Mock
-    private SQLiteDatabase database;
+    @Mock private SQLiteDatabase database;
 
     @Before
     public void setUp() {
@@ -36,7 +34,13 @@ public class MotherMentorDaoTest extends MotherMentorDao {
     public void testIsRegisteredForMotherMentor() {
         Mockito.doReturn(database).when(repository).getReadableDatabase();
         boolean registered = MotherMentorDao.isRegisteredForMotherMentor("12345");
-        Mockito.verify(database).rawQuery(Mockito.contains("SELECT count(p.base_entity_id) count FROM ec_mothermentor_enrollment p WHERE p.base_entity_id = '12345' AND p.is_closed = 0"), Mockito.any());
+        Mockito.verify(database)
+                .rawQuery(
+                        Mockito.contains(
+                                "SELECT count(p.base_entity_id) count FROM"
+                                        + " ec_mothermentor_enrollment p WHERE p.base_entity_id ="
+                                        + " '12345' AND p.is_closed = 0"),
+                        Mockito.any());
         Assert.assertFalse(registered);
     }
 
@@ -44,44 +48,55 @@ public class MotherMentorDaoTest extends MotherMentorDao {
     public void testGetMotherMentorTestDate() {
         Mockito.doReturn(database).when(repository).getReadableDatabase();
         Date testDate = MotherMentorDao.getMotherMentorTestDate("34233");
-        Mockito.verify(database).rawQuery(Mockito.contains("select mothermentor_test_date from ec_mothermentor_enrollment where base_entity_id = '34233'"), Mockito.any());
+        Mockito.verify(database)
+                .rawQuery(
+                        Mockito.contains(
+                                "select mothermentor_test_date from ec_mothermentor_enrollment"
+                                        + " where is_closed = 0 AND base_entity_id = '34233'"),
+                        Mockito.any());
     }
-
 
     @Test
     public void testGetVisitNumber() {
         Mockito.doReturn(database).when(repository).getReadableDatabase();
         int result = MotherMentorDao.getVisitNumber("89012");
-        Mockito.verify(database).rawQuery(Mockito.contains("SELECT visit_number  FROM ec_mothermentor_follow_up_visit WHERE entity_id='89012' ORDER BY visit_number DESC LIMIT 1"), Mockito.any());
+        Mockito.verify(database)
+                .rawQuery(
+                        Mockito.contains(
+                                "SELECT visit_number  FROM ec_mothermentor_follow_up_visit WHERE"
+                                    + " is_closed = 0 AND entity_id='89012' ORDER BY visit_number"
+                                    + " DESC LIMIT 1"),
+                        Mockito.any());
         Assert.assertEquals(0, result);
     }
 
     @Test
     public void testMergeObservationResultsTbSavedThenMotherMentorSaved() {
-        ObservationResults latestMotherMentorOnly = createObservation(
-                "20240102010101",
-                "",
-                "",
-                "",
-                "",
-                "skin_smear",
-                "",
-                "2024-01-02",
-                "no_mother_mentor_detected"
-        );
-        ObservationResults olderTbOnly = createObservation(
-                "20240101010101",
-                "tb_investigation",
-                "gene_xpert",
-                "tb_dr_tb_undetected",
-                "",
-                "",
-                "2024-01-01",
-                "",
-                ""
-        );
+        ObservationResults latestMotherMentorOnly =
+                createObservation(
+                        "20240102010101",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "skin_smear",
+                        "",
+                        "2024-01-02",
+                        "no_mother_mentor_detected");
+        ObservationResults olderTbOnly =
+                createObservation(
+                        "20240101010101",
+                        "tb_investigation",
+                        "gene_xpert",
+                        "tb_dr_tb_undetected",
+                        "",
+                        "",
+                        "2024-01-01",
+                        "",
+                        "");
 
-        ObservationResults merged = mergeObservationResults(Arrays.asList(latestMotherMentorOnly, olderTbOnly));
+        ObservationResults merged =
+                mergeObservationResults(Arrays.asList(latestMotherMentorOnly, olderTbOnly));
 
         Assert.assertNotNull(merged);
         Assert.assertEquals("20240102010101", merged.getLastInteractedWith());
@@ -91,35 +106,37 @@ public class MotherMentorDaoTest extends MotherMentorDao {
         Assert.assertEquals("skin_smear", merged.getMotherMentorDiagnosticMethod());
         Assert.assertEquals("2024-01-01", merged.getTbTreatmentStartDate());
         Assert.assertEquals("2024-01-02", merged.getMotherMentorTreatmentStartDate());
-        Assert.assertEquals("no_mother_mentor_detected", merged.getMotherMentorInvestigationResults());
+        Assert.assertEquals(
+                "no_mother_mentor_detected", merged.getMotherMentorInvestigationResults());
     }
 
     @Test
     public void testMergeObservationResultsMotherMentorSavedThenTbSaved() {
-        ObservationResults latestTbOnly = createObservation(
-                "20240102010101",
-                "tb_investigation",
-                "chest_xray",
-                "poor_quality_sample",
-                "non_suggestive",
-                "",
-                "2024-01-02",
-                "",
-                ""
-        );
-        ObservationResults olderMotherMentorOnly = createObservation(
-                "20240101010101",
-                "",
-                "",
-                "",
-                "",
-                "skin_smear",
-                "",
-                "2024-01-01",
-                "suspected_mother_mentor"
-        );
+        ObservationResults latestTbOnly =
+                createObservation(
+                        "20240102010101",
+                        "tb_investigation",
+                        "chest_xray",
+                        "poor_quality_sample",
+                        "non_suggestive",
+                        "",
+                        "2024-01-02",
+                        "",
+                        "");
+        ObservationResults olderMotherMentorOnly =
+                createObservation(
+                        "20240101010101",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "skin_smear",
+                        "",
+                        "2024-01-01",
+                        "suspected_mother_mentor");
 
-        ObservationResults merged = mergeObservationResults(Arrays.asList(latestTbOnly, olderMotherMentorOnly));
+        ObservationResults merged =
+                mergeObservationResults(Arrays.asList(latestTbOnly, olderMotherMentorOnly));
 
         Assert.assertNotNull(merged);
         Assert.assertEquals("20240102010101", merged.getLastInteractedWith());
@@ -130,35 +147,44 @@ public class MotherMentorDaoTest extends MotherMentorDao {
         Assert.assertEquals("skin_smear", merged.getMotherMentorDiagnosticMethod());
         Assert.assertEquals("2024-01-02", merged.getTbTreatmentStartDate());
         Assert.assertEquals("2024-01-01", merged.getMotherMentorTreatmentStartDate());
-        Assert.assertEquals("suspected_mother_mentor", merged.getMotherMentorInvestigationResults());
+        Assert.assertEquals(
+                "suspected_mother_mentor", merged.getMotherMentorInvestigationResults());
         Assert.assertTrue(merged.isPoorQualitySample());
     }
 
     @Test
     public void testMergeObservationResultsSingleCombinedEntry() {
-        ObservationResults combined = createObservation(
-                "20240103010101",
-                "tb_investigation",
-                "gene_xpert",
-                "tb_dr_tb_undetected",
-                "non_suggestive",
-                "skin_smear",
-                "2024-01-03",
-                "2024-01-03",
-                "no_mother_mentor_detected"
-        );
+        ObservationResults combined =
+                createObservation(
+                        "20240103010101",
+                        "tb_investigation",
+                        "gene_xpert",
+                        "tb_dr_tb_undetected",
+                        "non_suggestive",
+                        "skin_smear",
+                        "2024-01-03",
+                        "2024-01-03",
+                        "no_mother_mentor_detected");
 
         ObservationResults merged = mergeObservationResults(Collections.singletonList(combined));
 
         Assert.assertNotNull(merged);
         Assert.assertEquals("20240103010101", merged.getLastInteractedWith());
         Assert.assertEquals("tb_dr_tb_undetected", merged.getTbSampleTestResults());
-        Assert.assertEquals("no_mother_mentor_detected", merged.getMotherMentorInvestigationResults());
+        Assert.assertEquals(
+                "no_mother_mentor_detected", merged.getMotherMentorInvestigationResults());
     }
 
-    private ObservationResults createObservation(String lastInteractedWith, String investigationType, String tbDiagnosticTestType,
-                                                 String tbSampleTestResults, String clinicalDecision, String mother_mentorDiagnosticMethod,
-                                                 String tbTreatmentStartDate, String mother_mentorTreatmentStartDate, String mother_mentorInvestigationResults) {
+    private ObservationResults createObservation(
+            String lastInteractedWith,
+            String investigationType,
+            String tbDiagnosticTestType,
+            String tbSampleTestResults,
+            String clinicalDecision,
+            String mother_mentorDiagnosticMethod,
+            String tbTreatmentStartDate,
+            String mother_mentorTreatmentStartDate,
+            String mother_mentorInvestigationResults) {
         return new ObservationResults(
                 lastInteractedWith,
                 investigationType,
@@ -169,8 +195,6 @@ public class MotherMentorDaoTest extends MotherMentorDao {
                 tbTreatmentStartDate,
                 mother_mentorTreatmentStartDate,
                 mother_mentorInvestigationResults,
-                false
-        );
+                false);
     }
-
 }
