@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Tuberculosis Investigation",
+    "title": "Tuberculosis investigation",
     "fields": [
       {
         "key": "tb_screening_findings",
@@ -74,7 +74,7 @@
           },
           {
             "key": "cough_with_blood",
-            "text": "Cough mixed with blood (D)",
+            "text": "Sputum mixed with blood (D)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "cough_with_blood"

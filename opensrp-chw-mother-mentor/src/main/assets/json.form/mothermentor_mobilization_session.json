@@ -43,7 +43,7 @@
   },
   "global": {},
   "step1": {
-    "title": "New Activity",
+    "title": "New activity",
     "fields": [
       {
         "key": "sh_tarehe",
@@ -298,20 +298,20 @@
         "hint": "Men referred to a facility",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Enter a whole number"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Enter 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Must be zero or more"
         }
       },
       {
@@ -323,20 +323,20 @@
         "hint": "Women referred to a facility",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Enter a whole number"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Enter 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Must be zero or more"
         }
       },
       {
@@ -364,7 +364,7 @@
         "label": "Facility referral services",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "options": [
           {
@@ -428,7 +428,7 @@
         "hint": "Specify other referral service",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "relevance": {
           "rules-engine": {

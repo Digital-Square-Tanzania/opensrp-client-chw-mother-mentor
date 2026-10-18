@@ -53,7 +53,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Topics Taught",
+    "title": "Mada zilizofundishwa",
     "fields": [
       {
         "key": "topics_taught",
@@ -61,7 +61,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "topics_taught",
         "type": "check_box",
-        "label": "Select the topics taught",
+        "label": "Chagua mada zilizofundishwa",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
@@ -99,7 +99,7 @@
           },
           {
             "key": "tuberculosis",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tuberculosis"
           },
@@ -117,32 +117,32 @@
           },
           {
             "key": "viral_load",
-            "text": "Wingi wa virusi (Viral Load)",
+            "text": "Wingi wa virusi",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "viral_load"
           },
           {
             "key": "other",
-            "text": "Nyinginezo (Taja)",
+            "text": "Nyinginezo (taja)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
           }
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select at least one topic"
+          "err": "Tafadhali chagua angalau mada moja"
         }
       },
       {
         "key": "other_topic",
         "type": "edit_text",
-        "hint": "Taja Nyinginezo",
+        "hint": "Taja nyinginezo",
         "openmrs_entity_id": "other_topic",
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",
         "v_required": {
           "value": "true",
-          "err": "Please specify the other topic"
+          "err": "Tafadhali taja mada nyingine"
         },
         "relevance": {
           "step1:topics_taught": {
@@ -165,7 +165,7 @@
         "label": "Rufaa imetolewa?",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "options": [
           {
@@ -191,7 +191,7 @@
         "label": "Huduma za rufaa",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "options": [
           {
@@ -266,7 +266,7 @@
         "hint": "Taja huduma nyingine ya rufaa",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "relevance": {
           "rules-engine": {

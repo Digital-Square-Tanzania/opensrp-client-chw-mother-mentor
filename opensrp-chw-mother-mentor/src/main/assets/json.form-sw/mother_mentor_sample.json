@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Kuchukua Sampuli",
+    "title": "Kuchukua sampuli",
     "fields": [
       {
         "key": "has_sample_been_collected",
@@ -63,7 +63,7 @@
         "options": [
           {
             "key": "yes",
-            "text": "Ndio",
+            "text": "Ndiyo",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "yes"

@@ -49,14 +49,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Group Linkage",
+    "title": "Group linkage",
     "fields": [
       {
         "key": "has_been_linked_to_psychosocial_support_group",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "has_been_linked_to_psychosocial_support_group",
-        "label": "Has been linked to a psychosocial support group ",
+        "label": "Has the client been linked to a psychosocial support group?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -76,7 +76,7 @@
           },
           {
             "key": "already_in_group",
-            "text": "Already in a Group",
+            "text": "Already in a group",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "already_in_group"
@@ -92,7 +92,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "has_been_linked_to_iga_group",
-        "label": "Has been linked to an IGA group ",
+        "label": "Has the client been linked to an income-generating activity (IGA) group?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -112,7 +112,7 @@
           },
           {
             "key": "already_in_group",
-            "text": "Already in a Group",
+            "text": "Already in a group",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "already_in_group"

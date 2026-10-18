@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "HEI Registration",
+    "title": "HEI registration",
     "next": "step2",
     "fields": [
       {
@@ -163,20 +163,20 @@
         "mask": "##-##-####-######",
         "mask_hint": "12345678912345",
         "allowed_chars": "0123456789",
-        "hint": "HEI Number",
+        "hint": "HEI number",
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "CTC number should be of the format (XX-XX-XXXX-XXXXXX)"
+          "err": "HEI number should be of the format (XX-XX-XXXX-XXXXXX)"
         },
         "v_max_length": {
           "value": "17",
           "is_fixed_size": "true",
-          "err": "Please enter a valid CTC Number"
+          "err": "Please enter a valid HEI number"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid CTC Number"
+          "err": "Please enter a valid HEI number"
         },
         "relevance": {
           "step1:hei_registered": {
@@ -191,7 +191,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hei_toaster_info",
         "type": "toaster_notes",
-        "text": "Advise the mother/caregiver to take the child to a healthcare facility to be enrolled in HEI services. ",
+        "text": "Advise the mother/caregiver to take the child to a healthcare facility to be enrolled in HEI services.",
         "toaster_type": "warning",
         "relevance": {
           "step1:hei_registered": {
@@ -203,7 +203,7 @@
     ]
   },
   "step2": {
-    "title": "Breastfeeding Status",
+    "title": "Breastfeeding status",
     "next": "step3",
     "fields": [
       {
@@ -211,27 +211,27 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "breastfeeding_status",
-        "label": "Breastfeeding status ?",
+        "label": "Breastfeeding status",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "breast_feeding",
-            "text": "Breast Feeding",
+            "text": "Breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "breast_feeding"
           },
           {
             "key": "not_breast_feeding",
-            "text": "Not Breast Feeding",
+            "text": "Not breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breast_feeding"
           },
           {
             "key": "stop_breast_feeding",
-            "text": "Stop Breadfeasting",
+            "text": "Stopped breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "stop_breast_feeding"
@@ -252,7 +252,7 @@
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select Date breastfeeding stopped"
+          "err": "Please select the date breastfeeding stopped"
         },
         "relevance": {
           "step2:breastfeeding_status": {
@@ -264,7 +264,7 @@
     ]
   },
   "step3": {
-    "title": "Last EID Test",
+    "title": "Last EID test",
     "next": "step4",
     "fields": [
       {
@@ -272,7 +272,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "last_test",
-        "label": "Last test done ?",
+        "label": "Last test performed",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -292,14 +292,14 @@
           },
           {
             "key": "dbs_6",
-            "text": "DBS Week 6",
+            "text": "DBS week 6",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "dbs_6"
           },
           {
             "key": "dbs_9",
-            "text": "DBS Month 9",
+            "text": "DBS month 9",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "dbs_9"
@@ -315,7 +315,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "last_test_result",
-        "label": "Last test result ?",
+        "label": "Last test result",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -356,19 +356,19 @@
     ]
   },
   "step4": {
-    "title": "Mother's Name ",
+    "title": "Mother's name",
     "fields": [
       {
         "key": "mother_name",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_name",
-        "hint": "Mother name",
+        "hint": "Mother's name",
         "text_color": "#000000",
         "type": "edit_text",
         "v_required": {
           "value": "true",
-          "err": "Please write mother name"
+          "err": "Please enter the mother's name"
         },
         "v_regex": {
           "value": "[A-Za-z\\u00C0-\\u017F\\s\\u00C0-\\u017F\\.\\-\\']*",

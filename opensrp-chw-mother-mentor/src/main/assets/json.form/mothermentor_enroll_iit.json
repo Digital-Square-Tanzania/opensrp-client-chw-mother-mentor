@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Mother Follow-up",
+    "title": "Mother follow-up",
     "fields": [
       {
         "key": "relational_id",
@@ -68,7 +68,7 @@
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select the Registration date"
+          "err": "Please select the expected facility return date"
         }
       },
       {
@@ -91,7 +91,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "weeks_lost_toaster",
         "type": "toaster_notes",
-        "text": "This client has lost {weeks_lost} weeks",
+        "text": "The client is {weeks_lost} weeks overdue for the facility visit",
         "text_color": "#CF0800",
         "toaster_type": "problem",
         "relevance": {

@@ -56,7 +56,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "has_been_linked_to_psychosocial_support_group",
-        "label": "Ameunganishwa kwenye kikundi cha msaada wa kisaikolojia ",
+        "label": "Je, ameunganishwa kwenye kikundi cha msaada wa kisaikolojia?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -84,7 +84,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -92,7 +92,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "has_been_linked_to_iga_group",
-        "label": "Ameunganishwa kwenye kikundi cha IGA ",
+        "label": "Je, ameunganishwa kwenye kikundi cha shughuli za kujiongezea kipato (IGA)?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -120,7 +120,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       }
     ]

@@ -53,7 +53,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Topics Taught",
+    "title": "Topics taught",
     "fields": [
       {
         "key": "topics_taught",
@@ -165,7 +165,7 @@
         "label": "Referral provided?",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "options": [
           {
@@ -191,7 +191,7 @@
         "label": "Referral services",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "options": [
           {
@@ -266,7 +266,7 @@
         "hint": "Specify other referral service",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "relevance": {
           "rules-engine": {

@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Taarifa za Mteja",
+    "title": "Taarifa za mteja",
     "fields": [
       {
         "key": "relationship_to_index_client",
@@ -58,26 +58,26 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "relationship_to_index_client",
         "type": "native_radio",
-        "label": "Aina ya Ukaribu na Mgonjwa",
+        "label": "Aina ya ukaribu na mgonjwa",
         "label_text_size": "18px",
         "options": [
           {
             "key": "same_household",
-            "text": "Anaishi Kaya Moja",
+            "text": "Anaishi kaya moja",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "same_household"
           },
           {
             "key": "close_community_member",
-            "text": "Jamii ya Karibu",
+            "text": "Jamii ya karibu",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "close_community_member"
           },
           {
             "key": "high_tb_burden_area",
-            "text": "Maeneo yenye wagonjwa wengi wa Kifua Kikuu",
+            "text": "Maeneo yenye wagonjwa wengi wa kifua kikuu",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "high_tb_burden_area"
@@ -103,7 +103,7 @@
         "options": [
           {
             "key": "tb",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
@@ -127,7 +127,7 @@
         "openmrs_entity": "",
         "openmrs_entity_id": "",
         "type": "native_radio",
-        "label": "Mteja anaifahamu namba ya Mteja wa Kifua Kikuu/Ukoma",
+        "label": "Mteja anaifahamu namba ya mteja wa kifua kikuu/ukoma",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -136,11 +136,11 @@
         "options": [
           {
             "key": "yes",
-            "text": "Yes"
+            "text": "Ndiyo"
           },
           {
             "key": "no",
-            "text": "No"
+            "text": "Hapana"
           }
         ],
         "relevance": {
@@ -160,10 +160,10 @@
         "mask": "############-#/KK/####/###",
         "mask_hint": "07020110009752025431",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Kifua Kikuu",
+        "hint": "Namba ya mteja wa kifua kikuu",
         "v_regex": {
           "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa Kifua Kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
+          "err": "Namba ya mteja wa kifua kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -179,7 +179,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_client_names",
         "type": "edit_text",
-        "hint": "Majina ya Mteja wa Kifua Kikuu",
+        "hint": "Majina ya mteja wa kifua kikuu",
         "v_required": {
           "value": "true",
           "err": "Tafadhali jaza taarifa"
@@ -201,10 +201,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "07020110009752025431",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Ukoma",
+        "hint": "Namba ya mteja wa ukoma",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
+          "err": "Namba ya mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -220,7 +220,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_client_names",
         "type": "edit_text",
-        "hint": "Majina ya Mteja wa Ukoma",
+        "hint": "Majina ya mteja wa ukoma",
         "v_required": {
           "value": "true",
           "err": "Tafadhali jaza taarifa"
@@ -239,7 +239,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "status",
         "type": "hidden",
-        "hint": "client status",
+        "hint": "Hali ya mteja",
         "value": "client"
       }
     ]

@@ -49,14 +49,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Rufaa iliyotolewa",
+    "title": "Referral provided",
     "fields": [
       {
         "key": "referral_given",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "referral_given",
-        "label": "Referral Given ?",
+        "label": "Referral given?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -86,7 +86,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "type_of_referral_given",
         "type": "check_box",
-        "label": "Type of Referral Given ",
+        "label": "Type of referral given",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
@@ -96,25 +96,25 @@
         "options": [
           {
             "key": "cervical_cancer_screening",
-            "text": "Cervical Cancer Screening",
+            "text": "Cervical cancer screening",
             "openmrs_entity": "",
             "openmrs_entity_id": "cervical_cancer_screening"
           },
           {
             "key": "mental_health",
-            "text": "Mental Health",
+            "text": "Mental health",
             "openmrs_entity": "",
             "openmrs_entity_id": "mental_health"
           },
           {
             "key": "gender_based_violence",
-            "text": "Gender-Based Violence",
+            "text": "Gender-based violence",
             "openmrs_entity": "",
             "openmrs_entity_id": "gender_based_violence"
           },
           {
             "key": "family_planning",
-            "text": "Family Planning",
+            "text": "Family planning",
             "openmrs_entity": "",
             "openmrs_entity_id": "family_planning"
           },
@@ -126,25 +126,25 @@
           },
           {
             "key": "income_generating_activities",
-            "text": "Income Generating Activities (IGA)",
+            "text": "Income generating activities (IGA)",
             "openmrs_entity": "",
             "openmrs_entity_id": "income_generating_activities"
           },
           {
             "key": "legal_support",
-            "text": "Legal Support",
+            "text": "Legal support",
             "openmrs_entity": "",
             "openmrs_entity_id": "legal_support"
           },
           {
             "key": "psychosocial_support_group",
-            "text": "Psychosocial Support Group",
+            "text": "Psychosocial support group",
             "openmrs_entity": "",
             "openmrs_entity_id": "psychosocial_support_group"
           },
           {
             "key": "other_specify",
-            "text": "Other (Specify)",
+            "text": "Other (specify)",
             "openmrs_entity": "",
             "openmrs_entity_id": "other_specify"
           }
@@ -170,7 +170,7 @@
         "hint": "Specify other referral",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "relevance": {
           "rules-engine": {

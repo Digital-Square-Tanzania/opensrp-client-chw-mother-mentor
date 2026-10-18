@@ -49,14 +49,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Education Provided",
+    "title": "Education provided",
     "fields": [
       {
         "key": "education_provided",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "education_provided",
-        "label": "Elimu imetolewa ",
+        "label": "Has education been provided?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -85,13 +85,13 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "way_education_provided",
-        "label": "Njia ya utoaji elimu ",
+        "label": "Method of providing education",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "personal",
-            "text": "Personal",
+            "text": "Individual",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "personal"
@@ -122,7 +122,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "topics_being_provided",
         "type": "check_box",
-        "label": "Topic Provided",
+        "label": "Topics provided",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
@@ -132,7 +132,7 @@
         "options": [
           {
             "key": "prevention_of_mother_to_child_hiv_transmission",
-            "text": "Prevention of Mother-to-Child HIV Transmission",
+            "text": "Prevention of mother-to-child HIV transmission",
             "openmrs_entity": "",
             "openmrs_entity_id": "prevention_of_mother_to_child_hiv_transmission"
           },
@@ -144,25 +144,25 @@
           },
           {
             "key": "medication_adherence",
-            "text": "Medication Adherence",
+            "text": "Medication adherence",
             "openmrs_entity": "",
             "openmrs_entity_id": "medication_adherence"
           },
           {
             "key": "infant_and_young_child_feeding",
-            "text": "Infant and Young Child Feeding",
+            "text": "Infant and young child feeding",
             "openmrs_entity": "",
             "openmrs_entity_id": "infant_and_young_child_feeding"
           },
           {
             "key": "family_planning",
-            "text": "Family Planning",
+            "text": "Family planning",
             "openmrs_entity": "",
             "openmrs_entity_id": "family_planning"
           },
           {
             "key": "gender_based_violence",
-            "text": "Gender-Based Violence",
+            "text": "Gender-based violence",
             "openmrs_entity": "",
             "openmrs_entity_id": "gender_based_violence"
           },
@@ -192,25 +192,25 @@
           },
           {
             "key": "mental_health",
-            "text": "Mental Health",
+            "text": "Mental health",
             "openmrs_entity": "",
             "openmrs_entity_id": "mental_health"
           },
           {
             "key": "legal_issues",
-            "text": "Legal Issues",
+            "text": "Legal issues",
             "openmrs_entity": "",
             "openmrs_entity_id": "legal_issues"
           },
           {
             "key": "pre_exposure_prophylaxis_prep",
-            "text": "Pre-Exposure Prophylaxis (PrEP)",
+            "text": "Pre-exposure prophylaxis (PrEP)",
             "openmrs_entity": "",
             "openmrs_entity_id": "pre_exposure_prophylaxis_prep"
           },
           {
             "key": "cervical_cancer",
-            "text": "Cervical Cancer",
+            "text": "Cervical cancer",
             "openmrs_entity": "",
             "openmrs_entity_id": "cervical_cancer"
           },
@@ -242,7 +242,7 @@
         "hint": "Specify other education topic",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "relevance": {
           "rules-engine": {

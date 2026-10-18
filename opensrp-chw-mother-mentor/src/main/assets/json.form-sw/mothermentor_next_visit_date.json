@@ -63,7 +63,7 @@
         "hint": "Tarehe ya tembeleo lijalo",
         "v_required": {
           "value": "true",
-          "err": "Required"
+          "err": "Inahitajika"
         }
       }
     ]

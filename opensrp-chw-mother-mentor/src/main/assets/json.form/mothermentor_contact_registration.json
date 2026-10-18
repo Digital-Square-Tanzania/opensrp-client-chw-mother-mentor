@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Mother Mentor Contact",
+    "title": "TB/leprosy contact registration",
     "fields": [
       {
         "key": "register_contact",
@@ -52,10 +52,10 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "register_contact",
         "type": "native_radio",
-        "label": "Confirm Contact Registration",
+        "label": "Confirm contact registration",
         "v_required": {
           "value": "true",
-          "err": "Tafadhali jaza taarifa"
+          "err": "Please provide this information"
         },
         "options": [
           {

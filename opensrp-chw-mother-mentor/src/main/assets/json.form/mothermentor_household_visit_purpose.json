@@ -53,20 +53,20 @@
   },
   "global": {},
   "step1": {
-    "title": "Purpose of Visit",
+    "title": "Purpose of visit",
     "fields": [
       {
         "key": "purpose_of_visit",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "purpose_of_visit",
-        "label": "Purpose of Visit",
+        "label": "Purpose of visit",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "routine_follow_up",
-            "text": "Routine follow up",
+            "text": "Routine follow-up",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "routine_follow_up"

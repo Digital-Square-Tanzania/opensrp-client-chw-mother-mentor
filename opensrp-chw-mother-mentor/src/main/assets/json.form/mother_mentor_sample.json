@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Sample Collection",
+    "title": "Sample collection",
     "fields": [
       {
         "key": "has_sample_been_collected",

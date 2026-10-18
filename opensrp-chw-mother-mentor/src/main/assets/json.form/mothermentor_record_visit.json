@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "MotherMentor Visit",
+    "title": "Visit for a client with presumptive TB/leprosy",
     "fields": [
       {
         "key": "has_sample_been_collected",

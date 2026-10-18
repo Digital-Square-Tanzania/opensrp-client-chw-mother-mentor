@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Partner Follow-up",
+    "title": "Ufuatiliaji wa mwenzi",
     "next": "step2",
     "fields": [
       {
@@ -147,16 +147,16 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_name",
-        "hint": "Jina la Mama anayehusika (PLHIV)",
+        "hint": "Jina la mama anayeishi na VVU",
         "text_color": "#000000",
         "type": "edit_text",
         "v_required": {
           "value": "true",
-          "err": "Please write mother name"
+          "err": "Tafadhali andika jina la mama"
         },
         "v_regex": {
           "value": "[A-Za-z\\u00C0-\\u017F\\s\\u00C0-\\u017F\\.\\-\\']*",
-          "err": "Please enter a valid name"
+          "err": "Tafadhali ingiza jina sahihi"
         }
       },
       {
@@ -168,26 +168,26 @@
         "mask": "##-##-####-######",
         "mask_hint": "12345678912345",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya CTC ya Mama",
+        "hint": "Namba ya CTC ya mama",
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "CTC number should be of the format (XX-XX-XXXX-XXXXXX)"
+          "err": "Namba ya CTC inapaswa kuwa katika muundo (XX-XX-XXXX-XXXXXX)"
         },
         "v_max_length": {
           "value": "17",
           "is_fixed_size": "true",
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya CTC"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya CTC"
         }
       }
     ]
   },
   "step2": {
-    "title": "Relationship",
+    "title": "Uhusiano",
     "next": "step3",
     "fields": [
       {
@@ -196,11 +196,11 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "relationship_to_mother",
         "type": "native_radio",
-        "label": "Uhusiano na Mama",
+        "label": "Uhusiano na mama",
         "options": [
           {
             "key": "husband_or_partner",
-            "text": "Mume / Mwenzi",
+            "text": "Mume / mwenzi",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "husband_or_partner"
@@ -222,7 +222,7 @@
         ],
         "v_required": {
           "value": true,
-          "err": "Please fill"
+          "err": "Tafadhali jaza taarifa"
         }
       },
       {
@@ -242,7 +242,7 @@
     ]
   },
   "step3": {
-    "title": "Disclosure Status",
+    "title": "Hali ya kuweka wazi hali ya VVU",
     "next": "step4",
     "fields": [
       {
@@ -250,13 +250,13 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hiv_disclosure",
-        "label": "Mwenzi amejua hali ya VVU ya Mama?",
+        "label": "Mwenzi amejua hali ya VVU ya mama?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "yes",
-            "text": "Ndio",
+            "text": "Ndiyo",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "yes"
@@ -271,13 +271,13 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       }
     ]
   },
   "step4": {
-    "title": "HIV Test History",
+    "title": "Historia ya upimaji wa VVU",
     "fields": [
       {
         "key": "hiv_tested",
@@ -305,7 +305,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -341,7 +341,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -349,7 +349,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "on_ctc",
-        "label": "Yupo kwenye CTC ?",
+        "label": "Yupo kwenye CTC?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -370,7 +370,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         },
         "relevance": {
           "step4:test_result": {
@@ -392,16 +392,16 @@
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "CTC number should be of the format (XX-XX-XXXX-XXXXXX)"
+          "err": "Namba ya CTC inapaswa kuwa katika muundo (XX-XX-XXXX-XXXXXX)"
         },
         "v_max_length": {
           "value": "17",
           "is_fixed_size": "true",
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya CTC"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya CTC"
         },
         "relevance": {
           "step4:on_ctc": {

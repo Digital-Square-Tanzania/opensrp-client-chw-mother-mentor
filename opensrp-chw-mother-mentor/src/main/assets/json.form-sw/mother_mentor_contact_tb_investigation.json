@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Uchunguzi wa Kifua Kikuu",
+    "title": "Uchunguzi wa kifua kikuu",
     "fields": [
       {
         "key": "tb_screening_findings",
@@ -59,7 +59,7 @@
         "openmrs_entity_id": "tb_screening_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "Uchunguzi wa Kifua Kikuu",
+        "label": "Uchunguzi wa kifua kikuu",
         "exclusive": [
           "no_tb_signs",
           "extra_pulmonary_tb_signs"
@@ -74,42 +74,42 @@
           },
           {
             "key": "cough_with_blood",
-            "text": "Makohozi yaliyochanganyika na Damu(D)",
+            "text": "Makohozi yaliyochanganyika na damu (D)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "cough_with_blood"
           },
           {
             "key": "fever",
-            "text": "Homa(H)",
+            "text": "Homa (H)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "fever"
           },
           {
             "key": "weight_loss",
-            "text": "Kupungua Uzito(KU)",
+            "text": "Kupungua uzito (KU)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "weight_loss"
           },
           {
             "key": "excessive_night_sweats",
-            "text": "Kutokwa na Jasho Jingi",
+            "text": "Kutokwa na jasho jingi",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "excessive_night_sweats"
           },
           {
             "key": "extra_pulmonary_tb_signs",
-            "text": "Dalili za Kifua Kikuu Nje ya Mapafu(Taja)",
+            "text": "Dalili za kifua kikuu nje ya mapafu (taja)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "extra_pulmonary_tb_signs"
           },
           {
             "key": "no_tb_signs",
-            "text": "Hana Dalili",
+            "text": "Hana dalili",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_tb_signs"
@@ -126,7 +126,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "extra_pulmonary_tb_signs_details",
         "type": "edit_text",
-        "hint": "Dalili za Kifua Kikuu Nje ya Mapafu",
+        "hint": "Dalili za kifua kikuu nje ya mapafu",
         "relevance": {
           "rules-engine": {
             "ex-rules": {
@@ -141,7 +141,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "presumptive_tb_prompt",
         "type": "toaster_notes",
-        "text": "Mhisiwa wa Kifua Kikuu.Mpe Rufaa kwenda Kituo cha kutolea Huduma za Afya",
+        "text": "Mteja anahisiwa kuwa na kifua kikuu. Mpe rufaa kwenda kituo cha kutolea huduma za afya.",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {
@@ -158,7 +158,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "not_presumptive_tb_prompt",
         "type": "toaster_notes",
-        "text": "Mteja sio Mhisiwa wa Kifua Kikuu",
+        "text": "Mteja sio mhisiwa wa kifua kikuu",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {

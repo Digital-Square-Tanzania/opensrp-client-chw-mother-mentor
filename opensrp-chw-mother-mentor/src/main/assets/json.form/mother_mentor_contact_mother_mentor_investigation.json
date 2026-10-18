@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Uchunguzi wa Ukoma",
+    "title": "Leprosy investigation",
     "fields": [
       {
         "key": "mother_mentor_interview_findings",
@@ -59,7 +59,7 @@
         "openmrs_entity_id": "mother_mentor_interview_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "MotherMentor interview findings",
+        "label": "Leprosy interview findings",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -107,7 +107,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "presumptive_mother_mentor_prompt",
         "type": "toaster_notes",
-        "text": "Client is presumptive for mother_mentor. Refer to a health facility.",
+        "text": "Client is presumptive for leprosy. Refer to a health facility.",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {
@@ -124,7 +124,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "not_presumptive_mother_mentor_prompt",
         "type": "toaster_notes",
-        "text": "Client is not presumptive for mother_mentor.",
+        "text": "Client is not presumptive for leprosy.",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {

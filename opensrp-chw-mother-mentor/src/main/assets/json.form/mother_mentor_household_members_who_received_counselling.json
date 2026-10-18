@@ -53,7 +53,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Wanakaya waliopewa ushauri",
+    "title": "Household members counselled",
     "fields": [
       {
         "key": "household_members_found",
@@ -64,20 +64,20 @@
         "hint": "Household members found",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Enter a whole number"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Enter 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Must be zero or more"
         },
         "v_relative_min": {
           "value": "counselled_total",
@@ -93,20 +93,20 @@
         "hint": "Men/boys counselled",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Enter a whole number"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Enter 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Must be zero or more"
         }
       },
       {
@@ -118,20 +118,20 @@
         "hint": "Women/girls counselled",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Please complete this field"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Enter a whole number"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Enter 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Must be zero or more"
         }
       },
       {

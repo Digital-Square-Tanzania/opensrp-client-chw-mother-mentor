@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Mother Follow-up",
+    "title": "Ufuatiliaji wa mama",
     "fields": [
       {
         "key": "relational_id",
@@ -64,11 +64,11 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "expected_return_date",
         "type": "date_picker",
-        "hint": "Tarehe aliyotakiwa kurudi kituonie",
+        "hint": "Tarehe ambayo mteja alitarajiwa kurudi kituoni",
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select the Registration date"
+          "err": "Tafadhali chagua tarehe ambayo mteja alitarajiwa kurudi kituoni"
         }
       },
       {
@@ -91,7 +91,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "weeks_lost_toaster",
         "type": "toaster_notes",
-        "text": "Mteja huyu amepoteza wiki {weeks_lost}",
+        "text": "Mteja amechelewa kurudi kituoni kwa wiki {weeks_lost}",
         "text_color": "#CF0800",
         "toaster_type": "problem",
         "relevance": {

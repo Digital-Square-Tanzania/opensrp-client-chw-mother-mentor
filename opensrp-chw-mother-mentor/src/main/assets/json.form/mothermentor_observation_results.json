@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Investigation Results",
+    "title": "Investigation results",
     "fields": [
       {
         "key": "investigation_type",
@@ -65,7 +65,7 @@
           },
           {
             "key": "mother_mentor",
-            "text": "MotherMentor",
+            "text": "Leprosy",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor"
           }
@@ -102,7 +102,7 @@
           },
           {
             "key": "treatment_decision_algorithm",
-            "text": "Treatment Decision Algorithm  (TDA) ",
+            "text": "Treatment decision algorithm (TDA)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "treatment_decision_algorithm"
@@ -183,7 +183,7 @@
           },
           {
             "key": "smear_microscopy",
-            "text": "Smear Microscopy",
+            "text": "Smear microscopy",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "smear_microscopy"
@@ -285,7 +285,7 @@
           },
           {
             "key": "non_suggestive",
-            "text": "Non suggestive",
+            "text": "Not suggestive",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "non_suggestive"
@@ -308,7 +308,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_diagnostic_method",
-        "label": "Diagnostic method used to assess mother_mentor",
+        "label": "Diagnostic method used to assess leprosy",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -345,21 +345,21 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_investigation_results",
-        "label": "MotherMentor investigation results",
+        "label": "Leprosy investigation results",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "mother_mentor_confirmed",
-            "text": "MotherMentor confirmed",
+            "text": "Leprosy confirmed",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor_confirmed"
           },
           {
             "key": "no_mother_mentor_detected",
-            "text": "No mother_mentor detected",
+            "text": "No leprosy detected",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_mother_mentor_detected"
@@ -419,7 +419,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_treatment_initiated",
-        "label": "Has mother_mentor treatment been initiated?",
+        "label": "Has leprosy treatment been initiated?",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -554,7 +554,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_treatment_start_date",
         "type": "date_picker",
-        "hint": "Select mother_mentor treatment start date",
+        "hint": "Select leprosy treatment start date",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
@@ -565,7 +565,7 @@
             }
           }
         },
-        "label": "MotherMentor treatment start date"
+        "label": "Leprosy treatment start date"
       },
       {
         "key": "mother_mentor_client_number",
@@ -576,10 +576,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "MotherMentor client number",
+        "hint": "Leprosy client number",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "MotherMentor client number should follow this format (070201100097-5/UK/2025/431)"
+          "err": "Leprosy client number should follow this format (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {

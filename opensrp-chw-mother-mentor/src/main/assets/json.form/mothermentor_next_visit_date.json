@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Date of Next Visit",
+    "title": "Date of next visit",
     "fields": [
       {
         "key": "next_appointment_date",
@@ -60,7 +60,7 @@
         "min_date": "today",
         "max_date": "today+5y",
         "expanded": false,
-        "hint": "Date of Next Visit",
+        "hint": "Date of next visit",
         "v_required": {
           "value": "true",
           "err": "Required"

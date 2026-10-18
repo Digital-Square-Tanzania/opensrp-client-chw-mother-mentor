@@ -53,14 +53,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Kusudi la Ziara",
+    "title": "Kusudi la ziara",
     "fields": [
       {
         "key": "purpose_of_visit",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "purpose_of_visit",
-        "label": "Kusudi la Ziara",
+        "label": "Kusudi la ziara",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -95,7 +95,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -107,7 +107,7 @@
         "openmrs_entity_parent": "",
         "v_required": {
           "value": "true",
-          "err": "Please write an answer"
+          "err": "Tafadhali andika jibu"
         },
         "relevance": {
           "step1:purpose_of_visit": {

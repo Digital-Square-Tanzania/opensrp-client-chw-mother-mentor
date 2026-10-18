@@ -64,12 +64,12 @@
         "hint": "Comment",
         "v_required": {
           "value": "true",
-          "err": "Please enter the correct value"
+          "err": "Please enter a comment"
         },
         "v_max_length": {
           "value": "100",
           "is_fixed_size": "true",
-          "err": "Please enter a valid input"
+          "err": "Maximum 100 characters"
         }
       }
     ]

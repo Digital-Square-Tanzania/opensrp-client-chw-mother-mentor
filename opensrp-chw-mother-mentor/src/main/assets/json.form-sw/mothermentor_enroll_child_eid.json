@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Usajili wa HEI",
+    "title": "Usajili wa mtoto (HEI)",
     "next": "step2",
     "fields": [
       {
@@ -130,7 +130,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hei_registered",
-        "label": "Mtoto amesajiliwa kwenye Huduma za HEI?",
+        "label": "Mtoto amesajiliwa kwenye huduma za HEI?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -151,7 +151,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -167,16 +167,16 @@
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "CTC number should be of the format (XX-XX-XXXX-XXXXXX)"
+          "err": "Namba ya HEI inapaswa kuwa katika muundo (XX-XX-XXXX-XXXXXX)"
         },
         "v_max_length": {
           "value": "17",
           "is_fixed_size": "true",
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya HEI"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid CTC Number"
+          "err": "Tafadhali ingiza namba sahihi ya HEI"
         },
         "relevance": {
           "step1:hei_registered": {
@@ -191,7 +191,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hei_toaster_info",
         "type": "toaster_notes",
-        "text": "Mshauri Mama/Mlezi ampeleke Mtoto kwenye kituo cha kutolea huduma za Afya ili akaandikishwe kwenye huduma za HEI. ",
+        "text": "Mshauri mama/mlezi ampeleke mtoto kwenye kituo cha kutolea huduma za afya ili akaandikishwe kwenye huduma za HEI.",
         "toaster_type": "warning",
         "relevance": {
           "step1:hei_registered": {
@@ -203,7 +203,7 @@
     ]
   },
   "step2": {
-    "title": "Hali ya kunyonyesha",
+    "title": "Hali ya kunyonya",
     "next": "step3",
     "fields": [
       {
@@ -211,7 +211,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "breastfeeding_status",
-        "label": "Hali ya kunyonyesha ?",
+        "label": "Hali ya kunyonya",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -231,7 +231,7 @@
           },
           {
             "key": "stop_breast_feeding",
-            "text": "Ameacha Kunyonya",
+            "text": "Ameacha kunyonya",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "stop_breast_feeding"
@@ -239,7 +239,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -252,7 +252,7 @@
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select the Registration date"
+          "err": "Tafadhali chagua tarehe mtoto alipoacha kunyonya"
         },
         "relevance": {
           "step2:breastfeeding_status": {
@@ -264,7 +264,7 @@
     ]
   },
   "step3": {
-    "title": "Last EID Test",
+    "title": "Kipimo cha mwisho cha EID",
     "next": "step4",
     "fields": [
       {
@@ -272,7 +272,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "last_test",
-        "label": "Kipimo cha mwisho kilichofanyika ?",
+        "label": "Kipimo cha mwisho kilichofanyika",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -292,14 +292,14 @@
           },
           {
             "key": "dbs_6",
-            "text": "DBS Wiki 6",
+            "text": "DBS wiki 6",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "dbs_6"
           },
           {
             "key": "dbs_9",
-            "text": "DBS Miezi 9",
+            "text": "DBS miezi 9",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "dbs_9"
@@ -307,7 +307,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -315,20 +315,20 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "last_test_result",
-        "label": "Matokeo ya kipimo cha mwisho ?",
+        "label": "Matokeo ya kipimo cha mwisho",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "negative",
-            "text": "Hasi (Negative)",
+            "text": "Hasi",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "negative"
           },
           {
             "key": "positive",
-            "text": "Chanya (Positive)",
+            "text": "Chanya",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "positive"
@@ -343,7 +343,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         },
         "relevance": {
           "rules-engine": {
@@ -356,7 +356,7 @@
     ]
   },
   "step4": {
-    "title": "Mother's Name ",
+    "title": "Jina la mama",
     "fields": [
       {
         "key": "mother_name",
@@ -368,11 +368,11 @@
         "type": "edit_text",
         "v_required": {
           "value": "true",
-          "err": "Please write mother name"
+          "err": "Tafadhali andika jina la mama"
         },
         "v_regex": {
           "value": "[A-Za-z\\u00C0-\\u017F\\s\\u00C0-\\u017F\\.\\-\\']*",
-          "err": "Please enter a valid name"
+          "err": "Tafadhali ingiza jina sahihi"
         }
       }
     ]

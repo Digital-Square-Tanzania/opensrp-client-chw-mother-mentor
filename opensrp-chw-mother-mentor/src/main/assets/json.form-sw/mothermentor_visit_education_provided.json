@@ -49,14 +49,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Education Provided",
+    "title": "Elimu iliyotolewa",
     "fields": [
       {
         "key": "education_provided",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "education_provided",
-        "label": "Elimu imetolewa ",
+        "label": "Elimu imetolewa",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -77,7 +77,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         }
       },
       {
@@ -85,7 +85,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "way_education_provided",
-        "label": "Njia ya utoaji elimu ",
+        "label": "Njia ya utoaji elimu",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -106,7 +106,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please select an answer"
+          "err": "Tafadhali chagua jibu"
         },
         "relevance": {
           "rules-engine": {
@@ -122,7 +122,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "topics_being_provided",
         "type": "check_box",
-        "label": "Mada za elimu zilizotolewa ",
+        "label": "Mada za elimu zilizotolewa",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
@@ -174,13 +174,13 @@
           },
           {
             "key": "tb",
-            "text": "TB",
+            "text": "Kifua kikuu",
             "openmrs_entity": "",
             "openmrs_entity_id": "tb"
           },
           {
             "key": "hepatitis_b_and_c",
-            "text": "Homa ya Ini B na C",
+            "text": "Homa ya ini B na C",
             "openmrs_entity": "",
             "openmrs_entity_id": "hepatitis_b_and_c"
           },
@@ -204,7 +204,7 @@
           },
           {
             "key": "pre_exposure_prophylaxis_prep",
-            "text": "Matumizi ya dawa Kinga (PrEP)",
+            "text": "Matumizi ya dawa kinga (PrEP)",
             "openmrs_entity": "",
             "openmrs_entity_id": "pre_exposure_prophylaxis_prep"
           },
@@ -223,7 +223,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please pick at least one"
+          "err": "Tafadhali chagua angalau jibu moja"
         },
         "relevance": {
           "rules-engine": {
@@ -242,7 +242,7 @@
         "hint": "Taja mada nyingine ya elimu",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "relevance": {
           "rules-engine": {

@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Tarehe ya kuanza tiba Ukoma",
+    "title": "Tarehe ya kuanza tiba ukoma",
     "fields": [
       {
         "key": "mother_mentor_treatment_start_date",
@@ -52,11 +52,11 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_treatment_start_date",
         "type": "date_picker",
-        "hint": "Tarehe ya kuanza tiba Ukoma",
+        "hint": "Tarehe ya kuanza tiba ukoma",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
-        "label": "MotherMentor treatment start date"
+        "label": "Tarehe ya kuanza tiba ya ukoma"
       },
       {
         "key": "mother_mentor_client_number",
@@ -67,10 +67,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Ukoma",
+        "hint": "Namba ya mteja wa ukoma",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
+          "err": "Namba ya mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
         }
       }
     ]

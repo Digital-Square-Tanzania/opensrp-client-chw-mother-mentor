@@ -43,7 +43,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Uchunguzi wa awali wa Kifua Kikuu na Ukoma katika jamii",
+    "title": "Uchunguzi wa awali wa kifua kikuu na ukoma katika jamii",
     "next": "step2",
     "fields": [
       {
@@ -52,7 +52,7 @@
         "openmrs_entity": "",
         "openmrs_entity_id": "",
         "type": "native_radio",
-        "label": "Je, anaishi pamoja au karibu na mgonjwa wa Kifua Kikuu/Ukoma?",
+        "label": "Je, anaishi pamoja au karibu na mgonjwa wa kifua kikuu/ukoma?",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -95,7 +95,7 @@
         "options": [
           {
             "key": "tb",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
@@ -113,7 +113,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "do_you_know_clients_number",
         "type": "native_radio",
-        "label": "Je, anaifahamu namba ya mteja wa Kifua Kikuu/Ukoma anayeishi karibu naye?",
+        "label": "Je, anaifahamu namba ya mteja wa kifua kikuu/ukoma anayeishi karibu naye?",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -150,10 +150,10 @@
         "mask": "############-#/KK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Kifua Kikuu",
+        "hint": "Namba ya mteja wa kifua kikuu",
         "v_regex": {
           "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa Kifua Kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
+          "err": "Namba ya mteja wa kifua kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -169,7 +169,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_client_names",
         "type": "edit_text",
-        "hint": "Majina ya Mteja wa Kifua Kikuu",
+        "hint": "Majina ya mteja wa kifua kikuu",
         "v_required": {
           "value": "true",
           "err": "Tafadhali jaza taarifa"
@@ -191,10 +191,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Ukoma",
+        "hint": "Namba ya mteja wa ukoma",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
+          "err": "Namba ya mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -210,7 +210,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_client_names",
         "type": "edit_text",
-        "hint": "Majina ya Mteja wa Ukoma",
+        "hint": "Majina ya mteja wa ukoma",
         "v_required": {
           "value": "true",
           "err": "Tafadhali jaza taarifa"
@@ -229,13 +229,13 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "status",
         "type": "hidden",
-        "hint": "client status",
+        "hint": "Hali ya mteja",
         "value": "client"
       }
     ]
   },
   "step2": {
-    "title": "Aina ya Mteja",
+    "title": "Aina ya mteja",
     "next": "step3",
     "fields": [
       {
@@ -280,35 +280,35 @@
         "options": [
           {
             "key": "health_care_provider",
-            "text": "Muhudumu wa Afya",
+            "text": "Muhudumu wa afya",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "health_care_provider"
           },
           {
             "key": "miner",
-            "text": "Mchimbaji(Machimbo/Migodi)",
+            "text": "Mchimbaji (machimbo/migodi)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "miner"
           },
           {
             "key": "prisoner_prison_officer",
-            "text": "Mfungwa/Afisa wa Magereza",
+            "text": "Mfungwa/afisa wa magereza",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "prisoner_prison_officer"
           },
           {
             "key": "pwud",
-            "text": "PWUD",
+            "text": "Watu wanaotumia dawa za kulevya (PWUD)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "pwud"
           },
           {
             "key": "fisherfolks",
-            "text": "Mvuvi(Kambi ya wavuvi)",
+            "text": "Mvuvi (kambi ya wavuvi)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "fisherfolks"
@@ -343,28 +343,28 @@
           },
           {
             "key": "elders_camp",
-            "text": "Kambi ya Wazee",
+            "text": "Kambi ya wazee",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "elders_camp"
           },
           {
             "key": "school_children",
-            "text": "Watoto wa Shuleni",
+            "text": "Watoto wa shuleni",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "school_children"
           },
           {
             "key": "ovc",
-            "text": "Yatima na Watoto Walioko Katika Mazingira Hatarishi (OVC)",
+            "text": "Yatima na watoto walioko katika mazingira hatarishi (OVC)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "ovc"
           },
           {
             "key": "other",
-            "text": "Kundi lingine(Taja)",
+            "text": "Kundi lingine (taja)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
@@ -384,7 +384,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "other_special_group",
         "type": "edit_text",
-        "hint": "Taja Kundi Lingine",
+        "hint": "Taja kundi lingine",
         "v_required": {
           "value": "true",
           "err": "Tafadhali taja"
@@ -418,25 +418,25 @@
           },
           {
             "key": "traditional_healer",
-            "text": "Mganga wa Tiba Asili",
+            "text": "Mganga wa tiba asili",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "traditional_healer"
           },
           {
             "key": "public_gathering",
-            "text": "Mikutano ya Hadhara",
+            "text": "Mikutano ya hadhara",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "public_gathering"
           },
           {
             "key": "place_of_worship",
-            "text": "Nyumba za Ibada",
+            "text": "Nyumba za ibada",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "place_of_worship"
           },
           {
             "key": "school_or_college",
-            "text": "Shule/Vyuo",
+            "text": "Shule/vyuo",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "school_or_college"
           },
@@ -448,7 +448,7 @@
           },
           {
             "key": "other_location",
-            "text": "Kwingineko(Taja)",
+            "text": "Kwingineko (taja)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other_location"
           }
@@ -460,7 +460,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "other_screening_location",
         "type": "edit_text",
-        "hint": "Taja Eneo",
+        "hint": "Taja eneo",
         "v_required": {
           "value": "true",
           "err": "Tafadhali taja"
@@ -476,7 +476,7 @@
     ]
   },
   "step3": {
-    "title": "Tathmini ya Afya ya Jumla",
+    "title": "Tathmini ya afya ya jumla",
     "next": "step4",
     "fields": [
       {
@@ -486,7 +486,7 @@
         "openmrs_entity_id": "selected_investigation_type",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "Chagua aina ya Uchunguzi",
+        "label": "Chagua aina ya uchunguzi",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -495,7 +495,7 @@
         "options": [
           {
             "key": "tb",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
@@ -514,7 +514,7 @@
         "openmrs_entity_id": "tb_screening_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "Matokeo ya Uchunguzi wa Kifua Kikuu",
+        "label": "Matokeo ya uchunguzi wa kifua kikuu",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -526,25 +526,25 @@
         "options": [
           {
             "key": "persistent_cough",
-            "text": "Kikohozi(KH)",
+            "text": "Kikohozi (KH)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "persistent_cough"
           },
           {
             "key": "sputum_with_blood",
-            "text": "Makohozi yaliyochanganyika na damu(D)",
+            "text": "Makohozi yaliyochanganyika na damu (D)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "sputum_with_blood"
           },
           {
             "key": "fever",
-            "text": "Homa(H)",
+            "text": "Homa (H)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "fever"
           },
           {
             "key": "weight_loss",
-            "text": "Kupungua Uzito(KU)",
+            "text": "Kupungua uzito (KU)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "weight_loss"
           },
@@ -556,13 +556,13 @@
           },
           {
             "key": "extra_pulmonary_tb_signs",
-            "text": "Dalili za Kifua Kikuu nje ya mapafu",
+            "text": "Dalili za kifua kikuu nje ya mapafu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "extra_pulmonary_tb_signs"
           },
           {
             "key": "no_tb_signs",
-            "text": "Hana Dalili",
+            "text": "Hana dalili",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_tb_signs"
           }
@@ -582,7 +582,7 @@
         "openmrs_entity_id": "mother_mentor_screening_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "Matokeo ya Uchunguzi wa Ukoma",
+        "label": "Matokeo ya uchunguzi wa ukoma",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -594,19 +594,19 @@
         "options": [
           {
             "key": "numb_patches",
-            "text": "Baka au Mabaka yasiyo na hisia(B)",
+            "text": "Baka au mabaka yasiyo na hisia (B)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "numb_patches"
           },
           {
             "key": "skin_nodules_or_thickening",
-            "text": "Ngozi kuota Vinundu au Kukamaa(NV)",
+            "text": "Ngozi kuota vinundu au kukamaa (NV)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "skin_nodules_or_thickening"
           },
           {
             "key": "numbness_hands_or_feet",
-            "text": "Ganzi Mikononi/Miguuni",
+            "text": "Ganzi mikononi/miguuni",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "numbness_hands_or_feet"
           },
@@ -618,7 +618,7 @@
           },
           {
             "key": "no_mother_mentor_signs",
-            "text": "Hana Dalili",
+            "text": "Hana dalili",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_mother_mentor_signs"
           }
@@ -648,7 +648,7 @@
       {
         "key": "non_presumptive_prompt",
         "type": "toaster_notes",
-        "text": "Mteja hana dalili za Kifua Kikuu wala Ukoma kwa sasa.",
+        "text": "Mteja hana dalili za kifua kikuu wala ukoma kwa sasa.",
         "openmrs_entity_parent": "",
         "openmrs_entity": "",
         "openmrs_entity_id": "",
@@ -664,7 +664,7 @@
       {
         "key": "non_presumptive_tb_prompt",
         "type": "toaster_notes",
-        "text": "Mteja hana dalili za Kifua Kikuu kwa sasa.",
+        "text": "Mteja hana dalili za kifua kikuu kwa sasa.",
         "openmrs_entity_parent": "",
         "openmrs_entity": "",
         "openmrs_entity_id": "",

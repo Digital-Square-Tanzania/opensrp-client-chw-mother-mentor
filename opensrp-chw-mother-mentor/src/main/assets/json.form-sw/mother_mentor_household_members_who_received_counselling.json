@@ -64,20 +64,20 @@
         "hint": "Wanakaya waliopatikana",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Weka idadi kamili"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Weka 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Isipungue sifuri"
         },
         "v_relative_min": {
           "value": "counselled_total",
@@ -93,20 +93,20 @@
         "hint": "Wanaume/wavulana waliopewa ushauri",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Weka idadi kamili"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Weka 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Isipungue sifuri"
         }
       },
       {
@@ -118,20 +118,20 @@
         "hint": "Wanawake/wasichana waliopewa ushauri",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Weka idadi kamili"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Weka 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Isipungue sifuri"
         }
       },
       {
@@ -156,7 +156,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "participants",
         "type": "check_box",
-        "label": "Participants",
+        "label": "Washiriki",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
@@ -203,7 +203,7 @@
         ],
         "v_required": {
           "value": "true",
-          "err": "Please pick at least one"
+          "err": "Tafadhali chagua angalau jibu moja"
         }
       },
       {
@@ -215,7 +215,7 @@
         "openmrs_entity_parent": "",
         "v_required": {
           "value": "true",
-          "err": "Please write an answer"
+          "err": "Tafadhali andika jibu"
         },
         "relevance": {
           "step1:participants": {

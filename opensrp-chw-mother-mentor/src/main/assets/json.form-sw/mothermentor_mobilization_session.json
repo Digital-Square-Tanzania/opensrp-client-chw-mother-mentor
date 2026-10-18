@@ -76,7 +76,7 @@
           },
           {
             "key": "anc",
-            "text": "Mkutano wa vikundi vya ANC",
+            "text": "Mkutano wa vikundi vya wajawazito (ANC)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "anc"
           },
@@ -147,7 +147,7 @@
         "options": [
           {
             "key": "pmtct",
-            "text": "Kuzuia Maambukizi ya VVU, Kaswende na Homa ya Ini aina B kutoka kwa Mama kwenda kwa Mtoto (PMTCT)",
+            "text": "Kuzuia maambukizi ya VVU, kaswende na homa ya ini aina B kutoka kwa mama kwenda kwa mtoto (PMTCT)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "pmtct"
           },
@@ -165,7 +165,7 @@
           },
           {
             "key": "hepb",
-            "text": "Homa ya Ini B",
+            "text": "Homa ya ini B",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "hepb"
           },
@@ -183,13 +183,13 @@
           },
           {
             "key": "tb",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
           {
             "key": "gbv",
-            "text": "Ukatili wa Kijinsia",
+            "text": "Ukatili wa kijinsia",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "gbv"
           },
@@ -298,20 +298,20 @@
         "hint": "Wanaume waliopewa rufaa kwenda kituoni",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Weka idadi kamili"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Weka 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Isipungue sifuri"
         }
       },
       {
@@ -323,20 +323,20 @@
         "hint": "Wanawake waliopewa rufaa kwenda kituoni",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "edit_type": "number",
         "v_numeric": {
           "value": true,
-          "err": "Enter a whole number / Weka idadi kamili"
+          "err": "Weka idadi kamili"
         },
         "v_regex": {
           "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999 / Weka 0–99999"
+          "err": "Weka 0–99999"
         },
         "v_min": {
           "value": "0",
-          "err": "Must be zero or more / Isipungue sifuri"
+          "err": "Isipungue sifuri"
         }
       },
       {
@@ -364,7 +364,7 @@
         "label": "Huduma za rufaa kituoni",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "options": [
           {
@@ -428,7 +428,7 @@
         "hint": "Taja huduma nyingine ya rufaa",
         "v_required": {
           "value": true,
-          "err": "Please complete this field / Tafadhali jaza sehemu hii"
+          "err": "Tafadhali jaza sehemu hii"
         },
         "relevance": {
           "rules-engine": {

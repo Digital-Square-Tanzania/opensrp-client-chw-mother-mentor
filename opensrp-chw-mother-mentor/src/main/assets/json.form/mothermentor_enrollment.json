@@ -61,7 +61,7 @@
         "mask": "##-##-####-######",
         "mask_hint": "12345678912345",
         "allowed_chars": "0123456789",
-        "hint": "CTC Number",
+        "hint": "CTC number",
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
@@ -70,17 +70,17 @@
         "v_max_length": {
           "value": "17",
           "is_fixed_size": "true",
-          "err": "Please enter a valid CTC Number"
+          "err": "Please enter a valid CTC number"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid CTC Number"
+          "err": "Please enter a valid CTC number"
         }
       }
     ]
   },
   "step2": {
-    "title": "ART Status",
+    "title": "ART status",
     "next": "step3",
     "fields": [
       {
@@ -88,7 +88,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "art_status",
-        "label": "Has started ART treatment?",
+        "label": "Has the mother started ART?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -118,11 +118,11 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "art_start_date",
         "type": "date_picker",
-        "hint": "Art start date",
+        "hint": "ART start date",
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select the Registration date"
+          "err": "Please select the ART start date"
         },
         "relevance": {
           "rules-engine": {
@@ -137,7 +137,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "art_no_reason",
-        "label": "Reason for not starting to use medicine ?",
+        "label": "Reason for not starting ART",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -157,7 +157,7 @@
           },
           {
             "key": "other",
-            "text": "Other (Specify)",
+            "text": "Other (specify)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
@@ -196,7 +196,7 @@
     ]
   },
   "step3": {
-    "title": "Pregnancy Status",
+    "title": "Pregnancy status",
     "fields": [
       {
         "key": "pregnancy_status",
@@ -216,14 +216,14 @@
           },
           {
             "key": "breast_feeding",
-            "text": "Breast feeding",
+            "text": "Breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "breast_feeding"
           },
           {
             "key": "not_pregnant",
-            "text": "Not Pregnant",
+            "text": "Not pregnant",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_pregnant"
@@ -260,7 +260,7 @@
         "max_date": "today",
         "v_required": {
           "value": true,
-          "err": "Please select the Registration date"
+          "err": "Please select the child's date of birth"
         },
         "relevance": {
           "rules-engine": {
@@ -276,7 +276,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "child_over_18_months",
         "type": "toaster_notes",
-        "text": "The child’s age has exceeded the follow-up period; therefore, the mother cannot be enrolled in the Mother mentor services.",
+        "text": "The child’s age has exceeded the follow-up period; therefore, the mother cannot be enrolled in the Mother Mentor services.",
         "text_color": "#CF0800",
         "toaster_type": "problem",
         "relevance": {
