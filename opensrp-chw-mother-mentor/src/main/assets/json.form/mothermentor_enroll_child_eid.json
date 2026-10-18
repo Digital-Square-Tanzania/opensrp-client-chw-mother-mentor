@@ -295,14 +295,14 @@
             "text": "DBS Week 6",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
+            "openmrs_entity_id": "dbs_6"
           },
           {
             "key": "dbs_9",
             "text": "DBS Month 9",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
+            "openmrs_entity_id": "dbs_9"
           }
         ],
         "v_required": {

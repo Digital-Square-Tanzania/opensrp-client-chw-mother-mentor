@@ -198,7 +198,7 @@
             "key": "other",
             "text": "Mwingine (taja)",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "none"
+            "openmrs_entity_id": "other"
           }
         ],
         "v_required": {
