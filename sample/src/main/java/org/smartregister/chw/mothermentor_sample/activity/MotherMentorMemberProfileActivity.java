@@ -155,11 +155,6 @@ public class MotherMentorMemberProfileActivity extends BaseMotherMentorProfileAc
     }
 
     @Override
-    public void openMotherMentorContactRegister() {
-
-    }
-
-    @Override
     protected void onResumption() {
         super.onResumption();
         delayRefreshSetupViews();

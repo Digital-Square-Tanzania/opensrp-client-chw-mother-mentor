@@ -40,11 +40,6 @@ public class BaseTestMotherMentorProfileActivity extends BaseMotherMentorProfile
     }
 
     @Override
-    public void openMotherMentorContactRegister() {
-
-    }
-
-    @Override
     public void setProfileViewWithData() {
 
     }

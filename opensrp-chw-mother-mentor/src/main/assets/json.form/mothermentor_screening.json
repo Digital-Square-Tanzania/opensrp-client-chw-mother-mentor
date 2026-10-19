@@ -43,7 +43,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Mother Mentor Screening",
+    "title": "Community TB and leprosy screening",
     "next": "step2",
     "fields": [
       {
@@ -52,7 +52,7 @@
         "openmrs_entity": "",
         "openmrs_entity_id": "",
         "type": "native_radio",
-        "label": "Living with, or near Mother Mentor Patient",
+        "label": "Does the client live with or near a person with TB or leprosy?",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -101,7 +101,7 @@
           },
           {
             "key": "mother_mentor",
-            "text": "MotherMentor",
+            "text": "Leprosy",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor"
           }
@@ -113,7 +113,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "do_you_know_clients_number",
         "type": "native_radio",
-        "label": "Does the client know the Mother Mentor index client number?",
+        "label": "Does the client know the TB/leprosy index client number?",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -191,10 +191,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "MotherMentor client number",
+        "hint": "Leprosy client number",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "MotherMentor client number should follow this format (070201100097-5/UK/2025/431)"
+          "err": "Leprosy client number should follow this format (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -210,7 +210,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_client_names",
         "type": "edit_text",
-        "hint": "Names of the mother_mentor index client",
+        "hint": "Names of the leprosy index client",
         "v_required": {
           "value": "true",
           "err": "Please provide this information"
@@ -229,13 +229,13 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "status",
         "type": "hidden",
-        "hint": "client status",
+        "hint": "Client status",
         "value": "client"
       }
     ]
   },
   "step2": {
-    "title": "Key Vulnerable Populations",
+    "title": "Key vulnerable populations",
     "next": "step3",
     "fields": [
       {
@@ -280,7 +280,7 @@
         "options": [
           {
             "key": "health_care_provider",
-            "text": "Health Care Provider",
+            "text": "Health care provider",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "health_care_provider"
@@ -294,14 +294,14 @@
           },
           {
             "key": "prisoner_prison_officer",
-            "text": "Prisoner/Prison Officer",
+            "text": "Prisoner/prison officer",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "prisoner_prison_officer"
           },
           {
             "key": "pwud",
-            "text": "PWUD",
+            "text": "People who use drugs (PWUD)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "pwud"
@@ -329,35 +329,35 @@
           },
           {
             "key": "slum_dwellers",
-            "text": "Slum Dwellers",
+            "text": "Slum dwellers",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "slum_dwellers"
           },
           {
             "key": "nomadic_population",
-            "text": "Nomadic Population",
+            "text": "Nomadic population",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "nomadic_population"
           },
           {
             "key": "elders_camp",
-            "text": "Elders Camp",
+            "text": "Elders camp",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "elders_camp"
           },
           {
             "key": "school_children",
-            "text": "School Children",
+            "text": "School children",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "school_children"
           },
           {
             "key": "ovc",
-            "text": "Orphans and Vulnerable Children (OVC)",
+            "text": "Orphans and vulnerable children (OVC)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "ovc"
@@ -436,7 +436,7 @@
           },
           {
             "key": "school_or_college",
-            "text": "School/College",
+            "text": "School/college",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "school_or_college"
           },
@@ -476,7 +476,7 @@
     ]
   },
   "step3": {
-    "title": "Investigation Findings",
+    "title": "Investigation findings",
     "next": "step4",
     "fields": [
       {
@@ -501,7 +501,7 @@
           },
           {
             "key": "mother_mentor",
-            "text": "MotherMentor",
+            "text": "Leprosy",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor"
           }
@@ -582,7 +582,7 @@
         "openmrs_entity_id": "mother_mentor_screening_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "MotherMentor screening findings",
+        "label": "Leprosy screening findings",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -648,9 +648,9 @@
       {
         "key": "non_presumptive_prompt",
         "type": "toaster_notes",
-        "text": "Client has no signs of TB or mother_mentor at this time.",
-        "toaster_info_title": "No TB or mother_mentor signs found",
-        "toaster_info_text": "Client shows no TB or mother_mentor signs during this screening.",
+        "text": "Client has no signs of TB or leprosy at this time.",
+        "toaster_info_title": "No TB or leprosy signs found",
+        "toaster_info_text": "Client shows no TB or leprosy signs during this screening.",
         "openmrs_entity_parent": "",
         "openmrs_entity": "",
         "openmrs_entity_id": "",
@@ -684,9 +684,9 @@
       {
         "key": "non_presumptive_mother_mentor_prompt",
         "type": "toaster_notes",
-        "text": "Client has no signs of mother_mentor at this time.",
-        "toaster_info_title": "No mother_mentor signs found",
-        "toaster_info_text": "Client shows no mother_mentor signs during this screening.",
+        "text": "Client has no signs of leprosy at this time.",
+        "toaster_info_title": "No leprosy signs found",
+        "toaster_info_text": "Client shows no leprosy signs during this screening.",
         "openmrs_entity_parent": "",
         "openmrs_entity": "",
         "openmrs_entity_id": "",
@@ -702,9 +702,9 @@
       {
         "key": "mother_mentor_referral_prompt",
         "type": "toaster_notes",
-        "text": "Client has mother_mentor signs. Provide a referral to a health facility.",
+        "text": "Client has leprosy signs. Provide a referral to a health facility.",
         "toaster_info_title": "Refer the client to a health facility",
-        "toaster_info_text": "Client is presumptive for mother_mentor. Prepare and issue a referral for further assessment at a health facility.",
+        "toaster_info_text": "Client is presumptive for leprosy. Prepare and issue a referral for further assessment at a health facility.",
         "openmrs_entity_parent": "",
         "openmrs_entity": "",
         "openmrs_entity_id": "",
@@ -720,7 +720,7 @@
     ]
   },
   "step4": {
-    "title": "HIV Screening",
+    "title": "HIV screening",
     "fields": [
       {
         "key": "hiv_tested",

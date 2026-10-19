@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Matokeo ya Uchunguzi",
+    "title": "Matokeo ya uchunguzi",
     "fields": [
       {
         "key": "investigation_type",
@@ -52,14 +52,14 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "investigation_type",
         "type": "check_box",
-        "label": "Aina ya Uchunguzi",
+        "label": "Aina ya uchunguzi",
         "label_text_style": "bold",
         "text_color": "#000000",
         "combine_checkbox_option_values": "true",
         "options": [
           {
             "key": "tb",
-            "text": "Kifua Kikuu (TB)",
+            "text": "Kifua kikuu (TB)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
@@ -81,7 +81,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_preliminary_investigation_tests",
         "type": "native_radio",
-        "label": "Chagua vipimo vya awali vya uchunguzi wa Kifua Kikuu",
+        "label": "Chagua vipimo vya awali vya uchunguzi wa kifua kikuu",
         "label_text_style": "bold",
         "text_color": "#000000",
         "combine_checkbox_option_values": "true",
@@ -102,7 +102,7 @@
           },
           {
             "key": "treatment_decision_algorithm",
-            "text": "Treatment Decision Algorithm  (TDA) ",
+            "text": "Mwongozo wa kufanya uamuzi wa matibabu (TDA)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "treatment_decision_algorithm"
@@ -132,14 +132,14 @@
         "options": [
           {
             "key": "tb_indicative",
-            "text": "Ana Viashiria vya Kifua Kikuu",
+            "text": "Ana viashiria vya kifua kikuu",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb_indicative"
           },
           {
             "key": "no_tb_indications",
-            "text": "Hana Viashiria vya Kifua Kikuu",
+            "text": "Hana viashiria vya kifua kikuu",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_tb_indications"
@@ -162,7 +162,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_diagnostic_test_type",
-        "label": "Aina ya kipimo cha ugunduzi kilichotumika kupima Kifua Kikuu",
+        "label": "Aina ya kipimo cha ugunduzi kilichotumika kupima kifua kikuu",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -183,7 +183,7 @@
           },
           {
             "key": "smear_microscopy",
-            "text": "Smear Microscopy",
+            "text": "Uchunguzi wa sampuli kwa hadubini",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "smear_microscopy"
@@ -213,7 +213,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_sample_test_results",
-        "label": "Matokeo ya Sampuli ya Kifua Kikuu",
+        "label": "Matokeo ya sampuli ya kifua kikuu",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -234,21 +234,21 @@
           },
           {
             "key": "drug_resistant_tb",
-            "text": "Kifua Kikuu sugu (DR-TB)",
+            "text": "Kifua kikuu sugu (DR-TB)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "drug_resistant_tb"
           },
           {
             "key": "tb_dr_tb_undetected",
-            "text": "Hana Kifua Kikuu",
+            "text": "Hana kifua kikuu",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb_dr_tb_undetected"
           },
           {
             "key": "poor_quality_sample",
-            "text": "Sampuli Haina ubora",
+            "text": "Sampuli haina ubora",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "poor_quality_sample"
@@ -278,14 +278,14 @@
         "options": [
           {
             "key": "suggestive",
-            "text": "Suggestive",
+            "text": "Ana viashiria vya ugonjwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "suggestive"
           },
           {
             "key": "non_suggestive",
-            "text": "Non suggestive",
+            "text": "Hana viashiria vya ugonjwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "non_suggestive"
@@ -345,21 +345,21 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_investigation_results",
-        "label": "Matokeo ya uchunguzi wa Ukoma",
+        "label": "Matokeo ya uchunguzi wa ukoma",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "mother_mentor_confirmed",
-            "text": "Amegundulika na Ukoma",
+            "text": "Amegundulika na ukoma",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor_confirmed"
           },
           {
             "key": "no_mother_mentor_detected",
-            "text": "Hana Ukoma",
+            "text": "Hana ukoma",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_mother_mentor_detected"
@@ -382,7 +382,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_treatment_initiated",
-        "label": "Je, ameanza tiba ya Kifua kikuu/Kifua kikuu sugu?",
+        "label": "Je, ameanza tiba ya kifua kikuu/kifua kikuu sugu?",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -419,7 +419,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_treatment_initiated",
-        "label": "Je, ameanza tiba ya Ukoma?",
+        "label": "Je, ameanza tiba ya ukoma?",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -494,7 +494,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tpt_initiation_date",
         "type": "date_picker",
-        "hint": "Tarehe ya Kuanzishiwa TPT",
+        "hint": "Tarehe ya kuanzishiwa TPT",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
@@ -505,7 +505,7 @@
             }
           }
         },
-        "label": "TPT initiation date"
+        "label": "Tarehe ya kuanza tiba kinga ya kifua kikuu (TPT)"
       },
       {
         "key": "tb_treatment_start_date",
@@ -513,7 +513,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_treatment_start_date",
         "type": "date_picker",
-        "hint": "Tarehe ya kuanza tiba ya Kifua Kikuu",
+        "hint": "Tarehe ya kuanza tiba ya kifua kikuu",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
@@ -524,7 +524,7 @@
             }
           }
         },
-        "label": "Tarehe ya kuanza tiba ya Kifua Kikuu"
+        "label": "Tarehe ya kuanza tiba ya kifua kikuu"
       },
       {
         "key": "tb_client_number",
@@ -535,10 +535,10 @@
         "mask": "############-#/KK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Kifua Kikuu",
+        "hint": "Namba ya mteja wa kifua kikuu",
         "v_regex": {
           "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa Kifua Kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
+          "err": "Namba ya mteja wa kifua kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -554,7 +554,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_treatment_start_date",
         "type": "date_picker",
-        "hint": "Tarehe ya kuanza tiba Ukoma",
+        "hint": "Tarehe ya kuanza tiba ukoma",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
@@ -565,7 +565,7 @@
             }
           }
         },
-        "label": "MotherMentor treatment start date"
+        "label": "Tarehe ya kuanza tiba ya ukoma"
       },
       {
         "key": "mother_mentor_client_number",
@@ -576,10 +576,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Ukoma",
+        "hint": "Namba ya mteja wa ukoma",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
+          "err": "Namba ya mteja wa ukoma inatakiwa iwe katika muundo huu (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -632,7 +632,7 @@
         "openmrs_entity": "person_attribute",
         "openmrs_entity_id": "poor_sample_quality_prompt",
         "type": "toaster_notes",
-        "text": "Kusanya sampuli ya mteja kwaajili ya kurudia kufanya kipimo cha kifua kikuu",
+        "text": "Kusanya sampuli mpya ya mteja kwa ajili ya kurudia kipimo cha kifua kikuu.",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {

@@ -111,7 +111,7 @@
           },
           {
             "key": "mother_mentor",
-            "text": "MotherMentor",
+            "text": "Leprosy",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "mother_mentor"
           }
@@ -129,7 +129,7 @@
         "openmrs_entity": "",
         "openmrs_entity_id": "",
         "type": "native_radio",
-        "label": "Does the client know the Mother Mentor index client number?",
+        "label": "Does the client know the TB/leprosy index client number?",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -203,10 +203,10 @@
         "mask": "############-#/UK/####/###",
         "mask_hint":"07020110009752025431" ,
         "allowed_chars": "0123456789",
-        "hint": "MotherMentor client number",
+        "hint": "Leprosy client number",
         "v_regex": {
           "value": "^\\d{12}-\\d/UK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "MotherMentor client number should follow this format (070201100097-5/UK/2025/431)"
+          "err": "Leprosy client number should follow this format (070201100097-5/UK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -222,7 +222,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mother_mentor_client_names",
         "type": "edit_text",
-        "hint": "Names of the mother_mentor index client",
+        "hint": "Names of the leprosy index client",
         "v_required": {
           "value": "true",
           "err": "Please provide this information"
@@ -241,7 +241,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "status",
         "type": "hidden",
-        "hint": "client status",
+        "hint": "Client status",
         "value": "client"
       }
     ]

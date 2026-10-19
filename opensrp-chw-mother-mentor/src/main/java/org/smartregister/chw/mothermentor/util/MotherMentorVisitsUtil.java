@@ -12,14 +12,14 @@ import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.repository.AllSharedPreferences;
 
+import timber.log.Timber;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import timber.log.Timber;
 
 public class MotherMentorVisitsUtil extends VisitUtils {
 
@@ -28,10 +28,14 @@ public class MotherMentorVisitsUtil extends VisitUtils {
     public static String Ongoing = "ongoing";
 
     public static void processVisits() throws Exception {
-        processVisits(MotherMentorLibrary.getInstance().visitRepository(), MotherMentorLibrary.getInstance().visitDetailsRepository());
+        processVisits(
+                MotherMentorLibrary.getInstance().visitRepository(),
+                MotherMentorLibrary.getInstance().visitDetailsRepository());
     }
 
-    private static void processVisits(VisitRepository visitRepository, VisitDetailsRepository visitDetailsRepository) throws Exception {
+    private static void processVisits(
+            VisitRepository visitRepository, VisitDetailsRepository visitDetailsRepository)
+            throws Exception {
         List<Visit> visits = visitRepository.getAllUnSynced();
         List<Visit> prepFollowupVisit = new ArrayList<>();
 
@@ -39,7 +43,10 @@ public class MotherMentorVisitsUtil extends VisitUtils {
             Date updatedAtDate = new Date(v.getUpdatedAt().getTime());
             int daysDiff = TimeUtils.getElapsedDays(updatedAtDate);
             if (daysDiff > 1) {
-                if (v.getVisitType().equalsIgnoreCase(Constants.EVENT_TYPE.MOTHER_MENTOR_FOLLOW_UP_VISIT) && getMotherMentorVisitStatus(v).equals(Complete)) {
+                if (v.getVisitType()
+                                .equalsIgnoreCase(
+                                        Constants.EVENT_TYPE.MOTHER_MENTOR_FOLLOW_UP_VISIT)
+                        && getMotherMentorVisitStatus(v).equals(Complete)) {
                     prepFollowupVisit.add(v);
                 }
             }
@@ -52,13 +59,13 @@ public class MotherMentorVisitsUtil extends VisitUtils {
                 }
             }
         }
-
     }
 
     private static void createCancelledEvent(String json) throws Exception {
         Event baseEvent = new Gson().fromJson(json, Event.class);
         baseEvent.setFormSubmissionId(UUID.randomUUID().toString());
-        AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
+        AllSharedPreferences allSharedPreferences =
+                MotherMentorLibrary.getInstance().context().allSharedPreferences();
         NCUtils.addEvent(allSharedPreferences, baseEvent);
         NCUtils.startClientProcessing();
     }
@@ -69,10 +76,15 @@ public class MotherMentorVisitsUtil extends VisitUtils {
             JSONObject jsonObject = new JSONObject(lastVisit.getJson());
             JSONArray obs = jsonObject.getJSONArray("obs");
 
-            completionObject.put("isFirstVitalDone", computeCompletionStatusForAction(obs, "first_vital_completion_status"));
-            completionObject.put("isSecondVitalDone", computeCompletionStatusForAction(obs, "second_vital_completion_status"));
-            completionObject.put("isDischargeConditionDone", computeCompletionStatus(obs, "discharge_condition"));
-
+            completionObject.put(
+                    "isFirstVitalDone",
+                    computeCompletionStatusForAction(obs, "first_vital_completion_status"));
+            completionObject.put(
+                    "isSecondVitalDone",
+                    computeCompletionStatusForAction(obs, "second_vital_completion_status"));
+            completionObject.put(
+                    "isDischargeConditionDone",
+                    computeCompletionStatus(obs, "discharge_condition"));
 
         } catch (Exception e) {
             Timber.e(e);
@@ -86,10 +98,14 @@ public class MotherMentorVisitsUtil extends VisitUtils {
             JSONObject jsonObject = new JSONObject(lastVisit.getJson());
             JSONArray obs = jsonObject.getJSONArray("obs");
 
-            completionObject.put("isMedicalHistoryDone", computeCompletionStatusForAction(obs, "medical_history_completion_status"));
-            completionObject.put("isPhysicalExamDone", computeCompletionStatusForAction(obs, "physical_exam_completion_status"));
-            completionObject.put("isHtsDone", computeCompletionStatusForAction(obs, "hts_completion_status"));
-
+            completionObject.put(
+                    "isMedicalHistoryDone",
+                    computeCompletionStatusForAction(obs, "medical_history_completion_status"));
+            completionObject.put(
+                    "isPhysicalExamDone",
+                    computeCompletionStatusForAction(obs, "physical_exam_completion_status"));
+            completionObject.put(
+                    "isHtsDone", computeCompletionStatusForAction(obs, "hts_completion_status"));
 
         } catch (Exception e) {
             Timber.e(e);
@@ -105,15 +121,18 @@ public class MotherMentorVisitsUtil extends VisitUtils {
             JSONObject checkObj = obs.getJSONObject(0);
             JSONArray value = checkObj.getJSONArray("values");
 
-            completionObject.put("isClientConsentForMcProcedureDone", computeCompletionStatus(obs, "client_consent_for_mc_procedure"));
-            completionObject.put("isMcProcedureDone", computeCompletionStatusForAction(obs, "mc_procedure_completion_status"));
+            completionObject.put(
+                    "isClientConsentForMcProcedureDone",
+                    computeCompletionStatus(obs, "client_consent_for_mc_procedure"));
+            completionObject.put(
+                    "isMcProcedureDone",
+                    computeCompletionStatusForAction(obs, "mc_procedure_completion_status"));
 
         } catch (Exception e) {
             Timber.e(e);
         }
         return getActionStatus(completionObject);
     }
-
 
     public static String getActionStatus(Map<String, Boolean> checkObject) {
         for (Map.Entry<String, Boolean> entry : checkObject.entrySet()) {
@@ -127,7 +146,8 @@ public class MotherMentorVisitsUtil extends VisitUtils {
         return Pending;
     }
 
-    public static boolean computeCompletionStatus(JSONArray obs, String checkString) throws JSONException {
+    public static boolean computeCompletionStatus(JSONArray obs, String checkString)
+            throws JSONException {
         int size = obs.length();
         for (int i = 0; i < size; i++) {
             JSONObject checkObj = obs.getJSONObject(i);
@@ -138,7 +158,8 @@ public class MotherMentorVisitsUtil extends VisitUtils {
         return false;
     }
 
-    public static boolean computeCompletionStatusForAction(JSONArray obs, String checkString) throws JSONException {
+    public static boolean computeCompletionStatusForAction(JSONArray obs, String checkString)
+            throws JSONException {
         int size = obs.length();
         for (int i = 0; i < size; i++) {
             JSONObject checkObj = obs.getJSONObject(i);
@@ -152,7 +173,8 @@ public class MotherMentorVisitsUtil extends VisitUtils {
 
     public static void manualProcessVisit(Visit visit) throws Exception {
         List<Visit> manualProcessedVisits = new ArrayList<>();
-        VisitDetailsRepository visitDetailsRepository = MotherMentorLibrary.getInstance().visitDetailsRepository();
+        VisitDetailsRepository visitDetailsRepository =
+                MotherMentorLibrary.getInstance().visitDetailsRepository();
         VisitRepository visitRepository = MotherMentorLibrary.getInstance().visitRepository();
         manualProcessedVisits.add(visit);
         processVisits(manualProcessedVisits, visitRepository, visitDetailsRepository);

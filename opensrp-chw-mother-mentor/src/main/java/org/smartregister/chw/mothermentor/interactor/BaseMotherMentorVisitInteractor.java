@@ -19,8 +19,9 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
-import org.smartregister.chw.mothermentor.util.NCUtils;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorJsonFormUtils;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -28,6 +29,8 @@ import org.smartregister.clientandeventmodel.User;
 import org.smartregister.domain.SyncStatus;
 import org.smartregister.repository.AllSharedPreferences;
 import org.smartregister.sync.helper.ECSyncHelper;
+
+import timber.log.Timber;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,11 +41,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import timber.log.Timber;
-
 public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitContract.Interactor {
 
-    protected final LinkedHashMap<String, BaseMotherMentorVisitAction> actionList = new LinkedHashMap<>();
+    protected final LinkedHashMap<String, BaseMotherMentorVisitAction> actionList =
+            new LinkedHashMap<>();
     private final ECSyncHelper syncHelper;
     protected AppExecutors appExecutors;
     protected Map<String, List<VisitDetail>> details = null;
@@ -54,66 +56,85 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
     public BaseMotherMentorVisitInteractor(AppExecutors appExecutors, ECSyncHelper syncHelper) {
         this.appExecutors = appExecutors;
         this.syncHelper = syncHelper;
-
     }
 
     public BaseMotherMentorVisitInteractor() {
         this(new AppExecutors(), MotherMentorLibrary.getInstance().getEcSyncHelper());
     }
+
     public BaseMotherMentorVisitInteractor(String visitType) {
         this(new AppExecutors(), MotherMentorLibrary.getInstance().getEcSyncHelper());
         this.visitType = visitType;
     }
 
     protected String getCurrentVisitType() {
-        if(StringUtils.isNotBlank(visitType)){
+        if (StringUtils.isNotBlank(visitType)) {
             return visitType;
         }
         return Constants.EVENT_TYPE.MOTHER_MENTOR_SCREENING;
     }
 
     @Override
-    public void reloadMemberDetails(String memberID, String profileType, BaseMotherMentorVisitContract.InteractorCallBack callBack) {
-        memberObject = getMemberClient(memberID, profileType);
-        if (memberObject != null) {
-            final Runnable runnable = () -> {
-                appExecutors.mainThread().execute(() -> callBack.onMemberDetailsReloaded(memberObject));
-            };
-            appExecutors.diskIO().execute(runnable);
-        }
+    public void reloadMemberDetails(
+            String memberID,
+            String profileType,
+            BaseMotherMentorVisitContract.InteractorCallBack callBack) {
+        appExecutors
+                .diskIO()
+                .execute(
+                        () -> {
+                            memberObject = getMemberClient(memberID, profileType);
+                            appExecutors
+                                    .mainThread()
+                                    .execute(() -> callBack.onMemberDetailsReloaded(memberObject));
+                        });
     }
 
     /**
      * Default if profile type is not provided is MotherMentor/PrEP member
      *
-     * @param memberID    unique identifier for the user
+     * @param memberID unique identifier for the user
      * @param profileType profile type being used
      * @return MemberObject wrapper for the user's data
      */
     @Override
     public MemberObject getMemberClient(String memberID, String profileType) {
-        return MotherMentorDao.getMember(memberID);
+        return MotherMentorDao.getVisitMember(memberID);
     }
 
     @Override
-    public void saveRegistration(String jsonString, boolean isEditMode, BaseMotherMentorVisitContract.InteractorCallBack callBack) {
+    public void saveRegistration(
+            String jsonString,
+            boolean isEditMode,
+            BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         Timber.v("saveRegistration");
     }
 
     @Override
-    public void calculateActions(final BaseMotherMentorVisitContract.View view, MemberObject memberObject, final BaseMotherMentorVisitContract.InteractorCallBack callBack) {
+    public void calculateActions(
+            final BaseMotherMentorVisitContract.View view,
+            MemberObject memberObject,
+            final BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         context = view.getContext();
         getDetailsOnEdit(view, memberObject);
 
         populateActionList(callBack);
     }
 
-    protected void getDetailsOnEdit(BaseMotherMentorVisitContract.View view, MemberObject memberObject) {
+    protected void getDetailsOnEdit(
+            BaseMotherMentorVisitContract.View view, MemberObject memberObject) {
         if (view.getEditMode()) {
-            Visit lastVisit = MotherMentorLibrary.getInstance().visitRepository().getLatestVisit(memberObject.getBaseEntityId(), getCurrentVisitType());
+            Visit lastVisit =
+                    MotherMentorLibrary.getInstance()
+                            .visitRepository()
+                            .getLatestVisit(memberObject.getBaseEntityId(), getCurrentVisitType());
 
             if (lastVisit != null) {
-                details = VisitUtils.getVisitGroups(MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(lastVisit.getVisitId()));
+                details =
+                        VisitUtils.getVisitGroups(
+                                MotherMentorLibrary.getInstance()
+                                        .visitDetailsRepository()
+                                        .getVisits(lastVisit.getVisitId()));
             }
         }
     }
@@ -123,54 +144,60 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
     }
 
     protected void populateActionList(BaseMotherMentorVisitContract.InteractorCallBack callBack) {
-        final Runnable runnable = () -> {
-            try {
-                evaluateSampleAction(details);
-            } catch (BaseMotherMentorVisitAction.ValidationException e) {
-                Timber.e(e);
-            }
+        final Runnable runnable =
+                () -> {
+                    try {
+                        evaluateSampleAction(details);
+                    } catch (BaseMotherMentorVisitAction.ValidationException e) {
+                        Timber.e(e);
+                    }
 
-            appExecutors.mainThread().execute(() -> callBack.preloadActions(actionList));
-        };
+                    appExecutors.mainThread().execute(() -> callBack.preloadActions(actionList));
+                };
 
         appExecutors.diskIO().execute(runnable);
     }
 
-    private void evaluateSampleAction(Map<String, List<VisitDetail>> details) throws BaseMotherMentorVisitAction.ValidationException {
+    private void evaluateSampleAction(Map<String, List<VisitDetail>> details)
+            throws BaseMotherMentorVisitAction.ValidationException {
 
-        BaseMotherMentorVisitAction ba = getBuilder("Sample Action")
-                .withSubtitle("")
-                .withOptional(false)
-                .withFormName("anc")
-                .build();
+        BaseMotherMentorVisitAction ba =
+                getBuilder("Sample Action")
+                        .withSubtitle("")
+                        .withOptional(false)
+                        .withFormName("anc")
+                        .build();
         actionList.put("Sample Action", ba);
-
     }
-
 
     @Override
-    public void submitVisit(final boolean editMode, final String memberID, final Map<String, BaseMotherMentorVisitAction> map, final BaseMotherMentorVisitContract.InteractorCallBack callBack) {
-        final Runnable runnable = () -> {
-            String results = null;
-            try {
-                results = submitVisit(editMode, memberID, map, "");
-            } catch (Exception e) {
-                Timber.e(e);
-            }
+    public void submitVisit(
+            final boolean editMode,
+            final String memberID,
+            final Map<String, BaseMotherMentorVisitAction> map,
+            final BaseMotherMentorVisitContract.InteractorCallBack callBack) {
+        final Runnable runnable =
+                () -> {
+                    String results = null;
+                    try {
+                        results = submitVisit(editMode, memberID, map, "");
+                    } catch (Exception e) {
+                        Timber.e(e);
+                    }
 
-            String finalResults = results;
-            appExecutors.mainThread().execute(() ->
-                    callBack.onSubmitted(finalResults));
-        };
+                    String finalResults = results;
+                    appExecutors.mainThread().execute(() -> callBack.onSubmitted(finalResults));
+                };
 
         appExecutors.diskIO().execute(runnable);
     }
 
-    protected String submitVisit(final boolean editMode,
-                                 final String memberID,
-                                 final Map<String,
-                                         BaseMotherMentorVisitAction> map,
-                                 String parentEventType) throws Exception {
+    protected String submitVisit(
+            final boolean editMode,
+            final String memberID,
+            final Map<String, BaseMotherMentorVisitAction> map,
+            String parentEventType)
+            throws Exception {
         // create a map of the different types
 
         Map<String, BaseMotherMentorVisitAction> externalVisits = new HashMap<>();
@@ -188,7 +215,8 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
                 BaseMotherMentorVisitAction action = entry.getValue();
                 BaseMotherMentorVisitAction.ProcessingMode mode = action.getProcessingMode();
 
-                if (mode == BaseMotherMentorVisitAction.ProcessingMode.SEPARATE && StringUtils.isBlank(parentEventType)) {
+                if (mode == BaseMotherMentorVisitAction.ProcessingMode.SEPARATE
+                        && StringUtils.isBlank(parentEventType)) {
                     externalVisits.put(entry.getKey(), entry.getValue());
                 } else {
                     combinedJsons.put(entry.getKey(), json);
@@ -199,7 +227,8 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             }
         }
 
-        String type = StringUtils.isBlank(parentEventType) ? getEncounterType() : getEncounterType();
+        String type =
+                StringUtils.isBlank(parentEventType) ? getEncounterType() : getEncounterType();
 
         // persist to database
         Visit visit = saveVisit(editMode, memberID, type, combinedJsons, parentEventType);
@@ -211,10 +240,12 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         if (MotherMentorLibrary.isSubmitOnSave()) {
             List<Visit> visits = new ArrayList<>(1);
             visits.add(visit);
-            VisitUtils.processVisits(visits, MotherMentorLibrary.getInstance().visitRepository(), MotherMentorLibrary.getInstance().visitDetailsRepository());
+            VisitUtils.processVisits(
+                    visits,
+                    MotherMentorLibrary.getInstance().visitRepository(),
+                    MotherMentorLibrary.getInstance().visitDetailsRepository());
 
             Context context = MotherMentorLibrary.getInstance().context().applicationContext();
-
         }
         return visit.getJson();
     }
@@ -227,30 +258,41 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
      * @param memberID
      * @throws Exception
      */
-    protected void processExternalVisits(Visit visit, Map<String, BaseMotherMentorVisitAction> externalVisits, String memberID) throws Exception {
+    protected void processExternalVisits(
+            Visit visit, Map<String, BaseMotherMentorVisitAction> externalVisits, String memberID)
+            throws Exception {
         if (visit != null && !externalVisits.isEmpty()) {
             for (Map.Entry<String, BaseMotherMentorVisitAction> entry : externalVisits.entrySet()) {
                 Map<String, BaseMotherMentorVisitAction> subEvent = new HashMap<>();
                 subEvent.put(entry.getKey(), entry.getValue());
 
                 String subMemberID = entry.getValue().getBaseEntityID();
-                if (StringUtils.isBlank(subMemberID))
-                    subMemberID = memberID;
+                if (StringUtils.isBlank(subMemberID)) subMemberID = memberID;
 
                 submitVisit(false, subMemberID, subEvent, visit.getVisitType());
             }
         }
     }
 
-    protected @Nullable Visit saveVisit(boolean editMode, String memberID, String encounterType,
-                                        final Map<String, String> jsonString,
-                                        String parentEventType
-    ) throws Exception {
+    protected @Nullable Visit saveVisit(
+            boolean editMode,
+            String memberID,
+            String encounterType,
+            final Map<String, String> jsonString,
+            String parentEventType)
+            throws Exception {
 
-        AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
+        AllSharedPreferences allSharedPreferences =
+                MotherMentorLibrary.getInstance().context().allSharedPreferences();
 
         String derivedEncounterType = StringUtils.isBlank(parentEventType) ? encounterType : "";
-        Event baseEvent = MotherMentorJsonFormUtils.processVisitJsonForm(allSharedPreferences, memberID, derivedEncounterType, jsonString, getTableName());
+        Event baseEvent =
+                MotherMentorJsonFormUtils.processVisitJsonForm(
+                        allSharedPreferences,
+                        memberID,
+                        derivedEncounterType,
+                        jsonString,
+                        getTableName());
 
         // only tag the first event with the date
         if (StringUtils.isBlank(parentEventType)) {
@@ -263,9 +305,12 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             baseEvent.setFormSubmissionId(MotherMentorJsonFormUtils.generateRandomUUIDString());
             MotherMentorJsonFormUtils.tagEvent(allSharedPreferences, baseEvent);
 
-            String visitID = (editMode) ?
-                    visitRepository().getLatestVisit(memberID, getEncounterType()).getVisitId() :
-                    MotherMentorJsonFormUtils.generateRandomUUIDString();
+            String visitID =
+                    (editMode)
+                            ? visitRepository()
+                                    .getLatestVisit(memberID, getEncounterType())
+                                    .getVisitId()
+                            : MotherMentorJsonFormUtils.generateRandomUUIDString();
 
             // reset database
             if (editMode) {
@@ -284,7 +329,8 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
     }
 
     protected String getParentVisitEventID(Visit visit, String parentEventType) {
-        return visitRepository().getParentVisitEventID(visit.getBaseEntityId(), parentEventType, visit.getDate());
+        return visitRepository()
+                .getParentVisitEventID(visit.getBaseEntityId(), parentEventType, visit.getDate());
     }
 
     @VisibleForTesting
@@ -299,37 +345,54 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         List<Visit> childVisits = visitRepository().getChildEvents(visitID);
         for (Visit v : childVisits) {
             visitRepository().deleteVisit(v.getVisitId());
-            MotherMentorLibrary.getInstance().visitDetailsRepository().deleteVisitDetails(v.getVisitId());
+            MotherMentorLibrary.getInstance()
+                    .visitDetailsRepository()
+                    .deleteVisitDetails(v.getVisitId());
         }
     }
 
-
     protected void deleteProcessedVisit(String visitID, String baseEntityId) {
         // check if the event
-        AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
+        AllSharedPreferences allSharedPreferences =
+                MotherMentorLibrary.getInstance().context().allSharedPreferences();
         Visit visit = visitRepository().getVisitByVisitId(visitID);
         if (visit == null || !visit.getProcessed()) return;
-        //TODO: implement if needed
+        // TODO: implement if needed
     }
 
-    protected void deleteSavedEvent(AllSharedPreferences allSharedPreferences, String baseEntityId, String eventId, String formSubmissionId, String type) {
-        Event event = (Event) new Event()
-                .withBaseEntityId(baseEntityId)
-                .withEventDate(new Date())
-                .withEventType(Constants.EVENT_TYPE.VOID_EVENT)
-                .withLocationId(MotherMentorJsonFormUtils.locationId(allSharedPreferences))
-                .withProviderId(allSharedPreferences.fetchRegisteredANM())
-                .withEntityType(type)
-                .withFormSubmissionId(formSubmissionId)
-                .withVoided(true)
-                .withVoider(new User(null, allSharedPreferences.fetchRegisteredANM(), null, null))
-                .withVoidReason("Edited Event")
-                .withDateVoided(new Date());
+    protected void deleteSavedEvent(
+            AllSharedPreferences allSharedPreferences,
+            String baseEntityId,
+            String eventId,
+            String formSubmissionId,
+            String type) {
+        Event event =
+                (Event)
+                        new Event()
+                                .withBaseEntityId(baseEntityId)
+                                .withEventDate(new Date())
+                                .withEventType(Constants.EVENT_TYPE.VOID_EVENT)
+                                .withLocationId(
+                                        MotherMentorJsonFormUtils.locationId(allSharedPreferences))
+                                .withProviderId(allSharedPreferences.fetchRegisteredANM())
+                                .withEntityType(type)
+                                .withFormSubmissionId(formSubmissionId)
+                                .withVoided(true)
+                                .withVoider(
+                                        new User(
+                                                null,
+                                                allSharedPreferences.fetchRegisteredANM(),
+                                                null,
+                                                null))
+                                .withVoidReason("Edited Event")
+                                .withDateVoided(new Date());
 
         event.setSyncStatus(SyncStatus.PENDING.value());
 
         try {
-            syncHelper.addEvent(event.getBaseEntityId(), new JSONObject(MotherMentorJsonFormUtils.gson.toJson(event)));
+            syncHelper.addEvent(
+                    event.getBaseEntityId(),
+                    new JSONObject(MotherMentorJsonFormUtils.gson.toJson(event)));
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -359,8 +422,16 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             // add mothermentor_visit_date date obs and last
             List<Object> list = new ArrayList<>();
             list.add(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
-            baseEvent.addObs(new Obs("concept", "text", "mothermentor_visit_date", "",
-                    list, new ArrayList<>(), null, "mothermentor_visit_date"));
+            baseEvent.addObs(
+                    new Obs(
+                            "concept",
+                            "text",
+                            DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
+                            "",
+                            list,
+                            new ArrayList<>(),
+                            null,
+                            DBConstants.KEY.MOTHERMENTOR_VISIT_DATE));
         }
     }
 

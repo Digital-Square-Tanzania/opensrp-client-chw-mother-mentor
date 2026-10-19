@@ -15,27 +15,26 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
-
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
 
 import timber.log.Timber;
 
-public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
+import java.util.List;
+import java.util.Map;
+
+public class MotherMentorSourceActionHelper
+        implements BaseMotherMentorVisitAction.MotherMentorVisitActionHelper {
 
     protected String typeOfPatientRelationship;
 
     protected String jsonPayload;
-
 
     protected String baseEntityId;
 
     protected Context context;
 
     protected MemberObject memberObject;
-
 
     public MotherMentorSourceActionHelper(Context context, MemberObject memberObject) {
         this.context = context;
@@ -44,7 +43,8 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
     }
 
     @Override
-    public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
+    public void onJsonFormLoaded(
+            String jsonPayload, Context context, Map<String, List<VisitDetail>> map) {
         this.jsonPayload = jsonPayload;
     }
 
@@ -53,12 +53,19 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
         try {
             JSONObject jsonObject = new JSONObject(jsonPayload);
 
-            JSONArray fields = jsonObject.getJSONObject(JsonFormConstants.STEP1).getJSONArray(JsonFormConstants.FIELDS);
-            JSONObject tbClientNumber = JsonFormUtils.getFieldJSONObject(fields, "tb_client_number");
-            JSONObject mother_mentorClientNumber = JsonFormUtils.getFieldJSONObject(fields, "mother_mentor_client_number");
+            JSONArray fields =
+                    jsonObject
+                            .getJSONObject(JsonFormConstants.STEP1)
+                            .getJSONArray(JsonFormConstants.FIELDS);
+            JSONObject tbClientNumber =
+                    JsonFormUtils.getFieldJSONObject(fields, DBConstants.KEY.TB_CLIENT_NUMBER);
+            JSONObject mother_mentorClientNumber =
+                    JsonFormUtils.getFieldJSONObject(fields, DBConstants.KEY.LEPROSY_CLIENT_NUMBER);
 
-            JSONObject indexCaseConditionTypes = JsonFormUtils.getFieldJSONObject(fields, "index_case_condition_types");
-            JSONObject doYouKnowClientsNumber = JsonFormUtils.getFieldJSONObject(fields, "do_you_know_clients_number");
+            JSONObject indexCaseConditionTypes =
+                    JsonFormUtils.getFieldJSONObject(fields, "index_case_condition_types");
+            JSONObject doYouKnowClientsNumber =
+                    JsonFormUtils.getFieldJSONObject(fields, "do_you_know_clients_number");
 
             String contactBaseEntityId = baseEntityId;
             if (StringUtils.isBlank(contactBaseEntityId) && memberObject != null) {
@@ -67,7 +74,8 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
 
             String indexClientId = MotherMentorDao.getIndexClientIdForContact(contactBaseEntityId);
             if (StringUtils.isNotBlank(indexClientId)) {
-                MotherMentorDao.ClientNumberInfo clientNumberInfo = MotherMentorDao.getIndexClientNumbers(indexClientId);
+                MotherMentorDao.ClientNumberInfo clientNumberInfo =
+                        MotherMentorDao.getIndexClientNumbers(indexClientId);
                 if (clientNumberInfo != null) {
                     String tbNumber = clientNumberInfo.getTbClientNumber();
                     String mother_mentorNumber = clientNumberInfo.getMotherMentorClientNumber();
@@ -77,24 +85,25 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
                         if (doYouKnowClientsNumber != null) {
                             doYouKnowClientsNumber.put(JsonFormConstants.VALUE, "yes");
                             doYouKnowClientsNumber.put(EDITABLE, true);
-                            doYouKnowClientsNumber.put(READ_ONLY,true);
+                            doYouKnowClientsNumber.put(READ_ONLY, true);
                         }
                         if (tbClientNumber != null) {
                             tbClientNumber.put(JsonFormConstants.VALUE, tbNumber);
                             tbClientNumber.put(EDITABLE, true);
-                            tbClientNumber.put(READ_ONLY,true);
+                            tbClientNumber.put(READ_ONLY, true);
                         }
                     } else if (StringUtils.isNotBlank(mother_mentorNumber)) {
                         selectCheckBoxValue(indexCaseConditionTypes, "mother_mentor");
                         if (doYouKnowClientsNumber != null) {
                             doYouKnowClientsNumber.put(JsonFormConstants.VALUE, "yes");
                             doYouKnowClientsNumber.put(EDITABLE, true);
-                            doYouKnowClientsNumber.put(READ_ONLY,true);
+                            doYouKnowClientsNumber.put(READ_ONLY, true);
                         }
                         if (mother_mentorClientNumber != null) {
-                            mother_mentorClientNumber.put(JsonFormConstants.VALUE, mother_mentorNumber);
+                            mother_mentorClientNumber.put(
+                                    JsonFormConstants.VALUE, mother_mentorNumber);
                             mother_mentorClientNumber.put(EDITABLE, true);
-                            mother_mentorClientNumber.put(READ_ONLY,true);
+                            mother_mentorClientNumber.put(READ_ONLY, true);
                         }
                     }
                 }
@@ -113,22 +122,26 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
         try {
             JSONObject jsonObject = new JSONObject(jsonPayload);
 
-            typeOfPatientRelationship = JsonFormUtils.getValue(jsonObject, "contact_lives_with_patient_type");
+            typeOfPatientRelationship =
+                    JsonFormUtils.getValue(
+                            jsonObject, DBConstants.KEY.CONTACT_LIVES_WITH_PATIENT_TYPE);
             if (StringUtils.isBlank(typeOfPatientRelationship)) {
-                typeOfPatientRelationship = JsonFormUtils.getValue(jsonObject, "anaishi_karibu_na_mgonjwa");
+                typeOfPatientRelationship =
+                        JsonFormUtils.getValue(jsonObject, "anaishi_karibu_na_mgonjwa");
             }
             if (StringUtils.isBlank(typeOfPatientRelationship)) {
-                typeOfPatientRelationship = JsonFormUtils.getValue(jsonObject, "relationship_to_index_client");
+                typeOfPatientRelationship =
+                        JsonFormUtils.getValue(
+                                jsonObject, DBConstants.KEY.RELATIONSHIP_TO_INDEX_CLIENT);
             }
             if (StringUtils.isBlank(typeOfPatientRelationship)) {
-                typeOfPatientRelationship = JsonFormUtils.getValue(jsonObject, "aina_ya_ukaribu_na_mgonjwa");
+                typeOfPatientRelationship =
+                        JsonFormUtils.getValue(jsonObject, "aina_ya_ukaribu_na_mgonjwa");
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -146,7 +159,6 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
         return null;
     }
 
-
     @Override
     public String evaluateSubTitle() {
         return null;
@@ -154,7 +166,7 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        if(StringUtils.isNotBlank(typeOfPatientRelationship)){
+        if (StringUtils.isNotBlank(typeOfPatientRelationship)) {
             return BaseMotherMentorVisitAction.Status.COMPLETED;
         }
         return BaseMotherMentorVisitAction.Status.PENDING;
@@ -165,7 +177,8 @@ public class MotherMentorSourceActionHelper implements BaseMotherMentorVisitActi
         Timber.v("onPayloadReceived");
     }
 
-    private void selectCheckBoxValue(JSONObject checkBoxField, String optionKey) throws JSONException {
+    private void selectCheckBoxValue(JSONObject checkBoxField, String optionKey)
+            throws JSONException {
         if (checkBoxField == null || StringUtils.isBlank(optionKey)) {
             return;
         }

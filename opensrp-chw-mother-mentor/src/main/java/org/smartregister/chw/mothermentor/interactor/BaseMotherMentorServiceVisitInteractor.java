@@ -1,6 +1,5 @@
 package org.smartregister.chw.mothermentor.interactor;
 
-
 import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
@@ -11,17 +10,19 @@ import com.vijay.jsonwizard.utils.FormUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorInvestigationActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSampleActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSourceActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.sync.helper.ECSyncHelper;
+
+import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,8 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import timber.log.Timber;
 
 public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisitInteractor {
 
@@ -42,11 +41,12 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     protected AppExecutors appExecutors;
     private ECSyncHelper syncHelper;
     private Context mContext;
-    private MotherMentorInvestigationActionHelper contactTbInvestigationHelper;
-
 
     @VisibleForTesting
-    public BaseMotherMentorServiceVisitInteractor(AppExecutors appExecutors, MotherMentorLibrary MotherMentorLibrary, ECSyncHelper syncHelper) {
+    public BaseMotherMentorServiceVisitInteractor(
+            AppExecutors appExecutors,
+            MotherMentorLibrary MotherMentorLibrary,
+            ECSyncHelper syncHelper) {
         this.appExecutors = appExecutors;
         this.mContext = MotherMentorLibrary.getInstance().context().applicationContext();
         this.syncHelper = syncHelper;
@@ -54,7 +54,10 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     }
 
     public BaseMotherMentorServiceVisitInteractor(String visitType) {
-        this(new AppExecutors(), MotherMentorLibrary.getInstance(), MotherMentorLibrary.getInstance().getEcSyncHelper());
+        this(
+                new AppExecutors(),
+                MotherMentorLibrary.getInstance(),
+                MotherMentorLibrary.getInstance().getEcSyncHelper());
         this.visitType = visitType;
     }
 
@@ -68,102 +71,81 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
 
     /**
      * this method is used to list all actions
+     *
      * @param callBack
      */
     @Override
     protected void populateActionList(BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         this.callBack = callBack;
-        final Runnable runnable = () -> {
-            try {
-                evaluateMotherMentorSource(details);
-                evaluateContactTbInvestigation(details);
-                evaluateContactMotherMentorInvestigation(details);
-                evaluateMotherMentorSample(details);
+        final Runnable runnable =
+                () -> {
+                    try {
+                        evaluateMotherMentorSource(details);
+                        evaluateContactMotherMentorInvestigation(details);
 
-            } catch (BaseMotherMentorVisitAction.ValidationException e) {
-                Timber.e(e);
-            }
+                    } catch (BaseMotherMentorVisitAction.ValidationException e) {
+                        Timber.e(e);
+                    }
 
-            appExecutors.mainThread().execute(() -> callBack.preloadActions(actionList));
-        };
+                    appExecutors.mainThread().execute(() -> callBack.preloadActions(actionList));
+                };
 
         appExecutors.diskIO().execute(runnable);
     }
 
     /**
      * this action deals Type of Contact (Njia ya kuchunguza Kifua Kikuu)
+     *
      * @param details
      * @throws BaseMotherMentorVisitAction.ValidationException
      */
-    private void evaluateMotherMentorSource(Map<String, List<VisitDetail>> details) throws BaseMotherMentorVisitAction.ValidationException {
+    private void evaluateMotherMentorSource(Map<String, List<VisitDetail>> details)
+            throws BaseMotherMentorVisitAction.ValidationException {
 
-        MotherMentorSourceActionHelper actionHelper = new MotherMentorSourceActionHelper(mContext, memberObject);
-        BaseMotherMentorVisitAction action = getBuilder(context.getString(R.string.mothermentor_source))
-                .withOptional(false)
-                .withDetails(details)
-                .withHelper(actionHelper)
-                .withFormName(Constants.MotherMentor_FOLLOWUP_FORMS.MOTHERMENTOR_INDEX_CLIENT_DETAILS_SOURCE)
-                .build();
+        MotherMentorSourceActionHelper actionHelper =
+                new MotherMentorSourceActionHelper(mContext, memberObject);
+        BaseMotherMentorVisitAction action =
+                getBuilder(context.getString(R.string.mothermentor_source))
+                        .withOptional(false)
+                        .withDetails(details)
+                        .withHelper(actionHelper)
+                        .withFormName(
+                                Constants.MotherMentor_FOLLOWUP_FORMS
+                                        .MOTHERMENTOR_INDEX_CLIENT_DETAILS_SOURCE)
+                        .build();
         actionList.put(context.getString(R.string.mothermentor_source), action);
-
-    }
-
-    /**
-     * this action deals with TB Investigation (Uchunguzi wa Kifua Kikuu)
-     * @param details
-     * @throws BaseMotherMentorVisitAction.ValidationException
-     */
-    private void evaluateContactTbInvestigation(Map<String, List<VisitDetail>> details) throws BaseMotherMentorVisitAction.ValidationException {
-
-        MotherMentorInvestigationActionHelper actionHelper = new MotherMentorInvestigationActionHelper(mContext, memberObject);
-        contactTbInvestigationHelper = actionHelper;
-        BaseMotherMentorVisitAction action = getBuilder(context.getString(R.string.mothermentor_contact_tb_investigation))
-                .withOptional(false)
-                .withDetails(details)
-                .withHelper(actionHelper)
-                .withValidator(getSourceContactTypeValidator("tb"))
-                .withFormName(Constants.MotherMentor_FOLLOWUP_FORMS.MOTHERMENTOR_CONTACT_TB_INVESTIGATION)
-                .build();
-        actionList.put(context.getString(R.string.mothermentor_contact_tb_investigation), action);
     }
 
     /**
      * this action deals with MotherMentor Investigation (Uchunguzi wa Ukoma)
+     *
      * @param details
      * @throws BaseMotherMentorVisitAction.ValidationException
      */
-    private void evaluateContactMotherMentorInvestigation(Map<String, List<VisitDetail>> details) throws BaseMotherMentorVisitAction.ValidationException {
+    private void evaluateContactMotherMentorInvestigation(Map<String, List<VisitDetail>> details)
+            throws BaseMotherMentorVisitAction.ValidationException {
 
-        MotherMentorInvestigationActionHelper actionHelper = new MotherMentorInvestigationActionHelper(mContext, memberObject);
-        BaseMotherMentorVisitAction action = getBuilder(context.getString(R.string.mothermentor_contact_mother_mentor_investigation))
-                .withOptional(false)
-                .withDetails(details)
-                .withHelper(actionHelper)
-                .withValidator(getSourceContactTypeValidator("mother_mentor"))
-                .withFormName(Constants.MotherMentor_FOLLOWUP_FORMS.MOTHERMENTOR_CONTACT_LEPROSY_INVESTIGATION)
-                .build();
-        actionList.put(context.getString(R.string.mothermentor_contact_mother_mentor_investigation), action);
+        MotherMentorInvestigationActionHelper actionHelper =
+                new MotherMentorInvestigationActionHelper(mContext, memberObject);
+        BaseMotherMentorVisitAction action =
+                getBuilder(
+                                context.getString(
+                                        R.string.mothermentor_contact_mother_mentor_investigation))
+                        .withOptional(false)
+                        .withDetails(details)
+                        .withHelper(actionHelper)
+                        .withValidator(getSourceContactTypeValidator("mother_mentor"))
+                        .withFormName(
+                                Constants.MotherMentor_FOLLOWUP_FORMS
+                                        .MOTHERMENTOR_CONTACT_LEPROSY_INVESTIGATION)
+                        .build();
+        actionList.put(
+                context.getString(R.string.mothermentor_contact_mother_mentor_investigation),
+                action);
     }
 
-    /**
-     * this action deals with sample collection (kuchukua sampuli)
-     * @param details
-     * @throws BaseMotherMentorVisitAction.ValidationException
-     */
-    private void evaluateMotherMentorSample(Map<String, List<VisitDetail>> details) throws BaseMotherMentorVisitAction.ValidationException {
-
-        MotherMentorSampleActionHelper actionHelper = new MotherMentorSampleActionHelper(mContext, memberObject, contactTbInvestigationHelper);
-        BaseMotherMentorVisitAction action = getBuilder(context.getString(R.string.mothermentor_sample))
-                .withOptional(false)
-                .withDetails(details)
-                .withHelper(actionHelper)
-                .withValidator(getSampleEligibilityValidator(actionHelper))
-                .withFormName(Constants.MotherMentor_FOLLOWUP_FORMS.MOTHERMENTOR_SAMPLE)
-                .build();
-        actionList.put(context.getString(R.string.mothermentor_sample), action);
-    }
-
-    private BaseMotherMentorVisitAction.Validator getSourceContactTypeValidator(final String requiredType) {
+    private BaseMotherMentorVisitAction.Validator getSourceContactTypeValidator(
+            final String requiredType) {
         return new BaseMotherMentorVisitAction.Validator() {
             @Override
             public boolean isValid(String key) {
@@ -187,7 +169,8 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
             return false;
         }
 
-        BaseMotherMentorVisitAction sourceAction = actionList.get(context.getString(R.string.mothermentor_source));
+        BaseMotherMentorVisitAction sourceAction =
+                actionList.get(context.getString(R.string.mothermentor_source));
         if (sourceAction == null) {
             return false;
         }
@@ -220,10 +203,10 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
             return normalizedTypes;
         }
 
-        String[] candidateKeys = new String[]{
-                "index_case_condition_types",
-                "relationship_to_index_client"
-        };
+        String[] candidateKeys =
+                new String[] {
+                    "index_case_condition_types", DBConstants.KEY.RELATIONSHIP_TO_INDEX_CLIENT
+                };
 
         for (String key : candidateKeys) {
             List<String> selections = extractSelections(jsonObject, key);
@@ -301,27 +284,6 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
         return selections;
     }
 
-    private BaseMotherMentorVisitAction.Validator getSampleEligibilityValidator(final MotherMentorSampleActionHelper sampleActionHelper) {
-        return new BaseMotherMentorVisitAction.Validator() {
-            @Override
-            public boolean isValid(String key) {
-                return sampleActionHelper != null
-                        && isSourceContactTypeSelected("tb")
-                        && sampleActionHelper.isEligibleForSampleCollection();
-            }
-
-            @Override
-            public boolean isEnabled(String key) {
-                return isValid(key);
-            }
-
-            @Override
-            public void onChanged(String key) {
-                // No-op
-            }
-        };
-    }
-
     @Override
     protected String getEncounterType() {
         return Constants.EVENT_TYPE.MOTHERMENTOR_CONTACT_VISIT;
@@ -331,8 +293,4 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     protected String getTableName() {
         return Constants.TABLES.MOTHERMENTOR_SERVICES;
     }
-
-
-
-
 }

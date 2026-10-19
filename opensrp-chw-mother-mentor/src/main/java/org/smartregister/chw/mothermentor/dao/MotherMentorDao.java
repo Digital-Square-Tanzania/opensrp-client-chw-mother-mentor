@@ -1,77 +1,204 @@
 package org.smartregister.chw.mothermentor.dao;
 
+import android.database.Cursor;
+
 import org.apache.commons.lang3.StringUtils;
-import org.opensrp.api.domain.Event;
+import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.commonregistry.CommonPersonObject;
+import org.smartregister.commonregistry.CommonRepository;
 import org.smartregister.dao.AbstractDao;
+import org.smartregister.util.Utils;
+
+import timber.log.Timber;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MotherMentorDao extends AbstractDao {
-    private static final SimpleDateFormat df = new SimpleDateFormat(
-            "dd-MM-yyyy",
-            Locale.getDefault()
-    );
+    private static final SimpleDateFormat df =
+            new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
     private static final String ISO_DATE_WITH_MILLIS_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     private static final String ISO_DATE_WITH_TZ = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static final String ISO_DATE_WITH_MILLIS_TZ_NO_COLON = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final String ISO_DATE_WITH_TZ_NO_COLON = "yyyy-MM-dd'T'HH:mm:ssZ";
 
-    private static final DataMap<MemberObject> memberObjectMap = cursor -> {
+    private static final DataMap<MemberObject> memberObjectMap =
+            cursor -> {
+                MemberObject memberObject = new MemberObject();
 
-        MemberObject memberObject = new MemberObject();
+                memberObject.setFirstName(getCursorValue(cursor, DBConstants.KEY.FIRST_NAME, ""));
+                memberObject.setMiddleName(getCursorValue(cursor, DBConstants.KEY.MIDDLE_NAME, ""));
+                memberObject.setLastName(getCursorValue(cursor, DBConstants.KEY.LAST_NAME, ""));
+                memberObject.setAddress(getCursorValue(cursor, DBConstants.KEY.VILLAGE_TOWN));
+                memberObject.setGender(getCursorValue(cursor, DBConstants.KEY.GENDER));
+                memberObject.setMartialStatus(
+                        getCursorValue(cursor, DBConstants.KEY.MARITAL_STATUS));
+                memberObject.setUniqueId(getCursorValue(cursor, DBConstants.KEY.UNIQUE_ID, ""));
+                memberObject.setDob(getCursorValue(cursor, DBConstants.KEY.DOB));
+                memberObject.setFamilyBaseEntityId(
+                        getCursorValue(cursor, DBConstants.KEY.FAMILY_BASE_ENTITY_ID, ""));
+                memberObject.setRelationalId(
+                        getCursorValue(cursor, DBConstants.KEY.RELATIONAL_ID, ""));
+                memberObject.setPrimaryCareGiver(
+                        getCursorValue(cursor, DBConstants.KEY.PRIMARY_CARE_GIVER));
+                memberObject.setFamilyName(getCursorValue(cursor, DBConstants.KEY.FAMILY_NAME, ""));
+                memberObject.setPhoneNumber(
+                        getCursorValue(cursor, DBConstants.KEY.PHONE_NUMBER, ""));
+                memberObject.setMotherMentorTestDate(
+                        getCursorValueAsDate(cursor, DBConstants.KEY.MOTHERMENTOR_TEST_DATE, df));
+                memberObject.setBaseEntityId(
+                        getCursorValue(cursor, DBConstants.KEY.BASE_ENTITY_ID, ""));
+                memberObject.setFamilyHead(getCursorValue(cursor, DBConstants.KEY.FAMILY_HEAD, ""));
+                memberObject.setFamilyHeadPhoneNumber(
+                        getCursorValue(cursor, DBConstants.KEY.PCG_PHONE_NUMBER, ""));
+                memberObject.setFamilyHeadPhoneNumber(
+                        getCursorValue(cursor, DBConstants.KEY.FAMILY_HEAD_PHONE_NUMBER, ""));
+                memberObject.setEnrollmentDate(
+                        getCursorValue(cursor, DBConstants.KEY.ENROLLMENT_DATE, ""));
 
-        memberObject.setFirstName(getCursorValue(cursor, "first_name", ""));
-        memberObject.setMiddleName(getCursorValue(cursor, "middle_name", ""));
-        memberObject.setLastName(getCursorValue(cursor, "last_name", ""));
-        memberObject.setAddress(getCursorValue(cursor, "village_town"));
-        memberObject.setGender(getCursorValue(cursor, "gender"));
-        memberObject.setMartialStatus(getCursorValue(cursor, "marital_status"));
-        memberObject.setUniqueId(getCursorValue(cursor, "unique_id", ""));
-        memberObject.setDob(getCursorValue(cursor, "dob"));
-        memberObject.setFamilyBaseEntityId(getCursorValue(cursor, "family_base_entity_id", ""));
-        memberObject.setRelationalId(getCursorValue(cursor, "relational_id", ""));
-        memberObject.setPrimaryCareGiver(getCursorValue(cursor, "primary_caregiver"));
-        memberObject.setFamilyName(getCursorValue(cursor, "family_name", ""));
-        memberObject.setPhoneNumber(getCursorValue(cursor, "phone_number", ""));
-        memberObject.setMotherMentorTestDate(getCursorValueAsDate(cursor, "mothermentor_test_date", df));
-        memberObject.setBaseEntityId(getCursorValue(cursor, "base_entity_id", ""));
-        memberObject.setFamilyHead(getCursorValue(cursor, "family_head", ""));
-        memberObject.setFamilyHeadPhoneNumber(getCursorValue(cursor, "pcg_phone_number", ""));
-        memberObject.setFamilyHeadPhoneNumber(getCursorValue(cursor, "family_head_phone_number", ""));
-        memberObject.setEnrollmentDate(getCursorValue(cursor,
-                "enrollment_date",
-                ""));
+                String familyHeadName =
+                        getCursorValue(cursor, DBConstants.KEY.FAMILY_HEAD_FIRST_NAME, "")
+                                + " "
+                                + getCursorValue(
+                                        cursor, DBConstants.KEY.FAMILY_HEAD_MIDDLE_NAME, "");
 
-        String familyHeadName = getCursorValue(cursor, "family_head_first_name", "") + " "
-                + getCursorValue(cursor, "family_head_middle_name", "");
+                familyHeadName =
+                        (familyHeadName.trim()
+                                        + " "
+                                        + getCursorValue(
+                                                cursor, DBConstants.KEY.FAMILY_HEAD_LAST_NAME, ""))
+                                .trim();
+                memberObject.setFamilyHeadName(familyHeadName);
 
-        familyHeadName =
-                (familyHeadName.trim() + " " + getCursorValue(cursor, "family_head_last_name", "")).trim();
-        memberObject.setFamilyHeadName(familyHeadName);
+                String familyPcgName =
+                        getCursorValue(cursor, DBConstants.KEY.PCG_FIRST_NAME, "")
+                                + " "
+                                + getCursorValue(cursor, DBConstants.KEY.PCG_MIDDLE_NAME, "");
 
-        String familyPcgName = getCursorValue(cursor, "pcg_first_name", "") + " "
-                + getCursorValue(cursor, "pcg_middle_name", "");
+                familyPcgName =
+                        (familyPcgName.trim()
+                                        + " "
+                                        + getCursorValue(cursor, DBConstants.KEY.PCG_LAST_NAME, ""))
+                                .trim();
+                memberObject.setPrimaryCareGiverName(familyPcgName);
 
-        familyPcgName =
-                (familyPcgName.trim() + " " + getCursorValue(cursor, "pcg_last_name", "")).trim();
-        memberObject.setPrimaryCareGiverName(familyPcgName);
+                memberObject.setTbClientNumber(
+                        getCursorValue(cursor, DBConstants.KEY.TB_CLIENT_NUMBER, ""));
+                memberObject.setMotherMentorClientNumber(
+                        getCursorValue(cursor, DBConstants.KEY.LEPROSY_CLIENT_NUMBER, ""));
 
-        memberObject.setTbClientNumber(getCursorValue(cursor, "tb_client_number", ""));
-        memberObject.setMotherMentorClientNumber(getCursorValue(cursor, "mother_mentor_client_number", ""));
+                return memberObject;
+            };
 
-        return memberObject;
-    };
+    /** Loads a household profile using the host app's configured family table. */
+    public static MemberObject getHouseholdMember(String baseEntityId, String householdTable) {
+        if (StringUtils.isBlank(baseEntityId) || StringUtils.isBlank(householdTable)) {
+            return null;
+        }
+        try {
+            CommonRepository repository =
+                    MotherMentorLibrary.getInstance().context().commonrepository(householdTable);
+            if (repository == null) {
+                return null;
+            }
+
+            CommonPersonObject personObject = repository.findByBaseEntityId(baseEntityId);
+            if (personObject != null) {
+                MemberObject memberObject = new MemberObject();
+                memberObject.setBaseEntityId(personObject.getCaseId());
+                memberObject.setFamilyBaseEntityId(personObject.getCaseId());
+                memberObject.setFirstName(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.FIRST_NAME, false));
+                memberObject.setLastName(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.LAST_NAME, false));
+                memberObject.setUniqueId(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.UNIQUE_ID, false));
+                memberObject.setAddress(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.VILLAGE_TOWN, false));
+                memberObject.setFamilyHead(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.FAMILY_HEAD, false));
+                memberObject.setPrimaryCareGiver(
+                        Utils.getValue(
+                                personObject.getColumnmaps(),
+                                DBConstants.KEY.PRIMARY_CARE_GIVER,
+                                false));
+                memberObject.setPhoneNumber(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.PHONE_NUMBER, false));
+                return memberObject;
+            }
+        } catch (Exception e) {
+            Timber.e(e, "Unable to load Mother Mentor household");
+        }
+        return null;
+    }
+
+    /** Loads the active Child EID enrollment used to recommend a follow-up test. */
+    public static Map<String, String> getChildEidTestEnrollmentValues(String baseEntityId) {
+        Map<String, String> values = new HashMap<>();
+        if (StringUtils.isBlank(baseEntityId)) return values;
+        String query =
+                "SELECT m."
+                        + DBConstants.KEY.DOB
+                        + ", e."
+                        + DBConstants.KEY.WEANING_DATE
+                        + ", e."
+                        + DBConstants.KEY.LAST_TEST
+                        + " FROM "
+                        + Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID
+                        + " e INNER JOIN ec_family_member m ON m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " WHERE e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND e."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 ORDER BY e."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
+        try (Cursor cursor =
+                MotherMentorLibrary.getInstance()
+                        .getRepository()
+                        .getReadableDatabase()
+                        .rawQuery(query, new String[] {baseEntityId})) {
+            if (cursor.moveToFirst()) {
+                for (String key :
+                        new String[] {
+                            DBConstants.KEY.DOB,
+                            DBConstants.KEY.WEANING_DATE,
+                            DBConstants.KEY.LAST_TEST
+                        }) {
+                    int index = cursor.getColumnIndexOrThrow(key);
+                    values.put(key, cursor.isNull(index) ? null : cursor.getString(index));
+                }
+            }
+        } catch (Exception e) {
+            Timber.e(e, "Unable to load Child EID enrollment data");
+        }
+        return values;
+    }
 
     public static String getMotherMentorClientStatus(String baseEntityId) {
-        String status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
+        String status =
+                getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
         if (StringUtils.isBlank(status)) {
-            status = getClientStatusFromTable(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
+            status =
+                    getClientStatusFromTable(
+                            Constants.TABLES.MOTHERMENTOR_ENROLLMENT, baseEntityId);
         }
 
         if (StringUtils.isBlank(status)) {
@@ -86,9 +213,22 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     private static String getClientStatusFromTable(String tableName, String baseEntityId) {
-        String sql = "SELECT status FROM " + tableName + " WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.STATUS
+                        + " FROM "
+                        + tableName
+                        + " WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "status");
+        DataMap<String> dataMap = cursor -> getCursorValue(cursor, DBConstants.KEY.STATUS);
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty()) {
             return res.get(0);
@@ -97,12 +237,33 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getTbScreeningStatus(String baseEntityId) {
-        String sql = "SELECT screening_status, last_interacted_with FROM ec_mothermentor_enrollment WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' " +
-                "UNION ALL " +
-                "SELECT screening_status, last_interacted_with FROM ec_mothermentor_screening WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' " +
-                "ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.SCREENING_STATUS
+                        + ", "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " FROM ec_mothermentor_enrollment WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' UNION ALL SELECT "
+                        + DBConstants.KEY.SCREENING_STATUS
+                        + ", "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " FROM ec_mothermentor_screening WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "screening_status");
+        DataMap<String> dataMap =
+                cursor -> getCursorValue(cursor, DBConstants.KEY.SCREENING_STATUS);
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
             return res.get(0);
@@ -117,7 +278,8 @@ public class MotherMentorDao extends AbstractDao {
         }
 
         String normalizedStatus = screeningStatus.toLowerCase(Locale.ENGLISH);
-        return normalizedStatus.contains("tb_presamptive") || normalizedStatus.contains("tb_presumptive");
+        return normalizedStatus.contains("tb_presamptive")
+                || normalizedStatus.contains("tb_presumptive");
     }
 
     public static boolean isMotherMentorPresumptiveClient(String baseEntityId) {
@@ -152,36 +314,71 @@ public class MotherMentorDao extends AbstractDao {
             return null;
         }
 
-        String sql = "SELECT last_interacted_with, investigation_type, tb_diagnostic_test_type, tb_sample_test_results, " +
-                "clinical_decision, mother_mentor_diagnostic_method, tb_treatment_start_date, mother_mentor_treatment_start_date, mother_mentor_investigation_results " +
-                "FROM ec_mothermentor_observation_results p " +
-                " WHERE p.is_closed = 0 AND p.entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + ", "
+                        + DBConstants.KEY.INVESTIGATION_TYPE
+                        + ", "
+                        + DBConstants.KEY.TB_DIAGNOSTIC_TEST_TYPE
+                        + ", "
+                        + DBConstants.KEY.TB_SAMPLE_TEST_RESULTS
+                        + ", "
+                        + DBConstants.KEY.CLINICAL_DECISION
+                        + ", "
+                        + DBConstants.KEY.MOTHER_MENTOR_DIAGNOSTIC_METHOD
+                        + ", "
+                        + DBConstants.KEY.TB_TREATMENT_START_DATE
+                        + ", "
+                        + DBConstants.KEY.MOTHER_MENTOR_TREATMENT_START_DATE
+                        + ", "
+                        + DBConstants.KEY.MOTHER_MENTOR_INVESTIGATION_RESULTS
+                        + " FROM ec_mothermentor_observation_results p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC";
 
-        DataMap<ObservationResults> dataMap = cursor -> {
-            String tbSampleTestResults = getCursorValue(cursor, "tb_sample_test_results", "");
-            String clinicalDecision = getCursorValue(cursor, "clinical_decision", "");
-            String mother_mentorInvestigationResults = getCursorValue(cursor, "mother_mentor_investigation_results", "");
-            boolean poorQualitySample = StringUtils.containsIgnoreCase(tbSampleTestResults, "poor_quality_sample");
+        DataMap<ObservationResults> dataMap =
+                cursor -> {
+                    String tbSampleTestResults =
+                            getCursorValue(cursor, DBConstants.KEY.TB_SAMPLE_TEST_RESULTS, "");
+                    String clinicalDecision =
+                            getCursorValue(cursor, DBConstants.KEY.CLINICAL_DECISION, "");
+                    String mother_mentorInvestigationResults =
+                            getCursorValue(
+                                    cursor,
+                                    DBConstants.KEY.MOTHER_MENTOR_INVESTIGATION_RESULTS,
+                                    "");
+                    boolean poorQualitySample =
+                            StringUtils.containsIgnoreCase(
+                                    tbSampleTestResults, "poor_quality_sample");
 
-            return new ObservationResults(
-                    getCursorValue(cursor, "last_interacted_with", ""),
-                    getCursorValue(cursor, "investigation_type", ""),
-                    getCursorValue(cursor, "tb_diagnostic_test_type", ""),
-                    tbSampleTestResults,
-                    clinicalDecision,
-                    getCursorValue(cursor, "mother_mentor_diagnostic_method", ""),
-                    getCursorValue(cursor, "tb_treatment_start_date", ""),
-                    getCursorValue(cursor, "mother_mentor_treatment_start_date", ""),
-                    mother_mentorInvestigationResults,
-                    poorQualitySample
-            );
-        };
+                    return new ObservationResults(
+                            getCursorValue(cursor, DBConstants.KEY.LAST_INTERACTED_WITH, ""),
+                            getCursorValue(cursor, DBConstants.KEY.INVESTIGATION_TYPE, ""),
+                            getCursorValue(cursor, DBConstants.KEY.TB_DIAGNOSTIC_TEST_TYPE, ""),
+                            tbSampleTestResults,
+                            clinicalDecision,
+                            getCursorValue(
+                                    cursor, DBConstants.KEY.MOTHER_MENTOR_DIAGNOSTIC_METHOD, ""),
+                            getCursorValue(cursor, DBConstants.KEY.TB_TREATMENT_START_DATE, ""),
+                            getCursorValue(
+                                    cursor, DBConstants.KEY.MOTHER_MENTOR_TREATMENT_START_DATE, ""),
+                            mother_mentorInvestigationResults,
+                            poorQualitySample);
+                };
 
         List<ObservationResults> res = readData(sql, dataMap);
         return mergeObservationResults(res);
     }
 
-    protected static ObservationResults mergeObservationResults(List<ObservationResults> observationResults) {
+    protected static ObservationResults mergeObservationResults(
+            List<ObservationResults> observationResults) {
         if (observationResults == null || observationResults.isEmpty()) {
             return null;
         }
@@ -205,17 +402,32 @@ public class MotherMentorDao extends AbstractDao {
                 lastInteractedWith = StringUtils.defaultString(current.getLastInteractedWith());
             }
 
-            investigationType = pickFirstNonBlankValue(investigationType, current.getInvestigationType());
-            tbDiagnosticTestType = pickFirstNonBlankValue(tbDiagnosticTestType, current.getTbDiagnosticTestType());
-            tbSampleTestResults = pickFirstNonBlankValue(tbSampleTestResults, current.getTbSampleTestResults());
-            clinicalDecision = pickFirstNonBlankValue(clinicalDecision, current.getClinicalDecision());
-            mother_mentorDiagnosticMethod = pickFirstNonBlankValue(mother_mentorDiagnosticMethod, current.getMotherMentorDiagnosticMethod());
-            tbTreatmentStartDate = pickFirstNonBlankValue(tbTreatmentStartDate, current.getTbTreatmentStartDate());
-            mother_mentorTreatmentStartDate = pickFirstNonBlankValue(mother_mentorTreatmentStartDate, current.getMotherMentorTreatmentStartDate());
-            mother_mentorInvestigationResults = pickFirstNonBlankValue(mother_mentorInvestigationResults, current.getMotherMentorInvestigationResults());
+            investigationType =
+                    pickFirstNonBlankValue(investigationType, current.getInvestigationType());
+            tbDiagnosticTestType =
+                    pickFirstNonBlankValue(tbDiagnosticTestType, current.getTbDiagnosticTestType());
+            tbSampleTestResults =
+                    pickFirstNonBlankValue(tbSampleTestResults, current.getTbSampleTestResults());
+            clinicalDecision =
+                    pickFirstNonBlankValue(clinicalDecision, current.getClinicalDecision());
+            mother_mentorDiagnosticMethod =
+                    pickFirstNonBlankValue(
+                            mother_mentorDiagnosticMethod,
+                            current.getMotherMentorDiagnosticMethod());
+            tbTreatmentStartDate =
+                    pickFirstNonBlankValue(tbTreatmentStartDate, current.getTbTreatmentStartDate());
+            mother_mentorTreatmentStartDate =
+                    pickFirstNonBlankValue(
+                            mother_mentorTreatmentStartDate,
+                            current.getMotherMentorTreatmentStartDate());
+            mother_mentorInvestigationResults =
+                    pickFirstNonBlankValue(
+                            mother_mentorInvestigationResults,
+                            current.getMotherMentorInvestigationResults());
         }
 
-        boolean poorQualitySample = StringUtils.containsIgnoreCase(tbSampleTestResults, "poor_quality_sample");
+        boolean poorQualitySample =
+                StringUtils.containsIgnoreCase(tbSampleTestResults, "poor_quality_sample");
 
         return new ObservationResults(
                 lastInteractedWith,
@@ -227,12 +439,13 @@ public class MotherMentorDao extends AbstractDao {
                 tbTreatmentStartDate,
                 mother_mentorTreatmentStartDate,
                 mother_mentorInvestigationResults,
-                poorQualitySample
-        );
+                poorQualitySample);
     }
 
     private static String pickFirstNonBlankValue(String currentValue, String candidateValue) {
-        return StringUtils.isNotBlank(currentValue) ? currentValue : StringUtils.defaultString(candidateValue);
+        return StringUtils.isNotBlank(currentValue)
+                ? currentValue
+                : StringUtils.defaultString(candidateValue);
     }
 
     public static boolean isClientTbOrMotherMentorNegative(String baseEntityId) {
@@ -245,69 +458,149 @@ public class MotherMentorDao extends AbstractDao {
             return false;
         }
 
-        String tbSampleResult = StringUtils.defaultString(observationResults.getTbSampleTestResults()).toLowerCase(Locale.ENGLISH);
-        String clinicalDecision = StringUtils.defaultString(observationResults.getClinicalDecision()).toLowerCase(Locale.ENGLISH);
-        String mother_mentorResult = StringUtils.defaultString(observationResults.getMotherMentorInvestigationResults()).toLowerCase(Locale.ENGLISH);
+        String tbSampleResult =
+                StringUtils.defaultString(observationResults.getTbSampleTestResults())
+                        .toLowerCase(Locale.ENGLISH);
+        String clinicalDecision =
+                StringUtils.defaultString(observationResults.getClinicalDecision())
+                        .toLowerCase(Locale.ENGLISH);
+        String mother_mentorResult =
+                StringUtils.defaultString(observationResults.getMotherMentorInvestigationResults())
+                        .toLowerCase(Locale.ENGLISH);
 
-        boolean tbNegative = "tb_dr_tb_undetected".equals(tbSampleResult) || "non_suggestive".equals(clinicalDecision);
+        boolean tbNegative =
+                "tb_dr_tb_undetected".equals(tbSampleResult)
+                        || "non_suggestive".equals(clinicalDecision);
         boolean mother_mentorNegative = "no_mother_mentor_detected".equals(mother_mentorResult);
         return tbNegative || mother_mentorNegative;
     }
 
     /**
-     * Close Mother Mentor screening records whose latest observation shows the client is TB-negative.
-     * This uses the most recent entry in ec_mothermentor_observation_results per client and closes
-     * only when TB results are negative and mother_mentor has not been confirmed positive. All related
-     * open observation, follow-up, and visit records are closed alongside the screening row.
+     * Close Mother Mentor screening records whose latest observation shows the client is
+     * TB-negative. This uses the most recent entry in ec_mothermentor_observation_results per
+     * client and closes only when TB results are negative and mother_mentor has not been confirmed
+     * positive. All related open observation, follow-up, and visit records are closed alongside the
+     * screening row.
      */
     public static void closeTbNegativeClients() {
-        String baseEntitySubQuery = "SELECT scr.base_entity_id FROM ec_mothermentor_enrollment scr " +
-                "  INNER JOIN (" +
-                "    SELECT latest.entity_id, latest.last_interacted_with, " +
-                "           lower(ifnull(latest.tb_sample_test_results, '')) AS tb_result, " +
-                "           lower(ifnull(latest.clinical_decision, '')) AS clinical_result, " +
-                "           lower(ifnull(latest.mother_mentor_investigation_results, '')) AS mother_mentor_result " +
-                "    FROM ec_mothermentor_observation_results latest " +
-                "    WHERE latest.is_closed = 0 AND latest.last_interacted_with = (" +
-                "      SELECT MAX(inner_tbl.last_interacted_with) FROM ec_mothermentor_observation_results inner_tbl " +
-                "      WHERE inner_tbl.entity_id = latest.entity_id AND inner_tbl.is_closed = 0" +
-                "    )" +
-                "  ) latest ON scr.base_entity_id = latest.entity_id " +
-                "  WHERE scr.is_closed = 0 " +
-                "    AND scr.last_interacted_with <= latest.last_interacted_with " +
-                "    AND (latest.tb_result = 'tb_dr_tb_undetected' OR latest.clinical_result = 'non_suggestive' OR latest.mother_mentor_result = 'no_mother_mentor_detected') ";
+        String baseEntitySubQuery =
+                "SELECT scr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " FROM ec_mothermentor_enrollment scr   INNER JOIN (    SELECT latest."
+                        + DBConstants.KEY.ENTITY_ID
+                        + ", latest."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + ",            lower(ifnull(latest."
+                        + DBConstants.KEY.TB_SAMPLE_TEST_RESULTS
+                        + ", '')) AS tb_result,            lower(ifnull(latest."
+                        + DBConstants.KEY.CLINICAL_DECISION
+                        + ", '')) AS clinical_result,            lower(ifnull(latest."
+                        + DBConstants.KEY.MOTHER_MENTOR_INVESTIGATION_RESULTS
+                        + ", '')) AS mother_mentor_result     FROM"
+                        + " ec_mothermentor_observation_results latest     WHERE latest."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND latest."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " = (      SELECT MAX(inner_tbl."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + ") FROM ec_mothermentor_observation_results inner_tbl       WHERE"
+                        + " inner_tbl."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = latest."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " AND inner_tbl."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0    )  ) latest ON scr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = latest."
+                        + DBConstants.KEY.ENTITY_ID
+                        + "   WHERE scr."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0     AND scr."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " <= latest."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + "     AND (latest.tb_result = 'tb_dr_tb_undetected' OR"
+                        + " latest.clinical_result = 'non_suggestive' OR"
+                        + " latest.mother_mentor_result = 'no_mother_mentor_detected') ";
 
-        List<String> baseEntityIds = readData(baseEntitySubQuery, cursor -> getCursorValue(cursor, "base_entity_id"));
+        List<String> baseEntityIds =
+                readData(
+                        baseEntitySubQuery,
+                        cursor -> getCursorValue(cursor, DBConstants.KEY.BASE_ENTITY_ID));
         if (baseEntityIds == null || baseEntityIds.isEmpty()) {
             return;
         }
 
         String joinedIds = "'" + String.join("','", baseEntityIds) + "'";
 
-        String closeObservationSql = "UPDATE ec_mothermentor_observation_results SET is_closed = 1 " +
-                "WHERE is_closed = 0 AND entity_id IN (" + joinedIds + ")";
+        String closeObservationSql =
+                "UPDATE ec_mothermentor_observation_results SET "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 1 WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + " IN ("
+                        + joinedIds
+                        + ")";
         updateDB(closeObservationSql);
 
-        String closeFollowUpSql = "UPDATE ec_mothermentor_followup_visit SET is_closed = 1 " +
-                "WHERE is_closed = 0 AND entity_id IN (" + joinedIds + ")";
+        String closeFollowUpSql =
+                "UPDATE ec_mothermentor_followup_visit SET "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 1 WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + " IN ("
+                        + joinedIds
+                        + ")";
         updateDB(closeFollowUpSql);
 
-        String closeVisitSql = "UPDATE ec_mothermentor_visit SET is_closed = 1 " +
-                "WHERE is_closed = 0 AND entity_id IN (" + joinedIds + ")";
+        String closeVisitSql =
+                "UPDATE ec_mothermentor_visit SET "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 1 WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + " IN ("
+                        + joinedIds
+                        + ")";
         updateDB(closeVisitSql);
 
-        String closeScreeningSql = "UPDATE ec_mothermentor_enrollment SET is_closed = 1 " +
-                "WHERE is_closed = 0 AND base_entity_id IN (" + joinedIds + ")";
+        String closeScreeningSql =
+                "UPDATE ec_mothermentor_enrollment SET "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 1 WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " IN ("
+                        + joinedIds
+                        + ")";
         updateDB(closeScreeningSql);
     }
 
     public static String getTBmother_mentorFollowUpVisit(String baseEntityId) {
-        String sql = "SELECT follow_up_reason FROM ec_mothermentor_followup_visit p " +
-                " WHERE p.is_closed = 0 AND p.entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.FOLLOW_UP_REASON
+                        + " FROM ec_mothermentor_followup_visit p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> {
-            return getCursorValue(cursor, "follow_up_reason");
-        };
+        DataMap<String> dataMap =
+                cursor -> {
+                    return getCursorValue(cursor, DBConstants.KEY.FOLLOW_UP_REASON);
+                };
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
@@ -321,10 +614,21 @@ public class MotherMentorDao extends AbstractDao {
             return false;
         }
 
-        String sql = "SELECT follow_up_outcome FROM ec_mothermentor_followup_visit p " +
-                " WHERE p.is_closed = 0 AND p.entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.FOLLOW_UP_OUTCOME
+                        + " FROM ec_mothermentor_followup_visit p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "follow_up_outcome", "");
+        DataMap<String> dataMap =
+                cursor -> getCursorValue(cursor, DBConstants.KEY.FOLLOW_UP_OUTCOME, "");
         List<String> res = readData(sql, dataMap);
         if (res == null || res.isEmpty()) {
             return false;
@@ -338,26 +642,63 @@ public class MotherMentorDao extends AbstractDao {
             return null;
         }
 
-        String sql = "SELECT last_interacted_with, follow_up_reason, follow_up_outcome, " +
-                "reason_client_not_found, returned_to_treatment, tb_treatment_start_date, service_access_challenges, " +
-                "reasons_for_not_returning_to_services_while_not_facing_challenges, client_challenge_types, " +
-                "health_facility_challenges_detail, return_to_treatment_prompt " +
-                "FROM ec_mothermentor_followup_visit " +
-                "WHERE is_closed = 0 AND entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + ", "
+                        + DBConstants.KEY.FOLLOW_UP_REASON
+                        + ", "
+                        + DBConstants.KEY.FOLLOW_UP_OUTCOME
+                        + ", "
+                        + DBConstants.KEY.REASON_CLIENT_NOT_FOUND
+                        + ", "
+                        + DBConstants.KEY.RETURNED_TO_TREATMENT
+                        + ", "
+                        + DBConstants.KEY.TB_TREATMENT_START_DATE
+                        + ", "
+                        + DBConstants.KEY.SERVICE_ACCESS_CHALLENGES
+                        + ", "
+                        + DBConstants.KEY
+                                .REASONS_FOR_NOT_RETURNING_TO_SERVICES_WHILE_NOT_FACING_CHALLENGES
+                        + ", "
+                        + DBConstants.KEY.CLIENT_CHALLENGE_TYPES
+                        + ", "
+                        + DBConstants.KEY.HEALTH_FACILITY_CHALLENGES_DETAIL
+                        + ", "
+                        + DBConstants.KEY.RETURN_TO_TREATMENT_PROMPT
+                        + " FROM ec_mothermentor_followup_visit WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<FollowUpVisit> dataMap = cursor -> new FollowUpVisit(
-                getCursorValue(cursor, "last_interacted_with", ""),
-                getCursorValue(cursor, "follow_up_reason", ""),
-                getCursorValue(cursor, "follow_up_outcome", ""),
-                getCursorValue(cursor, "reason_client_not_found", ""),
-                getCursorValue(cursor, "returned_to_treatment", ""),
-                getCursorValue(cursor, "tb_treatment_start_date", ""),
-                getCursorValue(cursor, "service_access_challenges", ""),
-                getCursorValue(cursor, "reasons_for_not_returning_to_services_while_not_facing_challenges", ""),
-                getCursorValue(cursor, "client_challenge_types", ""),
-                getCursorValue(cursor, "health_facility_challenges_detail", ""),
-                getCursorValue(cursor, "return_to_treatment_prompt", "")
-        );
+        DataMap<FollowUpVisit> dataMap =
+                cursor ->
+                        new FollowUpVisit(
+                                getCursorValue(cursor, DBConstants.KEY.LAST_INTERACTED_WITH, ""),
+                                getCursorValue(cursor, DBConstants.KEY.FOLLOW_UP_REASON, ""),
+                                getCursorValue(cursor, DBConstants.KEY.FOLLOW_UP_OUTCOME, ""),
+                                getCursorValue(cursor, DBConstants.KEY.REASON_CLIENT_NOT_FOUND, ""),
+                                getCursorValue(cursor, DBConstants.KEY.RETURNED_TO_TREATMENT, ""),
+                                getCursorValue(cursor, DBConstants.KEY.TB_TREATMENT_START_DATE, ""),
+                                getCursorValue(
+                                        cursor, DBConstants.KEY.SERVICE_ACCESS_CHALLENGES, ""),
+                                getCursorValue(
+                                        cursor,
+                                        DBConstants.KEY
+                                                .REASONS_FOR_NOT_RETURNING_TO_SERVICES_WHILE_NOT_FACING_CHALLENGES,
+                                        ""),
+                                getCursorValue(cursor, DBConstants.KEY.CLIENT_CHALLENGE_TYPES, ""),
+                                getCursorValue(
+                                        cursor,
+                                        DBConstants.KEY.HEALTH_FACILITY_CHALLENGES_DETAIL,
+                                        ""),
+                                getCursorValue(
+                                        cursor, DBConstants.KEY.RETURN_TO_TREATMENT_PROMPT, ""));
 
         List<FollowUpVisit> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty()) {
@@ -371,8 +712,18 @@ public class MotherMentorDao extends AbstractDao {
             return false;
         }
 
-        String sql = "SELECT count(entity_id) count FROM ec_mothermentor_followup_visit " +
-                "WHERE is_closed = 0 AND entity_id = '" + baseEntityId + "' AND ifnull(tb_treatment_start_date, '') <> ''";
+        String sql =
+                "SELECT count("
+                        + DBConstants.KEY.ENTITY_ID
+                        + ") count FROM ec_mothermentor_followup_visit WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' AND ifnull("
+                        + DBConstants.KEY.TB_TREATMENT_START_DATE
+                        + ", '') <> ''";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
@@ -386,16 +737,29 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getTBmother_mentorVisit(String baseEntityId) {
-        String sql = "SELECT event_date, last_interacted_with FROM ec_mothermentor_visit p " +
-                " WHERE p.is_closed = 0 AND p.entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.EVENT_DATE
+                        + ", "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " FROM ec_mothermentor_visit p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> {
-            String eventDate = getCursorValue(cursor, "event_date", "");
-            if (StringUtils.isNotBlank(eventDate)) {
-                return eventDate;
-            }
-            return getCursorValue(cursor, "last_interacted_with", "");
-        };
+        DataMap<String> dataMap =
+                cursor -> {
+                    String eventDate = getCursorValue(cursor, DBConstants.KEY.EVENT_DATE, "");
+                    if (StringUtils.isNotBlank(eventDate)) {
+                        return eventDate;
+                    }
+                    return getCursorValue(cursor, DBConstants.KEY.LAST_INTERACTED_WITH, "");
+                };
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
@@ -405,23 +769,46 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Date getLatestTbSampleCollectionDate(String baseEntityId) {
-        return getLatestEventDate(Constants.TABLES.MOTHERMENTOR_VISIT, "entity_id", baseEntityId);
+        return getLatestEventDate(
+                Constants.TABLES.MOTHERMENTOR_VISIT, DBConstants.KEY.ENTITY_ID, baseEntityId);
     }
 
     public static Date getLatestMotherMentorScreeningDate(String baseEntityId) {
-        Date screeningDate = getLatestEventDate(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, "base_entity_id", baseEntityId);
-        return screeningDate != null ? screeningDate : getLatestEventDate(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, "base_entity_id", baseEntityId);
+        Date screeningDate =
+                getLatestEventDate(
+                        Constants.TABLES.MOTHERMENTOR_ENROLLMENT,
+                        DBConstants.KEY.BASE_ENTITY_ID,
+                        baseEntityId);
+        return screeningDate != null
+                ? screeningDate
+                : getLatestEventDate(
+                        Constants.TABLES.MOTHERMENTOR_ENROLLMENT,
+                        DBConstants.KEY.BASE_ENTITY_ID,
+                        baseEntityId);
     }
 
-    private static Date getLatestEventDate(String tableName, String entityColumn, String baseEntityId) {
+    private static Date getLatestEventDate(
+            String tableName, String entityColumn, String baseEntityId) {
         if (StringUtils.isBlank(baseEntityId)) {
             return null;
         }
 
-        String sql = "SELECT event_date FROM " + tableName + " p " +
-                " WHERE p.is_closed = 0 AND p." + entityColumn + " = '" + baseEntityId + "' ORDER BY event_date DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.EVENT_DATE
+                        + " FROM "
+                        + tableName
+                        + " p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + entityColumn
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.EVENT_DATE
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "event_date", "");
+        DataMap<String> dataMap = cursor -> getCursorValue(cursor, DBConstants.KEY.EVENT_DATE, "");
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty()) {
@@ -470,8 +857,16 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static boolean hasMotherMentorVisit(String baseEntityId) {
-        String sql = "SELECT count(p.entity_id) count FROM ec_mothermentor_visit p " +
-                " WHERE p.is_closed = 0 AND p.entity_id = '" + baseEntityId + "'";
+        String sql =
+                "SELECT count(p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + ") count FROM ec_mothermentor_visit p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "'";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
@@ -484,22 +879,46 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Date getMotherMentorTestDate(String baseEntityID) {
-        String sql = "select mothermentor_test_date from ec_mothermentor_enrollment where is_closed = 0 AND base_entity_id = '" + baseEntityID + "'";
+        String sql =
+                "select "
+                        + DBConstants.KEY.MOTHERMENTOR_TEST_DATE
+                        + " from ec_mothermentor_enrollment where "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityID
+                        + "'";
 
-        DataMap<Date> dataMap = cursor -> getCursorValueAsDate(cursor, "mothermentor_test_date", getNativeFormsDateFormat());
+        DataMap<Date> dataMap =
+                cursor ->
+                        getCursorValueAsDate(
+                                cursor,
+                                DBConstants.KEY.MOTHERMENTOR_TEST_DATE,
+                                getNativeFormsDateFormat());
 
         List<Date> res = readData(sql, dataMap);
-        if (res == null || res.size() != 1)
-            return null;
+        if (res == null || res.size() != 1) return null;
 
         return res.get(0);
     }
 
     public static String getClientMotherMentorID(String baseEntityId) {
-        String sql = "SELECT mothermentor_client_id FROM ec_mothermentor_enrollment p " +
-                " WHERE p.is_closed = 0 AND p.base_entity_id = '" + baseEntityId + "' ORDER BY enrollment_date DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.MOTHERMENTOR_CLIENT_ID
+                        + " FROM ec_mothermentor_enrollment p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.ENROLLMENT_DATE
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "mothermentor_client_id");
+        DataMap<String> dataMap =
+                cursor -> getCursorValue(cursor, DBConstants.KEY.MOTHERMENTOR_CLIENT_ID);
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
@@ -513,9 +932,20 @@ public class MotherMentorDao extends AbstractDao {
             return null;
         }
 
-        String sql = "SELECT index_client_id FROM ec_mothermentor_contacts WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.INDEX_CLIENT_ID
+                        + " FROM ec_mothermentor_contacts WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "index_client_id");
+        DataMap<String> dataMap = cursor -> getCursorValue(cursor, DBConstants.KEY.INDEX_CLIENT_ID);
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
@@ -529,12 +959,26 @@ public class MotherMentorDao extends AbstractDao {
             return null;
         }
 
-        String sql = "SELECT tb_client_number, mother_mentor_client_number FROM ec_mothermentor_enrollment WHERE is_closed = 0 AND base_entity_id = '" + baseEntityId + "' ORDER BY last_interacted_with DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.TB_CLIENT_NUMBER
+                        + ", "
+                        + DBConstants.KEY.LEPROSY_CLIENT_NUMBER
+                        + " FROM ec_mothermentor_enrollment WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
 
-        DataMap<ClientNumberInfo> dataMap = cursor -> new ClientNumberInfo(
-                getCursorValue(cursor, "tb_client_number"),
-                getCursorValue(cursor, "mother_mentor_client_number")
-        );
+        DataMap<ClientNumberInfo> dataMap =
+                cursor ->
+                        new ClientNumberInfo(
+                                getCursorValue(cursor, DBConstants.KEY.TB_CLIENT_NUMBER),
+                                getCursorValue(cursor, DBConstants.KEY.LEPROSY_CLIENT_NUMBER));
 
         List<ClientNumberInfo> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty()) {
@@ -544,10 +988,20 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static String getEnrollmentDate(String baseEntityId) {
-        String sql = "SELECT enrollment_date FROM ec_mothermentor_enrollment p " +
-                " WHERE p.is_closed = 0 AND p.base_entity_id = '" + baseEntityId + "' ORDER BY enrollment_date DESC LIMIT 1";
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.ENROLLMENT_DATE
+                        + " FROM ec_mothermentor_enrollment p  WHERE p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityId
+                        + "' ORDER BY "
+                        + DBConstants.KEY.ENROLLMENT_DATE
+                        + " DESC LIMIT 1";
 
-        DataMap<String> dataMap = cursor -> getCursorValue(cursor, "enrollment_date");
+        DataMap<String> dataMap = cursor -> getCursorValue(cursor, DBConstants.KEY.ENROLLMENT_DATE);
 
         List<String> res = readData(sql, dataMap);
         if (res != null && !res.isEmpty() && res.get(0) != null) {
@@ -557,37 +1011,69 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static int getVisitNumber(String baseEntityID) {
-        String sql = "SELECT visit_number  FROM ec_mothermentor_follow_up_visit WHERE is_closed = 0 AND entity_id='" + baseEntityID + "' ORDER BY visit_number DESC LIMIT 1";
-        DataMap<Integer> map = cursor -> getCursorIntValue(cursor, "visit_number");
+        String sql =
+                "SELECT "
+                        + DBConstants.KEY.VISIT_NUMBER
+                        + "  FROM ec_mothermentor_follow_up_visit WHERE "
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND "
+                        + DBConstants.KEY.ENTITY_ID
+                        + "='"
+                        + baseEntityID
+                        + "' ORDER BY "
+                        + DBConstants.KEY.VISIT_NUMBER
+                        + " DESC LIMIT 1";
+        DataMap<Integer> map = cursor -> getCursorIntValue(cursor, DBConstants.KEY.VISIT_NUMBER);
         List<Integer> res = readData(sql, map);
 
         if (res != null && !res.isEmpty() && res.get(0) != null) {
             return res.get(0) + 1;
-        } else
-            return 0;
+        } else return 0;
     }
 
     public static boolean isRegisteredForMotherMentor(String baseEntityID) {
-        String sql = "SELECT SUM(count) count FROM (" +
-                "SELECT count(p.base_entity_id) count FROM ec_mothermentor_enrollment p " +
-                "WHERE p.base_entity_id = '" + baseEntityID + "' AND p.is_closed = 0 " +
-                "UNION ALL " +
-                "SELECT count(s.base_entity_id) count FROM ec_mothermentor_enrollment s " +
-                "WHERE s.base_entity_id = '" + baseEntityID + "' AND s.is_closed = 0 " +
-                ")";
+        String sql =
+                "SELECT SUM(count) count FROM (SELECT count(p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") count FROM ec_mothermentor_enrollment p WHERE p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityID
+                        + "' AND p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 UNION ALL SELECT count(s."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") count FROM ec_mothermentor_enrollment s WHERE s."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityID
+                        + "' AND s."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 )";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
         List<Integer> res = readData(sql, dataMap);
-        if (res == null || res.size() != 1)
-            return false;
+        if (res == null || res.size() != 1) return false;
 
         return res.get(0) > 0;
     }
 
     public static boolean isHouseholdEnrolledForMotherMentor(String householdBaseEntityId) {
-        String sql = "SELECT count(p.base_entity_id) count FROM " + Constants.TABLES.MAMA_KINARA_HOUSEHOLD_ENROLMENT + " p " +
-                "WHERE p.base_entity_id = '" + householdBaseEntityId + "' AND p.is_closed = 0 AND p.consent = 'ndiyo'";
+        String sql =
+                "SELECT count(p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") count FROM "
+                        + Constants.TABLES.MAMA_KINARA_HOUSEHOLD_ENROLMENT
+                        + " p WHERE p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + householdBaseEntityId
+                        + "' AND p."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND p."
+                        + DBConstants.KEY.CONSENT
+                        + " = 'ndiyo'";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
@@ -600,193 +1086,543 @@ public class MotherMentorDao extends AbstractDao {
     }
 
     public static Integer getMotherMentorFamilyMembersCount(String familyBaseEntityId) {
-        String sql = "SELECT count(emc.base_entity_id) count FROM ec_mothermentor_enrollment emc " +
-                "INNER Join ec_family_member fm on fm.base_entity_id = emc.base_entity_id " +
-                "WHERE fm.relational_id = '" + familyBaseEntityId + "' AND fm.is_closed = 0 " +
-                "AND emc.is_closed = 0 AND emc.mothermentor = 1";
+        String sql =
+                "SELECT count(emc."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") count FROM ec_mothermentor_enrollment emc INNER Join ec_family_member"
+                        + " fm on fm."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = emc."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " WHERE fm."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " = '"
+                        + familyBaseEntityId
+                        + "' AND fm."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND emc."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND emc.mothermentor = 1";
 
         DataMap<Integer> dataMap = cursor -> getCursorIntValue(cursor, "count");
 
         List<Integer> res = readData(sql, dataMap);
-        if (res == null || res.isEmpty())
-            return 0;
+        if (res == null || res.isEmpty()) return 0;
         return res.get(0);
     }
 
     public static MemberObject getMember(String baseEntityID) {
-        MemberObject memberObject = getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
-        return memberObject != null ? memberObject : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
+        MemberObject memberObject =
+                getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
+        return memberObject != null
+                ? memberObject
+                : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
+    }
+
+    /** Visit participants can belong to any Mother Mentor enrollment register. */
+    public static java.util.Map<String, String> getVisitEnrollmentValues(String baseEntityID) {
+        String id = baseEntityID.replace("'", "''");
+        String sql =
+                "SELECT e."
+                        + DBConstants.KEY.PREGNANCY_STATUS
+                        + ", e."
+                        + DBConstants.KEY.ART_START_DATE
+                        + ", EXISTS (SELECT 1 FROM ec_mothermentor_enroll_it i WHERE i."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") AS "
+                        + DBConstants.KEY.IIT_ENROLLED
+                        + ", EXISTS (SELECT 1 FROM ec_mothermentor_enroll_partner p WHERE p."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") AS "
+                        + DBConstants.KEY.PARTNER_ENROLLED
+                        + ", EXISTS (SELECT 1 FROM ec_mothermentor_enroll_child_eid c WHERE c."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + ") AS "
+                        + DBConstants.KEY.CHILD_EID_ENROLLED
+                        + ", CASE WHEN e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " IS NULL THEN 'false' ELSE 'true' END AS "
+                        + DBConstants.KEY.PRIMARY_CLIENT
+                        + " FROM ec_family_member m LEFT JOIN ec_mothermentor_enrollment e ON e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " WHERE m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + id
+                        + "' LIMIT 1";
+        List<java.util.Map<String, String>> rows =
+                readData(
+                        sql,
+                        cursor -> {
+                            java.util.Map<String, String> result = new java.util.HashMap<>();
+                            result.put(
+                                    DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT,
+                                    getCursorValue(cursor, DBConstants.KEY.PRIMARY_CLIENT));
+                            result.put(
+                                    DBConstants.KEY.IIT_ENROLLED,
+                                    getCursorIntValue(cursor, DBConstants.KEY.IIT_ENROLLED) == 1
+                                            ? "true"
+                                            : "false");
+                            result.put(
+                                    DBConstants.KEY.PARTNER_ENROLLED,
+                                    getCursorIntValue(cursor, DBConstants.KEY.PARTNER_ENROLLED) == 1
+                                            ? "true"
+                                            : "false");
+                            result.put(
+                                    DBConstants.KEY.CHILD_EID_ENROLLED,
+                                    getCursorIntValue(cursor, DBConstants.KEY.CHILD_EID_ENROLLED)
+                                                    == 1
+                                            ? "true"
+                                            : "false");
+                            result.put(
+                                    DBConstants.KEY.VISIT_PREGNANCY_STATUS,
+                                    getCursorValue(cursor, DBConstants.KEY.PREGNANCY_STATUS));
+                            result.put(
+                                    DBConstants.KEY.VISIT_ART_START_DATE,
+                                    getCursorValue(cursor, DBConstants.KEY.ART_START_DATE));
+                            return result;
+                        });
+        return rows == null || rows.isEmpty() ? new java.util.HashMap<>() : rows.get(0);
+    }
+
+    public static MemberObject getVisitMember(String baseEntityID) {
+        MemberObject member = getMember(baseEntityID);
+        if (member == null) member = getSecondaryEnrollmentMember(baseEntityID);
+        return member != null ? member : getContact(baseEntityID);
     }
 
     public static MemberObject getSecondaryEnrollmentMember(String baseEntityID) {
-        MemberObject memberObject = getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_IIT);
+        MemberObject memberObject =
+                getSecondaryEnrollmentMember(
+                        baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_IIT);
         if (memberObject != null) {
             return memberObject;
         }
 
-        memberObject = getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER);
+        memberObject =
+                getSecondaryEnrollmentMember(
+                        baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER);
         if (memberObject != null) {
             return memberObject;
         }
 
-        return getSecondaryEnrollmentMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
+        return getSecondaryEnrollmentMember(
+                baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
     }
 
-    private static MemberObject getSecondaryEnrollmentMember(String baseEntityID, String tableName) {
-        String sql = "select " +
-                "m.base_entity_id , " +
-                "m.unique_id , " +
-                "m.relational_id , " +
-                "f.base_entity_id as family_base_entity_id, " +
-                "m.dob , " +
-                "m.first_name , " +
-                "m.middle_name , " +
-                "m.last_name , " +
-                "m.gender , " +
-                "m.marital_status , " +
-                "m.phone_number , " +
-                "m.other_phone_number , " +
-                "f.first_name as family_name ," +
-                "f.primary_caregiver , " +
-                "f.family_head , " +
-                "f.village_town ," +
-                "fh.first_name as family_head_first_name , " +
-                "fh.middle_name as family_head_middle_name , " +
-                "fh.last_name as family_head_last_name, " +
-                "fh.phone_number as family_head_phone_number ,  " +
-                "pcg.first_name as pcg_first_name , " +
-                "pcg.last_name as pcg_last_name , " +
-                "pcg.middle_name as pcg_middle_name , " +
-                "pcg.phone_number as  pcg_phone_number , " +
-                "mr.* " +
-                "from ec_family_member m " +
-                "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join " + tableName + " mr on mr.base_entity_id = m.base_entity_id " +
-                "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
-                "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
-                "where mr.is_closed = 0 AND m.is_closed = 0 AND f.is_closed = 0 " +
-                "AND m.base_entity_id = '" + baseEntityID + "' " +
-                "ORDER BY mr.last_interacted_with DESC LIMIT 1";
+    private static MemberObject getSecondaryEnrollmentMember(
+            String baseEntityID, String tableName) {
+        String sql =
+                "select m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " , m."
+                        + DBConstants.KEY.UNIQUE_ID
+                        + " , m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " , f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " as "
+                        + DBConstants.KEY.FAMILY_BASE_ENTITY_ID
+                        + ", m."
+                        + DBConstants.KEY.DOB
+                        + " , m."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " , m."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " , m."
+                        + DBConstants.KEY.LAST_NAME
+                        + " , m."
+                        + DBConstants.KEY.GENDER
+                        + " , m."
+                        + DBConstants.KEY.MARITAL_STATUS
+                        + " , m."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " , m."
+                        + DBConstants.KEY.OTHER_PHONE_NUMBER
+                        + " , f."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_NAME
+                        + " ,f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " , f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " , f."
+                        + DBConstants.KEY.VILLAGE_TOWN
+                        + " ,fh."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_FIRST_NAME
+                        + " , fh."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_MIDDLE_NAME
+                        + " , fh."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_LAST_NAME
+                        + ", fh."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_PHONE_NUMBER
+                        + " ,  pcg."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_FIRST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_LAST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_MIDDLE_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as  "
+                        + DBConstants.KEY.PCG_PHONE_NUMBER
+                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " inner join "
+                        + tableName
+                        + " mr on mr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " left join ec_family_member fh on fh."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " left join ec_family_member pcg on pcg."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " where mr."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND f."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = '"
+                        + baseEntityID
+                        + "' ORDER BY mr."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
         List<MemberObject> res = readData(sql, memberObjectMap);
-        if (res == null || res.isEmpty())
-            return null;
+        if (res == null || res.isEmpty()) return null;
 
         return res.get(0);
     }
 
     private static MemberObject getMember(String baseEntityID, String tableName) {
-        String sql = "select " +
-                "m.base_entity_id , " +
-                "m.unique_id , " +
-                "m.relational_id , " +
-                "f.base_entity_id as family_base_entity_id, " +
-                "m.dob , " +
-                "m.first_name , " +
-                "m.middle_name , " +
-                "m.last_name , " +
-                "m.gender , " +
-                "m.marital_status , " +
-                "m.phone_number , " +
-                "m.other_phone_number , " +
-                "f.first_name as family_name ," +
-                "f.primary_caregiver , " +
-                "f.family_head , " +
-                "f.village_town ," +
-                "fh.first_name as family_head_first_name , " +
-                "fh.middle_name as family_head_middle_name , " +
-                "fh.last_name as family_head_last_name, " +
-                "fh.phone_number as family_head_phone_number ,  " +
-                "pcg.first_name as pcg_first_name , " +
-                "pcg.last_name as pcg_last_name , " +
-                "pcg.middle_name as pcg_middle_name , " +
-                "pcg.phone_number as  pcg_phone_number , " +
-                "mr.* " +
-                "from ec_family_member m " +
-                "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join " + tableName + " mr on mr.base_entity_id = m.base_entity_id " +
-                "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
-                "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
-                "where mr.is_closed = 0 AND m.base_entity_id ='" + baseEntityID + "' ";
+        String sql =
+                "select m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " , m."
+                        + DBConstants.KEY.UNIQUE_ID
+                        + " , m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " , f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " as "
+                        + DBConstants.KEY.FAMILY_BASE_ENTITY_ID
+                        + ", m."
+                        + DBConstants.KEY.DOB
+                        + " , m."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " , m."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " , m."
+                        + DBConstants.KEY.LAST_NAME
+                        + " , m."
+                        + DBConstants.KEY.GENDER
+                        + " , m."
+                        + DBConstants.KEY.MARITAL_STATUS
+                        + " , m."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " , m."
+                        + DBConstants.KEY.OTHER_PHONE_NUMBER
+                        + " , f."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_NAME
+                        + " ,f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " , f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " , f."
+                        + DBConstants.KEY.VILLAGE_TOWN
+                        + " ,fh."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_FIRST_NAME
+                        + " , fh."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_MIDDLE_NAME
+                        + " , fh."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_LAST_NAME
+                        + ", fh."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_PHONE_NUMBER
+                        + " ,  pcg."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_FIRST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_LAST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_MIDDLE_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as  "
+                        + DBConstants.KEY.PCG_PHONE_NUMBER
+                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " inner join "
+                        + tableName
+                        + " mr on mr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " left join ec_family_member fh on fh."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " left join ec_family_member pcg on pcg."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " where mr."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " ='"
+                        + baseEntityID
+                        + "' ";
         List<MemberObject> res = readData(sql, memberObjectMap);
-        if (res == null || res.size() != 1)
-            return null;
+        if (res == null || res.size() != 1) return null;
 
         return res.get(0);
     }
 
     public static MemberObject getContact(String baseEntityID) {
-        String sql = "select " +
-                "m.base_entity_id , " +
-                "m.unique_id , " +
-                "m.relational_id , " +
-                "f.base_entity_id as family_base_entity_id, " +
-                "m.dob , " +
-                "m.first_name , " +
-                "m.middle_name , " +
-                "m.last_name , " +
-                "m.gender , " +
-                "m.marital_status , " +
-                "m.phone_number , " +
-                "m.other_phone_number , " +
-                "f.first_name as family_name ," +
-                "f.primary_caregiver , " +
-                "f.family_head , " +
-                "f.village_town ," +
-                "fh.first_name as family_head_first_name , " +
-                "fh.middle_name as family_head_middle_name , " +
-                "fh.last_name as family_head_last_name, " +
-                "fh.phone_number as family_head_phone_number ,  " +
-                "pcg.first_name as pcg_first_name , " +
-                "pcg.last_name as pcg_last_name , " +
-                "pcg.middle_name as pcg_middle_name , " +
-                "pcg.phone_number as  pcg_phone_number , " +
-                "mr.* " +
-                "from ec_family_member m " +
-                "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join ec_mothermentor_contacts mr on mr.base_entity_id = m.base_entity_id " +
-                "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
-                "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
-                "where mr.is_closed = 0 AND m.is_closed = 0 AND f.is_closed = 0 AND m.base_entity_id ='" + baseEntityID + "' ";
+        String sql =
+                "select m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " , m."
+                        + DBConstants.KEY.UNIQUE_ID
+                        + " , m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " , f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " as "
+                        + DBConstants.KEY.FAMILY_BASE_ENTITY_ID
+                        + ", m."
+                        + DBConstants.KEY.DOB
+                        + " , m."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " , m."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " , m."
+                        + DBConstants.KEY.LAST_NAME
+                        + " , m."
+                        + DBConstants.KEY.GENDER
+                        + " , m."
+                        + DBConstants.KEY.MARITAL_STATUS
+                        + " , m."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " , m."
+                        + DBConstants.KEY.OTHER_PHONE_NUMBER
+                        + " , f."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_NAME
+                        + " ,f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " , f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " , f."
+                        + DBConstants.KEY.VILLAGE_TOWN
+                        + " ,fh."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_FIRST_NAME
+                        + " , fh."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_MIDDLE_NAME
+                        + " , fh."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_LAST_NAME
+                        + ", fh."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_PHONE_NUMBER
+                        + " ,  pcg."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_FIRST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_LAST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_MIDDLE_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as  "
+                        + DBConstants.KEY.PCG_PHONE_NUMBER
+                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " inner join ec_mothermentor_contacts mr on mr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " left join ec_family_member fh on fh."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " left join ec_family_member pcg on pcg."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " where mr."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND f."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " ='"
+                        + baseEntityID
+                        + "' ";
         List<MemberObject> res = readData(sql, memberObjectMap);
-        if (res == null || res.size() != 1)
-            return null;
+        if (res == null || res.size() != 1) return null;
 
         return res.get(0);
     }
 
     public static List<MemberObject> getMembers() {
-        String sql = "select " +
-                "m.base_entity_id , " +
-                "m.unique_id , " +
-                "m.relational_id , " +
-                "f.base_entity_id as family_base_entity_id, " +
-                "m.dob , " +
-                "m.first_name , " +
-                "m.middle_name , " +
-                "m.last_name , " +
-                "m.gender , " +
-                "m.marital_status , " +
-                "m.phone_number , " +
-                "m.other_phone_number , " +
-                "f.first_name as family_name ," +
-                "f.primary_caregiver , " +
-                "f.family_head , " +
-                "f.village_town ," +
-                "fh.first_name as family_head_first_name , " +
-                "fh.middle_name as family_head_middle_name , " +
-                "fh.last_name as family_head_last_name, " +
-                "fh.phone_number as family_head_phone_number ,  " +
-                "pcg.first_name as pcg_first_name , " +
-                "pcg.last_name as pcg_last_name , " +
-                "pcg.middle_name as pcg_middle_name , " +
-                "pcg.phone_number as  pcg_phone_number , " +
-                "mr.* " +
-                "from ec_family_member m " +
-                "inner join ec_family f on m.relational_id = f.base_entity_id " +
-                "inner join ec_mothermentor_enrollment mr on mr.base_entity_id = m.base_entity_id " +
-                "left join ec_family_member fh on fh.base_entity_id = f.family_head " +
-                "left join ec_family_member pcg on pcg.base_entity_id = f.primary_caregiver " +
-                "where mr.is_closed = 0 AND m.is_closed = 0 AND f.is_closed = 0 ";
+        String sql =
+                "select m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " , m."
+                        + DBConstants.KEY.UNIQUE_ID
+                        + " , m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " , f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " as "
+                        + DBConstants.KEY.FAMILY_BASE_ENTITY_ID
+                        + ", m."
+                        + DBConstants.KEY.DOB
+                        + " , m."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " , m."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " , m."
+                        + DBConstants.KEY.LAST_NAME
+                        + " , m."
+                        + DBConstants.KEY.GENDER
+                        + " , m."
+                        + DBConstants.KEY.MARITAL_STATUS
+                        + " , m."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " , m."
+                        + DBConstants.KEY.OTHER_PHONE_NUMBER
+                        + " , f."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_NAME
+                        + " ,f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " , f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " , f."
+                        + DBConstants.KEY.VILLAGE_TOWN
+                        + " ,fh."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_FIRST_NAME
+                        + " , fh."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_MIDDLE_NAME
+                        + " , fh."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_LAST_NAME
+                        + ", fh."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as "
+                        + DBConstants.KEY.FAMILY_HEAD_PHONE_NUMBER
+                        + " ,  pcg."
+                        + DBConstants.KEY.FIRST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_FIRST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.LAST_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_LAST_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.MIDDLE_NAME
+                        + " as "
+                        + DBConstants.KEY.PCG_MIDDLE_NAME
+                        + " , pcg."
+                        + DBConstants.KEY.PHONE_NUMBER
+                        + " as  "
+                        + DBConstants.KEY.PCG_PHONE_NUMBER
+                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " inner join ec_mothermentor_enrollment mr on mr."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " left join ec_family_member fh on fh."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.FAMILY_HEAD
+                        + " left join ec_family_member pcg on pcg."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = f."
+                        + DBConstants.KEY.PRIMARY_CARE_GIVER
+                        + " where mr."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND m."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 AND f."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 ";
 
         return readData(sql, memberObjectMap);
     }
@@ -822,10 +1658,18 @@ public class MotherMentorDao extends AbstractDao {
         private final String healthFacilityChallengesDetail;
         private final String returnToTreatmentPrompt;
 
-        public FollowUpVisit(String lastInteractedWith, String followUpReason, String followUpOutcome, String reasonClientNotFound,
-                             String returnedToTreatment, String tbTreatmentStartDate, String serviceAccessChallenges,
-                             String reasonsForNotReturningWithoutChallenges, String clientChallengeTypes,
-                             String healthFacilityChallengesDetail, String returnToTreatmentPrompt) {
+        public FollowUpVisit(
+                String lastInteractedWith,
+                String followUpReason,
+                String followUpOutcome,
+                String reasonClientNotFound,
+                String returnedToTreatment,
+                String tbTreatmentStartDate,
+                String serviceAccessChallenges,
+                String reasonsForNotReturningWithoutChallenges,
+                String clientChallengeTypes,
+                String healthFacilityChallengesDetail,
+                String returnToTreatmentPrompt) {
             this.lastInteractedWith = lastInteractedWith;
             this.followUpReason = followUpReason;
             this.followUpOutcome = followUpOutcome;
@@ -896,9 +1740,17 @@ public class MotherMentorDao extends AbstractDao {
         private final String mother_mentorInvestigationResults;
         private final boolean poorQualitySample;
 
-        public ObservationResults(String lastInteractedWith, String investigationType, String tbDiagnosticTestType, String tbSampleTestResults,
-                                  String clinicalDecision, String mother_mentorDiagnosticMethod, String tbTreatmentStartDate,
-                                  String mother_mentorTreatmentStartDate, String mother_mentorInvestigationResults, boolean poorQualitySample) {
+        public ObservationResults(
+                String lastInteractedWith,
+                String investigationType,
+                String tbDiagnosticTestType,
+                String tbSampleTestResults,
+                String clinicalDecision,
+                String mother_mentorDiagnosticMethod,
+                String tbTreatmentStartDate,
+                String mother_mentorTreatmentStartDate,
+                String mother_mentorInvestigationResults,
+                boolean poorQualitySample) {
             this.lastInteractedWith = lastInteractedWith;
             this.investigationType = investigationType;
             this.tbDiagnosticTestType = tbDiagnosticTestType;
@@ -951,5 +1803,4 @@ public class MotherMentorDao extends AbstractDao {
             return poorQualitySample;
         }
     }
-
 }

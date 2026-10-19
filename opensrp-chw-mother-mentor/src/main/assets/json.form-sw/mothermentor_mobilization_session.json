@@ -76,7 +76,7 @@
           },
           {
             "key": "anc",
-            "text": "Mkutano wa vikundi vya ANC",
+            "text": "Mkutano wa vikundi vya wajawazito (ANC)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "anc"
           },
@@ -147,7 +147,7 @@
         "options": [
           {
             "key": "pmtct",
-            "text": "Kuzuia Maambukizi ya VVU, Kaswende na Homa ya Ini aina B kutoka kwa Mama kwenda kwa Mtoto (PMTCT)",
+            "text": "Kuzuia maambukizi ya VVU, kaswende na homa ya ini aina B kutoka kwa mama kwenda kwa mtoto (PMTCT)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "pmtct"
           },
@@ -165,7 +165,7 @@
           },
           {
             "key": "hepb",
-            "text": "Homa ya Ini B",
+            "text": "Homa ya ini B",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "hepb"
           },
@@ -183,13 +183,13 @@
           },
           {
             "key": "tb",
-            "text": "Kifua Kikuu",
+            "text": "Kifua kikuu",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "tb"
           },
           {
             "key": "gbv",
-            "text": "Ukatili wa Kijinsia",
+            "text": "Ukatili wa kijinsia",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "gbv"
           },
@@ -285,6 +285,155 @@
           "rules-engine": {
             "ex-rules": {
               "rules-file": "mothermentor_mobilization_total.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "referred_male",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_male",
+        "type": "edit_text",
+        "hint": "Wanaume waliopewa rufaa kwenda kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Isipungue sifuri"
+        }
+      },
+      {
+        "key": "referred_female",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_female",
+        "type": "edit_text",
+        "hint": "Wanawake waliopewa rufaa kwenda kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka 0–99999"
+        },
+        "v_min": {
+          "value": "0",
+          "err": "Isipungue sifuri"
+        }
+      },
+      {
+        "key": "referred_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "referred_total",
+        "type": "edit_text",
+        "hint": "Jumla waliopewa rufaa kwenda kituoni",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_referral_services",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_referral_services",
+        "type": "check_box",
+        "label": "Huduma za rufaa kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "options": [
+          {
+            "key": "hiv_testing",
+            "text": "Upimaji wa VVU",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hiv_testing"
+          },
+          {
+            "key": "syphilis_testing",
+            "text": "Upimaji wa kaswende",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "syphilis_testing"
+          },
+          {
+            "key": "hepatitis_b_testing",
+            "text": "Upimaji wa homa ya ini B",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hepatitis_b_testing"
+          },
+          {
+            "key": "anc",
+            "text": "Kliniki ya wajawazito",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "anc"
+          },
+          {
+            "key": "ctc",
+            "text": "Kliniki ya huduma na matibabu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "ctc"
+          },
+          {
+            "key": "gbv",
+            "text": "Ukatili wa kijinsia",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "gbv"
+          },
+          {
+            "key": "other",
+            "text": "Nyingine (taja)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "combine_checkbox_option_values": "true",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_referral_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_referral_other",
+        "type": "edit_text",
+        "hint": "Taja huduma nyingine ya rufaa",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
             }
           }
         }

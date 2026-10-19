@@ -50,7 +50,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Uchunguzi wa Ukoma",
+    "title": "Uchunguzi wa ukoma",
     "fields": [
       {
         "key": "mother_mentor_interview_findings",
@@ -59,7 +59,7 @@
         "openmrs_entity_id": "mother_mentor_interview_findings",
         "type": "check_box",
         "combine_checkbox_option_values": "true",
-        "label": "Matokeo ya Mahojiano Kuhusu Ukoma",
+        "label": "Matokeo ya mahojiano kuhusu ukoma",
         "label_text_size": "18px",
         "v_required": {
           "value": "true",
@@ -71,19 +71,19 @@
         "options": [
           {
             "key": "numb_patches",
-            "text": "Baka au Mabaka yasiyo na hisia(B)",
+            "text": "Baka au mabaka yasiyo na hisia (B)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "numb_patches"
           },
           {
             "key": "skin_nodules_or_thickening",
-            "text": "Ngozi kuota Vinundu au Kukamaa(NV)",
+            "text": "Ngozi kuota vinundu au kukamaa (NV)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "skin_nodules_or_thickening"
           },
           {
             "key": "numbness_hands_or_feet",
-            "text": "Ganzi Mikononi/Miguuni",
+            "text": "Ganzi mikononi/miguuni",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "numbness_hands_or_feet"
           },
@@ -95,7 +95,7 @@
           },
           {
             "key": "no_mother_mentor_signs",
-            "text": "Hana Dalili",
+            "text": "Hana dalili",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "no_mother_mentor_signs"
           }
@@ -107,7 +107,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "presumptive_mother_mentor_prompt",
         "type": "toaster_notes",
-        "text": "Mhisiwa wa Ukoma.Mpe Rufaa kwenda Kituo cha kutolea Huduma za Afya",
+        "text": "Mteja anahisiwa kuwa na ukoma. Mpe rufaa kwenda kituo cha kutolea huduma za afya.",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {
@@ -124,7 +124,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "not_presumptive_mother_mentor_prompt",
         "type": "toaster_notes",
-        "text": "Mteja sio Mhisiwa wa Ukoma",
+        "text": "Mteja sio mhisiwa wa ukoma",
         "text_color": "#CF0800",
         "toaster_type": "info",
         "relevance": {

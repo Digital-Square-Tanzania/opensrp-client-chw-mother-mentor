@@ -44,7 +44,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Hudhurio la ufuatiliaji wa Kifua Kikuu na Ukoma",
+    "title": "Hudhurio la ufuatiliaji wa kifua kikuu na ukoma",
     "fields": [
       {
         "key": "follow_up_reason",
@@ -79,7 +79,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "follow_up_outcome",
-        "label": "Matokeo ya Ufuatiliaji",
+        "label": "Matokeo ya ufuatiliaji",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -173,7 +173,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_treatment_initiated",
-        "label": "Je, ameanza tiba ya Kifua kikuu/Kifua kikuu sugu?",
+        "label": "Je, ameanza tiba ya kifua kikuu/kifua kikuu sugu?",
         "label_text_style": "bold",
         "text_color": "#000000",
         "type": "native_radio",
@@ -211,8 +211,8 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "tb_treatment_start_date",
         "type": "date_picker",
-        "hint": "Tarehe ya kuanza tiba ya Kifua Kikuu",
-        "label": "Tarehe ya kuanza tiba ya Kifua Kikuu",
+        "hint": "Tarehe ya kuanza tiba ya kifua kikuu",
+        "label": "Tarehe ya kuanza tiba ya kifua kikuu",
         "label_text_size": "18px",
         "expanded": false,
         "max_date": "today",
@@ -237,10 +237,10 @@
         "mask": "############-#/KK/####/###",
         "mask_hint": "00000000000000000000",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya Mteja wa Kifua Kikuu",
+        "hint": "Namba ya mteja wa kifua kikuu",
         "v_regex": {
           "value": "^\\d{12}-\\d/KK/(19\\d{2}|20(?:0\\d|1\\d|2\\d|30))/\\d{3}$",
-          "err": "Namba ya Mteja wa Kifua Kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
+          "err": "Namba ya mteja wa kifua kikuu inatakiwa iwe katika muundo huu (070201100097-5/KK/2025/431)"
         },
         "relevance": {
           "rules-engine": {
@@ -293,7 +293,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "reasons_for_not_returning_to_services_while_not_facing_challenges",
         "type": "edit_text",
-        "hint": "Taja sababu ya kutokuanza/kutatiza dawa",
+        "hint": "Taja sababu ya kutokuanza au kukatiza matumizi ya dawa",
         "edit_type": "name",
         "v_required": {
           "value": "true",
@@ -329,7 +329,7 @@
           },
           {
             "key": "health_facility_challenges",
-            "text": "Katika kituo cha kutuloea huduma za afya",
+            "text": "Katika kituo cha kutolea huduma za afya",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "health_facility_challenges"
           },
@@ -341,7 +341,7 @@
           },
           {
             "key": "other",
-            "text": "Chanagamoto nyinginezo",
+            "text": "Changamoto nyingine",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
           }
@@ -371,7 +371,7 @@
         "options": [
           {
             "key": "verbal_abuse",
-            "text": "Kutukanwa/Kufokewa",
+            "text": "Kutukanwa/kufokewa",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "verbal_abuse"
           },
@@ -389,7 +389,7 @@
           },
           {
             "key": "limited_service_access",
-            "text": "Kupata huduma",
+            "text": "Upatikanaji mdogo wa huduma",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "limited_service_access"
           },

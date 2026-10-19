@@ -1,7 +1,0 @@
----
-name: step1_screening_status
-description: screening status calculation
-priority: 1
-condition: "true"
-actions:
-  - "calculation = step1_tb_screening_findings != null && !step1_tb_screening_findings.isEmpty() && !step1_tb_screening_findings.contains('no_tb_signs') ? 'tb_presumptive' : '-' "

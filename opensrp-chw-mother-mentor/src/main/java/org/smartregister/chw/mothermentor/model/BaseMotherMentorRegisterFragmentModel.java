@@ -3,6 +3,7 @@ package org.smartregister.chw.mothermentor.model;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.contract.MotherMentorRegisterFragmentContract;
 import org.smartregister.chw.mothermentor.util.ConfigHelper;
+import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.configurableviews.ConfigurableViewsLibrary;
 import org.smartregister.configurableviews.model.RegisterConfiguration;
 import org.smartregister.configurableviews.model.View;
@@ -11,21 +12,27 @@ import org.smartregister.cursoradapter.SmartRegisterQueryBuilder;
 
 import java.util.Set;
 
-public class BaseMotherMentorRegisterFragmentModel implements MotherMentorRegisterFragmentContract.Model {
+public class BaseMotherMentorRegisterFragmentModel
+        implements MotherMentorRegisterFragmentContract.Model {
 
     @Override
     public RegisterConfiguration defaultRegisterConfiguration() {
-        return ConfigHelper.defaultRegisterConfiguration(MotherMentorLibrary.getInstance().context().applicationContext());
+        return ConfigHelper.defaultRegisterConfiguration(
+                MotherMentorLibrary.getInstance().context().applicationContext());
     }
 
     @Override
     public ViewConfiguration getViewConfiguration(String viewConfigurationIdentifier) {
-        return ConfigurableViewsLibrary.getInstance().getConfigurableViewsHelper().getViewConfiguration(viewConfigurationIdentifier);
+        return ConfigurableViewsLibrary.getInstance()
+                .getConfigurableViewsHelper()
+                .getViewConfiguration(viewConfigurationIdentifier);
     }
 
     @Override
     public Set<View> getRegisterActiveColumns(String viewConfigurationIdentifier) {
-        return ConfigurableViewsLibrary.getInstance().getConfigurableViewsHelper().getRegisterActiveColumns(viewConfigurationIdentifier);
+        return ConfigurableViewsLibrary.getInstance()
+                .getConfigurableViewsHelper()
+                .getRegisterActiveColumns(viewConfigurationIdentifier);
     }
 
     @Override
@@ -43,10 +50,7 @@ public class BaseMotherMentorRegisterFragmentModel implements MotherMentorRegist
     }
 
     protected String[] mainColumns(String tableName) {
-        String[] columns = new String[]{
-                tableName + ".relationalid"
-        };
+        String[] columns = new String[] {tableName + "." + DBConstants.KEY.RELATIONALID};
         return columns;
     }
-
 }
