@@ -28,12 +28,12 @@ public class MotherMentorSampleActionHelper
     protected Context context;
 
     protected MemberObject memberObject;
-    private MotherMentorInvestigationActionHelper tbInvestigationActionHelper;
+    private MotherMentorTbInvestigationActionHelper tbInvestigationActionHelper;
 
     public MotherMentorSampleActionHelper(
             Context context,
             MemberObject memberObject,
-            MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
+            MotherMentorTbInvestigationActionHelper tbInvestigationActionHelper) {
         this.context = context;
         this.memberObject = memberObject;
         this.tbInvestigationActionHelper = tbInvestigationActionHelper;
@@ -124,7 +124,7 @@ public class MotherMentorSampleActionHelper
     }
 
     public void setTbInvestigationActionHelper(
-            MotherMentorInvestigationActionHelper tbInvestigationActionHelper) {
+            MotherMentorTbInvestigationActionHelper tbInvestigationActionHelper) {
         this.tbInvestigationActionHelper = tbInvestigationActionHelper;
         this.observation =
                 tbInvestigationActionHelper != null

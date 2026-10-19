@@ -86,6 +86,12 @@ public final class DBConstants {
                 "mother_mentor_investigation_results";
         public static final String MOTHER_MENTOR_TREATMENT_START_DATE =
                 "mother_mentor_treatment_start_date";
+        public static final String TB_SCREENING_FINDINGS = "tb_screening_findings";
+        public static final String LEGACY_TB_INVESTIGATION_FINDINGS = "majibu_ya_uchunguzi_tb";
+        public static final String MOTHER_MENTOR_INTERVIEW_FINDINGS =
+                "mother_mentor_interview_findings";
+        public static final String LEGACY_MOTHER_MENTOR_INVESTIGATION_FINDINGS =
+                "majibu_ya_uchunguzi_ukoma";
         public static final String TB_DIAGNOSTIC_TEST_TYPE = "tb_diagnostic_test_type";
         public static final String TB_SAMPLE_TEST_RESULTS = "tb_sample_test_results";
         public static final String TB_TREATMENT_START_DATE = "tb_treatment_start_date";
@@ -100,6 +106,7 @@ public final class DBConstants {
                 "child_eid_non_attendance_reason";
         public static final String CHILD_EID_NON_ATTENDANCE_REASON_OTHER =
                 "child_eid_non_attendance_reason_other";
+        public static final String CHILD_EID_TEST_RECOMMENDATION = "child_eid_test_recommendation";
         public static final String CHILD_EID_TEST_TYPE = "child_eid_test_type";
         public static final String CLIENT_CHALLENGE_TYPES = "client_challenge_types";
         public static final String COMMENTS = "comments";

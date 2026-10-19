@@ -1,16 +1,26 @@
 package org.smartregister.chw.mothermentor.dao;
 
+import android.database.Cursor;
+
 import org.apache.commons.lang3.StringUtils;
+import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.commonregistry.CommonPersonObject;
+import org.smartregister.commonregistry.CommonRepository;
 import org.smartregister.dao.AbstractDao;
+import org.smartregister.util.Utils;
+
+import timber.log.Timber;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MotherMentorDao extends AbstractDao {
     private static final SimpleDateFormat df =
@@ -87,6 +97,100 @@ public class MotherMentorDao extends AbstractDao {
 
                 return memberObject;
             };
+
+    /** Loads a household profile using the host app's configured family table. */
+    public static MemberObject getHouseholdMember(String baseEntityId, String householdTable) {
+        if (StringUtils.isBlank(baseEntityId) || StringUtils.isBlank(householdTable)) {
+            return null;
+        }
+        try {
+            CommonRepository repository =
+                    MotherMentorLibrary.getInstance().context().commonrepository(householdTable);
+            if (repository == null) {
+                return null;
+            }
+
+            CommonPersonObject personObject = repository.findByBaseEntityId(baseEntityId);
+            if (personObject != null) {
+                MemberObject memberObject = new MemberObject();
+                memberObject.setBaseEntityId(personObject.getCaseId());
+                memberObject.setFamilyBaseEntityId(personObject.getCaseId());
+                memberObject.setFirstName(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.FIRST_NAME, false));
+                memberObject.setLastName(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.LAST_NAME, false));
+                memberObject.setUniqueId(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.UNIQUE_ID, false));
+                memberObject.setAddress(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.VILLAGE_TOWN, false));
+                memberObject.setFamilyHead(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.FAMILY_HEAD, false));
+                memberObject.setPrimaryCareGiver(
+                        Utils.getValue(
+                                personObject.getColumnmaps(),
+                                DBConstants.KEY.PRIMARY_CARE_GIVER,
+                                false));
+                memberObject.setPhoneNumber(
+                        Utils.getValue(
+                                personObject.getColumnmaps(), DBConstants.KEY.PHONE_NUMBER, false));
+                return memberObject;
+            }
+        } catch (Exception e) {
+            Timber.e(e, "Unable to load Mother Mentor household");
+        }
+        return null;
+    }
+
+    /** Loads the active Child EID enrollment used to recommend a follow-up test. */
+    public static Map<String, String> getChildEidTestEnrollmentValues(String baseEntityId) {
+        Map<String, String> values = new HashMap<>();
+        if (StringUtils.isBlank(baseEntityId)) return values;
+        String query =
+                "SELECT m."
+                        + DBConstants.KEY.DOB
+                        + ", e."
+                        + DBConstants.KEY.WEANING_DATE
+                        + ", e."
+                        + DBConstants.KEY.LAST_TEST
+                        + " FROM "
+                        + Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID
+                        + " e INNER JOIN ec_family_member m ON m."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " WHERE e."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND e."
+                        + DBConstants.KEY.IS_CLOSED
+                        + " = 0 ORDER BY e."
+                        + DBConstants.KEY.LAST_INTERACTED_WITH
+                        + " DESC LIMIT 1";
+        try (Cursor cursor =
+                MotherMentorLibrary.getInstance()
+                        .getRepository()
+                        .getReadableDatabase()
+                        .rawQuery(query, new String[] {baseEntityId})) {
+            if (cursor.moveToFirst()) {
+                for (String key :
+                        new String[] {
+                            DBConstants.KEY.DOB,
+                            DBConstants.KEY.WEANING_DATE,
+                            DBConstants.KEY.LAST_TEST
+                        }) {
+                    int index = cursor.getColumnIndexOrThrow(key);
+                    values.put(key, cursor.isNull(index) ? null : cursor.getString(index));
+                }
+            }
+        } catch (Exception e) {
+            Timber.e(e, "Unable to load Child EID enrollment data");
+        }
+        return values;
+    }
 
     public static String getMotherMentorClientStatus(String baseEntityId) {
         String status =

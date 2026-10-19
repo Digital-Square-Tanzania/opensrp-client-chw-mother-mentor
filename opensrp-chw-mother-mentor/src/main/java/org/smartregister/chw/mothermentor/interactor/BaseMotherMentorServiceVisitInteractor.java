@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorInvestigationActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSampleActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSourceActionHelper;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorTbInvestigationActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
@@ -42,7 +43,7 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     protected AppExecutors appExecutors;
     private ECSyncHelper syncHelper;
     private Context mContext;
-    private MotherMentorInvestigationActionHelper contactTbInvestigationHelper;
+    private MotherMentorTbInvestigationActionHelper contactTbInvestigationHelper;
 
     @VisibleForTesting
     public BaseMotherMentorServiceVisitInteractor(
@@ -129,8 +130,8 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     private void evaluateContactTbInvestigation(Map<String, List<VisitDetail>> details)
             throws BaseMotherMentorVisitAction.ValidationException {
 
-        MotherMentorInvestigationActionHelper actionHelper =
-                new MotherMentorInvestigationActionHelper(mContext, memberObject);
+        MotherMentorTbInvestigationActionHelper actionHelper =
+                new MotherMentorTbInvestigationActionHelper(mContext, memberObject);
         contactTbInvestigationHelper = actionHelper;
         BaseMotherMentorVisitAction action =
                 getBuilder(context.getString(R.string.mothermentor_contact_tb_investigation))

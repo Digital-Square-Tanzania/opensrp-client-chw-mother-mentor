@@ -161,4 +161,52 @@
     <string name="mothermentor_referral_ctc">CTC</string>
     <string name="mothermentor_referral_gbv">Gender-based violence</string>
     <string name="mothermentor_referral_other">Other</string>
+
+    <!-- Mother Mentor visit action summaries and recommendations. -->
+    <string name="mothermentor_child_eid_recommendation">Automatically selected for the child’s age: %1$s. You can change it if it is not appropriate.</string>
+    <string name="mothermentor_child_eid_weaning_recommendation">Automatically selected from the recorded breastfeeding cessation date: %1$s. You can change it if it is not appropriate.</string>
+    <string name="mothermentor_child_eid_test_six_weeks">6 Weeks</string>
+    <string name="mothermentor_child_eid_test_nine_months">9 Months</string>
+    <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after breastfeeding stopped</string>
+    <string name="mothermentor_child_eid_test_eighteen_months">18 Months</string>
+    <string name="mothermentor_child_eid_reason_medicine_side_effects">Medicine side effects</string>
+    <string name="mothermentor_child_eid_reason_forgot">Forgot</string>
+    <string name="mothermentor_child_eid_reason_travel_or_moved">Travel / Moved</string>
+    <string name="mothermentor_child_eid_reason_transport_cost">No transport fare</string>
+    <string name="mothermentor_child_eid_reason_facility_congestion">Facility congestion</string>
+    <string name="mothermentor_child_eid_reason_stigma">Stigma</string>
+    <string name="mothermentor_child_eid_reason_other">Other</string>
+    <string name="mothermentor_status_found">Found</string>
+    <string name="mothermentor_status_not_found">Not found</string>
+    <string name="mothermentor_status_deceased">Deceased</string>
+    <string name="mothermentor_status_transferred_facility">Moved to another facility</string>
+    <string name="mothermentor_status_refused_return">Refused to return</string>
+    <string name="mothermentor_status_under_follow_up">Still being followed up</string>
+    <string name="mothermentor_reason_medicine_side_effects">Medicine side effects</string>
+    <string name="mothermentor_reason_forgot">Forgot</string>
+    <string name="mothermentor_reason_travel_or_moved">Travel / Moved</string>
+    <string name="mothermentor_reason_transport_cost">No transport fare</string>
+    <string name="mothermentor_reason_facility_congestion">Facility congestion</string>
+    <string name="mothermentor_reason_stigma">Stigma</string>
+    <string name="mothermentor_reason_other">Other</string>
+    <string name="mothermentor_partner_reason_travel_or_moved">Travel / Moved</string>
+    <string name="mothermentor_partner_reason_transport_cost">No transport fare</string>
+    <string name="mothermentor_partner_reason_stigma">Stigma</string>
+    <string name="mothermentor_partner_reason_other">Other</string>
+    <string name="mothermentor_answer_yes">Yes</string>
+    <string name="mothermentor_answer_no">No</string>
+    <string name="mothermentor_child_eid_arrival_section">Arrived at the facility</string>
+    <string name="mothermentor_child_eid_non_attendance_reason_section">Reason for not attending the facility</string>
+    <string name="mothermentor_child_eid_test_type_section">Test type</string>
+    <string name="mothermentor_comments_section">Comments</string>
+    <string name="mothermentor_follow_up_status_section">Follow-up status</string>
+    <string name="mothermentor_household_visit_kusudi_la_ziara">Visit Purpose</string>
+    <string name="mothermentor_household_visit_mada_zilizofundishwa">Topics Taught</string>
+    <string name="mothermentor_household_visit_maoni">Comment</string>
+    <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Household received Counselling</string>
+    <string name="mothermentor_interruption_reason_section">Reason for service interruption</string>
+    <string name="mothermentor_partner_arrival_section">Arrived at the facility</string>
+    <string name="mothermentor_partner_non_attendance_reason_section">Reason for not attending the facility</string>
+    <string name="mothermentor_return_to_facility_section">Return to facility</string>
+
 </resources>

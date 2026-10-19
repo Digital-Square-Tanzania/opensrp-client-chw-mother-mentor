@@ -151,4 +151,52 @@
     <string name="mothermentor_referral_ctc">Kliniki ya huduma na matibabu</string>
     <string name="mothermentor_referral_gbv">Ukatili wa kijinsia</string>
     <string name="mothermentor_referral_other">Nyingine</string>
+
+    <!-- Mother Mentor visit action summaries and recommendations. -->
+    <string name="mothermentor_child_eid_recommendation">Imechaguliwa kiotomatiki kwa umri wa mtoto: %1$s. Unaweza kubadilisha kama haifai.</string>
+    <string name="mothermentor_child_eid_weaning_recommendation">Imechaguliwa kiotomatiki kwa tarehe iliyorekodiwa ya kuacha kunyonyeshwa: %1$s. Unaweza kubadilisha kama haifai.</string>
+    <string name="mothermentor_child_eid_test_six_weeks">Wiki 6</string>
+    <string name="mothermentor_child_eid_test_nine_months">Miezi 9</string>
+    <string name="mothermentor_child_eid_test_three_months_after_weaning">Miezi 3 baada ya kuacha kunyonyeshwa</string>
+    <string name="mothermentor_child_eid_test_eighteen_months">Miezi 18</string>
+    <string name="mothermentor_child_eid_reason_medicine_side_effects">Maudhi ya dawa</string>
+    <string name="mothermentor_child_eid_reason_forgot">Kusahau</string>
+    <string name="mothermentor_child_eid_reason_travel_or_moved">Safari / Kuhama</string>
+    <string name="mothermentor_child_eid_reason_transport_cost">Hana pesa ya nauli</string>
+    <string name="mothermentor_child_eid_reason_facility_congestion">Msongamano kituoni</string>
+    <string name="mothermentor_child_eid_reason_stigma">Unyanyapaa</string>
+    <string name="mothermentor_child_eid_reason_other">Nyingine</string>
+    <string name="mothermentor_status_found">Amepatikana</string>
+    <string name="mothermentor_status_not_found">Hajapatikana</string>
+    <string name="mothermentor_status_deceased">Amefariki</string>
+    <string name="mothermentor_status_transferred_facility">Amehamia kituo kingine</string>
+    <string name="mothermentor_status_refused_return">Amekataa kurudi</string>
+    <string name="mothermentor_status_under_follow_up">Bado anafuatiliwa</string>
+    <string name="mothermentor_reason_medicine_side_effects">Maudhi ya dawa</string>
+    <string name="mothermentor_reason_forgot">Kusahau</string>
+    <string name="mothermentor_reason_travel_or_moved">Safari / Kuhama</string>
+    <string name="mothermentor_reason_transport_cost">Hana pesa ya nauli</string>
+    <string name="mothermentor_reason_facility_congestion">Msongamano kituoni</string>
+    <string name="mothermentor_reason_stigma">Unyanyapaa</string>
+    <string name="mothermentor_reason_other">Nyingine</string>
+    <string name="mothermentor_partner_reason_travel_or_moved">Safari / Kuhama</string>
+    <string name="mothermentor_partner_reason_transport_cost">Hana pesa ya nauli</string>
+    <string name="mothermentor_partner_reason_stigma">Unyanyapaa</string>
+    <string name="mothermentor_partner_reason_other">Nyingine</string>
+    <string name="mothermentor_answer_yes">Ndiyo</string>
+    <string name="mothermentor_answer_no">Hapana</string>
+    <string name="mothermentor_child_eid_arrival_section">Amefika kituoni</string>
+    <string name="mothermentor_child_eid_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
+    <string name="mothermentor_child_eid_test_type_section">Aina ya Kipimo</string>
+    <string name="mothermentor_comments_section">Maoni</string>
+    <string name="mothermentor_follow_up_status_section">Hali ya ufuatiliaji</string>
+    <string name="mothermentor_household_visit_kusudi_la_ziara">Kusudi la Ziara</string>
+    <string name="mothermentor_household_visit_mada_zilizofundishwa">Mada zilizofundishwa</string>
+    <string name="mothermentor_household_visit_maoni">Maoni</string>
+    <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Wanakaya waliopewa ushauri</string>
+    <string name="mothermentor_interruption_reason_section">Sababu ya kukatisha huduma</string>
+    <string name="mothermentor_partner_arrival_section">Amefika kituoni</string>
+    <string name="mothermentor_partner_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
+    <string name="mothermentor_return_to_facility_section">Kurudi Kituoni</string>
+
 </resources>
