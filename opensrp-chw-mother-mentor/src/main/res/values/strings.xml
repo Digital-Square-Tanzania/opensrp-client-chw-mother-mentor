@@ -28,14 +28,9 @@
 
     <string name="mothermentor_profile">Mother Mentor Profile</string>
 
-    <string name="mothermentor_medical_history">Medical History</string>
     <string name="mothermentor_followup_visit">Follow Up Visit</string>
-    <string name="mothermentor_physical_examination">Physical Examination</string>
-    <string name="mothermentor_hts">Mother Mentor Counseling</string>
 
-    <string name="mothermentor_contact_tb_investigation">Mother Mentor Investigation</string>
     <string name="mothermentor_contact_mother_mentor_investigation">Mother Mentor Investigation</string>
-    <string name="mothermentor_sample">Mother Mentor Service</string>
     <string name="mothermentor_source">Type of Contact</string>
 
 

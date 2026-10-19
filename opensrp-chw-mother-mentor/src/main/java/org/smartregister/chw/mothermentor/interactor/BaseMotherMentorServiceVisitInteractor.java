@@ -13,9 +13,7 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorInvestigationActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSampleActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorSourceActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorTbInvestigationActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
@@ -43,7 +41,6 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     protected AppExecutors appExecutors;
     private ECSyncHelper syncHelper;
     private Context mContext;
-    private MotherMentorTbInvestigationActionHelper contactTbInvestigationHelper;
 
     @VisibleForTesting
     public BaseMotherMentorServiceVisitInteractor(
@@ -84,9 +81,7 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
                 () -> {
                     try {
                         evaluateMotherMentorSource(details);
-                        evaluateContactTbInvestigation(details);
                         evaluateContactMotherMentorInvestigation(details);
-                        evaluateMotherMentorSample(details);
 
                     } catch (BaseMotherMentorVisitAction.ValidationException e) {
                         Timber.e(e);
@@ -122,31 +117,6 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
     }
 
     /**
-     * this action deals with TB Investigation (Uchunguzi wa Kifua Kikuu)
-     *
-     * @param details
-     * @throws BaseMotherMentorVisitAction.ValidationException
-     */
-    private void evaluateContactTbInvestigation(Map<String, List<VisitDetail>> details)
-            throws BaseMotherMentorVisitAction.ValidationException {
-
-        MotherMentorTbInvestigationActionHelper actionHelper =
-                new MotherMentorTbInvestigationActionHelper(mContext, memberObject);
-        contactTbInvestigationHelper = actionHelper;
-        BaseMotherMentorVisitAction action =
-                getBuilder(context.getString(R.string.mothermentor_contact_tb_investigation))
-                        .withOptional(false)
-                        .withDetails(details)
-                        .withHelper(actionHelper)
-                        .withValidator(getSourceContactTypeValidator("tb"))
-                        .withFormName(
-                                Constants.MotherMentor_FOLLOWUP_FORMS
-                                        .MOTHERMENTOR_CONTACT_TB_INVESTIGATION)
-                        .build();
-        actionList.put(context.getString(R.string.mothermentor_contact_tb_investigation), action);
-    }
-
-    /**
      * this action deals with MotherMentor Investigation (Uchunguzi wa Ukoma)
      *
      * @param details
@@ -172,29 +142,6 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
         actionList.put(
                 context.getString(R.string.mothermentor_contact_mother_mentor_investigation),
                 action);
-    }
-
-    /**
-     * this action deals with sample collection (kuchukua sampuli)
-     *
-     * @param details
-     * @throws BaseMotherMentorVisitAction.ValidationException
-     */
-    private void evaluateMotherMentorSample(Map<String, List<VisitDetail>> details)
-            throws BaseMotherMentorVisitAction.ValidationException {
-
-        MotherMentorSampleActionHelper actionHelper =
-                new MotherMentorSampleActionHelper(
-                        mContext, memberObject, contactTbInvestigationHelper);
-        BaseMotherMentorVisitAction action =
-                getBuilder(context.getString(R.string.mothermentor_sample))
-                        .withOptional(false)
-                        .withDetails(details)
-                        .withHelper(actionHelper)
-                        .withValidator(getSampleEligibilityValidator(actionHelper))
-                        .withFormName(Constants.MotherMentor_FOLLOWUP_FORMS.MOTHERMENTOR_SAMPLE)
-                        .build();
-        actionList.put(context.getString(R.string.mothermentor_sample), action);
     }
 
     private BaseMotherMentorVisitAction.Validator getSourceContactTypeValidator(
@@ -335,28 +282,6 @@ public class BaseMotherMentorServiceVisitInteractor extends BaseMotherMentorVisi
         }
 
         return selections;
-    }
-
-    private BaseMotherMentorVisitAction.Validator getSampleEligibilityValidator(
-            final MotherMentorSampleActionHelper sampleActionHelper) {
-        return new BaseMotherMentorVisitAction.Validator() {
-            @Override
-            public boolean isValid(String key) {
-                return sampleActionHelper != null
-                        && isSourceContactTypeSelected("tb")
-                        && sampleActionHelper.isEligibleForSampleCollection();
-            }
-
-            @Override
-            public boolean isEnabled(String key) {
-                return isValid(key);
-            }
-
-            @Override
-            public void onChanged(String key) {
-                // No-op
-            }
-        };
     }
 
     @Override

@@ -12,7 +12,7 @@ export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
 ./gradlew :opensrp-chw-mother-mentor:publishToMavenLocal
 ```
 
-The local library coordinate is `org.smartregister:opensrp-chw-mother-mentor:0.1.2-SNAPSHOT`.
+The local library coordinate is `org.smartregister:opensrp-chw-mother-mentor:0.1.3-SNAPSHOT`.
 The publication task also builds the release AAR when invoked on its own.
 
 ## Visit action helpers
@@ -21,7 +21,7 @@ Each action has a separate, top-level class in
 `opensrp-chw-mother-mentor/src/main/java/org/smartregister/chw/mothermentor/actionhelper`.
 Service, household, mother IIT, partner, and Child EID actions each own their
 completion rules, summaries, and form preprocessing. The retained contact workflow
-also uses separate TB and Mother Mentor investigation helpers.
+uses its own Mother Mentor investigation helper.
 
 `BaseMotherMentorActionHelper` shares only the form lifecycle, JSON access,
 translation, and field-clearing utilities. Keep action-specific field identifiers

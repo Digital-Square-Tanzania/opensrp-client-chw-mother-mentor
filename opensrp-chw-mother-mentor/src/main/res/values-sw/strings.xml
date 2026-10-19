@@ -81,17 +81,12 @@
 
     <string name="mothermentor_profile">Wasifu</string>
 
-    <string name="mothermentor_medical_history">Historia ya kitabibu</string>
-    <string name="mothermentor_physical_examination">Uchunguzi wa kimwili</string>
-    <string name="mothermentor_hts">Huduma za upimaji wa VVU</string>
     <string name="mothermentor_contraindication">Shughulikia vizuizi kabla ya kuendelea na huduma</string>
     <string name="no_phone_number">Hakuna nambari ya simu</string>
     <string name="return_to_mothermentor_clients">Rudi kwenye wateja wote wa Kifua Kikuu/Ukoma</string>
     <string name="number_not_filled">Nambari ya simu ya mteja haijajazwa</string>
 
-    <string name="mothermentor_contact_tb_investigation">Uchunguzi wa Kifua Kikuu</string>
     <string name="mothermentor_contact_mother_mentor_investigation">Uchunguzi wa Ukoma</string>
-    <string name="mothermentor_sample">Kuchukua Sampuli</string>
     <string name="mothermentor_source">Taarifa za mteja</string>
     <string name="view_upcoming_services">Angalia huduma zijazo</string>
 

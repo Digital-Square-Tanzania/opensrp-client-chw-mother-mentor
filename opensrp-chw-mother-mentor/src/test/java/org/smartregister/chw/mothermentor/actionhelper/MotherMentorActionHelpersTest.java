@@ -239,36 +239,17 @@ public class MotherMentorActionHelpersTest {
     }
 
     @Test
-    public void contactInvestigationsUseOnlyTheirOwnFindingsAndSampleEligibilityTracksTbStatus()
-            throws Exception {
-        MotherMentorTbInvestigationActionHelper tb =
-                new MotherMentorTbInvestigationActionHelper(
-                        RuntimeEnvironment.application, new MemberObject());
+    public void contactInvestigationUsesOnlyItsOwnFindings() throws Exception {
         MotherMentorInvestigationActionHelper mentor =
                 new MotherMentorInvestigationActionHelper(
                         RuntimeEnvironment.application, new MemberObject());
-        JSONObject tbAnswer =
-                form(
-                        DBConstants.KEY.TB_SCREENING_FINDINGS,
-                        "cough",
-                        DBConstants.KEY.SCREENING_STATUS,
-                        "tb_presumptive");
-        tb.onJsonFormLoaded(
-                tbAnswer.toString(), RuntimeEnvironment.application, Collections.emptyMap());
-        MotherMentorSampleActionHelper sample =
-                new MotherMentorSampleActionHelper(
-                        RuntimeEnvironment.application, new MemberObject(), tb);
-        assertTrue(sample.isEligibleForSampleCollection());
-        assertStatus(tb, tbAnswer, true);
-        assertStatus(mentor, tbAnswer, false);
+        assertStatus(mentor, form(DBConstants.KEY.TB_SCREENING_FINDINGS, "cough"), false);
         assertStatus(
                 mentor,
                 form(DBConstants.KEY.LEGACY_MOTHER_MENTOR_INVESTIGATION_FINDINGS, "finding"),
                 true);
-        assertStatus(tb, form(DBConstants.KEY.MOTHER_MENTOR_INTERVIEW_FINDINGS, "finding"), false);
-        assertFalse(sample.isEligibleForSampleCollection());
-        assertStatus(tb, form(DBConstants.KEY.LEGACY_TB_INVESTIGATION_FINDINGS, "finding"), true);
-        assertStatus(tb, (String) null, false);
+        assertStatus(
+                mentor, form(DBConstants.KEY.MOTHER_MENTOR_INTERVIEW_FINDINGS, "finding"), true);
         assertStatus(mentor, (String) null, false);
     }
 

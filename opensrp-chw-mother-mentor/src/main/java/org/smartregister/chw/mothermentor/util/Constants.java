@@ -52,11 +52,9 @@ public interface Constants {
 
     interface MotherMentor_FOLLOWUP_FORMS {
 
-        String MOTHERMENTOR_CONTACT_TB_INVESTIGATION = "mother_mentor_contact_tb_investigation";
         String MOTHERMENTOR_CONTACT_LEPROSY_INVESTIGATION =
                 "mother_mentor_contact_mother_mentor_investigation";
         String MOTHERMENTOR_INDEX_CLIENT_DETAILS_SOURCE = "mothermentor_index_client_details";
-        String MOTHERMENTOR_SAMPLE = "mother_mentor_sample";
     }
 
     interface TABLES {
