@@ -59,6 +59,7 @@ public final class DBConstants {
         public static final String ART_NO_REASON = "art_no_reason";
         public static final String ART_NO_REASON_OTHER = "art_no_reason_other";
         public static final String ART_START_DATE = "art_start_date";
+        public static final String ART_INITIATED_BEFORE_VISIT = "art_initiated_before_visit";
         public static final String ART_STATUS = "art_status";
         public static final String ART_STATUS_REGISTRATION = "art_status_registration";
         public static final String BELONGS_TO_SPECIAL_GROUP = "belongs_to_special_group";

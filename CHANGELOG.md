@@ -4,6 +4,17 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Added
+
+- Automatically populate service-visit attendance as New or Repeat using the
+  client's saved Mother Mentor service history, including visits awaiting local
+  processing. Preserve attendance answers when reopening or editing a visit.
+- Ask about new PMTCT ART initiation only when initiation was not already recorded
+  at enrollment or a previous service visit. Keep the prior-initiation snapshot
+  when editing and align English/Swahili form relevance and visit completion.
+
 ## 0.1.3-SNAPSHOT — 2026-10-19
 
 ### Changed
