@@ -207,6 +207,14 @@
         }
       },
       {
+        "key": "art_initiated_before_visit",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "art_initiated_before_visit",
+        "openmrs_entity_parent": ""
+      },
+      {
         "key": "new_pmtct_art_initiation",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
@@ -251,9 +259,10 @@
           "err": "Tafadhali jaza sehemu hii"
         },
         "relevance": {
-          "step1:new_pmtct_art_initiation": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_reporting_relevance.yml"
+            }
           }
         },
         "max_date": "today",

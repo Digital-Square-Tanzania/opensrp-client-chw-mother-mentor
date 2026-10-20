@@ -9,7 +9,14 @@ actions:
 name: step1_new_pmtct_art_initiation
 description: Mother Mentor collection field relevance
 priority: 1
-condition: "step1_primary_mothermentor_client == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'continuing_services'))"
+condition: "step1_art_initiated_before_visit != 'true' && step1_primary_mothermentor_client == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'continuing_services'))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_visit_art_start_date
+description: Mother Mentor collection field relevance
+priority: 1
+condition: "step1_new_pmtct_art_initiation == 'yes' && step1_art_initiated_before_visit != 'true' && step1_primary_mothermentor_client == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'continuing_services'))"
 actions:
   - "isRelevant = true"
 ---

@@ -29,12 +29,12 @@ public final class MotherMentorVisitCompletion {
         if (!matches(version, "1", "2")) return true;
         if (isFullVisit(attendance, values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
                 && "true".equals(values.get(DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT))) {
-            if (!answered(
-                    values,
-                    DBConstants.KEY.VISIT_PREGNANCY_STATUS,
-                    DBConstants.KEY.NEW_PMTCT_ART_INITIATION)) return false;
-            if ("yes".equals(values.get(DBConstants.KEY.NEW_PMTCT_ART_INITIATION))
-                    && !answered(values, DBConstants.KEY.VISIT_ART_START_DATE)) return false;
+            if (!answered(values, DBConstants.KEY.VISIT_PREGNANCY_STATUS)) return false;
+            if (!"true".equals(values.get(DBConstants.KEY.ART_INITIATED_BEFORE_VISIT))) {
+                if (!answered(values, DBConstants.KEY.NEW_PMTCT_ART_INITIATION)) return false;
+                if ("yes".equals(values.get(DBConstants.KEY.NEW_PMTCT_ART_INITIATION))
+                        && !answered(values, DBConstants.KEY.VISIT_ART_START_DATE)) return false;
+            }
         }
         if ("true".equals(values.get(DBConstants.KEY.IIT_ENROLLED))) {
             if (!answered(values, DBConstants.KEY.IIT_TRACING_VISIT)) return false;
