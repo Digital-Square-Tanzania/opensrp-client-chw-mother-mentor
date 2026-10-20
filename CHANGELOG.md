@@ -4,7 +4,7 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
-## Unreleased
+## 0.1.4-SNAPSHOT — 2026-10-20
 
 ### Added
 
@@ -14,6 +14,21 @@ Android version code.
 - Ask about new PMTCT ART initiation only when initiation was not already recorded
   at enrollment or a previous service visit. Keep the prior-initiation snapshot
   when editing and align English/Swahili form relevance and visit completion.
+
+### Fixed
+
+- Replace incorrect TB/leprosy references in Swahili Mother Mentor labels with
+  Mama Kinara terminology, while retaining the tuberculosis education topic.
+- Align Swahili visit, service history, caregiver, contact, and session labels
+  with their English counterparts and add the five missing service translations.
+- Correct English follow-up, navigation, contraindication, positive-result, and
+  household counselling labels, and avoid repeating the call action in Swahili.
+
+### Changed
+
+- Increment `VERSION_NAME` from `0.1.3-SNAPSHOT` to `0.1.4-SNAPSHOT` and
+  `VERSION_CODE` from 4 to 5.
+- Update the README dependency coordinate to the new library version.
 
 ## 0.1.3-SNAPSHOT — 2026-10-19
 
