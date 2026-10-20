@@ -172,7 +172,7 @@
           },
           {
             "key": "partner",
-            "text": "Mwenzi",
+            "text": "mwenza",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "partner"
           },

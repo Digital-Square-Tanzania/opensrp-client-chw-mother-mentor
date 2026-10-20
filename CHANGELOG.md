@@ -4,6 +4,18 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## 0.1.5-SNAPSHOT — 2026-10-20
+
+### Fixed
+
+- Use “mwenza” in Swahili partner enrollment, facility attendance, expected visit
+  date, and household counselling labels.
+
+### Changed
+
+- Increment `VERSION_NAME` from `0.1.4-SNAPSHOT` to `0.1.5-SNAPSHOT` and
+  `VERSION_CODE` from 5 to 6, and update the README dependency coordinate.
+
 ## 0.1.4-SNAPSHOT — 2026-10-20
 
 ### Added

@@ -49,7 +49,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Ufuatiliaji wa mwenzi",
+    "title": "Ufuatiliaji wa mwenza",
     "next": "step2",
     "fields": [
       {
@@ -200,14 +200,14 @@
         "options": [
           {
             "key": "husband_or_partner",
-            "text": "Mume / mwenzi",
+            "text": "Mume / mwenza",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "husband_or_partner"
           },
           {
             "key": "father_to_children",
-            "text": "Baba wa mtoto (sio mwenzi sasa)",
+            "text": "Baba wa mtoto (sio mwenza sasa)",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "father_to_children"
@@ -250,7 +250,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hiv_disclosure",
-        "label": "Mwenzi amejua hali ya VVU ya mama?",
+        "label": "Mwenza amejua hali ya VVU ya mama?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -284,7 +284,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hiv_tested",
-        "label": "Mwenzi amewahi kupima VVU?",
+        "label": "Mwenza amewahi kupima VVU?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -388,7 +388,7 @@
         "mask": "##-##-####-######",
         "mask_hint": "12345678912345",
         "allowed_chars": "0123456789",
-        "hint": "Namba ya CTC ya mwenzi",
+        "hint": "Namba ya CTC ya mwenza",
         "edit_type": "number",
         "v_regex": {
           "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
