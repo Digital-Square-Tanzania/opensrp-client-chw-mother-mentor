@@ -2,7 +2,7 @@
     <string name="error_unable_to_start_form">Hitilafu imetokea wakati wa kuanzisha fomu</string>
     <string name="error_unable_to_save_form">Hitilafu imetokea wakati wa kuhifadhi fomu</string>
     <string name="error_unable_to_open_profile">Imeshindwa kufungua taarifa za mteja</string>
-    <string name="mothermentor">Kifua Kikuu/Ukoma</string>
+    <string name="mothermentor">Mama Kinara</string>
     <string name="add_member">Sajili mwanafamilia</string>
     <string name="sort">Panga</string>
     <string name="home">Nyumbani</string>
@@ -10,43 +10,44 @@
     <string name="scan_qr">Skanisha QR</string>
     <string name="job_aids">Vitendea kazi</string>
     <string name="saving_dialog_title">Kuhifadhi</string>
-    <string name="mothermentor_followup_visit">Hudhurio la ufuatiliaji</string>
-    <string name="record_mothermentor">Hudhurio la Kifua Kikuu/Ukoma</string>
-    <string name="record_mothermentor_contact_visit">Rekodi hudhurio la mhisiwa wa ugonjwa wa TB</string>
-    <string name="record_mothermentor_client_followup_visit">Rekodi hudhurio la ufuatiliaji la Kifua Kikuu/Ukoma</string>
-    <string name="record_mothermentor_contact_visit_followup">Rekodi hudhurio la ufuatiliaji la mhisiwa wa ugonjwa wa TB</string>
-    <string name="provide_contact_visit">Toa hudhurio kwa mhisiwa wa ugonjwa wa TB</string>
+    <string name="mothermentor_followup_visit">Ziara ya ufuatiliaji</string>
+    <string name="record_mothermentor">Rekodi ziara ya Mama Kinara</string>
+    <string name="record_mothermentor_contact_visit">Rekodi ziara ya mteja aliyeunganishwa na Mama Kinara</string>
+    <string name="record_mothermentor_client_followup_visit">Rekodi ziara ya ufuatiliaji ya Mama Kinara</string>
+    <string name="record_mothermentor_contact_visit_followup">Rekodi ziara ya ufuatiliaji ya mteja aliyeunganishwa na Mama Kinara</string>
+    <string name="provide_contact_visit">Toa huduma za ziara kwa mteja aliyeunganishwa</string>
 
     <string name="optional">Si lazima</string>
     <string name="error_unable_save_visit">Imeshindwa kuhifadhi hudhurio hili</string>
-    <string name="return_to_previous_page">Rudi kwenye orodha ya wateja wote wa Kifua Kikuu/Ukoma</string>
-    <string name="last_visit_40_days_ago">Hudhurio la mwisho lilifanyika %1$s zilizopita</string>
-    <string name="view_visit_history">Angalia historia ya huduma</string>
+    <string name="return_to_previous_page">Rudi kwenye orodha ya wateja wote wa Mama Kinara</string>
+    <string name="last_visit_40_days_ago">Ziara ya mwisho ilifanyika %1$s zilizopita</string>
+    <string name="view_visit_history">Angalia historia ya ziara</string>
     <string name="view_medical_history">Angalia historia ya huduma</string>
-    <string name="observation_results">Angalia historia ya huduma</string>
+    <string name="observation_results">Angalia historia ya ziara</string>
     <string name="call_no_number_provided">(Hakuna namba iliyotolewa)</string>
     <string name="record_observation_results">Jaza matokeo ya Uchunguzi</string>
-    <string name="record_mother_mentor_treatment_start_date">Rekodi tarehe ya kuanza matibabu ya Ukoma</string>
-    <string name="view_observation_results">Angalia historia ya uchunguzi</string>
+    <string name="record_mother_mentor_treatment_start_date">Rekodi tarehe ya kuanza huduma za Mama Kinara</string>
+    <string name="view_observation_results">Angalia historia ya huduma</string>
     <string name="family_has_nothing_due">Hakuna huduma iliyopangwa kwa sasa</string>
     <string name="go_to_family_s_profile">Rudi kwenye taarifa ya kaya</string>
     <string name="family_has_services_due">Muda wa huduma kwenye kaya umefika</string>
     <string name="mothermentor_family_member">Mwanafamilia</string>
     <string name="mothermentor_existing_client">Mteja aliyesajiliwa</string>
-    <string name="mothermentor_contact_registration_success">Usajili wa Mhisiwa wa ugonjwa wa TB ameifadhiwa</string>
+    <string name="mothermentor_contact_registration_success">Taarifa za mteja aliyeunganishwa na Mama Kinara zimehifadhiwa</string>
     <string name="mothermentor_no_contacts_available">Hakuna wateja wanaokidhi vigezo</string>
     <string name="mothermentor_contact_option_family">Wanafamilia</string>
     <string name="mothermentor_contact_option_all_clients">Wateja wengine wote</string>
     <string name="mothermentor_contact_option_new_client">Sajili mteja mpya</string>
-    <string name="primary_care_giver">MLEZI</string>
+    <string name="primary_care_giver">MLEZI MKUU</string>
     <string name="family_head">MKUU WA KAYA</string>
     <string name="family_has_service_overdue"><![CDATA[Kaya ina <font color=#FF0000>huduma zilizochelewa</font></b>]]></string>
     <string name="vaccine_service_upcoming"><![CDATA[%1$s <font color=#7f7f7f>inakaribia (%2$s)</font></b>]]></string>
     <string name="vaccine_service_overdue"><![CDATA[%1$s <font color=#f04646>muda umepita (%2$s)</font></b>]]></string>
     <string name="vaccine_service_due"><![CDATA[%1$s <font color=#000000>imefika (%2$s)</font></b>]]></string>
-    <string name="call_mothermentor_client">Piga simu kwa mteja wa Kifua Kikuu/Ukoma</string>
+    <!-- Appended to the translated "call" action in the call dialog. -->
+    <string name="call_mothermentor_client">kwa mteja wa Mama Kinara</string>
     <string name="head_of_family">Mkuu wa kaya</string>
-    <string name="mothermentor_client">Mteja wa Kifua Kikuu/Ukoma</string>
+    <string name="mothermentor_client">Mteja wa Mama Kinara</string>
     <string name="copy_to_clipboard">Nakili namba ya simu</string>
     <string name="copied_phone_number">Namba ya simu imenakiliwa</string>
     <string name="call">Piga simu</string>
@@ -56,12 +57,12 @@
     <string name="not_visiting_this_month">Hakuna hudhurio mwezi huu</string>
     <string name="undo">TENGUA</string>
     <string name="call_family_head">Mkuu wa Kaya</string>
-    <string name="call_primary_caregiver">Mlezi</string>
+    <string name="call_primary_caregiver">Mlezi mkuu</string>
     <string name="call_anc_client">Mjamzito</string>
     <string name="call_pnc_client">Mama aliyejifungua</string>
     <string name="call_head_of_family">Piga simu kwa mkuu wa kaya</string>
-    <string name="view_mothermentor_test_result">Angalia matokeo ya uchunguzi</string>
-    <string name="mothermentor_positive">Kifua Kikuu/Ukoma chanya</string>
+    <string name="view_mothermentor_test_result">Angalia matokeo ya Mama Kinara</string>
+    <string name="mothermentor_positive">Matokeo chanya</string>
     <string name="anc_string">Wajawazito</string>
     <string name="pnc_string">Baada ya kujifungua</string>
     <string name="visit_done">Hudhurio limekamilika</string>
@@ -74,33 +75,33 @@
     <string name="manual_process_visit">Chakata hudhurio</string>
     <string name="continue_visit">Endelea</string>
     <string name="edit_visit">Hariri</string>
-    <string name="mothermentor_visit_in_progress">Hudhurio linaendelea</string>
-    <string name="mothermentor_service_visit_in_progress">Hudhurio la huduma linaendelea</string>
-    <string name="mothermentor_procedure_visit_in_progress">Hudhurio la utaratibu linaendelea</string>
-    <string name="mothermentor_visit_conducted">Hudhurio limefanyika</string>
+    <string name="mothermentor_visit_in_progress">Ziara inaendelea</string>
+    <string name="mothermentor_service_visit_in_progress">Huduma za Mama Kinara zinaendelea</string>
+    <string name="mothermentor_procedure_visit_in_progress">Utaratibu wa Mama Kinara unaendelea</string>
+    <string name="mothermentor_visit_conducted">Ziara ya Mama Kinara imefanyika</string>
 
-    <string name="mothermentor_profile">Wasifu</string>
+    <string name="mothermentor_profile">Wasifu wa Mama Kinara</string>
 
-    <string name="mothermentor_contraindication">Shughulikia vizuizi kabla ya kuendelea na huduma</string>
+    <string name="mothermentor_contraindication">Shughulikia vizuizi kabla ya kuendelea na huduma za Mama Kinara</string>
     <string name="no_phone_number">Hakuna nambari ya simu</string>
-    <string name="return_to_mothermentor_clients">Rudi kwenye wateja wote wa Kifua Kikuu/Ukoma</string>
+    <string name="return_to_mothermentor_clients">Rudi kwenye orodha ya wateja wa Mama Kinara</string>
     <string name="number_not_filled">Nambari ya simu ya mteja haijajazwa</string>
 
-    <string name="mothermentor_contact_mother_mentor_investigation">Uchunguzi wa Ukoma</string>
-    <string name="mothermentor_source">Taarifa za mteja</string>
+    <string name="mothermentor_contact_mother_mentor_investigation">Uchunguzi wa Mama Kinara</string>
+    <string name="mothermentor_source">Aina ya mteja aliyeunganishwa</string>
     <string name="view_upcoming_services">Angalia huduma zijazo</string>
 
     <string name="mobilization_session_participants">Walioelimishwa: %s</string>
-    <string name="mobilization_condoms_issued">Kondomu zilizogaiwa: %s</string>
+    <string name="mobilization_condoms_issued">Kondomu zilizogawiwa: %s</string>
     <string name="mobilziation_session_date">Tarehe: %s</string>
 
-    <string name="mothermentor_session">Kifua Kikuu/Ukoma</string>
-    <string name="participants">Waliohamasishwa:</string>
+    <string name="mothermentor_session">Kipindi cha Mama Kinara</string>
+    <string name="participants">Washiriki:</string>
     <string name="date">Tarehe:</string>
-    <string name="issued_condoms">Kondomu zilizogaiwa:</string>
+    <string name="issued_condoms">Kondomu zilizogawiwa:</string>
 
-    <string name="mothermentor_sessions">Vipindi vya uhamasishaji wa Kifua Kikuu/Ukoma</string>
-    <string name="mothermentor_mobilization_session_details">Taarifa za shughuli</string>
+    <string name="mothermentor_sessions">Vipindi vya Mama Kinara</string>
+    <string name="mothermentor_mobilization_session_details">Taarifa za kipindi cha Mama Kinara</string>
     <string name="mothermentor_activity_date">Tarehe ya shughuli</string>
     <string name="mothermentor_activity_type">Aina ya shughuli</string>
     <string name="mothermentor_activity_type_other">Taja aina ya shughuli</string>
@@ -128,10 +129,16 @@
     <string name="no_record">Hakuna rekodi</string>
     <string name="mothermentor_mobilization">Uhamasishaji</string>
     <string name="mothermentor_contact">Kaya</string>
-    <string name="usajili_wa_contacts">Usaliji wa mhisiwa wa Kifua Kikuu/Ukoma</string>
+    <string name="usajili_wa_contacts">Usajili wa wateja waliounganishwa</string>
     <string name="mothermentor_issue_referral_action">Toa rufaa</string>
     <string name="mothermentor_pending_issuing_of_referral">Bado rufaa haijatolewa</string>
     <string name="mothermentor_issue_referral_toast">Toa rufaa</string>
+
+    <string name="hivst_kit_code">Msimbo wa huduma</string>
+    <string name="collectiondate">Tarehe ya ukusanyaji</string>
+    <string name="kit_for">Huduma kwa</string>
+    <string name="hivst_result">Matokeo ya huduma</string>
+    <string name="record_result">Rekodi matokeo</string>
 
     <string name="mothermentor_visit_member_unavailable">Mteja hakuweza kupatikana. Fungua wasifu tena na ujaribu upya.</string>
     <string name="mothermentor_referred_male">Wanaume waliopewa rufaa kwenda kituoni</string>
@@ -182,16 +189,16 @@
     <string name="mothermentor_answer_no">Hapana</string>
     <string name="mothermentor_child_eid_arrival_section">Amefika kituoni</string>
     <string name="mothermentor_child_eid_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
-    <string name="mothermentor_child_eid_test_type_section">Aina ya Kipimo</string>
+    <string name="mothermentor_child_eid_test_type_section">Aina ya kipimo</string>
     <string name="mothermentor_comments_section">Maoni</string>
     <string name="mothermentor_follow_up_status_section">Hali ya ufuatiliaji</string>
-    <string name="mothermentor_household_visit_kusudi_la_ziara">Kusudi la Ziara</string>
+    <string name="mothermentor_household_visit_kusudi_la_ziara">Kusudi la ziara</string>
     <string name="mothermentor_household_visit_mada_zilizofundishwa">Mada zilizofundishwa</string>
     <string name="mothermentor_household_visit_maoni">Maoni</string>
     <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Wanakaya waliopewa ushauri</string>
     <string name="mothermentor_interruption_reason_section">Sababu ya kukatisha huduma</string>
     <string name="mothermentor_partner_arrival_section">Amefika kituoni</string>
     <string name="mothermentor_partner_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
-    <string name="mothermentor_return_to_facility_section">Kurudi Kituoni</string>
+    <string name="mothermentor_return_to_facility_section">Kurudi kituoni</string>
 
 </resources>

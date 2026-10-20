@@ -14,8 +14,8 @@
     <string name="interpunct" translatable="false">\u00b7</string>
     <string name="record_mothermentor">Record Mother Mentor Visit</string>
     <string name="record_mothermentor_contact_visit">Record Mother Mentor Contact Visit</string>
-    <string name="record_mothermentor_client_followup_visit">Record Mother Mentor FollowUp Visit</string>
-    <string name="record_mothermentor_contact_visit_followup">Record Mother Mentor Contact Visit FollowUp</string>
+    <string name="record_mothermentor_client_followup_visit">Record Mother Mentor Follow-up Visit</string>
+    <string name="record_mothermentor_contact_visit_followup">Record Mother Mentor Contact Follow-up Visit</string>
     <string name="provide_contact_visit">Provide Contact Visit</string>
     <string name="manual_process_visit">Process Visit</string>
     <string name="continue_visit">Continue</string>
@@ -38,7 +38,7 @@
 
     <string name="optional">Optional</string>
     <string name="error_unable_save_visit">Unable to save visit</string>
-    <string name="return_to_previous_page">Return all Mother Mentor Clients</string>
+    <string name="return_to_previous_page">Return to all Mother Mentor Clients</string>
     <string name="last_visit_40_days_ago">Last visit %1$s ago</string>
     <string name="view_visit_history">View Visit history</string>
     <string name="mothermentor_family_member">Family Member</string>
@@ -65,7 +65,7 @@
     <string name="call_mothermentor_client">Mother Mentor Client</string>
     <string name="head_of_family">Head of family</string>
     <string name="mothermentor_client">Mother Mentor Client</string>
-    <string name="mothermentor_contraindication">Clear Contraindication first, to proceed with MC procedure</string>
+    <string name="mothermentor_contraindication">Address contraindications before continuing Mother Mentor services</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_phone_number">PhoneNumber copied to clipboard</string>
     <string name="call">Call</string>
@@ -81,7 +81,7 @@
     <string name="call_pnc_client">PNC Client</string>
     <string name="call_head_of_family">Call Head of Family</string>
     <string name="view_mothermentor_test_result">View Mother Mentor results</string>
-    <string name="mothermentor_positive">Mother Mentor positive</string>
+    <string name="mothermentor_positive">Positive result</string>
     <string name="anc_string">ANC</string>
     <string name="pnc_string">PNC</string>
     <string name="visit_done">Visit Done</string>
@@ -198,7 +198,7 @@
     <string name="mothermentor_household_visit_kusudi_la_ziara">Visit Purpose</string>
     <string name="mothermentor_household_visit_mada_zilizofundishwa">Topics Taught</string>
     <string name="mothermentor_household_visit_maoni">Comment</string>
-    <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Household received Counselling</string>
+    <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Household members counselled</string>
     <string name="mothermentor_interruption_reason_section">Reason for service interruption</string>
     <string name="mothermentor_partner_arrival_section">Arrived at the facility</string>
     <string name="mothermentor_partner_non_attendance_reason_section">Reason for not attending the facility</string>

@@ -4,6 +4,17 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Replace incorrect TB/leprosy references in Swahili Mother Mentor labels with
+  Mama Kinara terminology, while retaining the tuberculosis education topic.
+- Align Swahili visit, service history, caregiver, contact, and session labels
+  with their English counterparts and add the five missing service translations.
+- Correct English follow-up, navigation, contraindication, positive-result, and
+  household counselling labels, and avoid repeating the call action in Swahili.
+
 ## 0.1.3-SNAPSHOT — 2026-10-19
 
 ### Changed
