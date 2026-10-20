@@ -20,10 +20,10 @@
     <string name="optional">Si lazima</string>
     <string name="error_unable_save_visit">Imeshindwa kuhifadhi hudhurio hili</string>
     <string name="return_to_previous_page">Rudi kwenye orodha ya wateja wote wa Mama Kinara</string>
-    <string name="last_visit_40_days_ago">Hudhurio la mwisho ilifanyika %1$s zilizopita</string>
-    <string name="view_visit_history">Angalia historia ya mahudhurio</string>
+    <string name="last_visit_40_days_ago">Hudhurio la mwisho lilifanyika %1$s zilizopita</string>
+    <string name="view_visit_history">Angalia historia ya huduma</string>
     <string name="view_medical_history">Angalia historia ya huduma</string>
-    <string name="observation_results">Angalia historia ya mahudhurio</string>
+    <string name="observation_results">Angalia historia ya huduma</string>
     <string name="call_no_number_provided">(Hakuna namba iliyotolewa)</string>
     <string name="record_observation_results">Jaza matokeo ya Uchunguzi</string>
     <string name="record_mother_mentor_treatment_start_date">Rekodi tarehe ya kuanza huduma za Mama Kinara</string>
@@ -78,7 +78,7 @@
     <string name="mothermentor_visit_in_progress">Hudhurio inaendelea</string>
     <string name="mothermentor_service_visit_in_progress">Huduma za Mama Kinara zinaendelea</string>
     <string name="mothermentor_procedure_visit_in_progress">Utaratibu wa Mama Kinara unaendelea</string>
-    <string name="mothermentor_visit_conducted">Hudhurio la Mama Kinara imefanyika</string>
+    <string name="mothermentor_visit_conducted">Hudhurio la Mama Kinara limefanyika</string>
 
     <string name="mothermentor_profile">Wasifu wa Mama Kinara</string>
 
