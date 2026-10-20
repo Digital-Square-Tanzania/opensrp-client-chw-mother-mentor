@@ -5,6 +5,8 @@ import android.database.Cursor;
 import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
+import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.commonregistry.CommonPersonObject;
@@ -1117,6 +1119,88 @@ public class MotherMentorDao extends AbstractDao {
         return memberObject != null
                 ? memberObject
                 : getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT);
+    }
+
+    /**
+     * Includes locally saved services awaiting processing and services restored through sync.
+     * Enrollment and the separate IIT, partner, child and household visits are not service visits.
+     */
+    public static boolean hasMotherMentorServices(String baseEntityId) {
+        if (StringUtils.isBlank(baseEntityId)) return false;
+
+        String query =
+                "SELECT 1 FROM "
+                        + VisitRepository.VISIT_TABLE
+                        + " WHERE "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND "
+                        + DBConstants.KEY.VISIT_TYPE
+                        + " = ? LIMIT 1";
+        try (Cursor cursor =
+                MotherMentorLibrary.getInstance()
+                        .getRepository()
+                        .getReadableDatabase()
+                        .rawQuery(
+                                query,
+                                new String[] {
+                                    baseEntityId, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES
+                                })) {
+            return cursor.moveToFirst();
+        }
+    }
+
+    /**
+     * ART may have started before enrollment or during a later service visit. The visit being
+     * edited must not count as prior initiation.
+     */
+    public static boolean wasArtInitiatedBeforeVisit(String baseEntityId, String currentVisitId) {
+        if (StringUtils.isBlank(baseEntityId)) return false;
+
+        String query =
+                "SELECT 1 FROM "
+                        + Constants.TABLES.MOTHERMENTOR_ENROLLMENT
+                        + " WHERE "
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND (lower(trim("
+                        + DBConstants.KEY.ART_STATUS
+                        + ")) IN ('yes', 'ndiyo') OR lower(trim(ifnull("
+                        + DBConstants.KEY.ART_START_DATE
+                        + ", ''))) NOT IN ('', 'null'))"
+                        + " UNION ALL SELECT 1 FROM "
+                        + VisitRepository.VISIT_TABLE
+                        + " v INNER JOIN "
+                        + VisitDetailsRepository.VISIT_DETAILS_TABLE
+                        + " d ON d."
+                        + DBConstants.KEY.VISIT_ID
+                        + " = v."
+                        + DBConstants.KEY.VISIT_ID
+                        + " WHERE v."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND v."
+                        + DBConstants.KEY.VISIT_TYPE
+                        + " = ? AND d."
+                        + DBConstants.KEY.VISIT_KEY
+                        + " = ? AND lower(trim(d."
+                        + DBConstants.KEY.DETAILS
+                        + ")) IN ('yes', 'ndiyo') AND (? = '' OR v."
+                        + DBConstants.KEY.VISIT_ID
+                        + " <> ?) LIMIT 1";
+        try (Cursor cursor =
+                MotherMentorLibrary.getInstance()
+                        .getRepository()
+                        .getReadableDatabase()
+                        .rawQuery(
+                                query,
+                                new String[] {
+                                    baseEntityId,
+                                    baseEntityId,
+                                    Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES,
+                                    DBConstants.KEY.NEW_PMTCT_ART_INITIATION,
+                                    StringUtils.defaultString(currentVisitId),
+                                    StringUtils.defaultString(currentVisitId)
+                                })) {
+            return cursor.moveToFirst();
+        }
     }
 
     /** Visit participants can belong to any Mother Mentor enrollment register. */
