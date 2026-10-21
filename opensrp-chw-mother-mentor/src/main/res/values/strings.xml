@@ -27,6 +27,7 @@
     <string name="mothermentor_visit_conducted">Mother Mentor Visit Conducted</string>
 
     <string name="mothermentor_profile">Mother Mentor Profile</string>
+    <string name="mothermentor_profile_ctc_number">CTC ID: %1$s</string>
 
     <string name="mothermentor_followup_visit">Follow Up Visit</string>
 

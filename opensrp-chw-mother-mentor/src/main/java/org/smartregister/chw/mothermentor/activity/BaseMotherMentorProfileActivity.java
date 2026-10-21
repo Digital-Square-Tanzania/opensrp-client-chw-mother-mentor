@@ -59,6 +59,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
     protected TextView textViewGender;
     protected TextView textViewLocation;
     protected TextView textViewUniqueID;
+    protected TextView textViewCtcNumber;
     protected TextView textViewRecordMotherMentor;
     protected TextView textViewRecordTbContactVisit;
     protected TextView textViewRecordMotherMentorTreatmentStartDate;
@@ -130,6 +131,7 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         textViewGender = findViewById(R.id.textview_gender);
         textViewLocation = findViewById(R.id.textview_address);
         textViewUniqueID = findViewById(R.id.textview_id);
+        textViewCtcNumber = findViewById(R.id.textview_ctc_number);
         view_last_visit_row = findViewById(R.id.view_last_visit_row);
         view_most_due_overdue_row = findViewById(R.id.view_most_due_overdue_row);
         view_family_row = findViewById(R.id.view_family_row);
@@ -351,6 +353,13 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
                 MotherMentorUtil.getGenderTranslated(this, memberObject.getGender()));
         textViewLocation.setText(memberObject.getAddress());
         textViewUniqueID.setText(memberObject.getUniqueId());
+        String ctcNumber = memberObject.getCtcNumber();
+        textViewCtcNumber.setText(
+                StringUtils.isNotBlank(ctcNumber)
+                        ? getString(R.string.mothermentor_profile_ctc_number, ctcNumber)
+                        : "");
+        textViewCtcNumber.setVisibility(
+                StringUtils.isNotBlank(ctcNumber) ? View.VISIBLE : View.GONE);
 
         if (StringUtils.isNotBlank(memberObject.getPrimaryCareGiver())
                 && memberObject.getPrimaryCareGiver().equals(memberObject.getBaseEntityId())) {

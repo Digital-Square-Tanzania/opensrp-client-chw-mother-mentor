@@ -4,6 +4,13 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Display the recorded enrollment CTC ID in the client profile in English and
+  Swahili, and hide the CTC row when no number is recorded.
+
 ## 0.1.5-SNAPSHOT — 2026-10-20
 
 ### Fixed

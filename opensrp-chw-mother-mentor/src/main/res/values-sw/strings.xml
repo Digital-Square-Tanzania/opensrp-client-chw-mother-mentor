@@ -81,6 +81,7 @@
     <string name="mothermentor_visit_conducted">Hudhurio la Mama Kinara limefanyika</string>
 
     <string name="mothermentor_profile">Wasifu wa Mama Kinara</string>
+    <string name="mothermentor_profile_ctc_number">Namba ya CTC: %1$s</string>
 
     <string name="mothermentor_contraindication">Shughulikia vizuizi kabla ya kuendelea na huduma za Mama Kinara</string>
     <string name="no_phone_number">Hakuna nambari ya simu</string>
