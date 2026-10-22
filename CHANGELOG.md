@@ -7,8 +7,15 @@ Android version code.
 ## Unreleased
 
 ### Fixed
+- Keep the linked mother's name and CTC number read-only in partner details and
+  the mother's name read-only in Child EID details in English and Swahili. These
+  display-only fields no longer require manual entry when legacy data is missing.
+
 - Display the recorded enrollment CTC ID in the client profile in English and
   Swahili, and hide the CTC row when no number is recorded.
+
+- Remove “Lost to follow-up” / “Amepotea” from the attendance form's follow-up
+  status choices in English and Swahili.
 
 - Separate pregnancy and breastfeeding questions during Mother Mentor enrollment
   in English and Swahili. Ask breastfeeding status only for mothers who are not
@@ -17,6 +24,13 @@ Android version code.
 - Allow partner enrollment to continue without a CTC number when the partner is
   enrolled in CTC services, while retaining format validation for entered numbers
   in English and Swahili.
+
+- Rename the community activity form to “Community activities” in English and
+  “Shughuli za Kijamii” in Swahili.
+
+- Remove the redundant relationship-to-mother questions from partner enrollment
+  in English and Swahili, retaining mother linkage and the HIV questions.
+- Show the last HIV result only when prior testing is reported in both languages.
 
 
 ## 0.1.5-SNAPSHOT — 2026-10-20
