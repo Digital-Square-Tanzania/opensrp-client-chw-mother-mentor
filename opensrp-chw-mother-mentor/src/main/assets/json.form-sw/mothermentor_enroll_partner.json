@@ -399,10 +399,6 @@
           "is_fixed_size": "true",
           "err": "Tafadhali ingiza namba sahihi ya CTC"
         },
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali ingiza namba sahihi ya CTC"
-        },
         "relevance": {
           "step4:on_ctc": {
             "type": "string",

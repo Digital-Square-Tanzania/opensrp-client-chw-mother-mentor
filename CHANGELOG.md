@@ -14,6 +14,10 @@ Android version code.
   in English and Swahili. Ask breastfeeding status only for mothers who are not
   pregnant, while retaining the existing stored status codes for service visits.
 
+- Allow partner enrollment to continue without a CTC number when the partner is
+  enrolled in CTC services, while retaining format validation for entered numbers
+  in English and Swahili.
+
 
 ## 0.1.5-SNAPSHOT — 2026-10-20
 

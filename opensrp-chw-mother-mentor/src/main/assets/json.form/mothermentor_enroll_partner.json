@@ -405,10 +405,6 @@
           "is_fixed_size": "true",
           "err": "Please enter a valid CTC number"
         },
-        "v_required": {
-          "value": true,
-          "err": "Please enter a valid CTC number"
-        },
         "relevance": {
           "step4:on_ctc": {
             "type": "string",
