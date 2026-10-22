@@ -4,6 +4,14 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Separate pregnancy and breastfeeding questions during Mother Mentor enrollment
+  in English and Swahili. Ask breastfeeding status only for mothers who are not
+  pregnant, while retaining the existing stored status codes for service visits.
+
 ## 0.1.5-SNAPSHOT — 2026-10-20
 
 ### Fixed
