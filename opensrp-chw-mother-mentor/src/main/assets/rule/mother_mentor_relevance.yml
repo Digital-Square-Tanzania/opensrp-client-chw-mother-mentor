@@ -13,10 +13,17 @@ condition: "step2_art_status.equalsIgnoreCase('No')"
 actions:
   - "isRelevant = true"
 ---
+name: step3_breastfeeding_status
+description: Ask breastfeeding status only when the mother is not pregnant
+priority: 1
+condition: "step3_pregnancy_status_selection.equalsIgnoreCase('not_pregnant')"
+actions:
+  - "isRelevant = true"
+---
 name: step3_child_dob
 description: mother mentor relevance
 priority: 1
-condition: "step3_pregnancy_status.equalsIgnoreCase('not_pregnant')"
+condition: "step3_pregnancy_status_selection.equalsIgnoreCase('not_pregnant')"
 actions:
   - "isRelevant = true"
 ---

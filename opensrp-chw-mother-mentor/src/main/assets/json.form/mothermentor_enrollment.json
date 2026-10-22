@@ -199,10 +199,10 @@
     "title": "Pregnancy status",
     "fields": [
       {
-        "key": "pregnancy_status",
+        "key": "pregnancy_status_selection",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "pregnancy_status",
+        "openmrs_entity_id": "pregnancy_status_selection",
         "label": "Pregnancy status",
         "text_color": "#000000",
         "type": "native_radio",
@@ -215,13 +215,6 @@
             "openmrs_entity_id": "pregnant"
           },
           {
-            "key": "breast_feeding",
-            "text": "Breastfeeding",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "breast_feeding"
-          },
-          {
             "key": "not_pregnant",
             "text": "Not pregnant",
             "openmrs_entity_parent": "",
@@ -232,6 +225,56 @@
         "v_required": {
           "value": "true",
           "err": "Please select an answer"
+        }
+      },
+      {
+        "key": "breastfeeding_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "breastfeeding_status",
+        "label": "Breastfeeding status",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "breast_feeding",
+            "text": "Breastfeeding",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breast_feeding"
+          },
+          {
+            "key": "not_breast_feeding",
+            "text": "Not breastfeeding",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_breast_feeding"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mother_mentor_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "pregnancy_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "pregnancy_status",
+        "type": "hidden",
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_enrollment_calculation.yml"
+            }
+          }
         }
       },
       {

@@ -8,6 +8,9 @@ Android version code.
 
 ### Fixed
 
+- Separate pregnancy and breastfeeding questions during Mother Mentor enrollment
+  in English and Swahili. Ask breastfeeding status only for mothers who are not
+  pregnant, while retaining the existing stored status codes for service visits.
 - Remove the redundant relationship-to-mother questions from partner enrollment
   in English and Swahili, retaining mother linkage and the HIV questions.
 - Show the last HIV result only when prior testing is reported in both languages.
