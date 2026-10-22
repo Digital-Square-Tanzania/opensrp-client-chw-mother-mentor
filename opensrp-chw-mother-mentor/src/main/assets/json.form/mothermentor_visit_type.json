@@ -97,13 +97,6 @@
             "openmrs_entity_id": "continuing_services"
           },
           {
-            "key": "lost_to_follow_up",
-            "text": "Lost to follow-up",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "lost_to_follow_up"
-          },
-          {
             "key": "deceased",
             "text": "Deceased",
             "openmrs_entity_parent": "",
