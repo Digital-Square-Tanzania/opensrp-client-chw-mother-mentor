@@ -13,6 +13,8 @@ Android version code.
 - Separate pregnancy and breastfeeding questions during Mother Mentor enrollment
   in English and Swahili. Ask breastfeeding status only for mothers who are not
   pregnant, while retaining the existing stored status codes for service visits.
+- Rename the community activity form to “Community activities” in English and
+  “Shughuli za Kijamii” in Swahili.
 
 
 ## 0.1.5-SNAPSHOT — 2026-10-20
