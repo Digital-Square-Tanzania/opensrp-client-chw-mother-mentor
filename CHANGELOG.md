@@ -7,10 +7,13 @@ Android version code.
 ## Unreleased
 
 ### Fixed
+- Display the recorded enrollment CTC ID in the client profile in English and
+  Swahili, and hide the CTC row when no number is recorded.
 
 - Separate pregnancy and breastfeeding questions during Mother Mentor enrollment
   in English and Swahili. Ask breastfeeding status only for mothers who are not
   pregnant, while retaining the existing stored status codes for service visits.
+
 
 ## 0.1.5-SNAPSHOT — 2026-10-20
 

@@ -18,6 +18,7 @@ public class MemberObject implements Serializable {
     private String gender;
     private String martialStatus;
     private String uniqueId;
+    private String ctcNumber;
     private String age;
     private String dob;
     private String relationalid;
@@ -123,6 +124,14 @@ public class MemberObject implements Serializable {
 
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
+    }
+
+    public String getCtcNumber() {
+        return ctcNumber;
+    }
+
+    public void setCtcNumber(String ctcNumber) {
+        this.ctcNumber = ctcNumber;
     }
 
     public String getRelationalid() {

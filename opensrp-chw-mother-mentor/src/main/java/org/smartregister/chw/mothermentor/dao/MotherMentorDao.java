@@ -44,6 +44,7 @@ public class MotherMentorDao extends AbstractDao {
                 memberObject.setMartialStatus(
                         getCursorValue(cursor, DBConstants.KEY.MARITAL_STATUS));
                 memberObject.setUniqueId(getCursorValue(cursor, DBConstants.KEY.UNIQUE_ID, ""));
+                memberObject.setCtcNumber(getCursorValue(cursor, DBConstants.KEY.CTC_NUMBER, ""));
                 memberObject.setDob(getCursorValue(cursor, DBConstants.KEY.DOB));
                 memberObject.setFamilyBaseEntityId(
                         getCursorValue(cursor, DBConstants.KEY.FAMILY_BASE_ENTITY_ID, ""));
