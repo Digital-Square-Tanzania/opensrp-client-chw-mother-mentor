@@ -4,6 +4,14 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Remove the redundant relationship-to-mother questions from partner enrollment
+  in English and Swahili, retaining mother linkage and the HIV questions.
+- Show the last HIV result only when prior testing is reported in both languages.
+
 ## 0.1.5-SNAPSHOT — 2026-10-20
 
 ### Fixed
