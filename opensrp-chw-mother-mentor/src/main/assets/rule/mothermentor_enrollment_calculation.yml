@@ -5,3 +5,10 @@ priority: 1
 condition: "true"
 actions:
   - "calculation = helper.getDateToday()"
+---
+name: step3_pregnancy_status
+description: Preserve the enrollment status codes used by existing service visits
+priority: 1
+condition: "true"
+actions:
+  - "calculation = step3_pregnancy_status_selection == 'pregnant' ? 'pregnant' : (step3_pregnancy_status_selection == 'not_pregnant' ? (step3_breastfeeding_status == 'breast_feeding' ? 'breast_feeding' : (step3_breastfeeding_status == 'not_breast_feeding' ? 'not_pregnant' : '')) : '')"
