@@ -150,14 +150,11 @@
         "hint": "Mother's name",
         "text_color": "#000000",
         "type": "edit_text",
-        "v_required": {
-          "value": "true",
-          "err": "Please enter the mother's name"
-        },
         "v_regex": {
           "value": "[A-Za-z\\u00C0-\\u017F\\s\\u00C0-\\u017F\\.\\-\\']*",
           "err": "Please enter a valid name"
-        }
+        },
+        "read_only": true
       },
       {
         "key": "mother_ctc_number",
@@ -179,10 +176,7 @@
           "is_fixed_size": "true",
           "err": "Please enter a valid CTC number"
         },
-        "v_required": {
-          "value": true,
-          "err": "Please enter a valid CTC number"
-        }
+        "read_only": true
       }
     ]
   },

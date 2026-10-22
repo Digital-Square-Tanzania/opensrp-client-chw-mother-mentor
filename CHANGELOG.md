@@ -7,6 +7,10 @@ Android version code.
 ## Unreleased
 
 ### Fixed
+- Keep the linked mother's name and CTC number read-only in partner details and
+  the mother's name read-only in Child EID details in English and Swahili. These
+  display-only fields no longer require manual entry when legacy data is missing.
+
 - Display the recorded enrollment CTC ID in the client profile in English and
   Swahili, and hide the CTC row when no number is recorded.
 
