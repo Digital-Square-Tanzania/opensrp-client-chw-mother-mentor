@@ -1,5 +1,5 @@
 {
-  "count": "4",
+  "count": "3",
   "skip_blank_steps": true,
   "encounter_type": "Mother Mentor Enroll Partner",
   "entity_id": "",
@@ -187,63 +187,8 @@
     ]
   },
   "step2": {
-    "title": "Relationship",
-    "next": "step3",
-    "fields": [
-      {
-        "key": "relationship_to_mother",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "relationship_to_mother",
-        "type": "native_radio",
-        "label": "Relationship to mother",
-        "options": [
-          {
-            "key": "husband_or_partner",
-            "text": "Husband/partner",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "husband_or_partner"
-          },
-          {
-            "key": "father_to_children",
-            "text": "Father to children",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "father_to_children"
-          },
-          {
-            "key": "other",
-            "text": "Other",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "other"
-          }
-        ],
-        "v_required": {
-          "value": true,
-          "err": "Please fill"
-        }
-      },
-      {
-        "key": "other_relationship",
-        "type": "edit_text",
-        "hint": "Specify",
-        "openmrs_entity_id": "other_relationship",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "relevance": {
-          "step2:relationship_to_mother": {
-            "type": "string",
-            "ex": "equalTo(., \"other\")"
-          }
-        }
-      }
-    ]
-  },
-  "step3": {
     "title": "Disclosure status",
-    "next": "step4",
+    "next": "step3",
     "fields": [
       {
         "key": "hiv_disclosure",
@@ -276,7 +221,7 @@
       }
     ]
   },
-  "step4": {
+  "step3": {
     "title": "HIV test history",
     "fields": [
       {
@@ -344,7 +289,7 @@
           "err": "Please select an answer"
         },
         "relevance": {
-          "step4:hiv_tested": {
+          "step3:hiv_tested": {
             "type": "string",
             "ex": "equalTo(., \"yes\")"
           }
@@ -379,7 +324,7 @@
           "err": "Please select an answer"
         },
         "relevance": {
-          "step4:test_result": {
+          "step3:test_result": {
             "type": "string",
             "ex": "equalTo(., \"positive\")"
           }
@@ -410,7 +355,7 @@
           "err": "Please enter a valid CTC number"
         },
         "relevance": {
-          "step4:on_ctc": {
+          "step3:on_ctc": {
             "type": "string",
             "ex": "equalTo(., \"yes\")"
           }

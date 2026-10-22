@@ -1,5 +1,5 @@
 {
-  "count": "4",
+  "count": "3",
   "skip_blank_steps": true,
   "encounter_type": "Mother Mentor Enroll Partner",
   "entity_id": "",
@@ -187,63 +187,8 @@
     ]
   },
   "step2": {
-    "title": "Uhusiano",
-    "next": "step3",
-    "fields": [
-      {
-        "key": "relationship_to_mother",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "relationship_to_mother",
-        "type": "native_radio",
-        "label": "Uhusiano na mama",
-        "options": [
-          {
-            "key": "husband_or_partner",
-            "text": "Mume / mwenza",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "husband_or_partner"
-          },
-          {
-            "key": "father_to_children",
-            "text": "Baba wa mtoto (sio mwenza sasa)",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "father_to_children"
-          },
-          {
-            "key": "other",
-            "text": "Mwingine (taja)",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "other"
-          }
-        ],
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali jaza taarifa"
-        }
-      },
-      {
-        "key": "other_relationship",
-        "type": "edit_text",
-        "hint": "Taja uhusiano",
-        "openmrs_entity_id": "other_relationship",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "relevance": {
-          "step2:relationship_to_mother": {
-            "type": "string",
-            "ex": "equalTo(., \"other\")"
-          }
-        }
-      }
-    ]
-  },
-  "step3": {
     "title": "Hali ya kuweka wazi hali ya VVU",
-    "next": "step4",
+    "next": "step3",
     "fields": [
       {
         "key": "hiv_disclosure",
@@ -276,7 +221,7 @@
       }
     ]
   },
-  "step4": {
+  "step3": {
     "title": "Historia ya upimaji wa VVU",
     "fields": [
       {
@@ -342,6 +287,12 @@
         "v_required": {
           "value": "true",
           "err": "Tafadhali chagua jibu"
+        },
+        "relevance": {
+          "step3:hiv_tested": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
         }
       },
       {
@@ -373,7 +324,7 @@
           "err": "Tafadhali chagua jibu"
         },
         "relevance": {
-          "step4:test_result": {
+          "step3:test_result": {
             "type": "string",
             "ex": "equalTo(., \"positive\")"
           }
@@ -404,7 +355,7 @@
           "err": "Tafadhali ingiza namba sahihi ya CTC"
         },
         "relevance": {
-          "step4:on_ctc": {
+          "step3:on_ctc": {
             "type": "string",
             "ex": "equalTo(., \"yes\")"
           }

@@ -97,13 +97,6 @@
             "openmrs_entity_id": "continuing_services"
           },
           {
-            "key": "lost_to_follow_up",
-            "text": "Amepotea",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "lost_to_follow_up"
-          },
-          {
             "key": "deceased",
             "text": "Amefariki",
             "openmrs_entity_parent": "",
