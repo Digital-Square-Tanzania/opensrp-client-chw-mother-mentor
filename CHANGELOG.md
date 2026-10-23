@@ -6,6 +6,19 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.6-SNAPSHOT — 2026-10-23
+
+### Added
+
+- Add a primary-client register DAO for current pregnancy/breastfeeding status,
+  completed Mother Mentor service-visit totals, name/CTC search, category filters,
+  and deterministic pagination. Latest valid clinical service status falls back
+  to enrollment when unavailable; drafts and other service types are excluded.
+
+### Changed
+
+- Increment the library version code to 7 and version name to `0.1.6-SNAPSHOT`.
+
 ### Fixed
 - Keep the linked mother's name and CTC number read-only in partner details and
   the mother's name read-only in Child EID details in English and Swahili. These
