@@ -12,7 +12,7 @@ export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
 ./gradlew :opensrp-chw-mother-mentor:publishToMavenLocal
 ```
 
-The local library coordinate is `org.smartregister:opensrp-chw-mother-mentor:0.1.5-SNAPSHOT`.
+The local library coordinate is `org.smartregister:opensrp-chw-mother-mentor:0.1.6-SNAPSHOT`.
 The publication task also builds the release AAR when invoked on its own.
 
 ## Visit action helpers

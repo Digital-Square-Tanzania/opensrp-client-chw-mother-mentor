@@ -7,6 +7,8 @@ public final class DBConstants {
     public static final class KEY {
         private KEY() {}
 
+        public static final String MOTHERMENTOR_CURRENT_STATUS = "mothermentor_current_status";
+        public static final String MOTHERMENTOR_COMPLETED_VISITS = "mothermentor_completed_visits";
         public static final String FIRST_NAME = "first_name";
         public static final String MIDDLE_NAME = "middle_name";
         public static final String LAST_NAME = "last_name";
