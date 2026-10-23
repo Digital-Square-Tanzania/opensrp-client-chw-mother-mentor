@@ -193,6 +193,12 @@
     <string name="mothermentor_child_eid_test_type_section">Aina ya kipimo</string>
     <string name="mothermentor_comments_section">Maoni</string>
     <string name="mothermentor_follow_up_status_section">Hali ya ufuatiliaji</string>
+    <string name="mothermentor_visit_type_section">Aina ya hudhurio</string>
+    <string name="mothermentor_group_linkage_section">Uunganishaji wa vikundi</string>
+    <string name="mothermentor_education_provided_section">Elimu iliyotolewa</string>
+    <string name="mothermentor_referral_provided_section">Rufaa iliyotolewa</string>
+    <string name="mothermentor_next_visit_date_section">Tarehe ya tembeleo lijalo</string>
+    <string name="mothermentor_comment_section">Maoni</string>
     <string name="mothermentor_household_visit_kusudi_la_ziara">Kusudi la hudhurio</string>
     <string name="mothermentor_household_visit_mada_zilizofundishwa">Mada zilizofundishwa</string>
     <string name="mothermentor_household_visit_maoni">Maoni</string>

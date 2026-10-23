@@ -196,6 +196,12 @@
     <string name="mothermentor_child_eid_test_type_section">Test type</string>
     <string name="mothermentor_comments_section">Comments</string>
     <string name="mothermentor_follow_up_status_section">Follow-up status</string>
+    <string name="mothermentor_visit_type_section">Visit Type</string>
+    <string name="mothermentor_group_linkage_section">Group Linkage</string>
+    <string name="mothermentor_education_provided_section">Education Provided</string>
+    <string name="mothermentor_referral_provided_section">Referral Provided</string>
+    <string name="mothermentor_next_visit_date_section">Next Visit Date</string>
+    <string name="mothermentor_comment_section">Comment</string>
     <string name="mothermentor_household_visit_kusudi_la_ziara">Visit Purpose</string>
     <string name="mothermentor_household_visit_mada_zilizofundishwa">Topics Taught</string>
     <string name="mothermentor_household_visit_maoni">Comment</string>
