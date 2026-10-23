@@ -13,7 +13,7 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="24dp"
         android:orientation="vertical"
-        android:visibility="invisible">
+        android:visibility="gone">
 
         <RelativeLayout
             android:id="@+id/call_layout"
@@ -65,6 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:contentDescription="@string/call"
                 app:backgroundTint="@color/white"
                 app:fabSize="mini"
                 app:srcCompat="@drawable/floating_call" />
@@ -91,7 +92,7 @@
                 android:gravity="center"
                 android:minWidth="50dp"
                 android:padding="10dp"
-                android:text="refer"
+                android:text="@string/refer_to_facility"
                 android:textColor="@android:color/black" />
 
 
@@ -100,8 +101,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:contentDescription="@string/refer_to_facility"
                 app:backgroundTint="@color/white"
-                app:fabSize="mini" />
+                app:fabSize="mini"
+                app:srcCompat="@mipmap/ic_mothermentor_refer" />
 
         </RelativeLayout>
 
@@ -116,6 +119,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:clickable="true"
+        android:contentDescription="@string/mothermentor_profile_actions"
         android:tint="@android:color/white"
         app:backgroundTint="@color/text_black"
         app:fabSize="normal"
