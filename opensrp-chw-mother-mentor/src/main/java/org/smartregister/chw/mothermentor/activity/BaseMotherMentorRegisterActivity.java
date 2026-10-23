@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.MenuRes;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.LabelVisibilityMode;
@@ -122,6 +123,10 @@ public class BaseMotherMentorRegisterActivity extends BaseRegisterActivity imple
         bottomNavigationView = findViewById(org.smartregister.R.id.bottom_navigation);
 
         if (bottomNavigationView != null) {
+            bottomNavigationView.setItemIconSize(getResources().getDimensionPixelSize(
+                    R.dimen.mothermentor_bottom_navigation_icon_size));
+            bottomNavigationView.setItemIconTintList(ContextCompat.getColorStateList(
+                    this, R.color.mothermentor_bottom_navigation_icon_tint));
             bottomNavigationView.setLabelVisibilityMode(LabelVisibilityMode.LABEL_VISIBILITY_LABELED);
             bottomNavigationView.getMenu().removeItem(org.smartregister.R.id.action_clients);
             bottomNavigationView.getMenu().removeItem(R.id.action_register);

@@ -4,21 +4,21 @@
     <item
         android:id="@+id/action_home"
         android:enabled="true"
-        android:icon="@mipmap/ic_home"
+        android:icon="@drawable/ic_mothermentor_nav_clients"
         android:title="@string/home"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_contact"
         android:enabled="true"
-        android:icon="@mipmap/ic_home"
+        android:icon="@drawable/ic_mothermentor_nav_households"
         android:title="@string/mothermentor_contact"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_mobilization"
         android:enabled="true"
-        android:icon="@mipmap/ic_jobaids"
+        android:icon="@drawable/ic_mothermentor_nav_mobilization"
         android:title="@string/mothermentor_mobilization"
         app:showAsAction="ifRoom" />
 

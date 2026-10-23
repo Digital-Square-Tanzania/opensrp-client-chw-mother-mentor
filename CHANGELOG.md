@@ -14,6 +14,8 @@ Android version code.
   completed Mother Mentor service-visit totals, name/CTC search, category filters,
   and deterministic pagination. Latest valid clinical service status falls back
   to enrollment when unavailable; drafts and other service types are excluded.
+- Add 22dp Mama Kinara bottom-navigation icons matching the supplied mock for clients,
+  households, follow-up, and community activities.
 
 ### Changed
 
