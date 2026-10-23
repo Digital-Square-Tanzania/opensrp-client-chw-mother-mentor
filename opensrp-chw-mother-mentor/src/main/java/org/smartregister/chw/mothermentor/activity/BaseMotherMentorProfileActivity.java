@@ -304,15 +304,17 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         if (memberObject == null) {
             return;
         }
-        if (StringUtils.isNotBlank(memberObject.getPhoneNumber())) {
-            baseMotherMentorFloatingMenu = new BaseMotherMentorFloatingMenu(this, memberObject);
-            baseMotherMentorFloatingMenu.setGravity(Gravity.BOTTOM | Gravity.RIGHT);
-            LinearLayout.LayoutParams linearLayoutParams =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            addContentView(baseMotherMentorFloatingMenu, linearLayoutParams);
+        if (baseMotherMentorFloatingMenu != null) {
+            baseMotherMentorFloatingMenu.setMemberObject(memberObject);
+            return;
         }
+        baseMotherMentorFloatingMenu = new BaseMotherMentorFloatingMenu(this, memberObject);
+        baseMotherMentorFloatingMenu.setGravity(Gravity.BOTTOM | Gravity.END);
+        LinearLayout.LayoutParams linearLayoutParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        addContentView(baseMotherMentorFloatingMenu, linearLayoutParams);
     }
 
     protected void handleMissingMemberObject(@Nullable String baseEntityId) {

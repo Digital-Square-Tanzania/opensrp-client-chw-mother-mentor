@@ -8,6 +8,9 @@ Android version code.
 
 ### Fixed
 
+- Keep the profile pencil available for referrals even without a phone number.
+  Open the call/referral menu, disable calling when no number is recorded, and
+  reuse the menu with current member details across refreshes (CHW issue #1052).
 - Translate the six Mother Mentor service-visit action headings into Swahili
   while retaining the English labels. Keep attendance-based action visibility
   working with localized headings (CHW issue #1048).

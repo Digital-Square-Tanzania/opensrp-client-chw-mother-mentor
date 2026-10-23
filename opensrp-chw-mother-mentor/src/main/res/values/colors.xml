@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="mothermentor_profile_menu_scrim">#80000000</color>
     <color name="primary">#218CC5</color>
     <color name="primaryDark">#0d384e</color>
     <color name="accent">#3797ca</color>
