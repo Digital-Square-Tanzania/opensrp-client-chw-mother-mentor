@@ -3,6 +3,8 @@ package org.smartregister.chw.mothermentor.dao;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 
 import android.app.Application;
 import android.content.ContentValues;
@@ -16,6 +18,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.commonregistry.CommonPersonObject;
+import org.smartregister.commonregistry.CommonRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,26 +49,26 @@ public class MotherMentorClientRegisterDaoTest {
         database = SQLiteDatabase.create(null);
         database.execSQL(
                 "CREATE TABLE ec_mothermentor_enrollment (id INTEGER PRIMARY KEY, base_entity_id"
-                    + " TEXT, is_closed INTEGER DEFAULT 0, status TEXT, screening_status TEXT,"
-                    + " ctc_number TEXT, pregnancy_status TEXT, child_dob TEXT,"
-                    + " last_interacted_with INTEGER DEFAULT 0)");
+                        + " TEXT, is_closed INTEGER DEFAULT 0, status TEXT, screening_status TEXT,"
+                        + " ctc_number TEXT, pregnancy_status TEXT, child_dob TEXT,"
+                        + " last_interacted_with INTEGER DEFAULT 0)");
         database.execSQL(
                 "CREATE TABLE ec_family_member (base_entity_id TEXT, relational_id TEXT, first_name"
                     + " TEXT, middle_name TEXT, last_name TEXT, dob TEXT, gender TEXT, unique_id"
                     + " TEXT, phone_number TEXT, other_phone_number TEXT)");
         database.execSQL(
                 "CREATE TABLE ec_family (base_entity_id TEXT, primary_caregiver TEXT, family_head"
-                    + " TEXT, first_name TEXT, village_town TEXT)");
+                        + " TEXT, first_name TEXT, village_town TEXT)");
         database.execSQL(
                 "CREATE TABLE visits (visit_id TEXT, base_entity_id TEXT, visit_type TEXT,"
-                    + " processed INTEGER, visit_date INTEGER, updated_at INTEGER, created_at"
-                    + " INTEGER)");
+                        + " processed INTEGER, visit_date INTEGER, updated_at INTEGER, created_at"
+                        + " INTEGER)");
         database.execSQL(
                 "CREATE TABLE visit_details (visit_details_id TEXT, visit_id TEXT, visit_key TEXT,"
-                    + " details TEXT, updated_at INTEGER)");
+                        + " details TEXT, updated_at INTEGER)");
         database.execSQL(
                 "INSERT INTO ec_family VALUES ('household', 'caregiver', 'head', 'Family',"
-                    + " 'Village')");
+                        + " 'Village')");
     }
 
     @After
@@ -93,6 +97,53 @@ public class MotherMentorClientRegisterDaoTest {
             assertNull(string(rows, DBConstants.KEY.RELATIONAL_ID));
             assertNull(string(rows, DBConstants.KEY.VILLAGE_TOWN));
             assertEquals("female", string(rows, DBConstants.KEY.GENDER));
+        }
+    }
+
+    @Test
+    public void projectedRowsSupportTheRealCommonRepositoryAdapterReader() {
+        client("family-client", "Asha", "pregnant", "12-34-1234-123456", "household");
+        client("independent", "Rehema", "breast_feeding", "12-34-1234-654321", null);
+        // Avoid unrelated repository initialization; execute the actual cursor mapping methods.
+        CommonRepository repository = mock(CommonRepository.class, CALLS_REAL_METHODS);
+        repository.TABLE_NAME = TABLE;
+
+        try (Cursor rows =
+                database.rawQuery(
+                        select("", false, false, false, false) + " ORDER BY first_name", null)) {
+            rows.moveToFirst();
+            CommonPersonObject householdClient = repository.readAllcommonforCursorAdapter(rows);
+            assertEquals(
+                    rows.getString(rows.getColumnIndexOrThrow("_id")), householdClient.getCaseId());
+            assertEquals("household", householdClient.getRelationalId());
+            assertEquals(
+                    "family-client",
+                    householdClient.getColumnmaps().get(DBConstants.KEY.BASE_ENTITY_ID));
+            assertEquals(
+                    "household",
+                    householdClient.getColumnmaps().get(DBConstants.KEY.RELATIONAL_ID));
+            assertEquals(
+                    "household", householdClient.getColumnmaps().get(DBConstants.KEY.RELATIONALID));
+            assertEquals(
+                    "12-34-1234-123456",
+                    householdClient.getColumnmaps().get(DBConstants.KEY.CTC_NUMBER));
+            assertEquals(
+                    "pregnant",
+                    householdClient
+                            .getColumnmaps()
+                            .get(DBConstants.KEY.MOTHERMENTOR_CURRENT_STATUS));
+
+            rows.moveToNext();
+            CommonPersonObject independentClient = repository.readAllcommonforCursorAdapter(rows);
+            assertEquals(
+                    rows.getString(rows.getColumnIndexOrThrow("_id")),
+                    independentClient.getCaseId());
+            assertEquals(
+                    "independent",
+                    independentClient.getColumnmaps().get(DBConstants.KEY.BASE_ENTITY_ID));
+            assertNull(independentClient.getRelationalId());
+            assertNull(independentClient.getColumnmaps().get(DBConstants.KEY.RELATIONAL_ID));
+            assertNull(independentClient.getColumnmaps().get(DBConstants.KEY.RELATIONALID));
         }
     }
 
@@ -225,13 +276,13 @@ public class MotherMentorClientRegisterDaoTest {
         client("screened-out", "Screened", "pregnant", "4", "household");
         database.execSQL(
                 "UPDATE ec_mothermentor_enrollment SET is_closed = 1 WHERE base_entity_id ="
-                    + " 'closed'");
+                        + " 'closed'");
         database.execSQL(
                 "UPDATE ec_mothermentor_enrollment SET status = 'contact' WHERE base_entity_id ="
-                    + " 'nonclient'");
+                        + " 'nonclient'");
         database.execSQL(
                 "UPDATE ec_mothermentor_enrollment SET screening_status = '-' WHERE base_entity_id"
-                    + " = 'screened-out'");
+                        + " = 'screened-out'");
 
         assertIdsAndCount("", false, false, false, false, "open");
         assertFalse(select("", false, false, false, false).contains("ec_anc_register"));
@@ -244,7 +295,7 @@ public class MotherMentorClientRegisterDaoTest {
                 "CREATE TABLE ec_anc_register (base_entity_id TEXT, is_closed INTEGER, edd TEXT)");
         database.execSQL(
                 "INSERT INTO ec_anc_register VALUES ('mother', 0, '2026-12-01'), ('mother', 0,"
-                    + " '2026-12-02')");
+                        + " '2026-12-02')");
 
         assertIdsAndCount("", false, false, false, false, "mother");
     }
@@ -257,7 +308,7 @@ public class MotherMentorClientRegisterDaoTest {
         database.execSQL("UPDATE ec_mothermentor_enrollment SET last_interacted_with = 20");
         database.execSQL(
                 "UPDATE ec_mothermentor_enrollment SET last_interacted_with = 30 WHERE"
-                    + " base_entity_id = 'b'");
+                        + " base_entity_id = 'b'");
 
         assertEquals(Arrays.asList("b", "a"), pageIds(2, 0));
         assertEquals(Arrays.asList("c"), pageIds(2, 2));

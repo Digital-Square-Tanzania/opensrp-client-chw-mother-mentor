@@ -90,6 +90,12 @@ public final class MotherMentorClientRegisterDao {
         List<String> columns = new ArrayList<>();
         columns.add(ENROLLMENT + "." + DBConstants.KEY.BASE_ENTITY_ID);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.LAST_INTERACTED_WITH);
+        columns.add(
+                FAMILY_MEMBER_TABLE
+                        + "."
+                        + DBConstants.KEY.RELATIONAL_ID
+                        + " AS "
+                        + DBConstants.KEY.RELATIONALID);
         for (String field :
                 new String[] {
                     DBConstants.KEY.FIRST_NAME,
