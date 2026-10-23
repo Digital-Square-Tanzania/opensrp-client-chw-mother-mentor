@@ -8,6 +8,10 @@ public interface Constants {
     String STEP_TWO = "step2";
     String MOTHERMENTOR_VISIT_GROUP = "mothermentor_visit_group";
 
+    interface GROUP_LINKAGE {
+        String ALREADY_IN_GROUP = "already_in_group";
+    }
+
     interface JSON_FORM_EXTRA {
         String JSON = "json";
         String ENCOUNTER_TYPE = "encounter_type";
