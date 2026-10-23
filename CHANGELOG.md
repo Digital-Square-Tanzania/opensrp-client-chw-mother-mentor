@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+### Fixed
+
+- Translate the six Mother Mentor service-visit action headings into Swahili
+  while retaining the English labels. Keep attendance-based action visibility
+  working with localized headings (CHW issue #1048).
+
 ## 0.1.6-SNAPSHOT — 2026-10-23
 
 ### Added

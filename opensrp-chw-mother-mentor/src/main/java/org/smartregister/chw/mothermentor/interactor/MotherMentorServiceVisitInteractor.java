@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.interactor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorCommentActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorEducationProvidedActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorGroupLinkageActionHelper;
@@ -20,12 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceVisitInteractor {
-    private static final String ACTION_VISIT_TYPE = "Visit Type";
-    private static final String ACTION_GROUP_LINKAGE = "Group Linkage";
-    private static final String ACTION_EDUCATION_PROVIDED = "Education Provided";
-    private static final String ACTION_REFERRAL_PROVIDED = "Referral Provided";
-    private static final String ACTION_NEXT_VISIT_DATE = "Next Visit Date";
-    private static final String ACTION_COMMENT = "Comment";
     private static final String FORM_VISIT_TYPE = "mothermentor_visit_type";
     private static final String FORM_GROUP_LINKAGE = "mothermentor_visit_group_linkage";
     private static final String FORM_EDUCATION_PROVIDED = "mothermentor_visit_education_provided";
@@ -46,32 +41,32 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
                     motherMentorVisitActions.clear();
                     try {
                         addVisitAction(
-                                ACTION_VISIT_TYPE,
+                                context.getString(R.string.mothermentor_visit_type_section),
                                 FORM_VISIT_TYPE,
                                 new MotherMentorVisitTypeActionHelper(memberObject),
                                 null);
                         addVisitAction(
-                                ACTION_GROUP_LINKAGE,
+                                context.getString(R.string.mothermentor_group_linkage_section),
                                 FORM_GROUP_LINKAGE,
                                 new MotherMentorGroupLinkageActionHelper(),
                                 new VisitFlowValidator(false));
                         addVisitAction(
-                                ACTION_EDUCATION_PROVIDED,
+                                context.getString(R.string.mothermentor_education_provided_section),
                                 FORM_EDUCATION_PROVIDED,
                                 new MotherMentorEducationProvidedActionHelper(),
                                 new VisitFlowValidator(false));
                         addVisitAction(
-                                ACTION_REFERRAL_PROVIDED,
+                                context.getString(R.string.mothermentor_referral_provided_section),
                                 FORM_REFERRAL_PROVIDED,
                                 new MotherMentorReferralProvidedActionHelper(),
                                 new VisitFlowValidator(false));
                         addVisitAction(
-                                ACTION_NEXT_VISIT_DATE,
+                                context.getString(R.string.mothermentor_next_visit_date_section),
                                 FORM_NEXT_VISIT_DATE,
                                 new MotherMentorNextVisitDateActionHelper(),
                                 new VisitFlowValidator(false));
                         addVisitAction(
-                                ACTION_COMMENT,
+                                context.getString(R.string.mothermentor_comment_section),
                                 FORM_COMMENT,
                                 new MotherMentorCommentActionHelper(),
                                 new VisitFlowValidator(true));
@@ -141,7 +136,8 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
 
     private VisitTypeSelection getVisitTypeSelection() {
         BaseMotherMentorVisitAction visitTypeAction =
-                motherMentorVisitActions.get(ACTION_VISIT_TYPE);
+                motherMentorVisitActions.get(
+                        context.getString(R.string.mothermentor_visit_type_section));
         if (visitTypeAction == null || StringUtils.isBlank(visitTypeAction.getJsonPayload())) {
             return new VisitTypeSelection(null, null);
         }
