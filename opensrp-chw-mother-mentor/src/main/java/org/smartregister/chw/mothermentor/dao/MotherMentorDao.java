@@ -18,11 +18,14 @@ import timber.log.Timber;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class MotherMentorDao extends AbstractDao {
     private static final SimpleDateFormat df =
@@ -1202,6 +1205,75 @@ public class MotherMentorDao extends AbstractDao {
                                 })) {
             return cursor.moveToFirst();
         }
+    }
+
+    /**
+     * Find group linkage recorded in this client's earlier service visits, including visits
+     * awaiting processing. When editing, the current visit and any later visits are excluded.
+     */
+    public static Set<String> getPriorGroupLinkages(String baseEntityId, String currentVisitId) {
+        if (StringUtils.isBlank(baseEntityId)) return Collections.emptySet();
+
+        String query =
+                "SELECT DISTINCT d."
+                        + DBConstants.KEY.VISIT_KEY
+                        + " FROM "
+                        + VisitRepository.VISIT_TABLE
+                        + " v INNER JOIN "
+                        + VisitDetailsRepository.VISIT_DETAILS_TABLE
+                        + " d ON d."
+                        + DBConstants.KEY.VISIT_ID
+                        + " = v."
+                        + DBConstants.KEY.VISIT_ID
+                        + " WHERE v."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND v."
+                        + DBConstants.KEY.VISIT_TYPE
+                        + " = ? AND d."
+                        + DBConstants.KEY.VISIT_KEY
+                        + " IN (?, ?) AND lower(trim(d."
+                        + DBConstants.KEY.DETAILS
+                        + ")) IN (?, ?, ?) AND (? = '' OR (v."
+                        + DBConstants.KEY.VISIT_ID
+                        + " <> ? AND CAST(v."
+                        + DBConstants.KEY.VISIT_DATE
+                        + " AS INTEGER) < (SELECT CAST(editing."
+                        + DBConstants.KEY.VISIT_DATE
+                        + " AS INTEGER) FROM "
+                        + VisitRepository.VISIT_TABLE
+                        + " editing WHERE editing."
+                        + DBConstants.KEY.VISIT_ID
+                        + " = ? AND editing."
+                        + DBConstants.KEY.BASE_ENTITY_ID
+                        + " = ? AND editing."
+                        + DBConstants.KEY.VISIT_TYPE
+                        + " = ? LIMIT 1)))";
+        Set<String> groups = new HashSet<>();
+        try (Cursor cursor =
+                MotherMentorLibrary.getInstance()
+                        .getRepository()
+                        .getReadableDatabase()
+                        .rawQuery(
+                                query,
+                                new String[] {
+                                    baseEntityId,
+                                    Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES,
+                                    DBConstants.KEY.HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP,
+                                    DBConstants.KEY.HAS_BEEN_LINKED_TO_IGA_GROUP,
+                                    "yes",
+                                    "ndiyo",
+                                    Constants.GROUP_LINKAGE.ALREADY_IN_GROUP,
+                                    StringUtils.defaultString(currentVisitId),
+                                    StringUtils.defaultString(currentVisitId),
+                                    StringUtils.defaultString(currentVisitId),
+                                    baseEntityId,
+                                    Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES
+                                })) {
+            while (cursor.moveToNext()) {
+                groups.add(getCursorValue(cursor, DBConstants.KEY.VISIT_KEY));
+            }
+        }
+        return groups;
     }
 
     /** Visit participants can belong to any Mother Mentor enrollment register. */

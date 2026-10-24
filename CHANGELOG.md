@@ -4,6 +4,14 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Added
+
+- Prepopulate each group-linkage answer as already in the group when an earlier
+  Mother Mentor service visit records psychosocial or IGA group linkage. Preserve
+  saved visit answers and exclude the current or later visits when editing.
+
 ## 0.1.7-SNAPSHOT — 2026-10-23
 
 ### Changed

@@ -48,7 +48,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
                         addVisitAction(
                                 context.getString(R.string.mothermentor_group_linkage_section),
                                 FORM_GROUP_LINKAGE,
-                                new MotherMentorGroupLinkageActionHelper(),
+                                new MotherMentorGroupLinkageActionHelper(memberObject),
                                 new VisitFlowValidator(false));
                         addVisitAction(
                                 context.getString(R.string.mothermentor_education_provided_section),
