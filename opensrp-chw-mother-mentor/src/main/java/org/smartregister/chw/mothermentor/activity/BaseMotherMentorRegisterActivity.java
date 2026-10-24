@@ -45,6 +45,8 @@ import timber.log.Timber;
 
 public class BaseMotherMentorRegisterActivity extends BaseRegisterActivity implements MotherMentorRegisterContract.View {
 
+    private static final String EXTRA_FORM_LAUNCH_HANDLED = "mother_mentor_form_launch_handled";
+
     protected String BASE_ENTITY_ID;
     protected String FAMILY_BASE_ENTITY_ID;
     protected String FORM_NAME;
@@ -55,6 +57,9 @@ public class BaseMotherMentorRegisterActivity extends BaseRegisterActivity imple
         BASE_ENTITY_ID = getIntent().getStringExtra(Constants.ACTIVITY_PAYLOAD.BASE_ENTITY_ID);
         FAMILY_BASE_ENTITY_ID = getIntent().getStringExtra(Constants.ACTIVITY_PAYLOAD.FAMILY_BASE_ENTITY_ID);
         FORM_NAME = getIntent().getStringExtra(Constants.ACTIVITY_PAYLOAD.MOTHER_MENTOR_FORM_NAME);
+        if (savedInstanceState != null) {
+            getIntent().putExtra(EXTRA_FORM_LAUNCH_HANDLED, true);
+        }
         onStartActivityWithAction();
     }
 
@@ -62,7 +67,9 @@ public class BaseMotherMentorRegisterActivity extends BaseRegisterActivity imple
      * Process a payload when an activity is started with an action
      */
     protected void onStartActivityWithAction() {
-        if (FORM_NAME != null) {
+        if (FORM_NAME != null && !getIntent().getBooleanExtra(EXTRA_FORM_LAUNCH_HANDLED, false)) {
+            // Language changes restart this activity with its current Intent.
+            getIntent().putExtra(EXTRA_FORM_LAUNCH_HANDLED, true);
             startFormActivity(FORM_NAME, BASE_ENTITY_ID, null);
         }
     }

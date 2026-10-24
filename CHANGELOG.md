@@ -4,6 +4,14 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Keep saved or cancelled enrollment forms closed when switching between English
+  and Swahili or restoring the register activity. Preserve enrollment details and
+  allow new enrollment requests to open normally.
+
 ## 0.1.8-SNAPSHOT — 2026-10-24
 
 ### Changed
