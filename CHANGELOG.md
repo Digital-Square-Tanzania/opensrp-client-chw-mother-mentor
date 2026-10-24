@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+### Added
+
+- Prepopulate each group-linkage answer as already in the group when an earlier
+  Mother Mentor service visit records psychosocial or IGA group linkage. Preserve
+  saved visit answers and exclude the current or later visits when editing.
+
 ### Fixed
 
 - Make repeat attendance read-only in subsequent Mother Mentor service visits,
