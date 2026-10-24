@@ -4,6 +4,13 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Make repeat attendance read-only in subsequent Mother Mentor service visits,
+  including when reopening a saved repeat visit, in English and Swahili.
+
 ## 0.1.7-SNAPSHOT — 2026-10-23
 
 ### Changed

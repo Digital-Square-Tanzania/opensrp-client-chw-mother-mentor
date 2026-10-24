@@ -84,6 +84,10 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                         && field.optString(JsonFormConstants.VALUE).isEmpty()) {
                     field.put(JsonFormConstants.VALUE, value);
                 }
+                if (DBConstants.KEY.ATTENDANCE_TYPE.equals(key)
+                        && "repeat".equalsIgnoreCase(field.optString(JsonFormConstants.VALUE))) {
+                    field.put(JsonFormConstants.READ_ONLY, true);
+                }
                 if (DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT.equals(key)
                         || DBConstants.KEY.IIT_ENROLLED.equals(key)
                         || DBConstants.KEY.PARTNER_ENROLLED.equals(key)
