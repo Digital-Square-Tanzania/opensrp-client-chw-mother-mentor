@@ -7,6 +7,7 @@ import android.app.Application;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
 
 import org.json.JSONObject;
@@ -127,6 +128,19 @@ public class MotherMentorServiceHistoryTest {
     }
 
     @Test
+    public void savedRepeatAttendanceRemainsReadOnlyInBothLanguages() throws Exception {
+        assertSavedAttendanceReadOnly("repeat", true);
+        verifyNoInteractions(cipher);
+    }
+
+    @Test
+    public void savedNewAttendanceRemainsEditableInBothLanguages() throws Exception {
+        insertVisit(CLIENT_ID, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 1);
+        assertSavedAttendanceReadOnly("new", false);
+        verifyNoInteractions(cipher);
+    }
+
+    @Test
     public void missingClientIdentityDoesNotQueryOrGuessAttendance() throws Exception {
         assertFalse(MotherMentorDao.hasMotherMentorServices(null));
         assertFalse(MotherMentorDao.hasMotherMentorServices(" "));
@@ -146,11 +160,41 @@ public class MotherMentorServiceHistoryTest {
 
     private void assertDefaultAttendance(String expected) throws Exception {
         for (String language : new String[] {"json.form", "json.form-sw"}) {
-            assertEquals(expected, prepareAttendance(member(CLIENT_ID), loadForm(language)));
+            JSONObject prepared = prepareForm(member(CLIENT_ID), loadForm(language));
+            JSONObject attendance =
+                    FormUtils.getFieldFromForm(prepared, DBConstants.KEY.ATTENDANCE_TYPE);
+            assertEquals(expected, attendance.getString(JsonFormConstants.VALUE));
+            assertEquals(
+                    "repeat".equals(expected), attendance.optBoolean(JsonFormConstants.READ_ONLY));
+            assertFalse(
+                    FormUtils.getFieldFromForm(prepared, DBConstants.KEY.VISIT_PREGNANCY_STATUS)
+                            .optBoolean(JsonFormConstants.READ_ONLY));
+            assertFalse(
+                    FormUtils.getFieldFromForm(prepared, DBConstants.KEY.FOLLOW_UP_STATUS)
+                            .optBoolean(JsonFormConstants.READ_ONLY));
+        }
+    }
+
+    private void assertSavedAttendanceReadOnly(String saved, boolean readOnly) throws Exception {
+        for (String language : new String[] {"json.form", "json.form-sw"}) {
+            JSONObject form = loadForm(language);
+            FormUtils.getFieldFromForm(form, DBConstants.KEY.ATTENDANCE_TYPE)
+                    .put(JsonFormConstants.VALUE, saved);
+            FormUtils.getFieldFromForm(form, DBConstants.KEY.ART_INITIATED_BEFORE_VISIT)
+                    .put(JsonFormConstants.VALUE, "false");
+            JSONObject attendance =
+                    FormUtils.getFieldFromForm(
+                            prepareForm(member(CLIENT_ID), form), DBConstants.KEY.ATTENDANCE_TYPE);
+            assertEquals(saved, attendance.getString(JsonFormConstants.VALUE));
+            assertEquals(readOnly, attendance.optBoolean(JsonFormConstants.READ_ONLY));
         }
     }
 
     private String prepareAttendance(MemberObject member, JSONObject form) throws Exception {
+        return JsonFormUtils.getValue(prepareForm(member, form), DBConstants.KEY.ATTENDANCE_TYPE);
+    }
+
+    private JSONObject prepareForm(MemberObject member, JSONObject form) throws Exception {
         MotherMentorVisitTypeActionHelper helper =
                 new MotherMentorVisitTypeActionHelper(member) {
                     @Override
@@ -160,8 +204,7 @@ public class MotherMentorServiceHistoryTest {
                 };
         helper.onJsonFormLoaded(
                 form.toString(), RuntimeEnvironment.application, Collections.emptyMap());
-        return JsonFormUtils.getValue(
-                new JSONObject(helper.getPreProcessed()), DBConstants.KEY.ATTENDANCE_TYPE);
+        return new JSONObject(helper.getPreProcessed());
     }
 
     private JSONObject loadForm(String directory) throws Exception {

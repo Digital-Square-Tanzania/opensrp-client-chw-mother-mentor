@@ -12,6 +12,11 @@ Android version code.
   Mother Mentor service visit records psychosocial or IGA group linkage. Preserve
   saved visit answers and exclude the current or later visits when editing.
 
+### Fixed
+
+- Make repeat attendance read-only in subsequent Mother Mentor service visits,
+  including when reopening a saved repeat visit, in English and Swahili.
+
 ## 0.1.7-SNAPSHOT — 2026-10-23
 
 ### Changed
