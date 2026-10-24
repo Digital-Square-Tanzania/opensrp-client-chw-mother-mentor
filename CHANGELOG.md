@@ -4,7 +4,12 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
-## Unreleased
+## 0.1.9-SNAPSHOT — 2026-10-24
+
+### Changed
+
+- Increment the library version name from `0.1.8-SNAPSHOT` to `0.1.9-SNAPSHOT`
+  and Android version code from 9 to 10.
 
 ### Fixed
 
