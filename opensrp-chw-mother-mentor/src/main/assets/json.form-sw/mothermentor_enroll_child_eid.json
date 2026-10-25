@@ -162,13 +162,7 @@
         "type": "edit_text",
         "value": "",
         "read_only": true,
-        "hint": "Namba ya CTC ya mama",
-        "relevance": {
-          "step1:hei_registered": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
-          }
-        }
+        "hint": "Namba ya CTC ya mama"
       },
       {
         "key": "hei_follow_up_number",

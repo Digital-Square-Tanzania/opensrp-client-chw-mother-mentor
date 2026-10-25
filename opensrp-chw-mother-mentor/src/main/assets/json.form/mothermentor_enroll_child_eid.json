@@ -162,13 +162,7 @@
         "type": "edit_text",
         "value": "",
         "read_only": true,
-        "hint": "Mother's CTC ID",
-        "relevance": {
-          "step1:hei_registered": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
-          }
-        }
+        "hint": "Mother's CTC ID"
       },
       {
         "key": "hei_follow_up_number",

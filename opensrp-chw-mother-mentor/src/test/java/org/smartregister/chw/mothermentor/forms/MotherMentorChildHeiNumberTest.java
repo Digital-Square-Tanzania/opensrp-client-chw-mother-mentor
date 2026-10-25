@@ -27,7 +27,7 @@ import java.util.Collections;
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildHeiNumberTest {
-    private static final String FOLLOW_UP_NUMBER = "hei_follow_up_number";
+    private static final String FOLLOW_UP_NUMBER = DBConstants.KEY.HEI_FOLLOW_UP_NUMBER;
 
     @Test
     public void bothLanguagesAllowOnlyTheTwoDigitSuffixToBeEdited() throws Exception {
@@ -70,6 +70,58 @@ public class MotherMentorChildHeiNumberTest {
             assertEquals("", calculate(rules, number, "yes", "", "01"));
             assertEquals("", calculate(rules, number, "yes", "   ", "01"));
         }
+    }
+
+    @Test
+    public void boundMotherCtcRemainsAvailableBeforeAndAfterHeiRegistrationIsAnswered()
+            throws Exception {
+        RulesEngineFactory rules =
+                new RulesEngineFactory(RuntimeEnvironment.getApplication(), Collections.emptyMap());
+        for (String language : languages()) {
+            JSONObject form = form(language);
+            JSONObject motherCtc = field(form, DBConstants.KEY.MOTHER_CTC_NUMBER);
+            motherCtc.put("value", "12-34-5678-123456");
+            // Native forms erase values when conditional relevance hides an edit-text field.
+            // Maternal identity must remain available even before the HEI question is answered.
+            assertFalse(motherCtc.has("relevance"));
+            assertTrue(motherCtc.getBoolean("read_only"));
+            JSONObject registered = field(form, DBConstants.KEY.HEI_REGISTERED);
+            JSONObject suffix = field(form, FOLLOW_UP_NUMBER);
+
+            registered.put("value", "");
+            suffix.put("value", "");
+            assertEquals("", calculateBoundForm(rules, form));
+
+            registered.put("value", "yes");
+            suffix.put("value", "07");
+            assertEquals("12-34-5678-123456-C-07", calculateBoundForm(rules, form));
+
+            registered.put("value", "no");
+            assertEquals("", calculateBoundForm(rules, form));
+            assertEquals("12-34-5678-123456", new NativeValues().value(motherCtc));
+
+            registered.put("value", "yes");
+            suffix.put("value", "08");
+            assertEquals("12-34-5678-123456-C-08", calculateBoundForm(rules, form));
+        }
+    }
+
+    private String calculateBoundForm(RulesEngineFactory rules, JSONObject form) throws Exception {
+        Facts facts = new Facts();
+        facts.put(RuleConstant.SELECTED_RULE, "step1_hei_number");
+        NativeValues values = new NativeValues();
+        for (String key :
+                new String[] {
+                    DBConstants.KEY.HEI_REGISTERED,
+                    DBConstants.KEY.MOTHER_CTC_NUMBER,
+                    FOLLOW_UP_NUMBER
+                }) {
+            facts.put("step1_" + key, values.value(field(form, key)));
+        }
+        String file = field(form, DBConstants.KEY.HEI_NUMBER)
+                .getJSONObject("calculation").getJSONObject("rules-engine")
+                .getJSONObject("ex-rules").getString("rules-file");
+        return rules.getCalculation(facts, file);
     }
 
     private String calculate(RulesEngineFactory rules, JSONObject field, String registered,
