@@ -1,6 +1,8 @@
 package org.smartregister.chw.mothermentor.interactor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -8,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Application;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,11 +19,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.activity.BaseMotherMentorVisitActivity;
+import org.smartregister.chw.mothermentor.adapter.BaseMotherMentorVisitAdapter;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
@@ -129,6 +135,7 @@ public class MotherMentorServiceVisitInteractorTest {
 
         setVisitType(visitType, "new", "");
         assertVisibility(orderedActions, true, true);
+        assertBlankCommentDoesNotBlockSubmission(actions);
 
         setVisitType(visitType, "repeat", "deceased");
         assertVisibility(orderedActions, false, true);
@@ -153,6 +160,46 @@ public class MotherMentorServiceVisitInteractorTest {
             }
         }
         action.setJsonPayload(form.toString());
+    }
+
+    private void assertBlankCommentDoesNotBlockSubmission(
+            LinkedHashMap<String, BaseMotherMentorVisitAction> actions) throws Exception {
+        BaseMotherMentorVisitAction comment = null;
+        for (BaseMotherMentorVisitAction action : actions.values()) {
+            if ("mothermentor_visit_comment".equals(action.getFormName())) {
+                comment = action;
+                assertTrue(action.isOptional());
+                JSONObject field =
+                        com.vijay.jsonwizard.utils.FormUtils.getFieldFromForm(
+                                new JSONObject(action.getJsonPayload()), DBConstants.KEY.COMMENTS);
+                assertFalse(
+                        field.optJSONObject("v_required") != null
+                                && field.getJSONObject("v_required").optBoolean("value"));
+                assertEquals("100", field.getJSONObject("v_max_length").getString("value"));
+                action.setActionStatus(BaseMotherMentorVisitAction.Status.PENDING);
+            } else {
+                assertFalse(action.isOptional());
+                action.setActionStatus(BaseMotherMentorVisitAction.Status.COMPLETED);
+            }
+        }
+        assertNotNull(comment);
+        BaseMotherMentorVisitActivity activity =
+                Robolectric.buildActivity(BaseMotherMentorVisitActivity.class).get();
+        TextView submit = new TextView(activity);
+        ReflectionHelpers.setField(activity, "tvSubmit", submit);
+        ReflectionHelpers.setField(activity, "actionList", actions);
+        ReflectionHelpers.setField(
+                activity, "mAdapter", new BaseMotherMentorVisitAdapter(activity, activity, actions));
+
+        activity.redrawVisitUI();
+        assertTrue(submit.hasOnClickListeners());
+        for (BaseMotherMentorVisitAction required : actions.values()) {
+            if (required.isOptional()) continue;
+            required.setActionStatus(BaseMotherMentorVisitAction.Status.PENDING);
+            activity.redrawVisitUI();
+            assertFalse(required.getTitle(), submit.hasOnClickListeners());
+            required.setActionStatus(BaseMotherMentorVisitAction.Status.COMPLETED);
+        }
     }
 
     private void assertVisibility(
