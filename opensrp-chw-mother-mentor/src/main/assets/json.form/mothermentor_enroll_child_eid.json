@@ -155,33 +155,76 @@
         }
       },
       {
-        "key": "hei_number",
+        "key": "mother_ctc_number",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "hei_number",
-        "type": "mask_edit_text",
-        "mask": "##-##-####-######",
-        "mask_hint": "12345678912345",
-        "allowed_chars": "0123456789",
-        "hint": "HEI number",
-        "edit_type": "number",
+        "openmrs_entity_id": "mother_ctc_number",
+        "type": "edit_text",
+        "value": "",
+        "read_only": true,
+        "hint": "Mother's CTC ID",
+        "relevance": {
+          "step1:hei_registered": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "hei_follow_up_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_follow_up_number",
+        "type": "edit_text",
+        "hint": "Child's follow-up number (2 digits)",
+        "value": "",
         "v_regex": {
-          "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "HEI number should be of the format (XX-XX-XXXX-XXXXXX)"
+          "value": "^[0-9]{2}$",
+          "err": "Enter two digits, for example 01"
         },
         "v_max_length": {
-          "value": "17",
-          "is_fixed_size": "true",
-          "err": "Please enter a valid HEI number"
+          "value": "2",
+          "err": "Enter exactly two digits"
         },
         "v_required": {
           "value": true,
-          "err": "Please enter a valid HEI number"
+          "err": "Enter the child's follow-up number"
         },
         "relevance": {
           "step1:hei_registered": {
             "type": "string",
             "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "hei_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_number",
+        "type": "edit_text",
+        "hint": "HEI number",
+        "read_only": true,
+        "value": "",
+        "v_regex": {
+          "value": "^.+-C-[0-9]{2}$",
+          "err": "The HEI number requires the mother's CTC ID and a two-digit follow-up number"
+        },
+        "v_required": {
+          "value": true,
+          "err": "The mother's CTC ID is missing. Update her Mother Mentor enrollment first."
+        },
+        "relevance": {
+          "step1:hei_registered": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_hei_number.yml"
+            }
           }
         }
       },
@@ -374,5 +417,4 @@
       }
     ]
   }
-
 }

@@ -1,0 +1,7 @@
+---
+name: step1_hei_number
+description: HEI number from the linked mother's CTC ID and child's two-digit follow-up number
+priority: 1
+condition: "true"
+actions:
+  - "calculation = step1_hei_registered == 'yes' && step1_mother_ctc_number != null && step1_mother_ctc_number.trim() != '' ? step1_mother_ctc_number.trim() + '-C-' + (step1_hei_follow_up_number == null ? '' : step1_hei_follow_up_number) : ''"
