@@ -9,6 +9,7 @@ import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
 import org.smartregister.commonregistry.CommonPersonObject;
 import org.smartregister.commonregistry.CommonRepository;
 import org.smartregister.dao.AbstractDao;
@@ -860,6 +861,16 @@ public class MotherMentorDao extends AbstractDao {
             return eventDate.substring(0, length - 3) + eventDate.substring(length - 2);
         }
         return eventDate;
+    }
+
+    public static boolean hasCompletedHouseholdVisitToday(String baseEntityId, Date now) {
+        if (StringUtils.isBlank(baseEntityId) || now == null) return false;
+        return MotherMentorHouseholdVisitUtils.hasCompletedVisitToday(
+                MotherMentorLibrary.getInstance()
+                        .visitRepository()
+                        .getAllVisitsProcessed(
+                                Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, baseEntityId),
+                now);
     }
 
     public static boolean hasMotherMentorVisit(String baseEntityId) {
