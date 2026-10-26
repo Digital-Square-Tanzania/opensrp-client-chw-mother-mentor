@@ -210,4 +210,12 @@
     <string name="mothermentor_partner_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
     <string name="mothermentor_return_to_facility_section">Kurudi kituoni</string>
 
+    <plurals name="mothermentor_age_months">
+        <item quantity="one">Mwezi %d</item>
+        <item quantity="other">Miezi %d</item>
+    </plurals>
+    <plurals name="mothermentor_age_days">
+        <item quantity="one">Siku %d</item>
+        <item quantity="other">Siku %d</item>
+    </plurals>
 </resources>
