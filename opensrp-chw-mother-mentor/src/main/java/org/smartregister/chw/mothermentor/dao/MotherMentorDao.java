@@ -10,8 +10,9 @@ import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
-import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 
 import org.smartregister.commonregistry.CommonPersonObject;
@@ -121,6 +122,19 @@ public class MotherMentorDao extends AbstractDao {
         visits.addAll(
                 repository.getVisits(baseEntityId, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES));
         return MotherMentorPartnerFollowUpVisitUtils.hasCompletedVisitToday(visits, now);
+    }
+
+    /** Includes the Child EID-specific schema and earlier sectioned follow-ups. */
+    public static boolean hasCompletedChildEidFollowUpVisitToday(String baseEntityId, Date now) {
+        if (StringUtils.isBlank(baseEntityId) || now == null) return false;
+        VisitRepository repository = MotherMentorLibrary.getInstance().visitRepository();
+        List<Visit> visits =
+                new ArrayList<>(
+                        repository.getVisits(
+                                baseEntityId, MotherMentorFollowUpType.CHILD_EID.getEventType()));
+        visits.addAll(
+                repository.getVisits(baseEntityId, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES));
+        return MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(visits, now);
     }
 
     /** Loads a household profile using the host app's configured family table. */
