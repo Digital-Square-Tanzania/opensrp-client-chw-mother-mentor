@@ -4,6 +4,14 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Show infant ages in completed months and newborn ages in days in English and
+  Swahili. Omit the profile age when the date of birth is missing, invalid, or in
+  the future (CHW issue #1095).
+
 ## 0.1.9-SNAPSHOT — 2026-10-24
 
 ### Changed
