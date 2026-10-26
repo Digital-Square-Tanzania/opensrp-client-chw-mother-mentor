@@ -11,6 +11,9 @@ Android version code.
 - Show infant ages in completed months and newborn ages in days in English and
   Swahili. Omit the profile age when the date of birth is missing, invalid, or in
   the future (CHW issue #1095).
+- Prevent duplicate completed Child EID follow-ups on the same local calendar
+  day, using the recorded service date. Exclude drafts and incomplete visits,
+  and allow another follow-up on the next day (CHW issue #1096).
 
 ## 0.1.9-SNAPSHOT — 2026-10-24
 
