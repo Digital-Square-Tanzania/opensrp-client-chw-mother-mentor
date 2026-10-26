@@ -4,7 +4,12 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
-## Unreleased
+## 0.1.10-SNAPSHOT — 2026-10-26
+
+### Changed
+
+- Increment the library version name from `0.1.9-SNAPSHOT` to `0.1.10-SNAPSHOT`
+  and Android version code from 10 to 11.
 
 ### Fixed
 
@@ -14,6 +19,12 @@ Android version code.
 - Prevent duplicate completed Child EID follow-ups on the same local calendar
   day, using the recorded service date. Exclude drafts and incomplete visits,
   and allow another follow-up on the next day (CHW issue #1096).
+- Detect completed household service and partner follow-up visits by the local
+  service day, excluding pending or incomplete records (CHW issues #1089, #1090).
+- Allow optional comments in Mother Mentor and household service visits
+  (CHW issues #1091, #1092).
+- Generate Child EID follow-up numbers from the linked mother’s CTC identifier
+  and preserve that maternal context when selecting a child (CHW issue #1094).
 
 ## 0.1.9-SNAPSHOT — 2026-10-24
 
