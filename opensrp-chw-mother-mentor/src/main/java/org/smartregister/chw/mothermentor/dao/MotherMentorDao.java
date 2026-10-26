@@ -5,10 +5,13 @@ import android.database.Cursor;
 import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 import org.smartregister.commonregistry.CommonPersonObject;
 import org.smartregister.commonregistry.CommonRepository;
 import org.smartregister.dao.AbstractDao;
@@ -18,6 +21,7 @@ import timber.log.Timber;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -103,6 +107,19 @@ public class MotherMentorDao extends AbstractDao {
 
                 return memberObject;
             };
+
+    /** Includes the partner-specific schema and earlier sectioned follow-ups. */
+    public static boolean hasCompletedPartnerFollowUpVisitToday(String baseEntityId, Date now) {
+        if (StringUtils.isBlank(baseEntityId) || now == null) return false;
+        VisitRepository repository = MotherMentorLibrary.getInstance().visitRepository();
+        List<Visit> visits =
+                new ArrayList<>(
+                        repository.getVisits(
+                                baseEntityId, MotherMentorFollowUpType.PARTNER.getEventType()));
+        visits.addAll(
+                repository.getVisits(baseEntityId, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES));
+        return MotherMentorPartnerFollowUpVisitUtils.hasCompletedVisitToday(visits, now);
+    }
 
     /** Loads a household profile using the host app's configured family table. */
     public static MemberObject getHouseholdMember(String baseEntityId, String householdTable) {
