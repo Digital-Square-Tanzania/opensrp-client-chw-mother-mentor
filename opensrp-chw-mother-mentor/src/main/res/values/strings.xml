@@ -213,4 +213,12 @@
     <string name="mothermentor_partner_non_attendance_reason_section">Reason for not attending the facility</string>
     <string name="mothermentor_return_to_facility_section">Return to facility</string>
 
+    <plurals name="mothermentor_age_months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="mothermentor_age_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
 </resources>

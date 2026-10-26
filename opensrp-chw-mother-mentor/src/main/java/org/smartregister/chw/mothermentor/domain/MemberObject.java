@@ -91,6 +91,10 @@ public class MemberObject implements Serializable {
         return new Period(new DateTime(dob), new DateTime()).getYears();
     }
 
+    public String getDob() {
+        return dob;
+    }
+
     public void setDob(String dob) {
         this.dob = dob;
     }

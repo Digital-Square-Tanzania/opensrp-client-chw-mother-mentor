@@ -1,6 +1,5 @@
 package org.smartregister.chw.mothermentor.activity;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -36,6 +35,7 @@ import org.smartregister.chw.mothermentor.interactor.BaseMotherMentorProfileInte
 import org.smartregister.chw.mothermentor.presenter.BaseMotherMentorProfilePresenter;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorAgeUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorUtil;
 import org.smartregister.domain.AlertStatus;
 import org.smartregister.helper.ImageRenderHelper;
@@ -341,16 +341,16 @@ public abstract class BaseMotherMentorProfileActivity extends BaseProfileActivit
         // Implement in application
     }
 
-    @SuppressLint("DefaultLocale")
     @Override
     public void setProfileViewWithData() {
+        String age = MotherMentorAgeUtils.formatAge(this, memberObject.getDob());
         textViewName.setText(
                 String.format(
-                        "%s %s %s, %d",
+                        "%s %s %s%s",
                         memberObject.getFirstName(),
                         memberObject.getMiddleName(),
                         memberObject.getLastName(),
-                        memberObject.getAge()));
+                        StringUtils.isNotBlank(age) ? ", " + age : ""));
         textViewGender.setText(
                 MotherMentorUtil.getGenderTranslated(this, memberObject.getGender()));
         textViewLocation.setText(memberObject.getAddress());
