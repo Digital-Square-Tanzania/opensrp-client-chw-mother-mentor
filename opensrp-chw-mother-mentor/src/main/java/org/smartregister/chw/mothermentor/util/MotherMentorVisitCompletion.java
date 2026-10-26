@@ -84,8 +84,7 @@ public final class MotherMentorVisitCompletion {
 
     public static boolean isComplete(JSONArray observations) {
         Map<String, String> values = observationValues(observations);
-        if (!isVisitTypeComplete(values) || !answered(values, DBConstants.KEY.COMMENTS))
-            return false;
+        if (!isVisitTypeComplete(values)) return false;
         return !isFullVisit(
                         values.get(DBConstants.KEY.ATTENDANCE_TYPE),
                         values.get(DBConstants.KEY.FOLLOW_UP_STATUS))

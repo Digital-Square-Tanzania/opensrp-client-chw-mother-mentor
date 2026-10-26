@@ -58,10 +58,6 @@
         "openmrs_entity_id": "comments",
         "type": "edit_text",
         "hint": "Maoni",
-        "v_required": {
-          "value": "true",
-          "err": "Tafadhali andika maoni"
-        },
         "v_max_length": {
           "value": "100",
           "is_fixed_size": "true",
