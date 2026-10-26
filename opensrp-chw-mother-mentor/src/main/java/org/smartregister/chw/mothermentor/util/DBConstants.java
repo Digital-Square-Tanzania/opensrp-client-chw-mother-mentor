@@ -174,6 +174,7 @@ public final class DBConstants {
         public static final String CHILD_NAME = "child_name";
         public static final String CHILD_SEX = "child_sex";
         public static final String HEI_NUMBER = "hei_number";
+        public static final String HEI_FOLLOW_UP_NUMBER = "hei_follow_up_number";
         public static final String HEI_REGISTERED = "hei_registered";
         public static final String LAST_TEST = "last_test";
         public static final String LAST_TEST_RESULT = "last_test_result";

@@ -155,33 +155,70 @@
         }
       },
       {
-        "key": "hei_number",
+        "key": "mother_ctc_number",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "hei_number",
-        "type": "mask_edit_text",
-        "mask": "##-##-####-######",
-        "mask_hint": "12345678912345",
-        "allowed_chars": "0123456789",
-        "hint": "Namba ya HEI",
-        "edit_type": "number",
+        "openmrs_entity_id": "mother_ctc_number",
+        "type": "edit_text",
+        "value": "",
+        "read_only": true,
+        "hint": "Namba ya CTC ya mama"
+      },
+      {
+        "key": "hei_follow_up_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_follow_up_number",
+        "type": "edit_text",
+        "hint": "Namba ya ufuatiliaji wa mtoto (tarakimu 2)",
+        "value": "",
         "v_regex": {
-          "value": "(\\d{2}-\\d{2}-\\d{4}-\\d{6})?",
-          "err": "Namba ya HEI inapaswa kuwa katika muundo (XX-XX-XXXX-XXXXXX)"
+          "value": "^[0-9]{2}$",
+          "err": "Weka tarakimu mbili, kwa mfano 01"
         },
         "v_max_length": {
-          "value": "17",
-          "is_fixed_size": "true",
-          "err": "Tafadhali ingiza namba sahihi ya HEI"
+          "value": "2",
+          "err": "Weka tarakimu mbili pekee"
         },
         "v_required": {
           "value": true,
-          "err": "Tafadhali ingiza namba sahihi ya HEI"
+          "err": "Weka namba ya ufuatiliaji wa mtoto"
         },
         "relevance": {
           "step1:hei_registered": {
             "type": "string",
             "ex": "equalTo(., \"yes\")"
+          }
+        }
+      },
+      {
+        "key": "hei_number",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_number",
+        "type": "edit_text",
+        "hint": "Namba ya HEI",
+        "read_only": true,
+        "value": "",
+        "v_regex": {
+          "value": "^.+-C-[0-9]{2}$",
+          "err": "Namba ya HEI inahitaji namba ya CTC ya mama na tarakimu mbili za ufuatiliaji"
+        },
+        "v_required": {
+          "value": true,
+          "err": "Namba ya CTC ya mama haipo. Sasisha usajili wake wa Mama Kinara kwanza."
+        },
+        "relevance": {
+          "step1:hei_registered": {
+            "type": "string",
+            "ex": "equalTo(., \"yes\")"
+          }
+        },
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_hei_number.yml"
+            }
           }
         }
       },
@@ -374,5 +411,4 @@
       }
     ]
   }
-
 }

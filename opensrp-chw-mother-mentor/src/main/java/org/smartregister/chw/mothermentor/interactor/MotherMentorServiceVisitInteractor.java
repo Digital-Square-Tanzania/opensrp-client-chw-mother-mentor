@@ -90,7 +90,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             throws BaseMotherMentorVisitAction.ValidationException {
         BaseMotherMentorVisitAction action =
                 getBuilder(title)
-                        .withOptional(false)
+                        .withOptional(FORM_COMMENT.equals(formName))
                         .withDetails(details)
                         .withHelper(helper)
                         .withValidator(validator)
