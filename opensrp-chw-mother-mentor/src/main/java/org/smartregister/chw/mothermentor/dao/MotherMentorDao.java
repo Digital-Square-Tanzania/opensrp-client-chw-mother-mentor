@@ -740,7 +740,19 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.EVENT_FORM_SUBMISSION_ID + " = f."
                         + DBConstants.KEY.BASE_ENTITY_ID + " WHERE f." + DBConstants.KEY.ENTITY_ID
                         + " = ? AND (f." + DBConstants.KEY.FOLLOW_UP_OUTCOME + " = ? OR f."
-                        + DBConstants.KEY.FOLLOW_UP_STATUS + " = ?)";
+                        + DBConstants.KEY.FOLLOW_UP_STATUS + " = ? OR (f."
+                        + DBConstants.KEY.FOLLOW_UP_CATEGORY + " = 'PARTNER' AND f."
+                        + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA + " = '2' AND f."
+                        + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' AND f."
+                        + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'not_found' AND f."
+                        + DBConstants.KEY.PARTNER_NOT_FOUND_REASON + " = 'deceased' AND f."
+                        + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'deceased' AND NOT EXISTS ("
+                        + "SELECT 1 FROM " + VisitRepository.VISIT_TABLE + " pending_death WHERE "
+                        + "pending_death." + DBConstants.KEY.BASE_ENTITY_ID + " = f."
+                        + DBConstants.KEY.ENTITY_ID + " AND pending_death."
+                        + DBConstants.KEY.FORM_SUBMISSION_ID + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID + " AND ifnull(pending_death."
+                        + DBConstants.KEY.PROCESSED + ", 0) <> 1)))";
         try (Cursor cursor = readableDatabase().rawQuery(
                 query, new String[] {baseEntityId, "client_deceased", "deceased"})) {
             while (cursor.moveToNext()) {
@@ -1439,6 +1451,8 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID
                         + " = m."
                         + DBConstants.KEY.BASE_ENTITY_ID
+                        + " AND "
+                        + MotherMentorPartnerFollowUpDao.activeEnrollmentCondition("p")
                         + ") AS "
                         + DBConstants.KEY.PARTNER_ENROLLED
                         + ", EXISTS (SELECT 1 FROM ec_mothermentor_enroll_child_eid c WHERE c."
@@ -1611,7 +1625,11 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.PRIMARY_CARE_GIVER
                         + " where mr."
                         + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND m."
+                        + " = 0 AND "
+                        + (Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER.equals(tableName)
+                                ? MotherMentorPartnerFollowUpDao.activeEnrollmentCondition("mr")
+                                : "1 = 1")
+                        + " AND m."
                         + DBConstants.KEY.IS_CLOSED
                         + " = 0 AND f."
                         + DBConstants.KEY.IS_CLOSED

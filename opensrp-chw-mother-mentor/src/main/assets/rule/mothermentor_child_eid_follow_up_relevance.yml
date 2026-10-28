@@ -13,3 +13,19 @@ priority: 1
 condition: "step1_child_eid_arrived_at_facility.contains('yes')"
 actions:
   - "isRelevant = true"
+
+---
+name: step1_child_eid_final_hiv_result
+description: Require final HIV test details only when the final test was performed
+priority: 1
+condition: "step1_child_eid_final_hiv_test_done.contains('yes')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_child_eid_final_hiv_test_date
+description: Require final HIV test details only when the final test was performed
+priority: 1
+condition: "step1_child_eid_final_hiv_test_done.contains('yes')"
+actions:
+  - "isRelevant = true"

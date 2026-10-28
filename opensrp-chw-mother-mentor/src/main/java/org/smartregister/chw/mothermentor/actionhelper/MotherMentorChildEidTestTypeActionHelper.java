@@ -30,9 +30,21 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
     static final String TEST_18_MONTHS = "eighteen_months";
     static final String TEST_NOT_APPLICABLE = "not_applicable";
     private final MemberObject memberObject;
+    private final Runnable onTestChanged;
 
     public MotherMentorChildEidTestTypeActionHelper(MemberObject memberObject) {
+        this(memberObject, null);
+    }
+
+    public MotherMentorChildEidTestTypeActionHelper(
+            MemberObject memberObject, Runnable onTestChanged) {
         this.memberObject = memberObject;
+        this.onTestChanged = onTestChanged;
+    }
+
+    @Override
+    public void onPayloadReceived(BaseMotherMentorVisitAction action) {
+        if (onTestChanged != null) onTestChanged.run();
     }
 
     protected Map<String, String> loadEnrollmentValues() {

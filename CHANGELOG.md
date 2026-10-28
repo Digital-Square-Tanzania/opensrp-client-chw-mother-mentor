@@ -15,6 +15,13 @@ Android version code.
 - Recognize finalized deceased outcomes for mothers, IIT clients, partners and
   Child EID clients, retain death status across later imports, and close only the
   deceased client’s enrollments through the normal death-event workflow.
+- Separate partner tracing from the later facility-attendance visit, capture HIV,
+  syphilis and hepatitis B testing outcomes or non-testing reasons, and retain
+  optional comments in English and Swahili (CHW issue #1107).
+- End completed partner follow-up after the local service day while retaining
+  history and allowing later linkage; permanently exclude deceased partners.
+- Capture identified partner education and final 18-month Child EID HIV results
+  for the monthly report's previously unavailable data sources.
 
 - Display Mother Mentor session details in the selected app language, including
   Swahili titles, field labels and coded options (CHW issue #1114).

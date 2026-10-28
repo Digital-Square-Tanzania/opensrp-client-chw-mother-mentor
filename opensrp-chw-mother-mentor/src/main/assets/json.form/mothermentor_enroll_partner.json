@@ -177,6 +177,30 @@
           "err": "Please enter a valid CTC number"
         },
         "read_only": true
+      },
+      {
+        "key": "partner_linkage_id",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_linkage_id",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "mother_pregnancy_episode_id",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mother_pregnancy_episode_id",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "partner_mother_pregnant",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_mother_pregnant",
+        "type": "hidden",
+        "value": ""
       }
     ]
   },

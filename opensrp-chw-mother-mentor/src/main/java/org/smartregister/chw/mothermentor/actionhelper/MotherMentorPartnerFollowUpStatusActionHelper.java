@@ -12,18 +12,46 @@ public class MotherMentorPartnerFollowUpStatusActionHelper extends BaseMotherMen
     }
 
     @Override
-    public void onPayloadReceived(String jsonPayload) {
-        super.onPayloadReceived(jsonPayload);
+    public void onPayloadReceived(BaseMotherMentorVisitAction action) {
         if (onStatusChanged != null) onStatusChanged.run();
     }
 
     @Override
     public String evaluateSubTitle() {
-        return translate("mothermentor_status_", getValue(DBConstants.KEY.FOLLOW_UP_STATUS));
+        String status = getValue(DBConstants.KEY.FOLLOW_UP_STATUS);
+        String outcome =
+                "found".equals(status)
+                        ? translate("mothermentor_partner_agreement_",
+                                getValue(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT))
+                        : translate("mothermentor_partner_missing_",
+                                getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON));
+        String label = translate("mothermentor_status_", status);
+        return StringUtils.isBlank(outcome) ? label : label + " · " + outcome;
     }
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        return completed(StringUtils.isNotBlank(getValue(DBConstants.KEY.FOLLOW_UP_STATUS)));
+        String status = getValue(DBConstants.KEY.FOLLOW_UP_STATUS);
+        if ("found".equals(status)) {
+            String agreement = getValue(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT);
+            return completed("agreed".equals(agreement) || "refused".equals(agreement));
+        }
+        String reason = getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
+        return completed("not_found".equals(status)
+                && ("deceased".equals(reason) || "moved".equals(reason)
+                    || "travelled".equals(reason) || "other".equals(reason))
+                && (!"other".equals(reason)
+                    || StringUtils.isNotBlank(getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER))));
+    }
+
+    @Override
+    public String postProcess(String source) {
+        if ("found".equals(getValue(DBConstants.KEY.FOLLOW_UP_STATUS))) {
+            source = clearField(source, DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
+            return clearField(source, DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER);
+        }
+        source = clearField(source, DBConstants.KEY.PARTNER_FACILITY_AGREEMENT);
+        return "other".equals(getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON))
+                ? source : clearField(source, DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER);
     }
 }

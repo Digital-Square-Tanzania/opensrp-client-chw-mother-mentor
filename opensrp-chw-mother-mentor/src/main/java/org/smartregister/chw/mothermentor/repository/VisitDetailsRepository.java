@@ -91,6 +91,14 @@ public class VisitDetailsRepository extends BaseRepository {
     public static void createTable(SQLiteDatabase database) {
         database.execSQL(CREATE_VISIT_TABLE);
         database.execSQL(VISIT_ID_INDEX);
+        createReportIndex(database);
+    }
+
+    /** Report lookups use case-sensitive visit IDs and keys, unlike the legacy NOCASE index. */
+    public static void createReportIndex(SQLiteDatabase database) {
+        database.execSQL("CREATE INDEX IF NOT EXISTS mothermentor_report_visit_details ON "
+                + VISIT_DETAILS_TABLE + " (" + VISIT_ID + " COLLATE BINARY, "
+                + VISIT_KEY + " COLLATE BINARY)");
     }
 
     private ContentValues createValues(VisitDetail visitDetail) {

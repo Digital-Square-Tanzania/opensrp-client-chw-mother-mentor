@@ -45,7 +45,7 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
         return false;
     }
 
-    private static boolean isComplete(Map<String, String> values, boolean childSchema) {
+    public static boolean isComplete(Map<String, String> values, boolean childSchema) {
         String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
         if (!matches(
                 status,
@@ -74,12 +74,34 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
                 return false;
             }
         }
-        return !"yes".equals(arrival)
+        boolean complete = !"yes".equals(arrival)
                 || answered(
                         values.get(
                                 childSchema
                                         ? DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE
                                         : DBConstants.KEY.FACILITY_RETURN_DATE));
+        if (complete && "2".equals(values.get(DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA))
+                && "eighteen_months".equals(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
+                && "yes".equals(arrival)) {
+            return isFinalTestComplete(values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DONE),
+                    values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT),
+                    values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE));
+        }
+        return complete;
+    }
+
+    public static boolean isFinalTestComplete(String done, String result, String date) {
+        if ("no".equals(done)) return true;
+        if (!"yes".equals(done) || !matches(result, "positive", "negative", "pending")) return false;
+        if (!answered(date)) return false;
+        for (String pattern : new String[] {"dd-MM-yyyy", "yyyy-MM-dd", "dd/MM/yyyy"}) {
+            SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.US);
+            format.setLenient(false);
+            ParsePosition position = new ParsePosition(0);
+            Date parsed = format.parse(date, position);
+            if (parsed != null && position.getIndex() == date.length()) return true;
+        }
+        return false;
     }
 
     private static Date getVisitDate(Visit visit, JSONObject event, Map<String, String> values) {

@@ -226,4 +226,27 @@
         <item quantity="other">%d days</item>
     </plurals>
     <string name="mothermentor_death_record_failed">Unable to record the client’s death. Please try again.</string>
+
+    <!-- Partner follow-up workflow -->
+    <string name="mothermentor_partner_attendance_section">Facility attendance</string>
+    <string name="mothermentor_partner_hiv_test_section">HIV test</string>
+    <string name="mothermentor_partner_syphilis_test_section">Syphilis test</string>
+    <string name="mothermentor_partner_hepatitis_b_test_section">Hepatitis B test</string>
+    <string name="mothermentor_partner_education_section">Health education</string>
+    <string name="mothermentor_partner_agreement_agreed">Agreed to attend facility</string>
+    <string name="mothermentor_partner_agreement_refused">Refused to attend facility</string>
+    <string name="mothermentor_partner_missing_deceased">Deceased</string>
+    <string name="mothermentor_partner_missing_moved">Moved from area</string>
+    <string name="mothermentor_partner_missing_travelled">Travelled</string>
+    <string name="mothermentor_partner_missing_other">Other</string>
+    <string name="mothermentor_partner_result_positive">Positive</string>
+    <string name="mothermentor_partner_result_negative">Negative</string>
+    <string name="mothermentor_partner_no_test_reason_already_infected">Already infected</string>
+    <string name="mothermentor_partner_no_test_reason_stock_out">Tests out of stock</string>
+    <string name="mothermentor_partner_no_test_reason_refused">Client refused</string>
+    <string name="mothermentor_partner_no_test_reason_other">Other</string>
+    <string name="mothermentor_child_final_test_section">Child final HIV test</string>
+    <string name="mothermentor_child_final_result_positive">Positive</string>
+    <string name="mothermentor_child_final_result_negative">Negative</string>
+    <string name="mothermentor_child_final_result_pending">Pending</string>
 </resources>

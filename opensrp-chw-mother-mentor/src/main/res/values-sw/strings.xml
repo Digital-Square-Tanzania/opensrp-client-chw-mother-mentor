@@ -223,4 +223,27 @@
         <item quantity="other">Siku %d</item>
     </plurals>
     <string name="mothermentor_death_record_failed">Imeshindikana kurekodi kifo cha mteja. Tafadhali jaribu tena.</string>
+
+    <!-- Partner follow-up workflow -->
+    <string name="mothermentor_partner_attendance_section">Mahudhurio kituoni</string>
+    <string name="mothermentor_partner_hiv_test_section">Kipimo cha VVU</string>
+    <string name="mothermentor_partner_syphilis_test_section">Kipimo cha Kaswende</string>
+    <string name="mothermentor_partner_hepatitis_b_test_section">Kipimo cha Homa ya Ini aina B</string>
+    <string name="mothermentor_partner_education_section">Elimu ya afya</string>
+    <string name="mothermentor_partner_agreement_agreed">Amekubali kwenda kituoni</string>
+    <string name="mothermentor_partner_agreement_refused">Amekataa kwenda kituoni</string>
+    <string name="mothermentor_partner_missing_deceased">Amefariki</string>
+    <string name="mothermentor_partner_missing_moved">Amehama eneo</string>
+    <string name="mothermentor_partner_missing_travelled">Amesafiri</string>
+    <string name="mothermentor_partner_missing_other">Nyingine</string>
+    <string name="mothermentor_partner_result_positive">Chanya</string>
+    <string name="mothermentor_partner_result_negative">Hasi</string>
+    <string name="mothermentor_partner_no_test_reason_already_infected">Tayari ana maambukizi</string>
+    <string name="mothermentor_partner_no_test_reason_stock_out">Vipimo havikuwepo</string>
+    <string name="mothermentor_partner_no_test_reason_refused">Mteja amekataa</string>
+    <string name="mothermentor_partner_no_test_reason_other">Nyingine</string>
+    <string name="mothermentor_child_final_test_section">Kipimo cha mwisho cha VVU cha mtoto</string>
+    <string name="mothermentor_child_final_result_positive">Ana maambukizi</string>
+    <string name="mothermentor_child_final_result_negative">Hana maambukizi</string>
+    <string name="mothermentor_child_final_result_pending">Matokeo bado</string>
 </resources>
