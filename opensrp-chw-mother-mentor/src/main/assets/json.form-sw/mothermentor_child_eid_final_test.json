@@ -1,0 +1,125 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Child EID Final HIV Test",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Kipimo cha mwisho cha VVU cha mtoto",
+    "fields": [
+      {
+        "key": "child_eid_final_hiv_test_done",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_test_done",
+        "type": "native_radio",
+        "label": "Je, mtoto amepimwa VVU kipimo cha mwisho cha miezi 18?",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ]
+      },
+      {
+        "key": "child_eid_final_hiv_test_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_test_date",
+        "type": "date_picker",
+        "hint": "Tarehe ya kipimo cha mwisho cha VVU",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "display_format": "dd/MM/yyyy",
+        "min_date": "today-5y",
+        "max_date": "today",
+        "expanded": false,
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_follow_up_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_final_hiv_result",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_result",
+        "type": "native_radio",
+        "label": "Matokeo ya kipimo cha mwisho cha VVU",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "options": [
+          {
+            "key": "positive",
+            "text": "Ana maambukizi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "negative",
+            "text": "Hana maambukizi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative"
+          },
+          {
+            "key": "pending",
+            "text": "Matokeo bado",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_follow_up_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

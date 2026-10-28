@@ -20,7 +20,13 @@ public final class MotherMentorDeceasedVisitUtils {
             return "deceased".equalsIgnoreCase(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
                     || "deceased".equalsIgnoreCase(values.get(DBConstants.KEY.IIT_TRACING_OUTCOME))
                     || "client_deceased".equalsIgnoreCase(
-                            values.get(DBConstants.KEY.FOLLOW_UP_OUTCOME));
+                            values.get(DBConstants.KEY.FOLLOW_UP_OUTCOME))
+                    || ("PARTNER".equals(values.get(DBConstants.KEY.FOLLOW_UP_CATEGORY))
+                            && "2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+                            && "tracing".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
+                            && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                            && "deceased".equals(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON))
+                            && "deceased".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END)));
         } catch (Exception e) {
             return false;
         }

@@ -45,9 +45,11 @@ public class MotherMentorDeceasedClientTest {
         data = SQLiteDatabase.create(null);
         data.execSQL("CREATE TABLE ec_family_member (base_entity_id TEXT, dod TEXT)");
         data.execSQL("CREATE TABLE visits (base_entity_id TEXT, visit_type TEXT, processed INTEGER,"
-                + " visit_json TEXT, visit_date TEXT)");
+                + " visit_json TEXT, visit_date TEXT, form_submission_id TEXT)");
         data.execSQL("CREATE TABLE ec_mothermentor_followup_visit (base_entity_id TEXT,"
-                + " entity_id TEXT, follow_up_outcome TEXT, is_closed INTEGER, follow_up_status TEXT)");
+                + " entity_id TEXT, follow_up_outcome TEXT, is_closed INTEGER, follow_up_status TEXT,"
+                + " follow_up_category TEXT, partner_follow_up_schema TEXT, partner_follow_up_phase TEXT,"
+                + " partner_not_found_reason TEXT, partner_follow_up_end TEXT)");
         data.execSQL("CREATE TABLE event (formSubmissionId TEXT, json TEXT)");
         for (String table : ENROLLMENT_TABLES) {
             data.execSQL("CREATE TABLE " + table + " (base_entity_id TEXT, is_closed INTEGER)");
@@ -169,6 +171,47 @@ public class MotherMentorDeceasedClientTest {
     }
 
     @Test
+    public void synchronizedSchemaTwoPartnerDeathIsRecognizedWithoutLocalVisit() throws Exception {
+        data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
+                        + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
+                        + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
+                        + " partner_follow_up_end) VALUES (?, ?, 'PARTNER', '2', 'tracing',"
+                        + " 'not_found', 'deceased', 'deceased')",
+                new Object[] {"synced-schema-two-death", CLIENT});
+        data.execSQL("INSERT INTO event VALUES (?, ?)", new Object[] {
+            "synced-schema-two-death", event(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "25-10-2026")});
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+        assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET follow_up_category = 'CHILD_EID'");
+        assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+    }
+
+    @Test
+    public void schemaTwoPartnerDraftCannotTriggerSharedDeathBeforeFinalization() throws Exception {
+        JSONObject event = new JSONObject(event(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"));
+        for (String[] pair : new String[][] {
+            {DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"},
+            {DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"},
+            {DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"},
+            {DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"},
+            {DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased"}
+        }) event.getJSONArray("obs").put(new JSONObject().put("fieldCode", pair[0])
+                .put("values", new JSONArray().put(pair[1])));
+        insertVisit(CLIENT, MotherMentorFollowUpType.PARTNER.getEventType(), 0,
+                event.toString(), "9");
+        data.execSQL("UPDATE visits SET form_submission_id = 'schema-two-draft'");
+        data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
+                        + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
+                        + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
+                        + " partner_follow_up_end) VALUES ('schema-two-draft', ?, 'PARTNER', '2',"
+                        + " 'tracing', 'not_found', 'deceased', 'deceased')", new Object[] {CLIENT});
+        data.execSQL("INSERT INTO event VALUES ('schema-two-draft', ?)", new Object[] {event.toString()});
+        assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+        data.execSQL("UPDATE visits SET processed = 1");
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+    }
+
+    @Test
     public void missingLegacyDateDoesNotInventTodayOrLoseDeathStatus() {
         data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
                         + "(base_entity_id, entity_id, follow_up_outcome, is_closed) VALUES (?, ?, ?, ?)",
@@ -243,7 +286,8 @@ public class MotherMentorDeceasedClientTest {
     }
 
     private void insertVisit(String client, String type, int processed, String json, String stamp) {
-        data.execSQL("INSERT INTO visits VALUES (?, ?, ?, ?, ?)",
+        data.execSQL("INSERT INTO visits (base_entity_id, visit_type, processed, visit_json, visit_date)"
+                        + " VALUES (?, ?, ?, ?, ?)",
                 new Object[] {client, type, processed, json, stamp});
     }
 

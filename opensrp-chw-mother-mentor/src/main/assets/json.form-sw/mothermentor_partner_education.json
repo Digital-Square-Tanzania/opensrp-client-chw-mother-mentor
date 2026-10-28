@@ -1,0 +1,103 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Partner Health Education",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Elimu ya afya",
+    "fields": [
+      {
+        "key": "partner_education_provided",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_education_provided",
+        "type": "native_radio",
+        "label": "Mwenza amepewa elimu ya afya?",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ]
+      },
+      {
+        "key": "partner_education_topics",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_education_topics",
+        "type": "check_box",
+        "label": "Mada za elimu zilizotolewa",
+        "v_required": {
+          "value": true,
+          "err": "Chagua angalau mada moja"
+        },
+        "options": [
+          {
+            "key": "hiv",
+            "text": "VVU",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hiv"
+          },
+          {
+            "key": "syphilis",
+            "text": "Kaswende",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "syphilis"
+          },
+          {
+            "key": "hepatitis_b",
+            "text": "Homa ya Ini aina B",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "hepatitis_b"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
+            }
+          }
+        },
+        "combine_checkbox_option_values": "true"
+      }
+    ]
+  }
+}

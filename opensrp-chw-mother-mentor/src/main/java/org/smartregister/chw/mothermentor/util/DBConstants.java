@@ -299,5 +299,33 @@ public final class DBConstants {
         public static final String VISIT_GROUP = "visit_group";
         public static final String VISIT_JSON = "visit_json";
         public static final String VISIT_NUMBER = "visit_number";
+
+        public static final String PARTNER_FOLLOW_UP_SCHEMA = "partner_follow_up_schema";
+        public static final String PARTNER_LINKAGE_ID = "partner_linkage_id";
+        public static final String MOTHER_PREGNANCY_EPISODE_ID = "mother_pregnancy_episode_id";
+        public static final String PARTNER_MOTHER_PREGNANT = "partner_mother_pregnant";
+        public static final String PARTNER_FOLLOW_UP_PHASE = "partner_follow_up_phase";
+        public static final String PARTNER_FACILITY_AGREEMENT = "partner_facility_agreement";
+        public static final String PARTNER_NOT_FOUND_REASON = "partner_not_found_reason";
+        public static final String PARTNER_NOT_FOUND_REASON_OTHER = "partner_not_found_reason_other";
+        public static final String PARTNER_FOLLOW_UP_END = "partner_follow_up_end";
+        public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
+        public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
+        public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
+        public static final String CHILD_EID_FINAL_HIV_TEST_DONE = "child_eid_final_hiv_test_done";
+        public static final String CHILD_EID_FINAL_HIV_RESULT = "child_eid_final_hiv_result";
+        public static final String CHILD_EID_FINAL_HIV_TEST_DATE = "child_eid_final_hiv_test_date";
+        public static final String PARTNER_HIV_TESTED = "partner_hiv_tested";
+        public static final String PARTNER_HIV_RESULT = "partner_hiv_result";
+        public static final String PARTNER_HIV_NOT_TESTED_REASON = "partner_hiv_not_tested_reason";
+        public static final String PARTNER_HIV_NOT_TESTED_REASON_OTHER = "partner_hiv_not_tested_reason_other";
+        public static final String PARTNER_SYPHILIS_TESTED = "partner_syphilis_tested";
+        public static final String PARTNER_SYPHILIS_RESULT = "partner_syphilis_result";
+        public static final String PARTNER_SYPHILIS_NOT_TESTED_REASON = "partner_syphilis_not_tested_reason";
+        public static final String PARTNER_SYPHILIS_NOT_TESTED_REASON_OTHER = "partner_syphilis_not_tested_reason_other";
+        public static final String PARTNER_HEPATITIS_B_TESTED = "partner_hepatitis_b_tested";
+        public static final String PARTNER_HEPATITIS_B_RESULT = "partner_hepatitis_b_result";
+        public static final String PARTNER_HEPATITIS_B_NOT_TESTED_REASON = "partner_hepatitis_b_not_tested_reason";
+        public static final String PARTNER_HEPATITIS_B_NOT_TESTED_REASON_OTHER = "partner_hepatitis_b_not_tested_reason_other";
     }
 }

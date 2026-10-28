@@ -1,0 +1,103 @@
+---
+name: step1_partner_facility_agreement
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_follow_up_status == 'found'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_not_found_reason
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_follow_up_status == 'not_found'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_not_found_reason_other
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_partner_not_found_reason == 'other'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hiv_result
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hiv_tested == 'yes'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hiv_not_tested_reason
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hiv_tested == 'no'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hiv_not_tested_reason_other
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hiv_tested == 'no' && step1_partner_hiv_not_tested_reason == 'other'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_syphilis_result
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_syphilis_tested == 'yes'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_syphilis_not_tested_reason
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_syphilis_tested == 'no'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_syphilis_not_tested_reason_other
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_syphilis_tested == 'no' && step1_partner_syphilis_not_tested_reason == 'other'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hepatitis_b_result
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hepatitis_b_tested == 'yes'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hepatitis_b_not_tested_reason
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hepatitis_b_tested == 'no'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_hepatitis_b_not_tested_reason_other
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_hepatitis_b_tested == 'no' && step1_partner_hepatitis_b_not_tested_reason == 'other'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_education_topics
+description: Show the relevant partner follow-up question
+priority: 1
+condition: "step1_partner_education_provided == 'yes'"
+actions:
+  - "isRelevant = true"

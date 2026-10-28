@@ -5,6 +5,21 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 
 public class MotherMentorChildEidArrivalActionHelper extends BaseMotherMentorActionHelper {
+    private final Runnable onArrivalChanged;
+
+    public MotherMentorChildEidArrivalActionHelper() {
+        this(null);
+    }
+
+    public MotherMentorChildEidArrivalActionHelper(Runnable onArrivalChanged) {
+        this.onArrivalChanged = onArrivalChanged;
+    }
+
+    @Override
+    public void onPayloadReceived(BaseMotherMentorVisitAction action) {
+        if (onArrivalChanged != null) onArrivalChanged.run();
+    }
+
     @Override
     public String evaluateSubTitle() {
         String answer =

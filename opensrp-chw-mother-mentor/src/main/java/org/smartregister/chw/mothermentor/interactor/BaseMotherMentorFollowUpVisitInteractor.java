@@ -23,9 +23,9 @@ import java.util.Map;
 public abstract class BaseMotherMentorFollowUpVisitInteractor
         extends BaseMotherMentorServiceVisitInteractor {
     private static final String STATUS = DBConstants.KEY.STATUS;
-    private static final String TEST_TYPE = "test_type";
+    protected static final String TEST_TYPE = "test_type";
     private static final String REASON = "reason";
-    private static final String ARRIVAL = "arrival";
+    protected static final String ARRIVAL = "arrival";
     private static final String COMMENTS = DBConstants.KEY.COMMENTS;
     protected static final String FOLLOW_UP_STATUS = DBConstants.KEY.FOLLOW_UP_STATUS;
 
@@ -88,6 +88,7 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
                                         createArrivalActionHelper(),
                                         new FoundValidator(),
                                         false);
+                                addAdditionalActions();
                                 add(
                                         COMMENTS,
                                         definition.commentsTitle,
@@ -104,7 +105,7 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
                         });
     }
 
-    private void add(
+    protected final void add(
             String key,
             int title,
             String form,
@@ -167,7 +168,7 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
         }
     }
 
-    private String value(String actionKey, String field) {
+    protected final String value(String actionKey, String field) {
         BaseMotherMentorVisitAction action = workflowActions.get(actionKey);
         if (action == null || StringUtils.isBlank(action.getJsonPayload())) return null;
         try {
@@ -182,7 +183,7 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
         return StringUtils.isNotBlank(value(STATUS, FOLLOW_UP_STATUS));
     }
 
-    private boolean clientFound() {
+    protected final boolean clientFound() {
         return "found".equalsIgnoreCase(value(STATUS, FOLLOW_UP_STATUS));
     }
 
@@ -191,9 +192,14 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
         clearAction(REASON);
         clearAction(ARRIVAL);
         clearAction(TEST_TYPE);
+        clearAdditionalActions();
     }
 
-    private void clearAction(String key) {
+    protected void addAdditionalActions() throws BaseMotherMentorVisitAction.ValidationException {}
+
+    protected void clearAdditionalActions() {}
+
+    protected final void clearAction(String key) {
         BaseMotherMentorVisitAction action = workflowActions.get(key);
         if (action != null) {
             action.setJsonPayload(null);

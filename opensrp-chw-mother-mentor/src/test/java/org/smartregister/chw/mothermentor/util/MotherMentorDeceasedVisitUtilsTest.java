@@ -40,6 +40,46 @@ public class MotherMentorDeceasedVisitUtilsTest {
     }
 
     @Test
+    public void schemaTwoPartnerDeathRequiresTheCompletePartnerTracingOutcome() throws Exception {
+        JSONObject death = new JSONObject().put("obs", new JSONArray()
+                .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"))
+                .put(observation(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"))
+                .put(observation(DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased")));
+        assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(death.toString()));
+        JSONArray observations = death.getJSONArray("obs");
+        for (int index = 0; index < observations.length(); index++) {
+            JSONArray incomplete = new JSONArray(observations.toString());
+            incomplete.remove(index);
+            assertFalse("Missing " + observations.getJSONObject(index).getString("fieldCode"),
+                    MotherMentorDeceasedVisitUtils.isDeceased(
+                            new JSONObject().put("obs", incomplete).toString()));
+        }
+    }
+
+    @Test
+    public void routineCompletionAndOtherCategoryReasonsAreNotDeaths() throws Exception {
+        JSONArray observations = new JSONArray()
+                .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "attendance"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "completed"));
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(
+                new JSONObject().put("obs", observations).toString()));
+        observations = new JSONArray()
+                .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "CHILD_EID"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"))
+                .put(observation(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"))
+                .put(observation(DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased"));
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(
+                new JSONObject().put("obs", observations).toString()));
+    }
+
+    @Test
     public void explicitDeathDatePrecedesServiceAndImportDates() throws Exception {
         JSONObject json = new JSONObject(event(DBConstants.KEY.DOD, "2026-10-10"));
         json.getJSONArray("obs").put(observation(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "25-10-2026"));

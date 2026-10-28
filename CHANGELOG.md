@@ -11,6 +11,13 @@ Android version code.
 - Recognize finalized deceased outcomes for mothers, IIT clients, partners and
   Child EID clients, retain death status across later imports, and close only the
   deceased client’s enrollments through the normal death-event workflow.
+- Separate partner tracing from the later facility-attendance visit, capture HIV,
+  syphilis and hepatitis B testing outcomes or non-testing reasons, and retain
+  optional comments in English and Swahili (CHW issue #1107).
+- End completed partner follow-up after the local service day while retaining
+  history and allowing later linkage; permanently exclude deceased partners.
+- Capture identified partner education and final 18-month Child EID HIV results
+  for the monthly report's previously unavailable data sources.
 
 - Capture Child EID birth order from 1 to 20 and generate HEI identifiers in the
   format `RR-CC-FFFF-XXXXXX-C01`, using the linked mother's CTC ID and a two-digit

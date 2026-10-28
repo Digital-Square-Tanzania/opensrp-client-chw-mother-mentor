@@ -5,6 +5,20 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 
 public class MotherMentorPartnerArrivalActionHelper extends BaseMotherMentorActionHelper {
+    private final Runnable onArrivalChanged;
+
+    public MotherMentorPartnerArrivalActionHelper() {
+        this(null);
+    }
+
+    public MotherMentorPartnerArrivalActionHelper(Runnable onArrivalChanged) {
+        this.onArrivalChanged = onArrivalChanged;
+    }
+
+    @Override
+    public void onPayloadReceived(BaseMotherMentorVisitAction action) {
+        if (onArrivalChanged != null) onArrivalChanged.run();
+    }
     @Override
     public String evaluateSubTitle() {
         String answer =
@@ -21,7 +35,7 @@ public class MotherMentorPartnerArrivalActionHelper extends BaseMotherMentorActi
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
         String answer = getValue(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY);
         return completed(
-                StringUtils.isNotBlank(answer)
+                ("yes".equals(answer) || "no".equals(answer))
                         && (!"yes".equals(answer)
                                 || StringUtils.isNotBlank(
                                         getValue(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))));
