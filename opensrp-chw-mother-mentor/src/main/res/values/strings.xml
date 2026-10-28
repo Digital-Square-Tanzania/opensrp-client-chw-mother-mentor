@@ -221,4 +221,5 @@
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
     </plurals>
+    <string name="mothermentor_death_record_failed">Unable to record the client’s death. Please try again.</string>
 </resources>
