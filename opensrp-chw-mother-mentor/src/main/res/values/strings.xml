@@ -167,6 +167,10 @@
     <string name="mothermentor_child_eid_test_nine_months">9 Months</string>
     <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after breastfeeding stopped</string>
     <string name="mothermentor_child_eid_test_eighteen_months">18 Months</string>
+    <string name="mothermentor_child_eid_test_not_applicable">Not applicable</string>
+    <string name="mothermentor_child_eid_dob_required">A valid date of birth is required to determine eligible tests.</string>
+    <string name="mothermentor_child_eid_no_test_due">No follow-up test is due yet based on the child’s age.</string>
+    <string name="mothermentor_child_eid_eligible_tests">Only tests eligible for the child’s age and recorded weaning date are shown.</string>
     <string name="mothermentor_child_eid_reason_medicine_side_effects">Medicine side effects</string>
     <string name="mothermentor_child_eid_reason_forgot">Forgot</string>
     <string name="mothermentor_child_eid_reason_travel_or_moved">Travel / Moved</string>
