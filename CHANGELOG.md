@@ -12,6 +12,9 @@ Android version code.
   Child EID clients, retain death status across later imports, and close only the
   deceased client’s enrollments through the normal death-event workflow.
 
+- Display Mother Mentor session details in the selected app language, including
+  Swahili titles, field labels and coded options (CHW issue #1114).
+
 - Capture Child EID birth order from 1 to 20 and generate HEI identifiers in the
   format `RR-CC-FFFF-XXXXXX-C01`, using the linked mother's CTC ID and a two-digit
   birth-order suffix (CHW issue #1109).
