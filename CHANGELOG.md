@@ -4,6 +4,13 @@ Notable changes to the Mother Mentor Android library are recorded here.
 Versions below are Maven snapshot coordinates; `VERSION_CODE` is the library's
 Android version code.
 
+## Unreleased
+
+### Fixed
+
+- Correct the Swahili partner HIV-disclosure question to use "anajua" instead of
+  "amejua" (CHW issue #1108).
+
 ## 0.1.10-SNAPSHOT — 2026-10-26
 
 ### Changed
