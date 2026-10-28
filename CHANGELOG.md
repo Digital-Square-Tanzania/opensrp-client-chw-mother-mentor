@@ -8,6 +8,10 @@ Android version code.
 
 ### Fixed
 
+- Restrict Child EID test choices to eligible ages and recorded weaning dates,
+  retain catch-up tests, offer Not applicable before any test is due, and prevent
+  saved drafts from restoring future stages (CHW issue #1111).
+
 - Recognize finalized deceased outcomes for mothers, IIT clients, partners and
   Child EID clients, retain death status across later imports, and close only the
   deceased client’s enrollments through the normal death-event workflow.

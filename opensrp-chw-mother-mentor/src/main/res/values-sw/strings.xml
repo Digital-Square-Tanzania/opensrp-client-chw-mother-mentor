@@ -164,6 +164,10 @@
     <string name="mothermentor_child_eid_test_nine_months">Miezi 9</string>
     <string name="mothermentor_child_eid_test_three_months_after_weaning">Miezi 3 baada ya kuacha kunyonyeshwa</string>
     <string name="mothermentor_child_eid_test_eighteen_months">Miezi 18</string>
+    <string name="mothermentor_child_eid_test_not_applicable">Haihusiki</string>
+    <string name="mothermentor_child_eid_dob_required">Tarehe sahihi ya kuzaliwa inahitajika ili kubaini vipimo vinavyofaa.</string>
+    <string name="mothermentor_child_eid_no_test_due">Hakuna kipimo cha ufuatiliaji kinachostahili kufanywa kwa sasa kulingana na umri wa mtoto.</string>
+    <string name="mothermentor_child_eid_eligible_tests">Vinaonyeshwa vipimo vinavyofaa kulingana na umri wa mtoto na tarehe iliyorekodiwa ya kuacha kunyonyeshwa.</string>
     <string name="mothermentor_child_eid_reason_medicine_side_effects">Maudhi ya dawa</string>
     <string name="mothermentor_child_eid_reason_forgot">Kusahau</string>
     <string name="mothermentor_child_eid_reason_travel_or_moved">Safari / Kuhama</string>
