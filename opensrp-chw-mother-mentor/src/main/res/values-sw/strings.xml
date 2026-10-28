@@ -218,4 +218,5 @@
         <item quantity="one">Siku %d</item>
         <item quantity="other">Siku %d</item>
     </plurals>
+    <string name="mothermentor_death_record_failed">Imeshindikana kurekodi kifo cha mteja. Tafadhali jaribu tena.</string>
 </resources>

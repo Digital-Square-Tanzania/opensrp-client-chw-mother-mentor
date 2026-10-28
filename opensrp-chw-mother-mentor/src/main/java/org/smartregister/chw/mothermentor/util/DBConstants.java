@@ -16,6 +16,8 @@ public final class DBConstants {
         public static final String FAMILY_BASE_ENTITY_ID = "family_base_entity_id";
         public static final String DOB = "dob";
         public static final String DOD = "dod";
+        public static final String DATE_DIED = "date_died";
+        public static final String REMOVE_REASON = "remove_reason";
         public static final String UNIQUE_ID = "unique_id";
         public static final String MARITAL_STATUS = "marital_status";
         public static final String LAST_INTERACTED_WITH = "last_interacted_with";
@@ -249,6 +251,8 @@ public final class DBConstants {
         // Shared visit and event columns.
         public static final String AGE = "age";
         public static final String EVENT_BASE_ENTITY_ID = "baseEntityId";
+        public static final String EVENT_JSON = "json";
+        public static final String EVENT_FORM_SUBMISSION_ID = "formSubmissionId";
         public static final String DOB_UNKNOWN = "dob_unknown";
         public static final String EVENT_DATE_TIMESTAMP = "eventDate";
         public static final String EVENT_TYPE = "eventType";

@@ -1,6 +1,9 @@
 package org.smartregister.chw.mothermentor.dao;
 
+import android.content.ContentValues;
 import android.database.Cursor;
+
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
@@ -11,6 +14,7 @@ import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
@@ -648,32 +652,130 @@ public class MotherMentorDao extends AbstractDao {
         return "";
     }
 
+    /** A finalized death remains effective even if a later ordinary visit is imported. */
     public static boolean isClientDeceased(String baseEntityId) {
-        if (StringUtils.isBlank(baseEntityId)) {
-            return false;
+        return findClientDeath(baseEntityId) != null;
+    }
+
+    /** Recorded death date, or the finalized visit's recorded service date when no date was captured. */
+    public static Date getClientDeathDate(String baseEntityId) {
+        ClientDeath death = findClientDeath(baseEntityId);
+        return death == null ? null : death.date;
+    }
+
+    /** Prevents another Remove Family Member event when the shared death record already exists. */
+    public static boolean hasRecordedDeath(String baseEntityId) {
+        if (StringUtils.isBlank(baseEntityId)) return false;
+        return findRecordedDeath(baseEntityId) != null;
+    }
+
+    /** Shared list/count condition also hides historical or synchronized shared death records. */
+    public static String getActiveClientCondition(String enrollmentTable) {
+        return enrollmentTable + "." + DBConstants.KEY.IS_CLOSED + " = 0 AND NOT EXISTS ("
+                + "SELECT 1 FROM ec_family_member deceased_member WHERE deceased_member."
+                + DBConstants.KEY.BASE_ENTITY_ID + " = " + enrollmentTable + "."
+                + DBConstants.KEY.BASE_ENTITY_ID + " AND lower(trim(ifnull(deceased_member."
+                + DBConstants.KEY.DOD + ", ''))) NOT IN ('', 'null'))";
+    }
+
+    /** Called by the host's normal death-event processor; visit history is retained. */
+    public static void closeDeceasedClientEnrollments(String baseEntityId) {
+        if (StringUtils.isBlank(baseEntityId)) return;
+        ContentValues values = new ContentValues();
+        values.put(DBConstants.KEY.IS_CLOSED, 1);
+        SQLiteDatabase database =
+                MotherMentorLibrary.getInstance().getRepository().getWritableDatabase();
+        for (String table : new String[] {
+            Constants.TABLES.MOTHERMENTOR_ENROLLMENT,
+            Constants.TABLES.MOTHERMENTOR_ENROLL_IIT,
+            Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER,
+            Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID
+        }) {
+            database.update(
+                    table,
+                    values,
+                    DBConstants.KEY.BASE_ENTITY_ID + " = ? AND ifnull("
+                            + DBConstants.KEY.IS_CLOSED + ", 0) <> 1",
+                    new String[] {baseEntityId});
+        }
+    }
+
+    private static ClientDeath findClientDeath(String baseEntityId) {
+        if (StringUtils.isBlank(baseEntityId)) return null;
+        ClientDeath recorded = findRecordedDeath(baseEntityId);
+        if (recorded != null) return recorded;
+
+        String query =
+                "SELECT " + DBConstants.KEY.VISIT_JSON + ", " + DBConstants.KEY.VISIT_DATE
+                        + " FROM " + VisitRepository.VISIT_TABLE
+                        + " WHERE " + DBConstants.KEY.BASE_ENTITY_ID + " = ? AND "
+                        + DBConstants.KEY.PROCESSED + " = 1 AND " + DBConstants.KEY.VISIT_TYPE
+                        + " IN (?, ?, ?, ?, ?) ORDER BY CAST(" + DBConstants.KEY.VISIT_DATE
+                        + " AS INTEGER) ASC";
+        ClientDeath found = null;
+        try (Cursor cursor = readableDatabase().rawQuery(query, new String[] {
+            baseEntityId,
+            Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES,
+            MotherMentorFollowUpType.MOTHER_IIT.getEventType(),
+            MotherMentorFollowUpType.PARTNER.getEventType(),
+            MotherMentorFollowUpType.CHILD_EID.getEventType(),
+            Constants.EVENT_TYPE.MOTHER_MENTOR_RECORD_VISIT
+        })) {
+            while (cursor.moveToNext()) {
+                String json = getCursorValue(cursor, DBConstants.KEY.VISIT_JSON, "");
+                if (!MotherMentorDeceasedVisitUtils.isDeceased(json)) continue;
+                Date date = MotherMentorDeceasedVisitUtils.getRecordedDate(
+                        json, getCursorValue(cursor, DBConstants.KEY.VISIT_DATE));
+                if (date != null) return new ClientDeath(date);
+                found = new ClientDeath(null);
+            }
         }
 
-        String sql =
-                "SELECT "
-                        + DBConstants.KEY.FOLLOW_UP_OUTCOME
-                        + " FROM ec_mothermentor_followup_visit p  WHERE p."
-                        + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND p."
-                        + DBConstants.KEY.ENTITY_ID
-                        + " = '"
-                        + baseEntityId
-                        + "' ORDER BY "
-                        + DBConstants.KEY.LAST_INTERACTED_WITH
-                        + " DESC LIMIT 1";
-
-        DataMap<String> dataMap =
-                cursor -> getCursorValue(cursor, DBConstants.KEY.FOLLOW_UP_OUTCOME, "");
-        List<String> res = readData(sql, dataMap);
-        if (res == null || res.isEmpty()) {
-            return false;
+        // Direct or synchronized follow-ups may have no local sectioned visit. Projected rows
+        // are finalized;
+        // the canonical event supplies the service date instead of the import timestamp.
+        query =
+                "SELECT e." + DBConstants.KEY.EVENT_JSON + " FROM "
+                        + Constants.TABLES.MOTHERMENTOR_FOLLOWUP_VISIT + " f LEFT JOIN event e ON e."
+                        + DBConstants.KEY.EVENT_FORM_SUBMISSION_ID + " = f."
+                        + DBConstants.KEY.BASE_ENTITY_ID + " WHERE f." + DBConstants.KEY.ENTITY_ID
+                        + " = ? AND (f." + DBConstants.KEY.FOLLOW_UP_OUTCOME + " = ? OR f."
+                        + DBConstants.KEY.FOLLOW_UP_STATUS + " = ?)";
+        try (Cursor cursor = readableDatabase().rawQuery(
+                query, new String[] {baseEntityId, "client_deceased", "deceased"})) {
+            while (cursor.moveToNext()) {
+                Date date = MotherMentorDeceasedVisitUtils.getRecordedDate(
+                        getCursorValue(cursor, DBConstants.KEY.EVENT_JSON, ""), null);
+                if (date != null) return new ClientDeath(date);
+                found = new ClientDeath(null);
+            }
         }
+        return found;
+    }
 
-        return StringUtils.equalsIgnoreCase("client_deceased", res.get(0));
+    private static ClientDeath findRecordedDeath(String baseEntityId) {
+        String query =
+                "SELECT " + DBConstants.KEY.DOD + " FROM ec_family_member WHERE "
+                        + DBConstants.KEY.BASE_ENTITY_ID + " = ? AND lower(trim(ifnull("
+                        + DBConstants.KEY.DOD + ", ''))) NOT IN ('', 'null') LIMIT 1";
+        try (Cursor cursor = readableDatabase().rawQuery(query, new String[] {baseEntityId})) {
+            return cursor.moveToFirst()
+                    ? new ClientDeath(MotherMentorDeceasedVisitUtils.parseDate(
+                            getCursorValue(cursor, DBConstants.KEY.DOD)))
+                    : null;
+        }
+    }
+
+    private static SQLiteDatabase readableDatabase() {
+        return MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+    }
+
+    private static final class ClientDeath {
+        private final Date date;
+
+        private ClientDeath(Date date) {
+            this.date = date;
+        }
     }
 
     public static FollowUpVisit getLatestFollowUpVisit(String baseEntityId) {
