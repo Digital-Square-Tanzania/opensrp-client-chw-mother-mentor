@@ -23,14 +23,17 @@ import org.smartregister.chw.mothermentor.util.DBConstants;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Locale;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildHeiNumberTest {
     private static final String FOLLOW_UP_NUMBER = DBConstants.KEY.HEI_FOLLOW_UP_NUMBER;
+    private static final String[] VALID_BIRTH_ORDERS = {"1", "01", "2", "02", "9", "09", "10", "20"};
+    private static final String[] INVALID_BIRTH_ORDERS = {"0", "00", "21", "99", "-1", "001", "aa", ""};
 
     @Test
-    public void bothLanguagesAllowOnlyTheTwoDigitSuffixToBeEdited() throws Exception {
+    public void bothLanguagesAllowOnlyBirthOrdersOneToTwentyToBeEdited() throws Exception {
         for (String language : languages()) {
             JSONObject form = form(language);
             JSONObject number = field(form, DBConstants.KEY.HEI_NUMBER);
@@ -43,32 +46,53 @@ public class MotherMentorChildHeiNumberTest {
             JSONObject suffix = field(form, FOLLOW_UP_NUMBER);
             assertTrue(suffix.getJSONObject("v_required").getBoolean("value"));
             assertFalse(suffix.has("edit_type"));
+            assertEquals(
+                    "json.form-sw".equals(language) ? "Mtoto wa ngapi kuzaliwa" : "Child's birth order",
+                    suffix.getString("hint"));
             String pattern = suffix.getJSONObject("v_regex").getString("value");
-            assertTrue("01".matches(pattern));
-            assertTrue("99".matches(pattern));
-            assertFalse("1".matches(pattern));
-            assertFalse("123".matches(pattern));
-            assertFalse("aa".matches(pattern));
-            assertFalse("".matches(pattern));
+            String heiPattern = number.getJSONObject("v_regex").getString("value");
+            for (String order : VALID_BIRTH_ORDERS) {
+                assertTrue(order, order.matches(pattern));
+                assertTrue(
+                        heiNumber(order),
+                        heiNumber(order).matches(heiPattern));
+            }
+            for (String order : INVALID_BIRTH_ORDERS) {
+                assertFalse(order, order.matches(pattern));
+            }
+            for (String invalidHei : new String[] {
+                    "12-34-5678-123456-C00", "12-34-5678-123456-C21",
+                    "12-34-5678-123456-C-01", "12-34-5678-123456-C1", "invalid-C01"}) {
+                assertFalse(invalidHei, invalidHei.matches(heiPattern));
+            }
             assertEquals("equalTo(., \"yes\")", suffix.getJSONObject("relevance")
                     .getJSONObject("step1:hei_registered").getString("ex"));
         }
     }
 
     @Test
-    public void nativeRulesGenerateTheHeiNumberAndKeepLeadingZerosInBothLanguages() throws Exception {
+    public void nativeRulesGenerateTheHeiNumberFromValidBirthOrdersInBothLanguages() throws Exception {
         RulesEngineFactory rules =
                 new RulesEngineFactory(RuntimeEnvironment.getApplication(), Collections.emptyMap());
         for (String language : languages()) {
             JSONObject number = field(form(language), DBConstants.KEY.HEI_NUMBER);
-            assertEquals("12-34-5678-123456-C-01", calculate(rules, number, "yes", "12-34-5678-123456", "01"));
-            assertEquals("12-34-5678-123456-C-00", calculate(rules, number, "yes", "12-34-5678-123456", "00"));
-            assertEquals("12-34-5678-123456-C-99", calculate(rules, number, "yes", "12-34-5678-123456", "99"));
-            assertEquals("98-76-5432-654321-C-02", calculate(rules, number, "yes", "98-76-5432-654321", "02"));
-            assertEquals("12-34-5678-123456-C-", calculate(rules, number, "yes", "12-34-5678-123456", ""));
+            for (String order : VALID_BIRTH_ORDERS) {
+                assertEquals(
+                        order,
+                        heiNumber(order),
+                        calculate(rules, number, "yes", "12-34-5678-123456", order));
+            }
+            for (String order : INVALID_BIRTH_ORDERS) {
+                assertEquals(order, "", calculate(rules, number, "yes", "12-34-5678-123456", order));
+            }
+            assertEquals("98-76-5432-654321-C02", calculate(rules, number, "yes", "98-76-5432-654321", "02"));
+            assertEquals("12-34-5678-123456-C01", calculate(rules, number, "yes", " 12-34-5678-123456 ", "1"));
             assertEquals("", calculate(rules, number, "no", "12-34-5678-123456", "01"));
-            assertEquals("", calculate(rules, number, "yes", "", "01"));
-            assertEquals("", calculate(rules, number, "yes", "   ", "01"));
+            for (String invalidCtc : new String[] {"", "   ", "12345678123456", "12-34-5678-12345", "bad"}) {
+                assertEquals("", calculate(rules, number, "yes", invalidCtc, "01"));
+            }
+            assertEquals("", calculate(rules, number, "yes", null, "01"));
+            assertEquals("", calculate(rules, number, "yes", "12-34-5678-123456", null));
         }
     }
 
@@ -94,7 +118,7 @@ public class MotherMentorChildHeiNumberTest {
 
             registered.put("value", "yes");
             suffix.put("value", "07");
-            assertEquals("12-34-5678-123456-C-07", calculateBoundForm(rules, form));
+            assertEquals("12-34-5678-123456-C07", calculateBoundForm(rules, form));
 
             registered.put("value", "no");
             assertEquals("", calculateBoundForm(rules, form));
@@ -102,8 +126,12 @@ public class MotherMentorChildHeiNumberTest {
 
             registered.put("value", "yes");
             suffix.put("value", "08");
-            assertEquals("12-34-5678-123456-C-08", calculateBoundForm(rules, form));
+            assertEquals("12-34-5678-123456-C08", calculateBoundForm(rules, form));
         }
+    }
+
+    private String heiNumber(String order) {
+        return "12-34-5678-123456-C" + String.format(Locale.ROOT, "%02d", Integer.parseInt(order));
     }
 
     private String calculateBoundForm(RulesEngineFactory rules, JSONObject form) throws Exception {
@@ -130,9 +158,12 @@ public class MotherMentorChildHeiNumberTest {
         facts.put(RuleConstant.SELECTED_RULE, "step1_hei_number");
         facts.put("step1_hei_registered", registered);
         facts.put("step1_mother_ctc_number", motherCtc);
-        JSONObject suffixField = field(form("json.form"), FOLLOW_UP_NUMBER).put("value", suffix);
-        Object nativeValue = new NativeValues().value(suffixField);
-        assertEquals(suffix, nativeValue);
+        Object nativeValue = null;
+        if (suffix != null) {
+            JSONObject suffixField = field(form("json.form"), FOLLOW_UP_NUMBER).put("value", suffix);
+            nativeValue = new NativeValues().value(suffixField);
+            assertEquals(suffix, nativeValue);
+        }
         facts.put("step1_" + FOLLOW_UP_NUMBER, nativeValue);
         String file = field.getJSONObject("calculation").getJSONObject("rules-engine")
                 .getJSONObject("ex-rules").getString("rules-file");

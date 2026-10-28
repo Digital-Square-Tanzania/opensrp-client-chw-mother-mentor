@@ -1,7 +1,7 @@
 ---
 name: step1_hei_number
-description: HEI number from the linked mother's CTC ID and child's two-digit follow-up number
+description: HEI number from the linked mother's CTC ID and child's birth order from 1 to 20
 priority: 1
 condition: "true"
 actions:
-  - "calculation = step1_hei_registered == 'yes' && step1_mother_ctc_number != null && step1_mother_ctc_number.trim() != '' ? step1_mother_ctc_number.trim() + '-C-' + (step1_hei_follow_up_number == null ? '' : step1_hei_follow_up_number) : ''"
+  - "calculation = step1_hei_registered == 'yes' && step1_mother_ctc_number != null && step1_mother_ctc_number.trim().matches('[0-9]{2}-[0-9]{2}-[0-9]{4}-[0-9]{6}') && step1_hei_follow_up_number != null && step1_hei_follow_up_number.matches('(?:0?[1-9]|1[0-9]|20)') ? step1_mother_ctc_number.trim() + '-C' + (step1_hei_follow_up_number.length() == 1 ? '0' + step1_hei_follow_up_number : step1_hei_follow_up_number) : ''"
