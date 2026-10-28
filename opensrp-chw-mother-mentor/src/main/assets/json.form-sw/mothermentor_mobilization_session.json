@@ -296,6 +296,13 @@
         "openmrs_entity_id": "referred_male",
         "type": "edit_text",
         "hint": "Wanaume waliopewa rufaa kwenda kituoni",
+        "constraints": [
+          {
+            "type": "numeric",
+            "ex": "lessThanEqualTo(step1:referred_total, step1:elim_total)",
+            "err": "Idadi ya wateja waliopewa rufaa haipaswi kuzidi idadi ya watu waliofikiwa na kuelimishwa."
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"
@@ -321,6 +328,13 @@
         "openmrs_entity_id": "referred_female",
         "type": "edit_text",
         "hint": "Wanawake waliopewa rufaa kwenda kituoni",
+        "constraints": [
+          {
+            "type": "numeric",
+            "ex": "lessThanEqualTo(step1:referred_total, step1:elim_total)",
+            "err": "Idadi ya wateja waliopewa rufaa haipaswi kuzidi idadi ya watu waliofikiwa na kuelimishwa."
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"

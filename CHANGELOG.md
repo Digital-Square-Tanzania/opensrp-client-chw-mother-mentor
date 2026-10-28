@@ -17,6 +17,8 @@ Android version code.
   birth-order suffix (CHW issue #1109).
 - Correct the Swahili partner HIV-disclosure question to use "anajua" instead of
   "amejua" (CHW issue #1108).
+- Prevent mobilization referrals from exceeding the total number of people
+  reached and educated in English and Swahili forms (CHW issue #1115).
 
 ## 0.1.10-SNAPSHOT — 2026-10-26
 

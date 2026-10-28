@@ -296,6 +296,13 @@
         "openmrs_entity_id": "referred_male",
         "type": "edit_text",
         "hint": "Men referred to a facility",
+        "constraints": [
+          {
+            "type": "numeric",
+            "ex": "lessThanEqualTo(step1:referred_total, step1:elim_total)",
+            "err": "The number of clients referred should not exceed the number of people reached and educated."
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Please complete this field"
@@ -321,6 +328,13 @@
         "openmrs_entity_id": "referred_female",
         "type": "edit_text",
         "hint": "Women referred to a facility",
+        "constraints": [
+          {
+            "type": "numeric",
+            "ex": "lessThanEqualTo(step1:referred_total, step1:elim_total)",
+            "err": "The number of clients referred should not exceed the number of people reached and educated."
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Please complete this field"
