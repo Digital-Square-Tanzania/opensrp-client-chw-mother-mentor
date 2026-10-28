@@ -189,7 +189,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hiv_disclosure",
-        "label": "Mwenza amejua hali ya VVU ya mama?",
+        "label": "Mwenza anajua hali ya VVU ya mama?",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
