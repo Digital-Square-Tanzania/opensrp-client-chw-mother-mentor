@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,12 +17,19 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMobilizationDao;
 import org.smartregister.chw.mothermentor.model.MotherMentorMobilizationModel;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.util.LangUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
     private static final String EXTRA_SESSION_ID = "session_id";
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(
+                LangUtils.setAppLocale(base, LangUtils.getLanguage(base.getApplicationContext())));
+    }
 
     public static void startMe(Activity activity, String sessionId) {
         Intent intent = new Intent(activity, MotherMentorMobilizationSessionDetailsActivity.class);
