@@ -1,7 +1,11 @@
 package org.smartregister.chw.mothermentor.interactor;
 
 import android.app.Application;
+import android.database.MatrixCursor;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +21,9 @@ import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
+import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.repository.Repository;
 import org.smartregister.util.FormUtils;
 
 import java.util.LinkedHashMap;
@@ -41,6 +48,20 @@ public class ChildEidFinalTestWorkflowTest {
         org.smartregister.Context context = mock(org.smartregister.Context.class);
         when(library.context()).thenReturn(context);
         when(context.applicationContext()).thenReturn(RuntimeEnvironment.application);
+        Repository repository = mock(Repository.class);
+        SQLiteDatabase database = mock(SQLiteDatabase.class);
+        when(library.getRepository()).thenReturn(repository);
+        when(repository.getReadableDatabase()).thenReturn(database);
+        when(database.rawQuery(anyString(), any(String[].class))).thenAnswer(call -> {
+            assertTrue(call.<String>getArgument(0).contains(
+                    Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID));
+            assertArrayEquals(new String[] {"child"}, call.getArgument(1));
+            MatrixCursor row = new MatrixCursor(new String[] {
+                DBConstants.KEY.DOB, DBConstants.KEY.WEANING_DATE, DBConstants.KEY.LAST_TEST});
+            row.addRow(new Object[] {
+                DateTime.now().minusMonths(18).toString("yyyy-MM-dd"), null, null});
+            return row;
+        });
         ReflectionHelpers.setStaticField(MotherMentorLibrary.class, "instance", library);
         previousForms = ReflectionHelpers.getStaticField(FormUtils.class, "instance");
         forms = mock(FormUtils.class);
@@ -74,6 +95,8 @@ public class ChildEidFinalTestWorkflowTest {
         BaseMotherMentorVisitContract.View view = mock(BaseMotherMentorVisitContract.View.class);
         when(view.getContext()).thenReturn(RuntimeEnvironment.application);
         MemberObject member = new MemberObject(); member.setBaseEntityId("child");
+        // The real presenter loads this member before calculating the visit actions.
+        i.memberObject = member;
         BaseMotherMentorVisitContract.InteractorCallBack callback = mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
         i.calculateActions(view, member, callback);
         ArgumentCaptor<LinkedHashMap> captor = ArgumentCaptor.forClass(LinkedHashMap.class);

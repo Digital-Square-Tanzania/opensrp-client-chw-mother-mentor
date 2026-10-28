@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.actionhelper;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import android.app.Application;
 import android.content.Context;
@@ -209,8 +210,18 @@ public class MotherMentorActionHelpersTest {
                         new MotherMentorFollowUpStatusActionHelper(callback),
                         new MotherMentorPartnerFollowUpStatusActionHelper(callback),
                         new MotherMentorChildEidFollowUpStatusActionHelper(callback))) {
-            assertStatus(helper, form(DBConstants.KEY.FOLLOW_UP_STATUS, "found"), true);
+            JSONObject found = form(DBConstants.KEY.FOLLOW_UP_STATUS, "found");
+            boolean partner = helper instanceof MotherMentorPartnerFollowUpStatusActionHelper;
+            if (partner) {
+                assertStatus(helper, found, false);
+                found = form(DBConstants.KEY.FOLLOW_UP_STATUS, "found",
+                        DBConstants.KEY.PARTNER_FACILITY_AGREEMENT, "agreed");
+            }
+            assertStatus(helper, found, true);
+            // Partner callbacks run after action post-processing, rather than on raw JSON.
+            if (partner) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
             assertStatus(helper, (String) null, false);
+            if (partner) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
         }
         assertEquals(6, callbacks[0]);
     }
