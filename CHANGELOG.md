@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.11-SNAPSHOT — 2026-10-28
+
+### Changed
+
+- Increment the library version name from `0.1.10-SNAPSHOT` to `0.1.11-SNAPSHOT`
+  and Android version code from 11 to 12.
+
 ### Fixed
 
 - Restrict Child EID test choices to eligible ages and recorded weaning dates,
