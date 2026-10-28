@@ -170,19 +170,19 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hei_follow_up_number",
         "type": "edit_text",
-        "hint": "Namba ya ufuatiliaji wa mtoto (tarakimu 2)",
+        "hint": "Mtoto wa ngapi kuzaliwa",
         "value": "",
         "v_regex": {
-          "value": "^[0-9]{2}$",
-          "err": "Weka tarakimu mbili, kwa mfano 01"
+          "value": "^(?:0?[1-9]|1[0-9]|20)$",
+          "err": "Weka namba kamili kuanzia 1 hadi 20"
         },
         "v_max_length": {
           "value": "2",
-          "err": "Weka tarakimu mbili pekee"
+          "err": "Weka namba ya kuzaliwa kuanzia 1 hadi 20"
         },
         "v_required": {
           "value": true,
-          "err": "Weka namba ya ufuatiliaji wa mtoto"
+          "err": "Weka mtoto wa ngapi kuzaliwa (1–20)"
         },
         "relevance": {
           "step1:hei_registered": {
@@ -201,12 +201,12 @@
         "read_only": true,
         "value": "",
         "v_regex": {
-          "value": "^.+-C-[0-9]{2}$",
-          "err": "Namba ya HEI inahitaji namba ya CTC ya mama na tarakimu mbili za ufuatiliaji"
+          "value": "^[0-9]{2}-[0-9]{2}-[0-9]{4}-[0-9]{6}-C(?:0[1-9]|1[0-9]|20)$",
+          "err": "Namba ya HEI inahitaji namba ya CTC ya mama ikifuatiwa na C01 hadi C20"
         },
         "v_required": {
           "value": true,
-          "err": "Namba ya CTC ya mama haipo. Sasisha usajili wake wa Mama Kinara kwanza."
+          "err": "Weka namba ya kuzaliwa kuanzia 1 hadi 20. Ikiwa namba ya CTC ya mama haipo au si sahihi, sasisha usajili wake wa Mama Kinara kwanza."
         },
         "relevance": {
           "step1:hei_registered": {

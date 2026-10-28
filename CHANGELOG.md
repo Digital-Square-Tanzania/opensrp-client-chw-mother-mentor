@@ -8,6 +8,9 @@ Android version code.
 
 ### Fixed
 
+- Capture Child EID birth order from 1 to 20 and generate HEI identifiers in the
+  format `RR-CC-FFFF-XXXXXX-C01`, using the linked mother's CTC ID and a two-digit
+  birth-order suffix (CHW issue #1109).
 - Correct the Swahili partner HIV-disclosure question to use "anajua" instead of
   "amejua" (CHW issue #1108).
 

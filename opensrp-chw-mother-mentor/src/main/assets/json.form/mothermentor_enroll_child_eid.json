@@ -170,19 +170,19 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "hei_follow_up_number",
         "type": "edit_text",
-        "hint": "Child's follow-up number (2 digits)",
+        "hint": "Child's birth order",
         "value": "",
         "v_regex": {
-          "value": "^[0-9]{2}$",
-          "err": "Enter two digits, for example 01"
+          "value": "^(?:0?[1-9]|1[0-9]|20)$",
+          "err": "Enter a whole number from 1 to 20"
         },
         "v_max_length": {
           "value": "2",
-          "err": "Enter exactly two digits"
+          "err": "Enter a birth order from 1 to 20"
         },
         "v_required": {
           "value": true,
-          "err": "Enter the child's follow-up number"
+          "err": "Enter the child's birth order (1–20)"
         },
         "relevance": {
           "step1:hei_registered": {
@@ -201,12 +201,12 @@
         "read_only": true,
         "value": "",
         "v_regex": {
-          "value": "^.+-C-[0-9]{2}$",
-          "err": "The HEI number requires the mother's CTC ID and a two-digit follow-up number"
+          "value": "^[0-9]{2}-[0-9]{2}-[0-9]{4}-[0-9]{6}-C(?:0[1-9]|1[0-9]|20)$",
+          "err": "The HEI number requires the mother's CTC ID followed by C01 to C20"
         },
         "v_required": {
           "value": true,
-          "err": "The mother's CTC ID is missing. Update her Mother Mentor enrollment first."
+          "err": "Enter a birth order from 1 to 20. If the mother's CTC ID is missing or invalid, update her Mother Mentor enrollment first."
         },
         "relevance": {
           "step1:hei_registered": {
