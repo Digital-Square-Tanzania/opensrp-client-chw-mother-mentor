@@ -6,6 +6,11 @@ Android version code.
 
 ## Unreleased
 
+### Fixed
+
+- Ask whether Child EID enrollment test results have returned before collecting
+  positive or negative results in English and Swahili (CHW issue #1116).
+
 ## 0.1.11-SNAPSHOT — 2026-10-28
 
 ### Changed

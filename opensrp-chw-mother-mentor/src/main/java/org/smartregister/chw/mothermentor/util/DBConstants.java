@@ -179,6 +179,7 @@ public final class DBConstants {
         public static final String HEI_FOLLOW_UP_NUMBER = "hei_follow_up_number";
         public static final String HEI_REGISTERED = "hei_registered";
         public static final String LAST_TEST = "last_test";
+        public static final String LAST_TEST_RESULTS_RETURNED = "last_test_results_returned";
         public static final String LAST_TEST_RESULT = "last_test_result";
         public static final String MOTHER_BASE_ENTITY_ID = "mother_base_entity_id";
         public static final String MOTHER_NAME = "mother_name";
