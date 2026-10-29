@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.12-SNAPSHOT — 2026-10-29
+
+### Changed
+
+- Increment the library version name from `0.1.11-SNAPSHOT` to `0.1.12-SNAPSHOT`
+  and Android version code from 12 to 13.
+
 ### Fixed
 
 - Ask whether Child EID enrollment test results have returned before collecting
