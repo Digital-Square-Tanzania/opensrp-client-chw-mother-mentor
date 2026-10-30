@@ -6,6 +6,18 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.13-SNAPSHOT — 2026-10-30
+
+### Changed
+
+- Increment the library version name from `0.1.12-SNAPSHOT` to `0.1.13-SNAPSHOT`
+  and Android version code from 13 to 14.
+- Own the Mother Mentor register, follow-up and linkage layouts, icons, colors,
+  menu identifiers, and English/Swahili workflow strings in the library.
+- Use the existing library household enrollment forms and consent relevance rule
+  without app-level duplicates. Form fields and effective resource values are
+  unchanged.
+
 ## 0.1.12-SNAPSHOT — 2026-10-29
 
 ### Changed
