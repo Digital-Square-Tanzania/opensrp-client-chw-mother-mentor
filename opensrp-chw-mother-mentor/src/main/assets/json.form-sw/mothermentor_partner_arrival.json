@@ -32,7 +32,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_arrived_at_facility",
-        "label": "Mwenza amehudhuria kituoni (mara ya kwanza)?",
+        "label": "Mwenzi amehudhuria kituoni (mara ya kwanza)?",
         "type": "native_radio",
         "options": [
           {
