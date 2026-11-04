@@ -7,6 +7,10 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.domain.VisitDetail;
+import java.util.Set;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
@@ -136,7 +140,67 @@ public class VisitRepository extends BaseRepository {
         }
         // Handle updated home visit details
         database.insert(VISIT_TABLE, null, createValues(visit));
+        MotherMentorMotherDeliveryRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
+    }
+
+    /** Replace only schema-2 mother evidence when its source revision advances. */
+    public void refreshMotherVisit(Visit existing, Visit incoming, SQLiteDatabase database,
+            VisitDetailsRepository detailsRepository) {
+        if (existing == null || incoming == null
+                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
+                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())
+                || !MotherMentorMotherDeliveryRepository.isMotherVisit(existing)
+                || !MotherMentorMotherDeliveryRepository.isMotherVisit(incoming)) return;
+        if (database == null) database = getWritableDatabase();
+        long incomingVersion = motherSourceVersion(incoming);
+        boolean identical = StringUtils.equals(existing.getJson(), incoming.getJson());
+        boolean replace = !identical && incomingVersion > 0
+                && incomingVersion >= motherSourceVersion(existing);
+        boolean ownTransaction = !database.inTransaction();
+        if (ownTransaction) database.beginTransaction();
+        try {
+            if (replace) {
+                incoming.setVisitId(existing.getVisitId());
+                incoming.setCreatedAt(existing.getCreatedAt());
+                incoming.setDate(existing.getDate());
+                incoming.setParentVisitID(existing.getParentVisitID());
+                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                if (incoming.getVisitDetails() != null) {
+                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
+                        if (details == null) continue;
+                        for (VisitDetail detail : details) {
+                            detail.setVisitId(existing.getVisitId());
+                            detailsRepository.addVisitDetails(detail, database);
+                        }
+                    }
+                }
+            } else if (Boolean.TRUE.equals(incoming.getProcessed())
+                    && !Boolean.TRUE.equals(existing.getProcessed()) && identical) {
+                ContentValues finalized = new ContentValues();
+                finalized.put(PROCESSED, 1);
+                finalized.put(PRE_PROCESSED, "");
+                database.update(VISIT_TABLE, finalized, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                existing.setProcessed(true);
+            }
+            MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
+            if (ownTransaction) database.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) database.endTransaction();
+        }
+        EventBus.getDefault().post(replace ? incoming : existing);
+    }
+
+    private long motherSourceVersion(Visit visit) {
+        try {
+            return Math.max(0, new JSONObject(visit.getJson()).optLong("version", 0));
+        } catch (JSONException invalid) {
+            return 0;
+        }
     }
 
     public String getParentVisitEventID(
@@ -185,12 +249,14 @@ public class VisitRepository extends BaseRepository {
 
     public void deleteVisit(String visitID) {
         try {
+            Set<String> mothers = MotherMentorMotherDeliveryRepository.affectedMothers(getWritableDatabase(), visitID);
             getWritableDatabase().delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
             getWritableDatabase()
                     .delete(
                             VisitDetailsRepository.VISIT_DETAILS_TABLE,
                             VISIT_ID + "= ?",
                             new String[] {visitID});
+            for (String mother : mothers) MotherMentorMotherDeliveryRepository.rebuild(getWritableDatabase(), mother);
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -203,6 +269,7 @@ public class VisitRepository extends BaseRepository {
             values.put(PRE_PROCESSED, "");
             getWritableDatabase()
                     .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            MotherMentorMotherDeliveryRepository.rebuildForVisit(getWritableDatabase(), getVisitByVisitId(visitID));
         } catch (Exception e) {
             Timber.e(e);
         }

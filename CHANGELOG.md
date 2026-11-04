@@ -10,6 +10,8 @@ Android version code.
   strict delivery/loss dates, immutable enrollment context, and branch clearing.
 - Rebuild current delivery date, child DOB and pregnancy status from finalized
   visit evidence through an explicit database-63 migration API; retain raw history.
+- Refresh schema-2 mother evidence on source replay and rebuild delivery projections
+  after finalized insert, completion, correction, deletion and enrollment processing.
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
