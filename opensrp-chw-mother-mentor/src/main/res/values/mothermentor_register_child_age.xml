@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="mothermentor_register_child_age_months">
+        <item quantity="one">child %1$d month</item>
+        <item quantity="other">child %1$d months</item>
+    </plurals>
+</resources>
