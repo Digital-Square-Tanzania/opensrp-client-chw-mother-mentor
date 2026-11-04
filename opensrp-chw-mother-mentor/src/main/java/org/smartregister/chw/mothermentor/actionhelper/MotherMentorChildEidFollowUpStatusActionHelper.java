@@ -12,6 +12,7 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 
 import java.util.Collections;
 import java.util.Map;
@@ -52,10 +53,10 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
 
     protected LocalDate childDob() {
         LocalDate dob = member == null ? null
-                : MotherMentorChildEidStatusUtils.parseDate(member.getDob());
+                : MotherMentorHeiSchedule.parseBirthDate(member.getDob());
         if (dob != null) return dob;
         try {
-            return MotherMentorChildEidStatusUtils.parseDate(
+            return MotherMentorHeiSchedule.parseBirthDate(
                     loadEnrollmentValues().get(DBConstants.KEY.DOB));
         } catch (Exception e) {
             Timber.e(e, "Unable to load the Child EID birth date");
