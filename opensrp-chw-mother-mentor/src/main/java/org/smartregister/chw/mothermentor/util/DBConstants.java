@@ -271,6 +271,19 @@ public final class DBConstants {
         public static final String VISIT_PREGNANCY_STATUS = "visit_pregnancy_status";
         public static final String WAY_EDUCATION_PROVIDED = "way_education_provided";
 
+        // Mother pregnancy outcome observations and native-form delivery inputs.
+        public static final String MAMA_PREGNANCY_OUTCOME = "mama_pregnancy_outcome";
+        public static final String MAMA_PREGNANCY_OUTCOME_OTHER = "mama_pregnancy_outcome_other";
+        public static final String MAMA_TAREHE_KUJIFUNGUA = "mama_tarehe_kujifungua";
+        public static final String MAMA_PREGNANCY_LOSS_DATE = "mama_pregnancy_loss_date";
+        public static final String MAMA_ENROLLMENT_CHILD_DOB = "mama_enrollment_child_dob";
+        public static final String MAMA_DELIVERY_DATE_INPUT = "mama_delivery_date_input";
+        public static final String MAMA_PRETERM_DELIVERY_DATE_INPUT = "mama_preterm_delivery_date_input";
+        public static final String MAMA_STILLBIRTH_DATE_INPUT = "mama_stillbirth_date_input";
+        public static final String MAMA_ENROLLMENT_DELIVERY_DATE = "mama_enrollment_delivery_date";
+        public static final String MAMA_DELIVERY_SCHEDULE_NOTE = "mama_delivery_schedule_note";
+        public static final String MAMA_DELIVERY_EDIT_NOTE = "mama_delivery_edit_note";
+
         // Shared visit and event columns.
         public static final String AGE = "age";
         public static final String EVENT_BASE_ENTITY_ID = "baseEntityId";

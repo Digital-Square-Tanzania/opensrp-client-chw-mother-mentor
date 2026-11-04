@@ -15,6 +15,12 @@ Android version code.
 
 ### Added
 
+- Add the mother visit pregnancy outcome branches in English and Swahili, including
+  strict delivery/loss dates, immutable enrollment context, and branch clearing.
+- Rebuild current delivery date, child DOB and pregnancy status from finalized
+  visit evidence through an explicit database-63 migration API; retain raw history.
+- Refresh schema-2 mother evidence on source replay and rebuild delivery projections
+  after finalized insert, completion, correction, deletion and enrollment processing.
 - Close household follow-up after confirmed relocation or consecutive unsuccessful
   visits, rebuilding the current enrollment's counters from finalized visit evidence.
 - Provide localized closure confirmation, reasons, dates and active/closed register

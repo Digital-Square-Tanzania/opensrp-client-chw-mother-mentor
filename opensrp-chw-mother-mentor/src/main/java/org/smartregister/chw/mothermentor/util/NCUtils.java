@@ -312,6 +312,10 @@ public class NCUtils {
                         }
                     }
                 }
+            } else if (org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository.isMotherVisit(visit)) {
+                Visit incoming = eventToVisit(baseEvent.getEvent());
+                MotherMentorLibrary.getInstance().visitRepository().refreshMotherVisit(
+                        visit, incoming, database, MotherMentorLibrary.getInstance().visitDetailsRepository());
             } else if (MotherMentorPartnerClosureRepository.isPartnerVisit(visit)) {
                 MotherMentorLibrary.getInstance().visitRepository().refreshPartnerVisit(
                         visit, eventToVisit(baseEvent.getEvent()), database,

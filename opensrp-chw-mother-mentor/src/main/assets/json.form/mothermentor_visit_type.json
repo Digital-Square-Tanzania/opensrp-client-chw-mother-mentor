@@ -258,6 +258,676 @@
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",
         "openmrs_entity_id": "mothermentor_reporting_version"
+      },
+      {
+        "key": "mama_enrollment_child_dob",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_enrollment_child_dob",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
+        "key": "visit_pregnancy_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "visit_pregnancy_status",
+        "type": "native_radio",
+        "label": "Pregnancy status",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "options": [
+          {
+            "key": "pregnant",
+            "text": "Pregnant",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnant"
+          },
+          {
+            "key": "not_pregnant",
+            "text": "Not pregnant",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_pregnant"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome",
+        "type": "native_radio",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "label": "Current status",
+        "text_color": "#000000",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "delivered",
+            "text": "Delivered",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "delivered"
+          },
+          {
+            "key": "preterm",
+            "text": "Delivered preterm",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "preterm"
+          },
+          {
+            "key": "pregnancy_loss",
+            "text": "Pregnancy loss (miscarriage)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnancy_loss"
+          },
+          {
+            "key": "stillbirth",
+            "text": "Stillbirth",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stillbirth"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_preterm_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_stillbirth_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_loss_date",
+        "type": "date_picker",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_loss_date",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of pregnancy loss",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_enrollment_delivery_date",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery (from enrolment)",
+        "max_date": "today",
+        "expanded": false,
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_kujifungua",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_kujifungua",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome_other",
+        "type": "edit_text",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome_other",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Specify the reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_edit_note",
+        "type": "toaster_notes",
+        "text": "Can be edited later if the date was entered wrongly.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_schedule_note",
+        "type": "toaster_notes",
+        "text": "Saving the delivery date starts the child's HEI test schedule. EID follow-up enrollment is handled separately.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_path",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_path",
+        "value": "false"
+      },
+      {
+        "key": "mama_previous_weaning_date",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_weaning_date"
+      },
+      {
+        "key": "mama_previous_breastfeeding_status",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_breastfeeding_status"
+      },
+      {
+        "key": "mama_hei_test_history",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_history",
+        "value": "{}"
+      },
+      {
+        "key": "mama_hei_assessment_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_assessment_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_tests",
+        "value": "[]"
+      },
+      {
+        "key": "mama_hei_due_test",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_test",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_test_type",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_type",
+        "value": ""
+      },
+      {
+        "key": "mama_child_age_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_age_note",
+        "hint": "Child age",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_next_test_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_next_test_note",
+        "hint": "Next HEI test",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_status",
+        "label": "Child status",
+        "options": [
+          {
+            "key": "alive",
+            "text": "Child is alive",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "alive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "deceased",
+            "text": "Child has died",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_mtoto_alifariki",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_mtoto_alifariki",
+        "hint": "Date the child died",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_breastfeeding_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_breastfeeding_status",
+        "label": "Breastfeeding status",
+        "options": [
+          {
+            "key": "breastfeeding",
+            "text": "Breastfeeding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breastfeeding",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "not_breastfeeding",
+            "text": "Not breastfeeding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_breastfeeding",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_acha_kunyonyesha",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_acha_kunyonyesha",
+        "hint": "Date breastfeeding stopped",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_done",
+        "label": "Has the child had the due HEI test?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_type_choice",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_test_type_choice",
+        "label": "Test type",
+        "options": [
+          {
+            "key": "six_weeks",
+            "text": "6 weeks",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "six_weeks",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "nine_months",
+            "text": "9 months",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nine_months",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "three_months_after_weaning",
+            "text": "3 months after breastfeeding stopped",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "three_months_after_weaning",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "eighteen_months",
+            "text": "18 months (confirmatory)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "eighteen_months",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_date",
+        "hint": "Test date",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_result",
+        "label": "Test result",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Negative",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Positive",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Result pending",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "hei_chanya_imethibitishwa",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_chanya_imethibitishwa",
+        "label": "Has the confirmatory result been received?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
       }
     ]
   }
