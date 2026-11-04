@@ -2,6 +2,8 @@ package org.smartregister.chw.mothermentor.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +23,9 @@ public final class MotherMentorVisitCompletion {
     }
 
     public static boolean isVisitTypeComplete(Map<String, String> values) {
+        if (MotherMentorMotherVisitUtils.isSchema2(values)) {
+            return MotherMentorMotherClosureRepository.outcome(values) != null;
+        }
         String attendance = values.get(DBConstants.KEY.ATTENDANCE_TYPE);
         if (!matches(attendance, "new", "Mpya", "repeat", "Marudio")) return false;
         if (matches(attendance, "repeat", "Marudio")
@@ -84,6 +89,11 @@ public final class MotherMentorVisitCompletion {
 
     public static boolean isComplete(JSONArray observations) {
         Map<String, String> values = observationValues(observations);
+        if (MotherMentorMotherVisitUtils.isSchema2(values)) {
+            VisitOutcome outcome = MotherMentorMotherClosureRepository.outcome(values);
+            return outcome != null && (outcome != VisitOutcome.CONTINUE
+                    || MotherMentorMotherVisitUtils.isComplete(values));
+        }
         if (!isVisitTypeComplete(values)) return false;
         return !isFullVisit(
                         values.get(DBConstants.KEY.ATTENDANCE_TYPE),

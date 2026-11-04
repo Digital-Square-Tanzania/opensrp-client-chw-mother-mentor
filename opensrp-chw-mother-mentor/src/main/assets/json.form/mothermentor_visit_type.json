@@ -49,14 +49,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Type of attendance",
+    "title": "Visit type",
     "fields": [
       {
         "key": "attendance_type",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "attendance_type",
-        "label": "Attendance type",
+        "label": "Visit type",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -69,7 +69,7 @@
           },
           {
             "key": "repeat",
-            "text": "Repeat",
+            "text": "Return",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "repeat"
@@ -90,46 +90,18 @@
         "type": "native_radio",
         "options": [
           {
-            "key": "continuing_services",
-            "text": "Continuing services",
+            "key": "found",
+            "text": "Found",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "continuing_services"
+            "openmrs_entity_id": "found"
           },
           {
-            "key": "deceased",
-            "text": "Deceased",
+            "key": "not_found",
+            "text": "Not found",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "deceased"
-          },
-          {
-            "key": "relocated",
-            "text": "Relocated",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "relocated"
-          },
-          {
-            "key": "transferred_to_another_facility",
-            "text": "Transferred to another facility",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "transferred_to_another_facility"
-          },
-          {
-            "key": "stopped_services",
-            "text": "Stopped services",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "stopped_services"
-          },
-          {
-            "key": "not_available",
-            "text": "Not available",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_available"
+            "openmrs_entity_id": "not_found"
           }
         ],
         "v_required": {
@@ -139,26 +111,161 @@
         "relevance": {
           "rules-engine": {
             "ex-rules": {
-              "rules-file": "mother_mentor_relevance.yml"
+              "rules-file": "mothermentor_mother_visit_relevance.yml"
             }
           }
         }
       },
       {
-        "key": "primary_mothermentor_client",
-        "type": "hidden",
-        "value": "false",
+        "key": "mama_not_found_reason",
+        "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "primary_mothermentor_client",
-        "openmrs_entity_parent": ""
+        "openmrs_entity_id": "mama_not_found_reason",
+        "label": "Reason",
+        "text_color": "#000000",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "deceased",
+            "text": "Deceased",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          },
+          {
+            "key": "moved_area",
+            "text": "Moved from area",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_area"
+          },
+          {
+            "key": "moved_facility",
+            "text": "Transferred to another facility",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_facility"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_visit_relevance.yml"
+            }
+          }
+        }
       },
       {
-        "key": "iit_enrolled",
-        "type": "hidden",
-        "value": "false",
+        "key": "mama_sababu_nyingine_text",
+        "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "iit_enrolled",
-        "openmrs_entity_parent": ""
+        "openmrs_entity_id": "mama_sababu_nyingine_text",
+        "type": "edit_text",
+        "hint": "Specify reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_visit_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_kituo_anachohamia",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_kituo_anachohamia",
+        "type": "edit_text",
+        "hint": "Facility transferring to (optional)",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_visit_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_kituo_kipya",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_kituo_kipya",
+        "type": "edit_text",
+        "hint": "Name of the new facility",
+        "v_required": {
+          "value": true,
+          "err": "Please enter the new facility name"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_visit_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_visit_schema",
+        "type": "hidden",
+        "value": "2",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_visit_schema"
+      },
+      {
+        "key": "mama_enrollment_id",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_enrollment_id"
+      },
+      {
+        "key": "mama_enrollment_pregnancy_status",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_enrollment_pregnancy_status"
+      },
+      {
+        "key": "primary_mothermentor_client",
+        "type": "hidden",
+        "value": "true",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "primary_mothermentor_client"
+      },
+      {
+        "key": "mothermentor_reporting_version",
+        "type": "hidden",
+        "value": "2",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mothermentor_reporting_version"
+      },
+      {
+        "key": "mama_enrollment_child_dob",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_enrollment_child_dob",
+        "openmrs_entity_parent": "",
+        "value": ""
       },
       {
         "key": "visit_pregnancy_status",
@@ -166,7 +273,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "visit_pregnancy_status",
         "type": "native_radio",
-        "label": "Pregnancy status at this visit",
+        "label": "Pregnancy status",
         "v_required": {
           "value": true,
           "err": "Please complete this field"
@@ -179,12 +286,6 @@
             "openmrs_entity_id": "pregnant"
           },
           {
-            "key": "breast_feeding",
-            "text": "Breastfeeding",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "breast_feeding"
-          },
-          {
             "key": "not_pregnant",
             "text": "Not pregnant",
             "openmrs_entity": "concept",
@@ -194,494 +295,639 @@
         "relevance": {
           "rules-engine": {
             "ex-rules": {
-              "rules-file": "mothermentor_reporting_relevance.yml"
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
             }
           }
         }
       },
       {
-        "key": "art_initiated_before_visit",
-        "type": "hidden",
+        "key": "mama_pregnancy_outcome",
+        "type": "native_radio",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome",
+        "openmrs_entity_parent": "",
         "value": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "art_initiated_before_visit",
-        "openmrs_entity_parent": ""
-      },
-      {
-        "key": "new_pmtct_art_initiation",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "new_pmtct_art_initiation",
-        "type": "native_radio",
-        "label": "New PMTCT client initiated on ART at this visit?",
+        "label": "Current status",
+        "text_color": "#000000",
         "v_required": {
           "value": true,
-          "err": "Please complete this field"
+          "err": "Please select an answer"
         },
         "options": [
           {
-            "key": "yes",
-            "text": "Yes",
+            "key": "delivered",
+            "text": "Delivered",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes"
+            "openmrs_entity_id": "delivered"
           },
           {
-            "key": "no",
-            "text": "No",
+            "key": "preterm",
+            "text": "Delivered preterm",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
-          }
-        ],
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_reporting_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "visit_art_start_date",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "visit_art_start_date",
-        "type": "date_picker",
-        "hint": "ART initiation date",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_reporting_relevance.yml"
-            }
-          }
-        },
-        "max_date": "today",
-        "expanded": false
-      },
-      {
-        "key": "iit_tracing_visit",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "iit_tracing_visit",
-        "type": "native_radio",
-        "label": "Was this an IIT/LTFU tracing visit?",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "options": [
-          {
-            "key": "yes",
-            "text": "Yes",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes"
+            "openmrs_entity_id": "preterm"
           },
           {
-            "key": "no",
-            "text": "No",
+            "key": "pregnancy_loss",
+            "text": "Pregnancy loss (miscarriage)",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
-          }
-        ],
-        "relevance": {
-          "step1:iit_enrolled": {
-            "type": "string",
-            "ex": "equalTo(., \"true\")"
-          }
-        }
-      },
-      {
-        "key": "iit_tracing_outcome",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "iit_tracing_outcome",
-        "type": "native_radio",
-        "label": "Tracing outcome",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "options": [
-          {
-            "key": "found",
-            "text": "Found",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "found"
+            "openmrs_entity_id": "pregnancy_loss"
           },
           {
-            "key": "not_found",
-            "text": "Not found",
+            "key": "stillbirth",
+            "text": "Stillbirth",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_found"
-          },
-          {
-            "key": "deceased",
-            "text": "Deceased",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "deceased"
-          },
-          {
-            "key": "transferred",
-            "text": "Transferred to another facility",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "transferred"
-          },
-          {
-            "key": "refused",
-            "text": "Refused to return",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "refused"
-          },
-          {
-            "key": "still_followed",
-            "text": "Still being followed",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "still_followed"
-          }
-        ],
-        "relevance": {
-          "step1:iit_tracing_visit": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
-          }
-        }
-      },
-      {
-        "key": "iit_interruption_reason",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "iit_interruption_reason",
-        "type": "native_radio",
-        "label": "Reason for interruption",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "options": [
-          {
-            "key": "side_effects",
-            "text": "Side effects of medication",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "side_effects"
-          },
-          {
-            "key": "forgot",
-            "text": "Forgot",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "forgot"
-          },
-          {
-            "key": "travel",
-            "text": "Travel / relocation",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "travel"
-          },
-          {
-            "key": "no_transport_money",
-            "text": "No transport money",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "no_transport_money"
-          },
-          {
-            "key": "overcrowding",
-            "text": "Health facility overcrowding",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "overcrowding"
-          },
-          {
-            "key": "stigma",
-            "text": "Stigma",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "stigma"
+            "openmrs_entity_id": "stillbirth"
           },
           {
             "key": "other",
             "text": "Other (specify)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
-          },
-          {
-            "key": "not_applicable",
-            "text": "Not applicable",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_applicable"
           }
         ],
         "relevance": {
-          "step1:iit_tracing_visit": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
           }
         }
       },
       {
-        "key": "iit_interruption_other",
+        "key": "mama_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
         "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_preterm_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_stillbirth_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_loss_date",
+        "type": "date_picker",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "iit_interruption_other",
+        "openmrs_entity_id": "mama_pregnancy_loss_date",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of pregnancy loss",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_enrollment_delivery_date",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery (from enrolment)",
+        "max_date": "today",
+        "expanded": false,
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_kujifungua",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_kujifungua",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome_other",
         "type": "edit_text",
-        "hint": "Specify other interruption reason",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome_other",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Specify the reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_edit_note",
+        "type": "toaster_notes",
+        "text": "Can be edited later if the date was entered wrongly.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_schedule_note",
+        "type": "toaster_notes",
+        "text": "Saving the delivery date starts the child's HEI test schedule. EID follow-up enrollment is handled separately.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_path",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_path",
+        "value": "false"
+      },
+      {
+        "key": "mama_previous_weaning_date",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_weaning_date"
+      },
+      {
+        "key": "mama_previous_breastfeeding_status",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_breastfeeding_status"
+      },
+      {
+        "key": "mama_hei_test_history",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_history",
+        "value": "{}"
+      },
+      {
+        "key": "mama_hei_assessment_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_assessment_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_tests",
+        "value": "[]"
+      },
+      {
+        "key": "mama_hei_due_test",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_test",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_test_type",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_type",
+        "value": ""
+      },
+      {
+        "key": "mama_child_age_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_age_note",
+        "hint": "Child age",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_next_test_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_next_test_note",
+        "hint": "Next HEI test",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_status",
+        "label": "Child status",
+        "options": [
+          {
+            "key": "alive",
+            "text": "Child is alive",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "alive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "deceased",
+            "text": "Child has died",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased",
+            "openmrs_entity_parent": ""
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Please complete this field"
         },
         "relevance": {
-          "step1:iit_interruption_reason": {
-            "type": "string",
-            "ex": "equalTo(., \"other\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
           }
         }
       },
       {
-        "key": "returned_to_art",
+        "key": "mama_tarehe_mtoto_alifariki",
+        "type": "date_picker",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "returned_to_art",
-        "type": "native_radio",
-        "label": "Returned to ART treatment?",
+        "openmrs_entity_id": "mama_tarehe_mtoto_alifariki",
+        "hint": "Date the child died",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
         "v_required": {
           "value": true,
           "err": "Please complete this field"
         },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_breastfeeding_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_breastfeeding_status",
+        "label": "Breastfeeding status",
+        "options": [
+          {
+            "key": "breastfeeding",
+            "text": "Breastfeeding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breastfeeding",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "not_breastfeeding",
+            "text": "Not breastfeeding",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_breastfeeding",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_acha_kunyonyesha",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_acha_kunyonyesha",
+        "hint": "Date breastfeeding stopped",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_done",
+        "label": "Has the child had the due HEI test?",
         "options": [
           {
             "key": "yes",
             "text": "Yes",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes"
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
           },
           {
             "key": "no",
             "text": "No",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
-          },
-          {
-            "key": "not_applicable",
-            "text": "Not applicable",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_applicable"
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
           }
         ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
         "relevance": {
-          "step1:iit_tracing_visit": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
           }
         }
       },
       {
-        "key": "art_return_date",
+        "key": "mama_hei_test_type_choice",
+        "type": "native_radio",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "art_return_date",
-        "type": "date_picker",
-        "hint": "Date returned to ART",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_test_type_choice",
+        "label": "Test type",
+        "options": [
+          {
+            "key": "six_weeks",
+            "text": "6 weeks",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "six_weeks",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "nine_months",
+            "text": "9 months",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nine_months",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "three_months_after_weaning",
+            "text": "3 months after breastfeeding stopped",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "three_months_after_weaning",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "eighteen_months",
+            "text": "18 months (confirmatory)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "eighteen_months",
+            "openmrs_entity_parent": ""
+          }
+        ],
         "v_required": {
           "value": true,
           "err": "Please complete this field"
         },
         "relevance": {
-          "step1:returned_to_art": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
           }
-        },
-        "max_date": "today",
-        "expanded": false
+        }
       },
       {
-        "key": "mothermentor_reporting_version",
-        "type": "hidden",
-        "value": "2",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "mothermentor_reporting_version",
-        "openmrs_entity_parent": ""
-      },
-      {
-        "key": "partner_enrolled",
-        "type": "hidden",
-        "value": "false",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "partner_enrolled",
-        "openmrs_entity_parent": ""
-      },
-      {
-        "key": "child_eid_enrolled",
-        "type": "hidden",
-        "value": "false",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "child_eid_enrolled",
-        "openmrs_entity_parent": ""
-      },
-      {
-        "key": "partner_reached_facility",
+        "key": "mama_hei_test_date",
+        "type": "date_picker",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "partner_reached_facility",
-        "type": "native_radio",
-        "label": "Partner reached the facility for the first time?",
+        "openmrs_entity_id": "mama_hei_test_date",
+        "hint": "Test date",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
         "v_required": {
           "value": true,
           "err": "Please complete this field"
         },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_result",
+        "label": "Test result",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Negative",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Positive",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Result pending",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "hei_chanya_imethibitishwa",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_chanya_imethibitishwa",
+        "label": "Has the confirmatory result been received?",
         "options": [
           {
             "key": "yes",
             "text": "Yes",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes"
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
           },
           {
             "key": "no",
             "text": "No",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
-          },
-          {
-            "key": "not_applicable",
-            "text": "Not applicable",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_applicable"
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
           }
         ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
         "relevance": {
-          "step1:partner_enrolled": {
-            "type": "string",
-            "ex": "equalTo(., \"true\")"
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
           }
         }
-      },
-      {
-        "key": "partner_facility_date",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "partner_facility_date",
-        "type": "date_picker",
-        "hint": "Date partner reached the facility",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "relevance": {
-          "step1:partner_reached_facility": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
-          }
-        },
-        "max_date": "today",
-        "expanded": false
-      },
-      {
-        "key": "child_followup_test_stage",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "child_followup_test_stage",
-        "type": "native_radio",
-        "label": "Child follow-up test stage",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "options": [
-          {
-            "key": "week_6",
-            "text": "Week 6",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "week_6"
-          },
-          {
-            "key": "month_9",
-            "text": "Month 9",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "month_9"
-          },
-          {
-            "key": "three_months_after_breastfeeding",
-            "text": "Three months after stopping breastfeeding",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "three_months_after_breastfeeding"
-          },
-          {
-            "key": "month_18",
-            "text": "Month 18",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "month_18"
-          },
-          {
-            "key": "not_applicable",
-            "text": "Not applicable",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_applicable"
-          }
-        ],
-        "relevance": {
-          "step1:child_eid_enrolled": {
-            "type": "string",
-            "ex": "equalTo(., \"true\")"
-          }
-        }
-      },
-      {
-        "key": "child_reached_facility",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "child_reached_facility",
-        "type": "native_radio",
-        "label": "Child reached the facility?",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "options": [
-          {
-            "key": "yes",
-            "text": "Yes",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes"
-          },
-          {
-            "key": "no",
-            "text": "No",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "no"
-          },
-          {
-            "key": "not_applicable",
-            "text": "Not applicable",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "not_applicable"
-          }
-        ],
-        "relevance": {
-          "step1:child_eid_enrolled": {
-            "type": "string",
-            "ex": "equalTo(., \"true\")"
-          }
-        }
-      },
-      {
-        "key": "child_facility_date",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "child_facility_date",
-        "type": "date_picker",
-        "hint": "Date child reached the facility",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "relevance": {
-          "step1:child_reached_facility": {
-            "type": "string",
-            "ex": "equalTo(., \"yes\")"
-          }
-        },
-        "max_date": "today",
-        "expanded": false
       }
     ]
   }

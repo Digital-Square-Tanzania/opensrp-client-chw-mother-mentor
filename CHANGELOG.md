@@ -15,6 +15,20 @@ Android version code.
 
 ### Added
 
+- Add the mother visit pregnancy outcome branches in English and Swahili, including
+  strict delivery/loss dates, immutable enrollment context, and branch clearing.
+- Rebuild current delivery date, child DOB and pregnancy status from finalized
+  visit evidence through an explicit database-63 migration API; retain raw history.
+- Refresh schema-2 mother evidence on source replay and rebuild delivery projections
+  after finalized insert, completion, correction, deletion and enrollment processing.
+- Add the mother's child-status, breastfeeding and serial HEI-test questions to
+  the existing routine-visit action in English and Swahili (#1142).
+- Calculate calendar-based due stages, retain pending/unconfirmed results, and
+  rebuild the current enrollment's child state from finalized visit history.
+- Read dated results from an unambiguously linked existing Child EID client;
+  automatic enrollment and grace-period classification remain outside this change.
+- Expose explicit database-64/fresh-schema migration and native wizard adapters
+  for the host app. This change depends on Mother visit Parts 1 and 2.
 - Close household follow-up after confirmed relocation or consecutive unsuccessful
   visits, rebuilding the current enrollment's counters from finalized visit evidence.
 - Provide localized closure confirmation, reasons, dates and active/closed register
@@ -26,6 +40,12 @@ Android version code.
 - Confirm death and relocation closures before submission in English and Swahili
   (CHW #1127).
 - Prepare library `0.1.14-SNAPSHOT` / Android code 15 for the new closure contract.
+- Close the current mother enrollment after a validated exit, rebuilding its reason,
+  service date and consecutive Not found/Other counter from finalized visit history.
+- Provide English and Swahili confirmation and closed-card messages, a Closed
+  register filter and history-safe identity lookup, retaining earlier visits.
+- Show child age in the mother register metadata when a valid child date of birth
+  is available, and normalize legacy pregnancy-status display aliases.
 
 ### Fixed
 
@@ -41,6 +61,14 @@ Android version code.
 - Place optional partner tracing comments last in the English and Swahili
   follow-up status forms, after the selected agreement or missing-person reason.
   Keep the separate comments action for facility-attendance visits (CHW #1125).
+- Reorganize mother service visit entry in English and Swahili: show attendance
+  and optional comments first, then show services for a new or found client.
+- Capture the four nested reasons when a returning mother is not found, clear
+  inapplicable answers, and retain the original assets for legacy visit edits.
+- Ask new-client ART initiation in group linkage while preserving the original
+  field codes, previous-initiation rule, and read-only returning attendance.
+- Provide enrollment-scoped, deduplicated mother visit context and clinical-day
+  history for subsequent mother workflow sections.
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
