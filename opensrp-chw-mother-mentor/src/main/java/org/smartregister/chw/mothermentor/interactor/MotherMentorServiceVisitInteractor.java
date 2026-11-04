@@ -14,6 +14,10 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
+import java.util.Collections;
 
 import timber.log.Timber;
 
@@ -125,9 +129,36 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private boolean shouldShowFullVisitActions() {
+        Map<String, String> values = getVisitTypeValues();
+        if (MotherMentorMotherVisitUtils.isSchema2(values)) {
+            BaseMotherMentorVisitAction entry = motherMentorVisitActions.get(
+                    context.getString(R.string.mothermentor_visit_type_section));
+            return entry != null && entry.getActionStatus() == BaseMotherMentorVisitAction.Status.COMPLETED
+                    && MotherMentorMotherClosureRepository.outcome(values) == VisitOutcome.CONTINUE;
+        }
         VisitTypeSelection selection = getVisitTypeSelection();
         return org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion.isFullVisit(
                 selection.attendanceType, selection.followUpStatus);
+    }
+
+    private Map<String, String> getVisitTypeValues() {
+        BaseMotherMentorVisitAction action = motherMentorVisitActions.get(
+                context.getString(R.string.mothermentor_visit_type_section));
+        if (action == null || StringUtils.isBlank(action.getJsonPayload())) return Collections.emptyMap();
+        try {
+            Map<String, String> values = MotherMentorMotherVisitUtils.formValues(
+                    new JSONObject(action.getJsonPayload()));
+            if (StringUtils.isBlank(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
+                    && details != null && details.containsKey(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE)
+                    && !details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).isEmpty()) {
+                values.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
+                        details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).get(0).getDetails());
+            }
+            return values;
+        } catch (Exception e) {
+            Timber.e(e);
+            return Collections.emptyMap();
+        }
     }
 
     private boolean isVisitTypeAnswered() {

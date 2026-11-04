@@ -146,8 +146,13 @@ public final class MotherMentorMotherCascadeRepository {
     private static boolean eligible(Map<String, String> mother, LocalDate day) {
         String status = MotherMentorMotherPregnancyUtils.normalizeStatus(
                 StringUtils.trimToEmpty(mother.get(PREGNANCY_STATUS)).toLowerCase(Locale.ROOT));
+        String currentBreastfeeding = StringUtils.trimToEmpty(
+                mother.get(MAMA_BREASTFEEDING_STATUS)).toLowerCase(Locale.ROOT);
+        // A current child assessment supersedes the older enrollment breastfeeding label.
+        boolean breastfeeding = "breastfeeding".equals(currentBreastfeeding)
+                || (!"not_breastfeeding".equals(currentBreastfeeding) && "breast_feeding".equals(status));
         LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(mother.get(CHILD_DOB));
-        return "pregnant".equals(status) || "breast_feeding".equals(status)
+        return "pregnant".equals(status) || breastfeeding
                 || dob != null && !dob.isAfter(day) && !dob.plusMonths(18).isBefore(day);
     }
 

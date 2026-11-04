@@ -131,9 +131,19 @@ public final class MotherMentorMotherClosureRepository {
                 ? state.advance(VisitOutcome.DECEASED, died == null ? "" : died.toString()) : state;
     }
 
+    /** Checklist and draft completion use the same validated outcome as finalized replay. */
+    public static VisitOutcome outcome(Map<String, String> values) {
+        if (values == null) return null;
+        String recorded = value(values, MOTHERMENTOR_VISIT_DATE);
+        if (recorded.isEmpty()) recorded = value(values, MAMA_HEI_ASSESSMENT_DATE);
+        LocalDate date = recorded.isEmpty() ? LocalDate.now()
+                : org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.parseDate(recorded);
+        return classify(values, date);
+    }
+
     /** Null means invalid/incomplete evidence, so it must not reset a valid consecutive counter. */
     public static VisitOutcome classify(Map<String, String> values, LocalDate date) {
-        if (date == null || date.isAfter(LocalDate.now())
+        if (values == null || date == null || date.isAfter(LocalDate.now())
                 || !MotherMentorMotherVisitUtils.isEntryComplete(values)) return null;
         if (!MotherMentorMotherVisitUtils.isSchema2(values)) {
             String status = value(values, FOLLOW_UP_STATUS);

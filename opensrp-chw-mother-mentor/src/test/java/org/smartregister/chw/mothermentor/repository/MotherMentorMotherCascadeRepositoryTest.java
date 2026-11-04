@@ -214,6 +214,74 @@ public class MotherMentorMotherCascadeRepositoryTest {
     }
 
     @Test
+    public void stoppedBreastfeedingPastEighteenMonthsDoesNotBlockEitherDeathCascade() {
+        mother("other", "breast_feeding", org.joda.time.LocalDate.now()
+                .minusMonths(18).minusDays(1).toString(), 0);
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + MAMA_BREASTFEEDING_STATUS + " TEXT");
+        data.execSQL("UPDATE " + MOTHERS + " SET " + MAMA_BREASTFEEDING_STATUS
+                + "='not_breastfeeding' WHERE base_entity_id='other'");
+        for (VisitOutcome outcome : new VisitOutcome[] {VisitOutcome.DECEASED, VisitOutcome.CHILD_DECEASED}) {
+            data.delete(HOUSEHOLD, null, null);
+            data.delete(LEDGER, null, null);
+            household("ndiyo");
+            close(outcome);
+            assertEquals(outcome.name(), "1", value(HOUSEHOLD, "family", IS_CLOSED));
+        }
+    }
+
+    @Test
+    public void currentBreastfeedingProtectsHouseholdDespiteLegacyNotPregnantStatus() {
+        household("ndiyo");
+        mother("other", "none", org.joda.time.LocalDate.now().minusMonths(19).toString(), 0);
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + MAMA_BREASTFEEDING_STATUS + " TEXT");
+        data.execSQL("UPDATE " + MOTHERS + " SET " + MAMA_BREASTFEEDING_STATUS
+                + "='breastfeeding' WHERE base_entity_id='other'");
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
+    public void stoppedBreastfeedingStillProtectsAChildThroughEighteenCalendarMonths() {
+        household("ndiyo");
+        mother("other", "none", org.joda.time.LocalDate.now().minusMonths(18).toString(), 0);
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + MAMA_BREASTFEEDING_STATUS + " TEXT");
+        data.execSQL("UPDATE " + MOTHERS + " SET " + MAMA_BREASTFEEDING_STATUS
+                + "='not_breastfeeding' WHERE base_entity_id='other'");
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+        data.execSQL("UPDATE " + MOTHERS + " SET child_dob=? WHERE base_entity_id='other'",
+                new Object[] {org.joda.time.LocalDate.now().minusMonths(18).minusDays(1).toString()});
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("1", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
+    public void pregnancyProtectsHouseholdEvenAfterBreastfeedingStopped() {
+        household("ndiyo");
+        mother("other", "pregnant", org.joda.time.LocalDate.now().minusMonths(19).toString(), 0);
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + MAMA_BREASTFEEDING_STATUS + " TEXT");
+        data.execSQL("UPDATE " + MOTHERS + " SET " + MAMA_BREASTFEEDING_STATUS
+                + "='not_breastfeeding' WHERE base_entity_id='other'");
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
+    public void absentOrEmptyBreastfeedingProjectionRetainsLegacyEligibility() {
+        household("ndiyo");
+        mother("other", "breast_feeding", org.joda.time.LocalDate.now().minusMonths(19).toString(), 0);
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + MAMA_BREASTFEEDING_STATUS + " TEXT");
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+        data.execSQL("UPDATE " + MOTHERS + " SET " + MAMA_BREASTFEEDING_STATUS
+                + "='' WHERE base_entity_id='other'");
+        close(VisitOutcome.CHILD_DECEASED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
     public void householdEligibilityUsesCalendarAgeAndCanonicalPregnancyAliases() {
         household("ndiyo"); mother("other", "none", org.joda.time.LocalDate.now().minusMonths(18).toString(), 0);
         close(VisitOutcome.CHILD_DECEASED); assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
