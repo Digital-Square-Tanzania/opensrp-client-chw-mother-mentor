@@ -340,6 +340,9 @@ public class NCUtils {
                             .getRepository().getWritableDatabase() : database, visit);
             Visit canonical = MotherMentorLibrary.getInstance().visitRepository()
                     .getVisitByFormSubmissionID(baseEvent.getEvent().getFormSubmissionId());
+            org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository.rebuildForVisit(
+                    database == null ? MotherMentorLibrary.getInstance().getRepository().getWritableDatabase() : database,
+                    canonical == null ? visit : canonical);
             org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository
                     .rebuildForVisit(database == null ? MotherMentorLibrary.getInstance()
                             .getRepository().getWritableDatabase() : database,
