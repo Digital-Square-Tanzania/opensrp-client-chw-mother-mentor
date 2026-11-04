@@ -135,6 +135,10 @@ public final class MotherMentorMotherChildRepository {
         Map<String, String> registered = MotherMentorChildEidDao.person(db, state.childBaseEntityId);
         LocalDate registeredDob = MotherMentorHeiSchedule.parseBirthDate(registered.get(DBConstants.KEY.DOB));
         if (registeredDob != null && !registeredDob.equals(state.childDob)) state.childBaseEntityId = "";
+        if ("pregnant".equals(state.originalStatus)) {
+            LocalDate delivery = MotherMentorMotherDeliveryRepository.getDeliveryDate(db, motherId, excludedVisitId);
+            if (delivery == null || delivery.isAfter(assessmentDate)) state.childBaseEntityId = "";
+        }
         if ("breast_feeding".equals(state.originalStatus)) state.breastfeedingStatus = "breastfeeding";
         else if ("not_pregnant".equals(state.originalStatus)) state.breastfeedingStatus = "not_breastfeeding";
         if (context.getEnrollmentId().isEmpty()) return state;
@@ -153,7 +157,12 @@ public final class MotherMentorMotherChildRepository {
         evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
         for (Evidence item : evidence) {
             if (item.enrollmentSample) seedLegacyTest(state, item.values, item.date);
-            else if (item.child) applyChild(state, item.values, item.date);
+            else if (item.child && context.getEnrollmentTime() > 0
+                    && item.date.isBefore(new LocalDate(context.getEnrollmentTime()))) {
+                State past = new State(state.childDob);
+                applyChild(past, item.values, item.date);
+                state.knownPerformed.putAll(past.tests);
+            } else if (item.child) applyChild(state, item.values, item.date);
             else applyMother(state, item.values, item.date);
         }
         return state;
@@ -210,6 +219,17 @@ public final class MotherMentorMotherChildRepository {
             boolean sameEpisode = motherEpisode.isEmpty() || motherEpisode.equals(
                     MotherMentorMotherVisitDao.getContext(db, motherId).getEnrollmentId());
             if (sameEpisode && childId.equals(shared.getChildBaseEntityId()) && dob != null && dob.equals(shared.getChildDob())) {
+                State lifetime = new State(dob);
+                for (Evidence item : childEvidence(db, childId, MotherMentorMotherVisitDao.Context.empty(),
+                        excludedVisitId, assessmentDate, before)) applyChild(lifetime, item.values, item.date);
+                for (Map.Entry<Stage, TestRecord> item : lifetime.tests.entrySet()) {
+                    TestRecord current = shared.tests.get(item.getKey());
+                    if (current == null || current.getServiceDate() != null && item.getValue().getServiceDate() != null
+                            && item.getValue().getServiceDate().isAfter(current.getServiceDate())) {
+                        shared.tests.put(item.getKey(), item.getValue());
+                    }
+                }
+                if (lifetime.terminalDate != null) shared.terminal(lifetime.terminal, lifetime.terminalDate);
                 return shared;
             }
         }
