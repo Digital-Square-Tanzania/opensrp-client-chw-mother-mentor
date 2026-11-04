@@ -91,7 +91,8 @@ public class MotherMentorMotherPregnancyUtilsTest {
                 assertTrue(field(form, MAMA_ENROLLMENT_DELIVERY_DATE).getBoolean("read_only"));
                 assertEquals("01-05-2026", value(form, MAMA_TAREHE_KUJIFUNGUA));
                 Map<String, String> values = MotherMentorMotherPregnancyUtils.values(form);
-                values.put(ATTENDANCE_TYPE, "new");
+                values.put(ATTENDANCE_TYPE, "repeat");
+                values.put(FOLLOW_UP_STATUS, "found");
                 assertTrue(complete(values));
                 values.put(MAMA_ENROLLMENT_DELIVERY_DATE, "02-05-2026");
                 assertFalse("A readonly enrollment DOB cannot be changed by submitted values", complete(values));
@@ -117,7 +118,8 @@ public class MotherMentorMotherPregnancyUtilsTest {
     @Test
     public void changingTheOutcomeCannotReuseThePreviousBranchesCanonicalDate() throws Exception {
         JSONObject form = MotherMentorMotherPregnancyUtils.prepare(form("json.form"), "pregnant", "", null, true);
-        field(form, ATTENDANCE_TYPE).put("value", "new");
+        field(form, ATTENDANCE_TYPE).put("value", "repeat");
+        field(form, FOLLOW_UP_STATUS).put("value", "found");
         field(form, VISIT_PREGNANCY_STATUS).put("value", "not_pregnant");
         field(form, MAMA_PREGNANCY_OUTCOME).put("value", "preterm");
         field(form, MAMA_TAREHE_KUJIFUNGUA).put("value", "01-11-2026");
@@ -130,6 +132,21 @@ public class MotherMentorMotherPregnancyUtilsTest {
         MotherMentorMotherPregnancyUtils.normalize(form);
         assertEquals("02-11-2026", value(form, MAMA_TAREHE_KUJIFUNGUA));
         assertTrue(complete(MotherMentorMotherPregnancyUtils.values(form)));
+    }
+
+    @Test
+    public void newAttendanceContinuesWithoutPregnancyOrChildQuestions() throws Exception {
+        JSONObject form = form("json.form");
+        field(form, ATTENDANCE_TYPE).put("value", "new");
+        field(form, MAMA_ENROLLMENT_PREGNANCY_STATUS).put("value", "pregnant");
+        field(form, MAMA_PREGNANCY_OUTCOME).put("value", "delivered");
+        field(form, MAMA_DELIVERY_DATE_INPUT).put("value", "01-11-2026");
+        assertTrue(complete(MotherMentorMotherPregnancyUtils.values(form)));
+        assertFalse(MotherMentorMotherPregnancyUtils.isChildPath(
+                MotherMentorMotherPregnancyUtils.values(form), DAY));
+        MotherMentorMotherPregnancyUtils.normalize(form);
+        for (String key : MotherMentorMotherPregnancyUtils.ANSWER_FIELDS)
+            assertEquals(key, "", value(form, key));
     }
 
     @Test

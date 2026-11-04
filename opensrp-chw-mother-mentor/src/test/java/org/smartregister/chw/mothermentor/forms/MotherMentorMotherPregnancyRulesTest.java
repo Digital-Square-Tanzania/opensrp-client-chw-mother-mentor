@@ -58,6 +58,22 @@ public class MotherMentorMotherPregnancyRulesTest {
         }
     }
 
+    @Test
+    public void newAttendanceHidesEveryPregnancyQuestionAndClearsCanonicalDates() throws Exception {
+        Map<String, Object> facts = foundPregnant();
+        facts.put("step1_" + ATTENDANCE_TYPE, "new");
+        facts.put("step1_" + VISIT_PREGNANCY_STATUS, "not_pregnant");
+        facts.put("step1_" + MAMA_PREGNANCY_OUTCOME, "delivered");
+        facts.put("step1_" + MAMA_DELIVERY_DATE_INPUT, "01-11-2026");
+        for (String key : new String[] {VISIT_PREGNANCY_STATUS, MAMA_PREGNANCY_OUTCOME,
+                MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,
+                MAMA_STILLBIRTH_DATE_INPUT, MAMA_PREGNANCY_LOSS_DATE,
+                MAMA_PREGNANCY_OUTCOME_OTHER, MAMA_ENROLLMENT_DELIVERY_DATE})
+            assertFalse(key, relevant(key, facts));
+        assertEquals("", calculation(MAMA_TAREHE_KUJIFUNGUA, facts));
+        assertEquals("", calculation(MAMA_ENROLLMENT_DELIVERY_DATE, facts));
+    }
+
     private Map<String, Object> foundPregnant() {
         Map<String, Object> facts = new HashMap<>();
         for (String key : new String[] {ATTENDANCE_TYPE, FOLLOW_UP_STATUS, MAMA_ENROLLMENT_PREGNANCY_STATUS,
