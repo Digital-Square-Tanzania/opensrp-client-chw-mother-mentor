@@ -401,6 +401,7 @@ public final class DBConstants {
         public static final String MTOTO_MISSED_TEST = "mtoto_missed_test";
         public static final String MTOTO_MISSED_DUE = "mtoto_missed_due";
         public static final String MTOTO_RUFAA_STATE = "mtoto_rufaa_state";
+        public static final String MTOTO_RUFAA_STATE_BEFORE = "mtoto_rufaa_state_before";
         public static final String MTOTO_RUFAA_TEST = "mtoto_rufaa_test";
         public static final String MTOTO_RUFAA_DUE = "mtoto_rufaa_due";
         public static final String MTOTO_REFERRAL_AGREEMENT = "mtoto_referral_agreement";
@@ -411,6 +412,8 @@ public final class DBConstants {
         public static final String MTOTO_ENROLLMENT_ID = "mtoto_enrollment_id";
         public static final String MTOTO_MOTHER_ENROLLMENT_ID = "mtoto_mother_enrollment_id";
         public static final String MTOTO_ENTRY_SOURCE = "mtoto_entry_source";
+        public static final String MTOTO_IS_CLOSED = "mtoto_is_closed";
+        public static final String MTOTO_VISIT_COUNT = "mtoto_visit_count";
         public static final String MOTHER_ENTITY_ID = "mother_entity_id";
         public static final String CHILD_EID_FINAL_HIV_TEST_DONE = "child_eid_final_hiv_test_done";
         public static final String CHILD_EID_FINAL_HIV_RESULT = "child_eid_final_hiv_result";

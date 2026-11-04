@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +71,8 @@ public final class MotherMentorHeiSchedule {
         public boolean isConfirmed() { return confirmed; }
         public LocalDate getServiceDate() { return serviceDate; }
         public boolean requiresFollowUp() {
-            return "pending".equals(result) || ("positive".equals(result) && !confirmed);
+            return "pending".equals(result) || "unknown".equals(result)
+                    || ("positive".equals(result) && !confirmed);
         }
     }
 
@@ -156,6 +158,20 @@ public final class MotherMentorHeiSchedule {
             }
         }
         return null;
+    }
+
+    /** Registered client DOBs may be timestamps; retain the date in the recorded offset. */
+    public static LocalDate parseBirthDate(String value) {
+        LocalDate date = parseDate(value);
+        if (date != null || value == null) return date;
+        if (!value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:?\\d{2})?")) return null;
+        try {
+            LocalDate recorded = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
+                    .parseDateTime(value).toLocalDate();
+            return recorded.toString().equals(value.substring(0, 10)) ? recorded : null;
+        } catch (IllegalArgumentException invalid) {
+            return null;
+        }
     }
 
     public static boolean validDate(LocalDate date, LocalDate dob, LocalDate assessment) {
