@@ -8,8 +8,39 @@ Android version code.
 
 ### Changed
 
-- Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment. (CHW #1129).
+- Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).
+- Increment the library to `0.1.15-SNAPSHOT` / Android code 16 for the shared eligibility API.
 
+## 0.1.14-SNAPSHOT — 2026-11-04
+
+### Added
+
+- Close household follow-up after confirmed relocation or consecutive unsuccessful
+  visits, rebuilding the current enrollment's counters from finalized visit evidence.
+- Provide localized closure confirmation, reasons, dates and active/closed register
+  queries while retaining earlier visit history and resetting a new enrollment.
+- Retain explicit Mother/child death closures projected by the Mother workflow
+  without manufacturing household visits or overwriting its own visit counters.
+- Close partner follow-up on success, death, relocation or the agreed consecutive-visit
+  thresholds, preserving history and storing the closure reason, date and counters.
+- Confirm death and relocation closures before submission in English and Swahili
+  (CHW #1127).
+- Prepare library `0.1.14-SNAPSHOT` / Android code 15 for the new closure contract.
+
+### Fixed
+
+- Allow a partner who did not attend the facility to complete follow-up with only
+  the attendance answer and optional comments. Ask education after confirmed
+  attendance, and require a valid date before advancing to tests. Preserve original
+  education observations when editing a historical non-attendance visit that
+  remains non-attendance (CHW #1126).
+
+### Changed
+
+- Capture household follow-up status and missing-household reasons; show service actions only for new or found visits and keep comments optional. (CHW #1130).
+- Place optional partner tracing comments last in the English and Swahili
+  follow-up status forms, after the selected agreement or missing-person reason.
+  Keep the separate comments action for facility-attendance visits (CHW #1125).
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
