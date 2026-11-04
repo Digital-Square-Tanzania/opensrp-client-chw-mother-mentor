@@ -198,6 +198,55 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
+    @Config(qualifiers = "en")
+    public void englishNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    private void noAttendanceBranches() throws Exception {
+        start(true);
+        assertVisible("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertNull(action("mothermentor_partner_education").getJsonPayload());
+        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
+            assertVisible("mothermentor_partner_" + disease + "_test", false);
+        }
+        assertBlankCommentDoesNotBlockSave();
+        Event event = aggregateNativeEvent();
+        Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
+                new JSONArray(new Gson().toJson(event.getObs())));
+        assertEquals("no", saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+        assertFalse(saved.containsKey(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(saved));
+    }
+
+    @Test
+    public void malformedAttendanceDateCannotAdvanceToTestingOrEducation() throws Exception {
+        start(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "31-02-2026");
+        assertStatus("mothermentor_partner_arrival", false);
+        assertVisible("mothermentor_partner_hiv_test", false);
+        assertVisible("mothermentor_partner_education", false);
+        answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "2026-02-28");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_hiv_test", true);
+        assertVisible("mothermentor_partner_education", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
+    }
+
+    @Test
     public void changingTestAnswersClearsOnlyHiddenResultsAndRequiresOtherText() throws Exception {
         start(true);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
@@ -271,6 +320,10 @@ public class PartnerFollowUpWorkflowInteractorTest {
         }
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
                 "partner_education_topics", new JSONArray().put("hiv").put("syphilis").put("hepatitis_b"));
+        return aggregateNativeEvent();
+    }
+
+    private Event aggregateNativeEvent() throws Exception {
         Map<String, String> forms = new LinkedHashMap<>();
         for (Map.Entry<String, BaseMotherMentorVisitAction> entry : actions.entrySet()) {
             if (entry.getValue().isValid()) forms.put(entry.getKey(), entry.getValue().getJsonPayload());

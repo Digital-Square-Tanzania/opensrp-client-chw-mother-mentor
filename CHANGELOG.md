@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+### Fixed
+
+- Allow a partner who did not attend the facility to complete follow-up with only
+  the attendance answer and optional comments. Ask education after confirmed
+  attendance, and require a valid date before advancing to tests (CHW #1126).
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

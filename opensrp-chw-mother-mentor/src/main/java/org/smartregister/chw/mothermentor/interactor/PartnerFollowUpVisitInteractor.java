@@ -216,7 +216,10 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             case HIV: return attendancePhase() && attended() && complete(ARRIVAL);
             case SYPHILIS: return visible(HIV) && complete(HIV);
             case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
-            case EDUCATION: return attendancePhase() || found();
+            case EDUCATION: return attendancePhase() ? attended() && complete(ARRIVAL) : found();
+            case COMMENTS: return !attendancePhase()
+                    || "yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
             default: return true;
         }
     }
@@ -237,7 +240,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         clearingHiddenActions = true;
         try {
             for (Map.Entry<String, BaseMotherMentorVisitAction> entry : workflow.entrySet()) {
-                if (!visible(entry.getKey())) {
+                if (!visible(entry.getKey()) && !COMMENTS.equals(entry.getKey())) {
                     entry.getValue().setJsonPayload(null);
                     entry.getValue().setSubTitle(null);
                 }
