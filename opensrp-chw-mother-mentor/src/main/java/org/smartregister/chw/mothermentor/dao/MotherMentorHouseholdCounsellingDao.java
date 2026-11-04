@@ -57,11 +57,14 @@ public final class MotherMentorHouseholdCounsellingDao {
         String participants = "replace(replace(replace(ifnull(" + DBConstants.KEY.PARTICIPANTS
                 + ", ''), '[', ''), ']', ''), '\"', '')";
         String remainder = participants;
+        // Separate token boundaries also allow adjacent duplicates without partial-name matches.
+        String tokens = "',' || replace(replace(" + participants + ", ' ', ''), ',', ',,') || ','";
         for (String role : new String[] {"mother", "partner", "child", "relative", "neighbour", "other"}) {
             remainder = "replace(" + remainder + ", '" + role + "', '')";
+            tokens = "replace(" + tokens + ", '," + role + ",', '')";
         }
         String condition = "trim(replace(" + remainder + ", ',', '')) = '' AND trim("
-                + participants + ") <> ''";
+                + participants + ") <> '' AND replace(" + tokens + ", ',', '') = ''";
         // A list containing only separators is not a selection.
         condition += " AND (" + hasRole("mother") + " OR " + hasRole("partner")
                 + " OR " + hasRole("child") + " OR " + hasRole("relative")
