@@ -21,8 +21,8 @@ import com.vijay.jsonwizard.domain.Form;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.smartregister.AllConstants;
-import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.adapter.BaseMotherMentorVisitAdapter;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
@@ -31,13 +31,15 @@ import org.smartregister.chw.mothermentor.interactor.BaseMotherMentorVisitIntera
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.presenter.BaseMotherMentorVisitPresenter;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.view.activity.SecuredActivity;
+
+import timber.log.Timber;
 
 import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import timber.log.Timber;
 
 public class BaseMotherMentorVisitActivity extends SecuredActivity implements BaseMotherMentorVisitContract.View, View.OnClickListener {
 
@@ -291,7 +293,47 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
 
     @Override
     public void submitVisit() {
+        BaseMotherMentorVisitAction moved = immediateHouseholdClosureAction();
+        if (moved != null) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.mothermentor_household_close_confirmation_title)
+                    .setMessage(R.string.mothermentor_household_close_confirmation_message)
+                    .setPositiveButton(R.string.mothermentor_household_close_confirm,
+                            (dialog, which) -> getPresenter().submitVisit())
+                    .setNegativeButton(R.string.mothermentor_household_close_cancel,
+                            (dialog, which) -> {
+                                onSubmissionCancelled();
+                                startForm(moved);
+                            })
+                    .setCancelable(false)
+                    .show();
+            return;
+        }
         getPresenter().submitVisit();
+    }
+
+    protected void onSubmissionCancelled() {
+        if (tvSubmit != null) tvSubmit.setEnabled(true);
+    }
+
+    private BaseMotherMentorVisitAction immediateHouseholdClosureAction() {
+        for (BaseMotherMentorVisitAction action : actionList.values()) {
+            if (!"mothermentor_household_follow_up_status".equals(action.getFormName())
+                    || !action.isValid()
+                    || action.getActionStatus() != BaseMotherMentorVisitAction.Status.COMPLETED
+                    || StringUtils.isBlank(action.getJsonPayload())) continue;
+            try {
+                JSONObject form = new JSONObject(action.getJsonPayload());
+                if ("repeat".equals(JsonFormUtils.getValue(form, DBConstants.KEY.HOUSEHOLD_VISIT_TYPE))
+                        && "not_found".equals(JsonFormUtils.getValue(form, DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS))
+                        && "moved".equals(JsonFormUtils.getValue(form, DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON))) {
+                    return action;
+                }
+            } catch (Exception e) {
+                Timber.e(e, "Unable to read household closure outcome");
+            }
+        }
+        return null;
     }
 
     @Override

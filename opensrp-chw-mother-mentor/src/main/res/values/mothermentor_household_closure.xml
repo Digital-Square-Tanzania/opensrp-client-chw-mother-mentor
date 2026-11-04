@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="action_mothermentor_household_history" type="id" />
+    <string name="mothermentor_household_close_confirmation_title">Confirm closing the household</string>
+    <string name="mothermentor_household_close_confirmation_message">Are you sure this household has moved from the area? The record will be closed and will no longer appear on the follow-up list.</string>
+    <string name="mothermentor_household_close_confirm">Yes, Close</string>
+    <string name="mothermentor_household_close_cancel">Cancel</string>
+    <string name="mothermentor_household_closed_banner">Household record is closed — no new visits can be saved.\n%1$s · %2$s</string>
+    <string name="mothermentor_household_closed">Closed</string>
+    <string name="mothermentor_household_active_follow_up">Active households</string>
+    <string name="mothermentor_household_closure_reason">Reason for closure</string>
+    <string name="mothermentor_household_closure_date">Closure date</string>
+    <string name="mothermentor_household_closure_active">Active</string>
+    <string name="mothermentor_household_closure_moved">Moved from area</string>
+    <string name="mothermentor_household_closure_house_closed_3">Not found — house closed (3+ visits)</string>
+    <string name="mothermentor_household_closure_other_3">Not found — Other (3+ visits)</string>
+    <string name="mothermentor_household_closure_lost_to_follow_up">Lost to Follow-up</string>
+</resources>

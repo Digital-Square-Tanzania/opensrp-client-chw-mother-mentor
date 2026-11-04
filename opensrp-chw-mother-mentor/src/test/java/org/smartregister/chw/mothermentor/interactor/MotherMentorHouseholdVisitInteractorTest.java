@@ -91,11 +91,21 @@ public class MotherMentorHouseholdVisitInteractorTest {
         assertHouseholdCanSubmitWithoutComment();
     }
 
+    private static class ClosureTestInteractor extends MotherMentorHouseholdVisitInteractor {
+        ClosureTestInteractor() {
+            super(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES,
+                    Constants.TABLES.MAMA_KINARA_HOUSEHOLD_ENROLMENT);
+        }
+
+        @Override
+        protected String loadHouseholdEnrollmentId(String memberId) {
+            return "household-enrollment";
+        }
+    }
+
     private void assertHouseholdCanSubmitWithoutComment() throws Exception {
         MotherMentorHouseholdVisitInteractor interactor =
-                new MotherMentorHouseholdVisitInteractor(
-                        Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES,
-                        Constants.TABLES.MAMA_KINARA_HOUSEHOLD_ENROLMENT);
+                new ClosureTestInteractor();
         AppExecutors executors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
         interactor.appExecutors = executors;
         ((BaseMotherMentorVisitInteractor) interactor).appExecutors = executors;

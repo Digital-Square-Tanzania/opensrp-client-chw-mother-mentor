@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_household_close_confirmation_title">Thibitisha kufunga Kaya</string>
+    <string name="mothermentor_household_close_confirmation_message">Je, una uhakika Kaya hii imehama eneo? Faili litafungwa na halitaonekana tena kwenye orodha ya ufuatiliaji.</string>
+    <string name="mothermentor_household_close_confirm">Ndiyo, Funga</string>
+    <string name="mothermentor_household_close_cancel">Ghairi</string>
+    <string name="mothermentor_household_closed_banner">Faili la Kaya limefungwa — hakuna ziara mpya zinazoweza kuhifadhiwa.\n%1$s · %2$s</string>
+    <string name="mothermentor_household_closed">Zilizofungwa</string>
+    <string name="mothermentor_household_active_follow_up">Kaya hai</string>
+    <string name="mothermentor_household_closure_reason">Sababu ya kufungwa</string>
+    <string name="mothermentor_household_closure_date">Tarehe ya kufungwa</string>
+    <string name="mothermentor_household_closure_active">Hai</string>
+    <string name="mothermentor_household_closure_moved">Imehama eneo</string>
+    <string name="mothermentor_household_closure_house_closed_3">Haijapatikana — nyumba imefungwa mara 3+</string>
+    <string name="mothermentor_household_closure_other_3">Haijapatikana — Nyingine mara 3+</string>
+    <string name="mothermentor_household_closure_lost_to_follow_up">Lost to Follow-up (Kaya)</string>
+</resources>
