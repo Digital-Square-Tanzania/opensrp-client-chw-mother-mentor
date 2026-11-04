@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_eid_title">Mtoto EID</string>
+    <string name="mothermentor_eid_newborn">Mtoto mchanga</string>
+    <string name="mothermentor_eid_not_recorded">Haijarekodiwa</string>
+    <plurals name="mothermentor_eid_age_weeks">
+        <item quantity="one">wiki %d</item>
+        <item quantity="other">wiki %d</item>
+    </plurals>
+    <string name="mothermentor_eid_test_six_weeks">Wiki 6</string>
+    <string name="mothermentor_eid_test_nine_months">Miezi 9</string>
+    <string name="mothermentor_eid_test_after_weaning">Miezi 15</string>
+    <string name="mothermentor_eid_test_eighteen_months">Miezi 18</string>
+    <string name="mothermentor_eid_missed_test">Amekosa kipimo</string>
+    <string name="mothermentor_eid_to_refer">Apewe rufaa</string>
+    <string name="mothermentor_eid_referred">Amepewa rufaa</string>
+    <string name="mothermentor_eid_result_pending">Inasubiri majibu</string>
+    <string name="mothermentor_eid_negative">Hasi</string>
+    <string name="mothermentor_eid_positive">Chanya</string>
+    <string name="mothermentor_eid_awaiting_confirmation">Inasubiri uthibitisho</string>
+    <string name="mothermentor_eid_state_test">%1$s: %2$s</string>
+    <string name="mothermentor_eid_missed_due">Amekosa %1$s — kilitakiwa %2$s</string>
+    <string name="mothermentor_eid_mother_name">Mama: %1$s</string>
+    <string name="mothermentor_eid_visit_number">Ziara %1$d</string>
+    <string name="mothermentor_eid_child_age">Umri wa mtoto: %1$s</string>
+    <string name="mothermentor_eid_referral_status">Hali ya rufaa: %1$s</string>
+    <string name="mothermentor_eid_last_test">Kipimo cha mwisho: %1$s — %2$s</string>
+    <string name="mothermentor_eid_reason">Sababu</string>
+    <string name="mothermentor_eid_entry_reason">Ameingizwa kwenye ufuatiliaji kwa kukosa kipimo cha %1$s kilichotakiwa tarehe %2$s.</string>
+    <string name="mothermentor_eid_closed">Imefungwa</string>
+    <string name="mothermentor_eid_closed_message">Rekodi hii imefungwa; haiwezi kurekodiwa tena.</string>
+    <string name="mothermentor_eid_closed_on">%1$s\nImefungwa tarehe %2$s</string>
+    <string name="mothermentor_eid_record_visit">Rekodi Mrejesho wa Ufuatiliaji</string>
+    <string name="mothermentor_eid_child_deceased">Mtoto amefariki — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_moved_area">Amehama eneo — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_moved_facility">Amehamia kituo kingine — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_not_found_three">Hajapatikana — Nyingine mara 3+.</string>
+    <string name="mothermentor_eid_refused_three">Mlezi amekataa mara 3+.</string>
+    <string name="mothermentor_eid_graduated">Amehitimu — mtoto ana majibu ya mwisho.</string>
+    <string name="mothermentor_eid_confirmed_positive">Mtoto amethibitika kuwa na VVU — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_filter">Chuja</string>
+    <string name="mothermentor_eid_closed_filter">Waliofungwa</string>
+    <string name="mothermentor_eid_apply_filter">Tumia</string>
+    <string name="mothermentor_eid_cancel_filter">Ghairi</string>
+</resources>

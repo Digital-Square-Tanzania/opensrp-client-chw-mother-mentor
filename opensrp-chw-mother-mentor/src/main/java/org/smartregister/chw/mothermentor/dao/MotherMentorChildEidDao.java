@@ -122,7 +122,8 @@ public final class MotherMentorChildEidDao {
     public static List<Enrollment> enrollmentHistory(SQLiteDatabase db, String childId, LocalDate asOf) {
         if (StringUtils.isBlank(childId) || !hasTable(db, "event")) return Collections.emptyList();
         Map<String, Enrollment> revisions = new HashMap<>();
-        try (Cursor cursor = db.rawQuery("SELECT json FROM event WHERE baseEntityId = ? AND eventType = ?",
+        try (Cursor cursor = db.rawQuery("SELECT " + DBConstants.KEY.EVENT_JSON + " FROM event WHERE " + DBConstants.KEY.EVENT_BASE_ENTITY_ID
+                + " = ? AND " + DBConstants.KEY.EVENT_TYPE + " = ?",
                 new String[] {childId, Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID})) {
             while (cursor.moveToNext()) {
                 try {
@@ -130,7 +131,7 @@ public final class MotherMentorChildEidDao {
                     String id = json.optString(DBConstants.KEY.EVENT_FORM_SUBMISSION_ID);
                     long time = eventTime(json);
                     if (id.isEmpty() || time == 0) continue;
-                    Enrollment candidate = new Enrollment(id, time, json.optLong("version", 0), json);
+                    Enrollment candidate = new Enrollment(id, time, json.optLong(DBConstants.KEY.EVENT_VERSION, 0), json);
                     Enrollment previous = revisions.get(id);
                     if (previous == null || candidate.version > previous.version) revisions.put(id, candidate);
                 } catch (Exception ignored) { }
@@ -138,7 +139,7 @@ public final class MotherMentorChildEidDao {
         }
         List<Enrollment> result = new ArrayList<>();
         for (Enrollment candidate : revisions.values()) {
-            if (candidate.json.optBoolean("voided") || candidate.day().isAfter(asOf)) continue;
+            if (candidate.json.optBoolean(DBConstants.KEY.EVENT_VOIDED) || candidate.day().isAfter(asOf)) continue;
             result.add(candidate);
         }
         result.sort((first, second) -> first.time == second.time ? first.id.compareTo(second.id)
@@ -147,17 +148,25 @@ public final class MotherMentorChildEidDao {
     }
 
     public static boolean hasEvent(SQLiteDatabase db, String childId, String formSubmissionId) {
-        if (StringUtils.isBlank(formSubmissionId) || !hasTable(db, "event")) return false;
-        try (Cursor cursor = db.rawQuery("SELECT json FROM event WHERE baseEntityId = ? AND eventType = ?",
+        return storedEnrollmentEvent(db, childId, formSubmissionId) != null;
+    }
+
+    public static JSONObject storedEnrollmentEvent(SQLiteDatabase db, String childId, String formSubmissionId) {
+        if (StringUtils.isBlank(formSubmissionId) || !hasTable(db, "event")) return null;
+        JSONObject latest = null;
+        try (Cursor cursor = db.rawQuery("SELECT " + DBConstants.KEY.EVENT_JSON + " FROM event WHERE " + DBConstants.KEY.EVENT_BASE_ENTITY_ID
+                + " = ? AND " + DBConstants.KEY.EVENT_TYPE + " = ?",
                 new String[] {childId, Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID})) {
             while (cursor.moveToNext()) {
                 try {
-                    if (formSubmissionId.equals(new JSONObject(cursor.getString(0))
-                            .optString(DBConstants.KEY.EVENT_FORM_SUBMISSION_ID))) return true;
+                    JSONObject candidate = new JSONObject(cursor.getString(0));
+                    if (!formSubmissionId.equals(candidate.optString(DBConstants.KEY.EVENT_FORM_SUBMISSION_ID))) continue;
+                    if (latest == null || candidate.optLong(DBConstants.KEY.EVENT_VERSION, 0)
+                            > latest.optLong(DBConstants.KEY.EVENT_VERSION, 0)) latest = candidate;
                 } catch (Exception ignored) { }
             }
         }
-        return false;
+        return latest;
     }
 
     /** Finalized, corrected-source-deduplicated evidence for the selected child episode. */
@@ -178,8 +187,8 @@ public final class MotherMentorChildEidDao {
                 String source = sourceIdentity(visit);
                 if (!excludedSource.isEmpty() && excludedSource.equals(source)) continue;
                 Visit previous = latest.get(source);
-                if (previous == null || event.optLong("version", 0) > json(previous).optLong("version", 0)
-                        || event.optLong("version", 0) == json(previous).optLong("version", 0)
+                if (previous == null || event.optLong(DBConstants.KEY.EVENT_VERSION, 0) > json(previous).optLong(DBConstants.KEY.EVENT_VERSION, 0)
+                        || event.optLong(DBConstants.KEY.EVENT_VERSION, 0) == json(previous).optLong(DBConstants.KEY.EVENT_VERSION, 0)
                         && visit.getVisitId().compareTo(previous.getVisitId()) > 0) latest.put(source, visit);
             }
         }
@@ -187,7 +196,7 @@ public final class MotherMentorChildEidDao {
         for (Visit visit : latest.values()) {
             JSONObject event = json(visit);
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
-            if (day == null || day.isAfter(asOf) || event.optBoolean("voided")) continue;
+            if (day == null || day.isAfter(asOf) || event.optBoolean(DBConstants.KEY.EVENT_VOIDED)) continue;
             Map<String, String> answers = MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
             String episode = answers.get(DBConstants.KEY.MTOTO_ENROLLMENT_ID);
             if (StringUtils.isNotBlank(episode) && !enrollment.id.isEmpty() && !episode.equals(enrollment.id)) continue;
@@ -369,7 +378,12 @@ public final class MotherMentorChildEidDao {
             this.json = json;
         }
 
-        public LocalDate day() { return time == 0 ? null : new LocalDate(time); }
+        public LocalDate day() {
+            LocalDate clinicalDay = MotherMentorHeiSchedule.parseDate(MotherMentorVisitCompletion.observationValues(
+                    json.optJSONArray("obs")).get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE));
+            return clinicalDay != null ? clinicalDay : time == 0 ? null
+                    : MotherMentorHeiSchedule.parseBirthDate(json.optString(DBConstants.KEY.EVENT_DATE_TIMESTAMP));
+        }
         public static Enrollment empty() { return new Enrollment("", 0, 0, new JSONObject()); }
     }
 }
