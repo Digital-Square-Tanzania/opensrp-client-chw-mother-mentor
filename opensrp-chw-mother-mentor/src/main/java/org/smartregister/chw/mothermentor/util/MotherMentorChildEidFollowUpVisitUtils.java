@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -99,6 +101,16 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
         if (!MotherMentorChildEidStatusUtils.isSchema3(values)) return isComplete(values, childSchema);
         return childSchema && MotherMentorChildEidStatusUtils.isStatusComplete(values, dob, serviceDate)
                 && !MotherMentorChildEidStatusUtils.isFoundAlive(values);
+    }
+
+    /** Full current completion uses the real child's clinical history before this visit. */
+    public static boolean isComplete(Map<String, String> values, boolean childSchema,
+            LocalDate dob, LocalDate serviceDate, Map<Stage, TestRecord> samplingHistory) {
+        if (!MotherMentorChildEidStatusUtils.isSchema3(values)) return isComplete(values, childSchema);
+        return childSchema && MotherMentorChildEidStatusUtils.isStatusComplete(values, dob, serviceDate)
+                && (!MotherMentorChildEidStatusUtils.isFoundAlive(values)
+                        || MotherMentorChildEidHeiUtils.isComplete(values, dob, serviceDate,
+                                samplingHistory, values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE)));
     }
 
     public static boolean isFinalTestComplete(String done, String result, String date) {

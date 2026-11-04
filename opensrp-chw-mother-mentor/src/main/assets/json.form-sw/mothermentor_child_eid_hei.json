@@ -1,0 +1,482 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Child EID HEI",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Kipimo cha HEI",
+    "fields": [
+      {
+        "key": "child_eid_follow_up_schema",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_follow_up_schema",
+        "value": "3"
+      },
+      {
+        "key": "child_dob",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_dob",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_assessment_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_assessment_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_test_history",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_test_history",
+        "value": "{}"
+      },
+      {
+        "key": "mama_hei_due_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_due_tests",
+        "value": "[]"
+      },
+      {
+        "key": "child_eid_hei_review_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_hei_review_tests",
+        "value": "[]"
+      },
+      {
+        "key": "mtoto_rufaa_state_before",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_rufaa_state_before",
+        "value": "none"
+      },
+      {
+        "key": "mtoto_rufaa_test",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_rufaa_test",
+        "value": ""
+      },
+      {
+        "key": "mtoto_rufaa_due",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_rufaa_due",
+        "value": ""
+      },
+      {
+        "key": "mama_breastfeeding_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_breastfeeding_status",
+        "value": "",
+        "label": "Hali ya unyonyeshaji",
+        "options": [
+          {
+            "key": "breastfeeding",
+            "text": "Ananyonyeshwa",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breastfeeding"
+          },
+          {
+            "key": "not_breastfeeding",
+            "text": "Hanyonyeshwi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_breastfeeding"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        }
+      },
+      {
+        "key": "mama_tarehe_acha_kunyonyesha",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_acha_kunyonyesha",
+        "value": "",
+        "hint": "Tarehe alipoacha kunyonyeshwa",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_weaning_hint",
+        "type": "toaster_notes",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_weaning_hint",
+        "value": "",
+        "text": "Kipimo cha miezi 15 hufanyika miezi 3 baada ya kuacha kunyonyeshwa.",
+        "text_color": "#2D2E2D",
+        "toaster_type": "info",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_age_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_age_note",
+        "value": "",
+        "hint": "Umri wa mtoto",
+        "read_only": true,
+        "edit_type": "text"
+      },
+      {
+        "key": "mama_hei_next_test_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_next_test_note",
+        "value": "",
+        "hint": "Kipimo kinachostahili sasa",
+        "read_only": true,
+        "edit_type": "text"
+      },
+      {
+        "key": "mtoto_referral_agreement",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_referral_agreement",
+        "value": "",
+        "label": "Hali ya rufaa ya kipimo",
+        "options": [
+          {
+            "key": "agreed",
+            "text": "Mlezi amekubali kumpeleka mtoto kituoni",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "agreed"
+          },
+          {
+            "key": "refused",
+            "text": "Mlezi amekataa kumpeleka mtoto kituoni",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "refused"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_referral_agreed_note",
+        "type": "toaster_notes",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_referral_agreed_note",
+        "value": "",
+        "text": "Hifadhi; mtoto anabaki kwenye orodha. Ziara ijayo itaanza kwa kuuliza kama mtoto alifika kituoni.",
+        "text_color": "#2D2E2D",
+        "toaster_type": "info",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_referral_refused_note",
+        "type": "toaster_notes",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_referral_refused_note",
+        "value": "",
+        "text": "Hifadhi; swali la rufaa litaulizwa tena ziara ijayo.",
+        "text_color": "#2D2E2D",
+        "toaster_type": "info",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_test_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_test_type",
+        "label": "Aina ya kipimo cha ufuatiliaji",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "six_weeks",
+            "text": "Wiki 6",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "six_weeks"
+          },
+          {
+            "key": "nine_months",
+            "text": "Miezi 9",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nine_months"
+          },
+          {
+            "key": "three_months_after_weaning",
+            "text": "Miezi 3 baada ya kuacha kunyonyeshwa",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "three_months_after_weaning"
+          },
+          {
+            "key": "eighteen_months",
+            "text": "Miezi 18",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "eighteen_months"
+          },
+          {
+            "key": "not_applicable",
+            "text": "Haihusiki",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_applicable"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_arrived_at_facility",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_arrived_at_facility",
+        "label": "Mtoto amefika kituoni?",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_facility_arrival_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_facility_arrival_date",
+        "type": "date_picker",
+        "display_format": "dd/MM/yyyy",
+        "min_date": "today-5y",
+        "max_date": "today",
+        "expanded": false,
+        "hint": "Tarehe ya kufika kituoni",
+        "v_required": {
+          "value": "true",
+          "err": "Inahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_final_hiv_test_done",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_test_done",
+        "type": "native_radio",
+        "label": "Je, mtoto amepimwa VVU kipimo cha mwisho cha miezi 18?",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_final_hiv_test_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_test_date",
+        "type": "date_picker",
+        "hint": "Tarehe ya kipimo cha mwisho cha VVU",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "display_format": "dd/MM/yyyy",
+        "min_date": "today-5y",
+        "max_date": "today",
+        "expanded": false,
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "child_eid_final_hiv_result",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_final_hiv_result",
+        "type": "native_radio",
+        "label": "Matokeo ya kipimo cha mwisho cha VVU",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jibu swali hili"
+        },
+        "options": [
+          {
+            "key": "positive",
+            "text": "Ana maambukizi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "negative",
+            "text": "Hana maambukizi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative"
+          },
+          {
+            "key": "pending",
+            "text": "Matokeo bado",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

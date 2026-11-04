@@ -7,7 +7,7 @@ import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidFollowUpCommentActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidFollowUpStatusActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidTestTypeActionHelper;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidHeiActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
@@ -137,14 +137,14 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
                 memberObject, serviceDate, changed);
     }
 
-    /** Part3 supplies the referral section through this category-specific factory. */
+    /** Child-specific HEI action; legacy visits retain their original section helpers. */
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
             createHeiActionHelper(Runnable changed) {
-        return new MotherMentorChildEidTestTypeActionHelper(memberObject, changed);
+        return new MotherMentorChildEidHeiActionHelper(memberObject, serviceDate, changed);
     }
 
     protected String getHeiFormName() {
-        return "mothermentor_child_eid_test_type";
+        return "mothermentor_child_eid_hei";
     }
 
     private void addChildAction(int title, String form,
