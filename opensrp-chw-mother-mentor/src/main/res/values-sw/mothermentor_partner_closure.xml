@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mothermentor_partner_close_confirmation_title">Thibitisha kufunga faili</string>
-    <string name="mothermentor_partner_close_confirmation_message">Je, una uhakika? Faili la mwenza litafungwa na halitaonekana tena kwenye orodha ya ufuatiliaji.</string>
+    <string name="mothermentor_partner_close_confirmation_message">Je, una uhakika? Faili la mwenzi litafungwa na halitaonekana tena kwenye orodha ya ufuatiliaji.</string>
     <string name="mothermentor_partner_close_confirm">Ndiyo, Funga</string>
     <string name="mothermentor_partner_close_cancel">Ghairi</string>
-    <string name="mothermentor_partner_closed_banner">Faili la mwenza limefungwa — hakuna ziara mpya zinazoweza kuhifadhiwa.\n%1$s · %2$s</string>
+    <string name="mothermentor_partner_closed_banner">Faili la mwenzi limefungwa — hakuna ziara mpya zinazoweza kuhifadhiwa.\n%1$s · %2$s</string>
     <string name="mothermentor_partner_history">Historia ya ufuatiliaji</string>
     <string name="mothermentor_partner_active_follow_up">Ufuatiliaji unaoendelea</string>
     <string name="mothermentor_partner_closure_reason">Sababu ya kufungwa</string>
