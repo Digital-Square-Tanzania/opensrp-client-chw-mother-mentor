@@ -6,6 +6,17 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Reorganize mother service visit entry in English and Swahili: show attendance
+  and optional comments first, then show services for a new or found client.
+- Capture the four nested reasons when a returning mother is not found, clear
+  inapplicable answers, and retain the original assets for legacy visit edits.
+- Ask new-client ART initiation in group linkage while preserving the original
+  field codes, previous-initiation rule, and read-only returning attendance.
+- Provide enrollment-scoped, deduplicated mother visit context and clinical-day
+  history for subsequent mother workflow sections.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

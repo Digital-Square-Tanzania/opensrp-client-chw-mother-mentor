@@ -212,7 +212,7 @@ public class MotherMentorServiceHistoryTest {
                 new Scanner(
                         RuntimeEnvironment.application
                                 .getAssets()
-                                .open(directory + "/mothermentor_visit_type.json"),
+                                .open(directory + "/mothermentor_visit_type_legacy.json"),
                         "UTF-8")) {
             return new JSONObject(scanner.useDelimiter("\\A").next());
         }

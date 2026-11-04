@@ -63,6 +63,7 @@ public interface Constants {
 
     interface TABLES {
         String MOTHERMENTOR_ENROLLMENT = "ec_mothermentor_enrollment";
+        String MOTHERMENTOR_MOTHER_CONTEXT = "mothermentor_mother_enrollment_context";
         String MOTHERMENTOR_CONTACTS = "ec_mothermentor_contacts";
         String MOTHERMENTOR_SERVICES = "ec_mothermentor_services";
         String MOTHERMENTOR_MOBILIZATION = "ec_mothermentor_mobilization";
