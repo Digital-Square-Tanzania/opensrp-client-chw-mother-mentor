@@ -148,6 +148,7 @@ public class VisitRepository extends BaseRepository {
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
         MotherMentorMotherDeliveryRepository.rebuildForVisit(database, visit);
         MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
+        MotherMentorChildEidRepository.rebuildForVisit(database, visit);
         MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
     }
@@ -306,6 +307,7 @@ public class VisitRepository extends BaseRepository {
                 existing.setProcessed(true);
             }
             MotherMentorMotherChildRepository.rebuildForChild(database, existing.getBaseEntityId());
+            MotherMentorChildEidRepository.rebuild(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
@@ -363,6 +365,7 @@ public class VisitRepository extends BaseRepository {
             }
             MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
             MotherMentorMotherChildRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorChildEidRepository.rebuildForMother(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
@@ -446,6 +449,7 @@ public class VisitRepository extends BaseRepository {
             }
             for (String mother : affectedDeliveryMothers) MotherMentorMotherDeliveryRepository.rebuild(database, mother);
             MotherMentorMotherChildRepository.rebuildForVisit(database, removed);
+            MotherMentorChildEidRepository.rebuildForVisit(database, removed);
             for (String mother : affectedMothers) MotherMentorMotherClosureRepository.rebuild(database, mother);
         } catch (Exception e) {
             Timber.e(e);
@@ -469,6 +473,7 @@ public class VisitRepository extends BaseRepository {
             Visit canonical = getVisitByVisitId(visitID);
             MotherMentorMotherDeliveryRepository.rebuildForVisit(database, canonical);
             MotherMentorMotherChildRepository.rebuildForVisit(database, canonical);
+            MotherMentorChildEidRepository.rebuildForVisit(database, canonical);
             MotherMentorMotherClosureRepository.rebuildForVisit(database, canonical);
         } catch (Exception e) {
             Timber.e(e);
