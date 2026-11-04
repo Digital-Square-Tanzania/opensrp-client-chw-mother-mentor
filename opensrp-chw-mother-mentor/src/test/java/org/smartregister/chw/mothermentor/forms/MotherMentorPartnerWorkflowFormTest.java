@@ -49,6 +49,43 @@ public class MotherMentorPartnerWorkflowFormTest {
     }
 
     @Test
+    public void tracingStartsWithRequiredStatusAndEndsWithOptionalBranchGatedComments()
+            throws Exception {
+        for (String locale : locales()) {
+            JSONObject form = form(locale, "mothermentor_partner_follow_up_status");
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            assertEquals("follow_up_status", fields.getJSONObject(0).getString("key"));
+            for (String key : new String[] {
+                    "follow_up_status", "partner_facility_agreement", "partner_not_found_reason",
+                    "partner_not_found_reason_other"}) {
+                assertTrue(key, field(form, key).getJSONObject("v_required").getBoolean("value"));
+            }
+            JSONObject comments = field(form, "comments");
+            assertEquals("comments", fields.getJSONObject(fields.length() - 1).getString("key"));
+            assertEquals("json.form-sw".equals(locale)
+                            ? "Maoni (hiari, upeo wa herufi 100)"
+                            : "Comments (optional, maximum 100 characters)",
+                    comments.getString("hint"));
+            assertFalse(comments.has("v_required"));
+            assertEquals("100", comments.getJSONObject("v_max_length").getString("value"));
+            assertFalse(relevant(comments, "", "", "", "", ""));
+            assertFalse(relevant(comments, "found", "", "", "", ""));
+            assertFalse(relevant(comments, "not_found", "", "", "", ""));
+            for (String agreement : new String[] {"agreed", "refused"}) {
+                assertTrue(relevant(comments, "found", "", "", "", agreement));
+            }
+            for (String reason : new String[] {"deceased", "moved", "travelled", "other"}) {
+                assertTrue(relevant(comments, "not_found", reason, "", "", ""));
+            }
+            assertFalse(relevant(comments, "", "other", "", "", "agreed"));
+            assertFalse(relevant(comments, "found", "other", "", "", "already_attended"));
+            assertFalse(relevant(field(form, "partner_facility_agreement"), "", "", "", ""));
+            assertFalse(relevant(field(form, "partner_not_found_reason"), "", "", "", ""));
+            assertFalse(relevant(field(form, "partner_not_found_reason_other"), "", "other", "", ""));
+        }
+    }
+
+    @Test
     public void eachTestCapturesAResultOrReasonAndOnlyHivAllowsAlreadyInfected() throws Exception {
         for (String locale : locales()) {
             for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
@@ -92,8 +129,14 @@ public class MotherMentorPartnerWorkflowFormTest {
 
     private boolean relevant(JSONObject field, String status, String missingReason,
             String tested, String reason) throws Exception {
+        return relevant(field, status, missingReason, tested, reason, "");
+    }
+
+    private boolean relevant(JSONObject field, String status, String missingReason,
+            String tested, String reason, String agreement) throws Exception {
         Facts facts = new Facts();
         facts.put(RuleConstant.SELECTED_RULE, "step1_" + field.getString("key"));
+        facts.put("step1_partner_facility_agreement", agreement);
         facts.put("step1_follow_up_status", status);
         facts.put("step1_partner_not_found_reason", missingReason);
         facts.put("step1_partner_education_provided", tested);

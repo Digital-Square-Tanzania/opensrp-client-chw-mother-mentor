@@ -23,6 +23,14 @@ actions:
   - "isRelevant = true"
 
 ---
+name: step1_comments
+description: Show optional tracing comments after an outcome is selected
+priority: 1
+condition: "(step1_follow_up_status == 'found' && (step1_partner_facility_agreement == 'agreed' || step1_partner_facility_agreement == 'refused')) || (step1_follow_up_status == 'not_found' && (step1_partner_not_found_reason == 'deceased' || step1_partner_not_found_reason == 'moved' || step1_partner_not_found_reason == 'travelled' || step1_partner_not_found_reason == 'other'))"
+actions:
+  - "isRelevant = true"
+
+---
 name: step1_partner_hiv_result
 description: Show the relevant partner follow-up question
 priority: 1
