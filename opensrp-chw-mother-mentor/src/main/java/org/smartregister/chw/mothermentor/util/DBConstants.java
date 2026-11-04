@@ -416,6 +416,11 @@ public final class DBConstants {
         public static final String MTOTO_IS_CLOSED = "mtoto_is_closed";
         public static final String MTOTO_VISIT_COUNT = "mtoto_visit_count";
         public static final String MOTHER_ENTITY_ID = "mother_entity_id";
+        public static final String MTOTO_NOT_FOUND_REASON = "mtoto_not_found_reason";
+        public static final String MTOTO_NEW_FACILITY = "mtoto_new_facility";
+        public static final String MTOTO_NOT_FOUND_REASON_OTHER = "mtoto_not_found_reason_other";
+        public static final String MTOTO_MOVED_AREA_FACILITY = "mtoto_moved_area_facility";
+        public static final String MTOTO_ALIVE_NOTE = "mtoto_alive_note";
         public static final String CHILD_EID_FINAL_HIV_TEST_DONE = "child_eid_final_hiv_test_done";
         public static final String CHILD_EID_FINAL_HIV_RESULT = "child_eid_final_hiv_result";
         public static final String CHILD_EID_FINAL_HIV_TEST_DATE = "child_eid_final_hiv_test_date";

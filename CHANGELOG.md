@@ -8,6 +8,12 @@ Android version code.
 
 ### Changed
 
+- Replace new Child EID tracing visits with nested found/alive and not-found reason
+  branches in English and Swahili, including birth/service-date validation and
+  inactive-answer clearing (CHW #1146).
+- Keep Comments available throughout and reveal one HEI section only after a saved,
+  valid found-and-alive status; preserve schema1/2 draft forms and requirements.
+
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).
 - Increment the library to `0.1.15-SNAPSHOT` / Android code 16 for the shared eligibility API.
 

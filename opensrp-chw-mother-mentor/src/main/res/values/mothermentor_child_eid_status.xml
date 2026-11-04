@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_child_eid_comments_optional">Comments (optional)</string>
+    <string name="mothermentor_child_eid_hei_section">HEI test</string>
+    <string name="mothermentor_child_eid_child_status_alive">Child is alive</string>
+    <string name="mothermentor_child_eid_child_status_deceased">Child has died</string>
+    <string name="mothermentor_child_eid_missing_moved_area">Moved from area</string>
+    <string name="mothermentor_child_eid_missing_moved_facility">Transferred to another facility</string>
+    <string name="mothermentor_child_eid_missing_other">Other (specify)</string>
+    <string name="mothermentor_child_eid_closed_message">This record is closed; no further visits can be recorded.</string>
+</resources>

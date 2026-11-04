@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_child_eid_comments_optional">Maoni (hiari)</string>
+    <string name="mothermentor_child_eid_hei_section">Kipimo cha HEI</string>
+    <string name="mothermentor_child_eid_child_status_alive">Mtoto yupo hai</string>
+    <string name="mothermentor_child_eid_child_status_deceased">Mtoto amefariki</string>
+    <string name="mothermentor_child_eid_missing_moved_area">Amehama eneo</string>
+    <string name="mothermentor_child_eid_missing_moved_facility">Amehamia kituo kingine</string>
+    <string name="mothermentor_child_eid_missing_other">Nyingine (Taja)</string>
+    <string name="mothermentor_child_eid_closed_message">Rekodi hii imefungwa; haiwezi kurekodiwa tena.</string>
+</resources>

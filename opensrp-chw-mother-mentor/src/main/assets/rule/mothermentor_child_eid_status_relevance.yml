@@ -1,0 +1,55 @@
+---
+name: step1_mama_child_status
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'found'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mama_tarehe_mtoto_alifariki
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'deceased'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mtoto_alive_note
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mtoto_not_found_reason
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'not_found'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mtoto_moved_area_facility
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_mtoto_not_found_reason == 'moved_area'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mtoto_new_facility
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_mtoto_not_found_reason == 'moved_facility'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_mtoto_not_found_reason_other
+description: Show the active Child EID tracing question
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_mtoto_not_found_reason == 'other'"
+actions:
+  - "isRelevant = true"

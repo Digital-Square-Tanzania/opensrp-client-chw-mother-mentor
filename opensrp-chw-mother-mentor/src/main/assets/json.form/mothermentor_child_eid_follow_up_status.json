@@ -1,1 +1,243 @@
-{"count":"1","skip_blank_steps":true,"encounter_type":"Mother Mentor Child EID Follow-up Status","entity_id":"","metadata":{"start":{"openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_data_type":"start","openmrs_entity_id":"start"},"end":{"openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_data_type":"end","openmrs_entity_id":"end"},"today":{"openmrs_entity_parent":"","openmrs_entity":"encounter","openmrs_entity_id":"encounter_date"},"encounter_location":""},"global":{},"step1":{"title":"Follow-up status","fields":[{"key":"follow_up_status","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"follow_up_status","label":"Follow-up status","type":"native_radio","options":[{"key":"found","text":"Found","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"found"},{"key":"not_found","text":"Not found","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"not_found"},{"key":"deceased","text":"Deceased","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"deceased"},{"key":"transferred_facility","text":"Moved to another facility","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"transferred_facility"},{"key":"refused_return","text":"Refused to return","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"refused_return"},{"key":"under_follow_up","text":"Still being followed up","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"under_follow_up"}],"v_required":{"value":"true","err":"Please select an answer"}}]}}
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Child EID Follow-up Status",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Follow-up status",
+    "fields": [
+      {
+        "key": "child_eid_follow_up_schema",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_follow_up_schema",
+        "value": "3"
+      },
+      {
+        "key": "child_dob",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_dob",
+        "value": ""
+      },
+      {
+        "key": "follow_up_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_status",
+        "label": "Follow-up status",
+        "options": [
+          {
+            "key": "found",
+            "text": "Found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Not found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        }
+      },
+      {
+        "key": "mama_child_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_status",
+        "label": "Child status",
+        "options": [
+          {
+            "key": "alive",
+            "text": "Child is alive",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "alive"
+          },
+          {
+            "key": "deceased",
+            "text": "Child has died",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_mtoto_alifariki",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_mtoto_alifariki",
+        "hint": "Date the child died",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_alive_note",
+        "type": "toaster_notes",
+        "text": "Save; continue to the HEI test section.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        },
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_alive_note"
+      },
+      {
+        "key": "mtoto_not_found_reason",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_not_found_reason",
+        "label": "Reason not found",
+        "options": [
+          {
+            "key": "moved_area",
+            "text": "Moved from area",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_area"
+          },
+          {
+            "key": "moved_facility",
+            "text": "Transferred to another facility",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_facility"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_moved_area_facility",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_moved_area_facility",
+        "hint": "Facility transferring to (optional)",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_new_facility",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_new_facility",
+        "hint": "Name of the new facility",
+        "v_required": {
+          "value": true,
+          "err": "Please enter the new facility name"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_not_found_reason_other",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_not_found_reason_other",
+        "hint": "Specify reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
