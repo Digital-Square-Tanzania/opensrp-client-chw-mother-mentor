@@ -42,6 +42,7 @@ import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorJsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -186,7 +187,9 @@ public class PartnerFollowUpWorkflowInteractorTest {
                 "partner_hepatitis_b_not_tested_reason", "stock_out");
         assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
         answer("mothermentor_partner_education", "partner_education_provided", "no");
-        assertEquals("completed", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+        Event notTested = interactor.event();
+        assertEquals("", observation(notTested, DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+        assertEquals("active", observation(notTested, DBConstants.KEY.MWENZI_STATUS));
         assertBlankCommentDoesNotBlockSave();
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
         assertEquals("", value("mothermentor_partner_arrival", "partner_facility_arrival_date"));
@@ -370,6 +373,35 @@ public class PartnerFollowUpWorkflowInteractorTest {
         }
     }
 
+    @Test
+    public void recordClosedAfterOpeningCannotSaveANewVisit() throws Exception {
+        start(false);
+        answer("mothermentor_partner_follow_up_status", "follow_up_status", "found",
+                "partner_facility_agreement", "refused");
+        answer("mothermentor_partner_education", "partner_education_provided", "no");
+        interactor.closureState = MotherMentorPartnerClosure.legacyCompleted("2026-11-04");
+        BaseMotherMentorVisitContract.InteractorCallBack callback =
+                mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
+        interactor.submitVisit(false, "partner", actions, callback);
+        verify(callback).onSubmitted(null);
+        assertFalse(interactor.persisted);
+        assertEquals("", interactor.closureExcludedId);
+    }
+
+    @Test
+    public void editingExcludesItsOwnVisitFromTheSaveTimeClosureCheck() throws Exception {
+        interactor = new TestInteractor();
+        interactor.editing = savedVisit(true);
+        interactor.forbidContextRead = true;
+        calculate(true);
+        BaseMotherMentorVisitContract.InteractorCallBack callback =
+                mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
+        interactor.submitVisit(true, "partner", actions, callback);
+        assertTrue(interactor.persisted);
+        assertEquals("editing-visit", interactor.closureExcludedId);
+        verify(callback).onSubmitted("saved");
+    }
+
     private Visit savedVisit(boolean schemaTwo) throws Exception {
         Visit visit = new Visit();
         visit.setVisitId("editing-visit");
@@ -479,10 +511,26 @@ public class PartnerFollowUpWorkflowInteractorTest {
         boolean forbidContextRead;
         String excludedId;
         Date contextDate;
+        MotherMentorPartnerClosure closureState = MotherMentorPartnerClosure.active();
+        String closureExcludedId;
+        boolean persisted;
 
         TestInteractor() { super(MotherMentorFollowUpType.PARTNER.getEventType()); }
 
         @Override protected Visit loadEditingVisit(String memberId) { return editing; }
+
+        @Override protected MotherMentorPartnerClosure loadClosureState(String memberId, String excluded) {
+            closureExcludedId = excluded;
+            return closureState;
+        }
+
+        @Override protected Visit saveVisit(boolean edit, String memberId, String encounterType,
+                Map<String, String> json, String parentEventType) {
+            persisted = true;
+            Visit visit = new Visit();
+            visit.setJson("saved");
+            return visit;
+        }
 
         @Override protected MotherMentorPartnerFollowUpDao.Context loadContext(String memberId, String exclude, Date date) {
             if (forbidContextRead) throw new AssertionError("Saved draft context was re-evaluated");

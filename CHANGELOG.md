@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+### Added
+
+- Close partner follow-up on success, death, relocation or the agreed consecutive-visit
+  thresholds, preserving history and storing the closure reason, date and counters.
+- Confirm death and relocation closures before submission in English and Swahili
+  (CHW #1127).
+- Prepare library `0.1.14-SNAPSHOT` / Android code 15 for the new closure contract.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

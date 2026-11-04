@@ -31,6 +31,8 @@ import org.smartregister.chw.mothermentor.interactor.BaseMotherMentorVisitIntera
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.presenter.BaseMotherMentorVisitPresenter;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.view.activity.SecuredActivity;
 
 import java.text.MessageFormat;
@@ -291,7 +293,46 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
 
     @Override
     public void submitVisit() {
+        BaseMotherMentorVisitAction immediate = immediatePartnerClosureAction();
+        if (immediate != null) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.mothermentor_partner_close_confirmation_title)
+                    .setMessage(R.string.mothermentor_partner_close_confirmation_message)
+                    .setPositiveButton(R.string.mothermentor_partner_close_confirm,
+                            (dialog, which) -> getPresenter().submitVisit())
+                    .setNegativeButton(R.string.mothermentor_partner_close_cancel,
+                            (dialog, which) -> {
+                                onSubmissionCancelled();
+                                startForm(immediate);
+                            })
+                    .setCancelable(false)
+                    .show();
+            return;
+        }
         getPresenter().submitVisit();
+    }
+
+    protected void onSubmissionCancelled() {
+        if (tvSubmit != null) tvSubmit.setEnabled(true);
+    }
+
+    private BaseMotherMentorVisitAction immediatePartnerClosureAction() {
+        for (BaseMotherMentorVisitAction action : actionList.values()) {
+            if (!"mothermentor_partner_follow_up_status".equals(action.getFormName())
+                    || !action.isValid()
+                    || action.getActionStatus() != BaseMotherMentorVisitAction.Status.COMPLETED
+                    || StringUtils.isBlank(action.getJsonPayload())) continue;
+            try {
+                JSONObject form = new JSONObject(action.getJsonPayload());
+                String status = JsonFormUtils.getValue(form, DBConstants.KEY.FOLLOW_UP_STATUS);
+                String reason = JsonFormUtils.getValue(form, DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
+                if ("not_found".equals(status)
+                        && ("deceased".equals(reason) || "moved".equals(reason))) return action;
+            } catch (Exception e) {
+                Timber.e(e, "Unable to read partner closure outcome");
+            }
+        }
+        return null;
     }
 
     @Override

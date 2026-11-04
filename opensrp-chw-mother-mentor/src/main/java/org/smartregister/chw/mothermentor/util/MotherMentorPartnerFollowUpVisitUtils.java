@@ -101,10 +101,11 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                     && (!"other".equals(reason)
                             || answered(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER)));
         }
-        if (!"attendance".equals(phase) || !educationComplete(values)) return false;
+        if (!"attendance".equals(phase)) return false;
         String attendance = values.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY);
         if ("no".equals(attendance)) return true;
         return "yes".equals(attendance)
+                && educationComplete(values)
                 && validRecordedDate(values.get(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))
                 && testComplete(values, DBConstants.KEY.PARTNER_HIV_TESTED,
                         DBConstants.KEY.PARTNER_HIV_RESULT,
