@@ -10,7 +10,6 @@ Android version code.
 
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment. (CHW #1129).
 
-## Unreleased
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
