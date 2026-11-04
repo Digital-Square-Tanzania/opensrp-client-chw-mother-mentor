@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).
+- Increment the library to `0.1.15-SNAPSHOT` / Android code 16 for the shared eligibility API.
+
+## 0.1.14-SNAPSHOT — 2026-11-04
+
 ### Added
 
 - Add the mother visit pregnancy outcome branches in English and Swahili, including
