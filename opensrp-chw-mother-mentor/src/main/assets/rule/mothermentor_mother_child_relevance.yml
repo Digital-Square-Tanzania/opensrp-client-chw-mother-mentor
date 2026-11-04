@@ -2,76 +2,76 @@
 name: step1_mama_child_status
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true'"
+  - "isRelevant = true"
 ---
 name: step1_mama_child_age_note
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true'"
+  - "isRelevant = true"
 ---
 name: step1_mama_hei_next_test_note
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive'"
+  - "isRelevant = true"
 ---
 name: step1_mama_tarehe_mtoto_alifariki
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'deceased'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'deceased'"
+  - "isRelevant = true"
 ---
 name: step1_mama_breastfeeding_status
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive'"
+  - "isRelevant = true"
 ---
 name: step1_mama_tarehe_acha_kunyonyesha
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_breastfeeding_status == 'not_breastfeeding'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_breastfeeding_status == 'not_breastfeeding'"
+  - "isRelevant = true"
 ---
 name: step1_mama_hei_test_done
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_due_tests != '[]'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_due_tests != '[]'"
+  - "isRelevant = true"
 ---
 name: step1_mama_hei_test_type_choice
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests.contains(',')"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests.contains(',')"
+  - "isRelevant = true"
 ---
 name: step1_mama_hei_test_date
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]'"
+  - "isRelevant = true"
 ---
 name: step1_mama_hei_test_result
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]'"
+  - "isRelevant = true"
 ---
 name: step1_hei_chanya_imethibitishwa
 description: Mother child assessment relevance
 priority: 1
-condition: "true"
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_result == 'positive' && step1_mama_hei_due_tests != '[]'"
 actions:
-  - "isRelevant = step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_result == 'positive' && step1_mama_hei_due_tests != '[]'"
+  - "isRelevant = true"
