@@ -37,7 +37,8 @@ public class MotherMentorChildEidStatusUtilsTest {
     @Test
     public void deathDatesMustBeRealAndWithinBirthAndTheOriginalVisitDay() {
         Map<String, String> values = values(FOLLOW_UP_STATUS, "found", MAMA_CHILD_STATUS, "deceased");
-        for (String invalid : new String[] {"", "31-02-2026", "2026-01-19", "2026-10-21", "2026-1-20"}) {
+        for (String invalid : new String[] {"", "31-02-2026", "2026-01-19", "2026-10-21",
+                "2026-1-20", "2026-10-20T00:00:00Z"}) {
             values.put(MAMA_TAREHE_MTOTO_ALIFARIKI, invalid);
             assertFalse(invalid, complete(values));
         }
