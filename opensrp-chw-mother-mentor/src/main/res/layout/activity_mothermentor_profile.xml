@@ -81,6 +81,7 @@
                         android:textSize="@dimen/register_member_name_size" />
 
                     <LinearLayout
+                        android:id="@+id/mothermentor_profile_demographics"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"

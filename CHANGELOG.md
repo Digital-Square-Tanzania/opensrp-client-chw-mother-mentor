@@ -17,6 +17,9 @@ Android version code.
 - Preserve the source event timestamp and service day in idempotent enrollment
   events, and retry their stored payload when projection processing is interrupted.
 
+- Add bilingual Child EID list rows and profile details for missed tests, referral
+  state, full HEI identity, age and closed-history access (#1145).
+
 ### Changed
 
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).

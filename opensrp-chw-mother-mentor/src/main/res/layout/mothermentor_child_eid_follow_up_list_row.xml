@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/register_columns"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="108dp"
+    android:background="@color/mama_kinara_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="12dp">
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/patient_name_age" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:fontFamily="sans-serif-medium"
+                android:textColor="@color/mama_kinara_text" android:textSize="14.5sp" />
+            <TextView android:id="@+id/mothermentor_eid_closed_tag" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:layout_marginTop="3dp"
+                android:background="@color/mama_kinara_divider" android:paddingStart="6dp"
+                android:paddingEnd="6dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                android:text="@string/mothermentor_eid_closed" android:textSize="11sp"
+                android:textColor="@color/mama_kinara_secondary" android:visibility="gone" />
+            <TextView android:id="@+id/client_metadata" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="3dp"
+                android:textColor="@color/mama_kinara_secondary" android:textSize="12sp" />
+            <TextView android:id="@+id/mothermentor_eid_missed_due" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="3dp"
+                android:textColor="@color/mothermentor_eid_alert" android:textSize="12sp" />
+            <TextView android:id="@+id/mothermentor_eid_mother_summary" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="3dp"
+                android:textColor="@color/mama_kinara_muted" android:textSize="11sp" />
+        </LinearLayout>
+        <ImageView android:layout_width="20dp" android:layout_height="20dp"
+            android:layout_marginStart="12dp" android:contentDescription="@null"
+            android:importantForAccessibility="no" android:src="@drawable/mama_kinara_row_chevron" />
+    </LinearLayout>
+    <View android:layout_width="match_parent" android:layout_height="1dp"
+        android:layout_gravity="bottom" android:background="@color/mama_kinara_divider"
+        android:importantForAccessibility="no" />
+</FrameLayout>
