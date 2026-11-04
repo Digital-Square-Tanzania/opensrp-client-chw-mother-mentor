@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.Application;
 
+import com.vijay.jsonwizard.activities.JsonFormActivity;
 import com.vijay.jsonwizard.rules.RuleConstant;
 import com.vijay.jsonwizard.rules.RulesEngineFactory;
 import com.vijay.jsonwizard.utils.FormUtils;
@@ -20,10 +21,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorHouseholdCounsellingActionHelper;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
@@ -33,6 +36,7 @@ import org.smartregister.clientandeventmodel.Obs;
 import org.smartregister.domain.tag.FormTag;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,6 +100,73 @@ public class MotherMentorHouseholdCounsellingFormTest {
             assertEquals("0", calculated(form, "child", "", "", "", ""));
             assertEquals("0", calculated(form, "child", "invalid", "", "", ""));
             assertEquals("399998", calculated(form, "mother,partner,child,relative,neighbour,other", "99999", "99999", "99999", "99999"));
+        }
+    }
+
+    @Test
+    public void nativeRelevanceAndCalculationKeepTheSameNamedCheckboxFacts() throws Exception {
+        for (String language : LANGUAGES) {
+            JSONObject form = selected(form(language), "mother");
+            JsonFormActivity activity = Robolectric.buildActivity(JsonFormActivity.class).get();
+            ReflectionHelpers.setField(activity, "mJSONObject", form);
+            activity.setRulesEngineFactory(new RulesEngineFactory(
+                    RuntimeEnvironment.getApplication(), Collections.emptyMap()));
+            Map<String, JSONObject> nativeFields = ReflectionHelpers.getField(activity, "formFields");
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            for (int index = 0; index < fields.length(); index++) {
+                JSONObject field = fields.getJSONObject(index);
+                nativeFields.put("step1_" + field.getString("key"), field);
+            }
+            for (String key : new String[] {"counselled_child_count", "counselled_relative_count",
+                    "counselled_neighbour_count", "counselled_other_count", "other"}) {
+                Facts relevance = nativeFacts(activity, field(form, key), "relevance");
+                assertTrue(key, relevance.asMap().containsKey("step1_participants"));
+                assertFalse(key, relevance.asMap().containsKey("value"));
+                assertEquals(Collections.singletonList("mother"), relevance.get("step1_participants"));
+            }
+            Facts calculation = nativeFacts(activity, field(form, "counselled_total"), "calculation");
+            assertEquals(Integer.valueOf(0), calculation.get("step1_counselled_child_count"));
+            assertEquals("1", activity.getRulesEngineFactory().getCalculation(calculation,
+                    "mothermentor_household_counselling_calculation.yml"));
+
+            String[] roles = {"child", "relative", "neighbour", "other"};
+            List<String> selected = new ArrayList<>(Arrays.asList("mother", "partner"));
+            int total = 2;
+            for (int index = 0; index < roles.length; index++) {
+                selected.add(roles[index]);
+                selected(form, selected.toArray(new String[0]));
+                String key = "counselled_" + roles[index] + "_count";
+                Facts relevance = nativeFacts(activity, field(form, key), "relevance");
+                assertTrue(relevance.asMap().containsKey("step1_participants"));
+                assertFalse(relevance.asMap().containsKey("value"));
+                assertTrue(activity.getRulesEngineFactory().getRelevance(relevance,
+                        "mothermentor_household_counselling_relevance.yml"));
+                field(form, key).put("value", Integer.toString(index + 2));
+                total += index + 2;
+                assertEquals(Integer.toString(total), nativeCalculated(activity, form));
+            }
+            assertTrue(activity.getRulesEngineFactory().getRelevance(
+                    nativeFacts(activity, field(form, "other"), "relevance"),
+                    "mothermentor_household_counselling_relevance.yml"));
+
+            selected(form, "mother", "partner");
+            for (String key : new String[] {"counselled_child_count", "counselled_relative_count",
+                    "counselled_neighbour_count", "counselled_other_count", "other"}) {
+                assertFalse(activity.getRulesEngineFactory().getRelevance(
+                        nativeFacts(activity, field(form, key), "relevance"),
+                        "mothermentor_household_counselling_relevance.yml"));
+                ReflectionHelpers.callInstanceMethod(activity, "clearHiddenViewsValues",
+                        ClassParameter.from(JSONObject.class, field(form, key)),
+                        ClassParameter.from(String.class, "step1:" + key));
+                assertFalse(field(form, key).has("value"));
+            }
+            assertEquals("2", nativeCalculated(activity, form));
+            selected(form, "mother", "partner", "child");
+            assertEquals("2", nativeCalculated(activity, form));
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper(form).evaluateStatusOnPayload());
+            field(form, "counselled_child_count").put("value", "3");
+            assertEquals("5", nativeCalculated(activity, form));
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper(form).evaluateStatusOnPayload());
         }
     }
 
@@ -346,6 +417,29 @@ public class MotherMentorHouseholdCounsellingFormTest {
         JSONObject field = FormUtils.getFieldFromForm(form, key);
         assertNotNull(key, field);
         return field;
+    }
+
+    private Facts nativeFacts(JsonFormActivity activity, JSONObject field, String logic) throws Exception {
+        JSONObject configuration = field.getJSONObject(logic);
+        String[] address;
+        if (configuration.has("rules-engine")) {
+            String file = configuration.getJSONObject("rules-engine").getJSONObject("ex-rules")
+                    .getString("rules-file");
+            address = new String[] {"rules-engine", file, "step1_" + field.getString("key")};
+        } else {
+            address = configuration.keys().next().split(":");
+        }
+        JSONObject source = activity.getObjectUsingAddress(address, false);
+        return ReflectionHelpers.callInstanceMethod(activity, "getEntries",
+                ClassParameter.from(String[].class, address), ClassParameter.from(JSONObject.class, source));
+    }
+
+    private String nativeCalculated(JsonFormActivity activity, JSONObject form) throws Exception {
+        Facts facts = nativeFacts(activity, field(form, "counselled_total"), "calculation");
+        assertTrue(facts.asMap().containsKey("step1_participants"));
+        assertFalse(facts.asMap().containsKey("value"));
+        return activity.getRulesEngineFactory().getCalculation(facts,
+                "mothermentor_household_counselling_calculation.yml");
     }
 
     private JSONObject form(String language) throws Exception {

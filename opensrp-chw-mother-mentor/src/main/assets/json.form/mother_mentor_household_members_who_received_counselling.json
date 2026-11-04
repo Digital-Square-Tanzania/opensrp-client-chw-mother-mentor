@@ -141,14 +141,10 @@
           "err": "Enter at least one"
         },
         "relevance": {
-          "step1:participants": {
-            "ex-checkbox": [
-              {
-                "or": [
-                  "child"
-                ]
-              }
-            ]
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_relevance.yml"
+            }
           }
         }
       },
@@ -177,14 +173,10 @@
           "err": "Enter at least one"
         },
         "relevance": {
-          "step1:participants": {
-            "ex-checkbox": [
-              {
-                "or": [
-                  "relative"
-                ]
-              }
-            ]
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_relevance.yml"
+            }
           }
         }
       },
@@ -213,14 +205,10 @@
           "err": "Enter at least one"
         },
         "relevance": {
-          "step1:participants": {
-            "ex-checkbox": [
-              {
-                "or": [
-                  "neighbour"
-                ]
-              }
-            ]
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_relevance.yml"
+            }
           }
         }
       },
@@ -236,14 +224,10 @@
           "err": "Please write an answer"
         },
         "relevance": {
-          "step1:participants": {
-            "ex-checkbox": [
-              {
-                "or": [
-                  "other"
-                ]
-              }
-            ]
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_relevance.yml"
+            }
           }
         }
       },
@@ -272,14 +256,10 @@
           "err": "Enter at least one"
         },
         "relevance": {
-          "step1:participants": {
-            "ex-checkbox": [
-              {
-                "or": [
-                  "other"
-                ]
-              }
-            ]
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_relevance.yml"
+            }
           }
         }
       },
