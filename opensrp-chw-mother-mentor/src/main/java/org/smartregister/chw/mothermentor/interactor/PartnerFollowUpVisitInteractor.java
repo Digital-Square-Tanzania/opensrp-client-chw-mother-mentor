@@ -228,9 +228,9 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             case SYPHILIS: return visible(HIV) && complete(HIV);
             case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
             case EDUCATION: return attendancePhase() ? attended() && complete(ARRIVAL) : found();
-            case COMMENTS: return !attendancePhase()
-                    || "yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
-                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+            case COMMENTS: return attendancePhase()
+                    && ("yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)));
             default: return true;
         }
     }

@@ -14,6 +14,12 @@ Android version code.
   education observations when editing a historical non-attendance visit that
   remains non-attendance (CHW #1126).
 
+### Changed
+
+- Place optional partner tracing comments last in the English and Swahili
+  follow-up status forms, after the selected agreement or missing-person reason.
+  Keep the separate comments action for facility-attendance visits (CHW #1125).
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed
