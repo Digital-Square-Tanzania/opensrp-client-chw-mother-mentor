@@ -39,6 +39,8 @@ public class MotherMentorMotherPregnancyHelperTest {
             assertEquals("", MotherMentorMotherPregnancyUtils.values(saved).get(MAMA_TAREHE_KUJIFUNGUA));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
             set(form, MAMA_PRETERM_DELIVERY_DATE_INPUT, "18-10-2026");
+            set(form, MAMA_CHILD_STATUS, "alive");
+            set(form, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
             helper.onPayloadReceived(form.toString());
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
         }
@@ -52,6 +54,9 @@ public class MotherMentorMotherPregnancyHelperTest {
         set(form, MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant");
         set(form, MAMA_ENROLLMENT_CHILD_DOB, "02-08-2026");
         set(form, MAMA_TAREHE_KUJIFUNGUA, "02-08-2026");
+        set(form, MAMA_CHILD_STATUS, "alive");
+        set(form, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        set(form, MAMA_HEI_TEST_DONE, "no");
         helper.onPayloadReceived(form.toString());
         Map<String, String> values = MotherMentorMotherPregnancyUtils.values(
                 new JSONObject(helper.postProcess(form.toString())));

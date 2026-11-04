@@ -146,7 +146,12 @@ public class MotherMentorServiceVisitInteractorTest {
             assertEquals(2, visible(actions));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, entry.getActionStatus());
             assertTrue(byForm(actions, "mothermentor_visit_comment").isOptional());
-            answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, returning ? "found" : "");
+            if (returning) {
+                answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, "found",
+                        DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
+            } else {
+                answer(entry, DBConstants.KEY.ATTENDANCE_TYPE, "new");
+            }
             assertEquals(6, visible(actions));
             BaseMotherMentorVisitAction group = byForm(actions, "mothermentor_visit_group_linkage");
             answer(group, DBConstants.KEY.HAS_BEEN_LINKED_TO_IGA_GROUP, "yes",
@@ -190,6 +195,7 @@ public class MotherMentorServiceVisitInteractorTest {
             observations.put(observation(DBConstants.KEY.MAMA_VISIT_SCHEMA, "2"));
             observations.put(observation(DBConstants.KEY.MAMA_ENROLLMENT_ID, "enrollment-one"));
             addDetail(saved, DBConstants.KEY.MAMA_VISIT_SCHEMA, "2");
+            addDetail(saved, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
         }
         Visit visit = new Visit();
         visit.setVisitId("saved-visit");
@@ -312,13 +318,26 @@ public class MotherMentorServiceVisitInteractorTest {
                     return Collections.singletonMap(
                             DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT, "true");
                 }
+                @Override
+                protected Map<String, String> loadDeliveryAnswers() {
+                    return Collections.emptyMap();
+                }
+                @Override
+                protected org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository.State loadChildState() {
+                    return new org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository.State(null);
+                }
+                @Override
+                protected org.joda.time.LocalDate loadServiceDate() {
+                    return editing == null ? org.joda.time.LocalDate.now()
+                            : MotherMentorMotherVisitDao.getServiceDate(editing);
+                }
             };
         }
     }
 
     private void assertLocalizedVisitFlow(String... titles) throws Exception {
         MotherMentorServiceVisitInteractor interactor =
-                new MotherMentorServiceVisitInteractor(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
+                new TestInteractor();
         AppExecutors executors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
         interactor.appExecutors = executors;
         ((BaseMotherMentorVisitInteractor) interactor).appExecutors = executors;
@@ -328,7 +347,9 @@ public class MotherMentorServiceVisitInteractorTest {
         BaseMotherMentorVisitContract.InteractorCallBack callback =
                 mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
 
-        interactor.calculateActions(view, new MemberObject(), callback);
+        MemberObject mother = new MemberObject();
+        mother.setBaseEntityId("mother");
+        interactor.calculateActions(view, mother, callback);
 
         ArgumentCaptor<LinkedHashMap> captor = ArgumentCaptor.forClass(LinkedHashMap.class);
         verify(callback).preloadActions(captor.capture());
@@ -366,6 +387,8 @@ public class MotherMentorServiceVisitInteractorTest {
                 field.put("value", attendance);
             } else if (DBConstants.KEY.FOLLOW_UP_STATUS.equals(field.optString("key"))) {
                 field.put("value", status);
+            } else if (DBConstants.KEY.VISIT_PREGNANCY_STATUS.equals(field.optString("key"))) {
+                field.put("value", "repeat".equals(attendance) && "found".equals(status) ? "pregnant" : "");
             }
         }
         action.setJsonPayload(form.toString());
