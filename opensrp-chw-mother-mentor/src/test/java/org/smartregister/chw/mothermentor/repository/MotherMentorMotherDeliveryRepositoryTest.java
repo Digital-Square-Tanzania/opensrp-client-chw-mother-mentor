@@ -52,7 +52,7 @@ public class MotherMentorMotherDeliveryRepositoryTest {
                 new Object[] {ENROLLED});
         data.execSQL("INSERT INTO ec_family_member VALUES ('mother','household')");
         db = mock(net.zetetic.database.sqlcipher.SQLiteDatabase.class);
-        when(db.rawQuery(anyString(), any(String[].class)))
+        when(db.rawQuery(anyString(), nullable(String[].class)))
                 .thenAnswer(call -> data.rawQuery(call.getArgument(0), call.getArgument(1)));
         doAnswer(call -> {
             data.execSQL(call.getArgument(0));
