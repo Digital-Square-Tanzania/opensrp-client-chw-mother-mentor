@@ -10,7 +10,6 @@ Android version code.
 
 - Keep only three household visit purposes, require an Other explanation, and display removed historical choices without rewriting recorded answers. (CHW #1131).
 
-## Unreleased
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
