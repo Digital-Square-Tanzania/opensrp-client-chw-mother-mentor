@@ -140,6 +140,53 @@ public class VisitRepository extends BaseRepository {
         EventBus.getDefault().post(visit);
     }
 
+    /** Refresh only linked Child EID source evidence, retaining its canonical visit identity. */
+    public void refreshChildEidVisit(Visit existing, Visit incoming, SQLiteDatabase database,
+            VisitDetailsRepository detailsRepository) {
+        if (existing == null || incoming == null
+                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
+                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())
+                || !MotherMentorMotherChildRepository.isChildEidVisit(existing)
+                || !StringUtils.equals(existing.getVisitType(), incoming.getVisitType())) return;
+        if (database == null) database = getWritableDatabase();
+        boolean identical = StringUtils.equals(existing.getJson(), incoming.getJson());
+        long version = childEidSourceVersion(incoming);
+        boolean replace = !identical && version > 0 && version >= childEidSourceVersion(existing);
+        boolean ownTransaction = !database.inTransaction();
+        if (ownTransaction) database.beginTransaction();
+        try {
+            if (replace) {
+                incoming.setVisitId(existing.getVisitId());
+                incoming.setCreatedAt(existing.getCreatedAt());
+                incoming.setDate(existing.getDate());
+                incoming.setParentVisitID(existing.getParentVisitID());
+                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                if (incoming.getVisitDetails() != null) {
+                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
+                        if (details == null) continue;
+                        for (VisitDetail detail : details) {
+                            detail.setVisitId(existing.getVisitId());
+                            detailsRepository.addVisitDetails(detail, database);
+                        }
+                    }
+                }
+            }
+            MotherMentorMotherChildRepository.rebuildForChild(database, existing.getBaseEntityId());
+            if (ownTransaction) database.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) database.endTransaction();
+        }
+        EventBus.getDefault().post(replace ? incoming : existing);
+    }
+
+    private long childEidSourceVersion(Visit visit) {
+        try { return Math.max(0, new org.json.JSONObject(visit.getJson()).optLong("version", 0)); }
+        catch (org.json.JSONException invalid) { return 0; }
+    }
+
     public String getParentVisitEventID(
             String baseEntityID, String parentEventType, Date eventDate) {
         if (StringUtils.isBlank(baseEntityID)

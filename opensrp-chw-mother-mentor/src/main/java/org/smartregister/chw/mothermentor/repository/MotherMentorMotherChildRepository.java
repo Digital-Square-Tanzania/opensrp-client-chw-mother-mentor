@@ -83,6 +83,11 @@ public final class MotherMentorMotherChildRepository {
                 new String[] {motherId});
     }
 
+    public static boolean isChildEidVisit(Visit visit) {
+        return visit != null && org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType
+                .CHILD_EID.getEventType().equals(visit.getVisitType());
+    }
+
     /** Repository and sync hooks call this after storing the canonical visit. */
     public static void rebuildForVisit(SQLiteDatabase db, Visit visit) {
         if (visit == null || StringUtils.isBlank(visit.getBaseEntityId())) return;
