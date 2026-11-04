@@ -25,6 +25,8 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
+import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 import org.smartregister.domain.db.EventClient;
@@ -312,6 +314,14 @@ public class NCUtils {
                         }
                     }
                 }
+            } else if (MotherMentorPartnerClosureRepository.isPartnerVisit(visit)) {
+                MotherMentorLibrary.getInstance().visitRepository().refreshPartnerVisit(
+                        visit, eventToVisit(baseEvent.getEvent()), database,
+                        MotherMentorLibrary.getInstance().visitDetailsRepository());
+            } else if (MotherMentorHouseholdClosureRepository.isHouseholdVisit(visit)) {
+                MotherMentorLibrary.getInstance().visitRepository().refreshHouseholdVisit(
+                        visit, eventToVisit(baseEvent.getEvent()), database,
+                        MotherMentorLibrary.getInstance().visitDetailsRepository());
             }
             if (org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository
                     .isChildEidVisit(visit)) {

@@ -37,6 +37,17 @@ public class MotherMentorPartnerFollowUpCompletionTest {
     }
 
     @Test
+    public void attendanceNoCompletesWithoutEducationDateTestsOrComments() {
+        Map<String, String> values = attendance();
+        values.remove(PARTNER_EDUCATION_PROVIDED);
+        assertTrue(complete(values));
+        values.put(COMMENTS, "Follow up next time");
+        assertTrue(complete(values));
+        values.put(PARTNER_ARRIVED_AT_FACILITY, "yes");
+        assertFalse(complete(values));
+    }
+
+    @Test
     public void attendanceNoCanCompleteWithoutTestsButYesRequiresAllThreeTestBranches() {
         Map<String, String> values = attendance();
         assertTrue(complete(values));
@@ -77,6 +88,11 @@ public class MotherMentorPartnerFollowUpCompletionTest {
     @Test
     public void educationYesRequiresAllowedTopicsAndCommentsRemainOptional() {
         Map<String, String> values = attendance();
+        values.put(PARTNER_ARRIVED_AT_FACILITY, "yes");
+        values.put(PARTNER_FACILITY_ARRIVAL_DATE, "28-10-2026");
+        tested(values, PARTNER_HIV_TESTED, PARTNER_HIV_RESULT);
+        tested(values, PARTNER_SYPHILIS_TESTED, PARTNER_SYPHILIS_RESULT);
+        tested(values, PARTNER_HEPATITIS_B_TESTED, PARTNER_HEPATITIS_B_RESULT);
         values.put(PARTNER_EDUCATION_PROVIDED, "yes");
         assertFalse(complete(values));
         values.put(PARTNER_EDUCATION_TOPICS, "[\"hiv\",\"hepatitis_b\"]");

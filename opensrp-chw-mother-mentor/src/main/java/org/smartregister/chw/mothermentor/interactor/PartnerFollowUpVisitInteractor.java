@@ -1,6 +1,9 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.Gson;
+
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
@@ -21,6 +24,9 @@ import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerClosure;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -52,6 +58,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     private final LinkedHashMap<String, BaseMotherMentorVisitAction> actions = new LinkedHashMap<>();
     private final Map<String, BaseMotherMentorVisitAction> workflow = new LinkedHashMap<>();
     private final Map<String, String> snapshot = new LinkedHashMap<>();
+    private final ArrayList<Obs> originalNonAttendanceEducation = new ArrayList<>();
     private String editedVisitId = "";
     private Date serviceDate = new Date();
     private boolean frozenContext;
@@ -76,6 +83,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         editedVisitId = "";
         serviceDate = new Date();
         snapshot.clear();
+        originalNonAttendanceEducation.clear();
         frozenContext = false;
         if (!Boolean.TRUE.equals(view.getEditMode())) return;
         Visit visit = loadEditingVisit(member.getBaseEntityId());
@@ -85,8 +93,8 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(editedVisitId));
         try {
             String json = StringUtils.defaultIfBlank(visit.getJson(), visit.getPreProcessedJson());
-            Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
-                    new JSONObject(json).optJSONArray("obs"));
+            JSONArray observations = new JSONObject(json).optJSONArray("obs");
+            Map<String, String> saved = MotherMentorVisitCompletion.observationValues(observations);
             serviceDate = originalServiceDate(
                     saved.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE), visit.getDate());
             String phase = saved.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
@@ -102,6 +110,12 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 }
                 frozenContext = true;
                 active = true;
+                if (ATTENDANCE.equals(phase)
+                        && "no".equals(saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))) {
+                    for (Obs obs : new Gson().fromJson(observations.toString(), Obs[].class)) {
+                        if (isEducationObservation(obs)) originalNonAttendanceEducation.add(obs);
+                    }
+                }
             }
         } catch (Exception e) {
             serviceDate = visit.getDate() == null ? serviceDate : visit.getDate();
@@ -117,6 +131,12 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     protected MotherMentorPartnerFollowUpDao.Context loadContext(
             String memberId, String excludedVisitId, Date date) {
         return MotherMentorPartnerFollowUpDao.getContext(memberId, excludedVisitId, date);
+    }
+
+    protected MotherMentorPartnerClosure loadClosureState(String memberId, String excludedVisitId) {
+        return MotherMentorPartnerClosureRepository.getState(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                memberId, excludedVisitId);
     }
 
     private static Date originalServiceDate(String recordedDate, Date fallback) {
@@ -216,7 +236,10 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             case HIV: return attendancePhase() && attended() && complete(ARRIVAL);
             case SYPHILIS: return visible(HIV) && complete(HIV);
             case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
-            case EDUCATION: return attendancePhase() || found();
+            case EDUCATION: return attendancePhase() ? attended() && complete(ARRIVAL) : found();
+            case COMMENTS: return attendancePhase()
+                    && ("yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)));
             default: return true;
         }
     }
@@ -237,7 +260,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         clearingHiddenActions = true;
         try {
             for (Map.Entry<String, BaseMotherMentorVisitAction> entry : workflow.entrySet()) {
-                if (!visible(entry.getKey())) {
+                if (!visible(entry.getKey()) && !COMMENTS.equals(entry.getKey())) {
                     entry.getValue().setJsonPayload(null);
                     entry.getValue().setSubTitle(null);
                 }
@@ -263,6 +286,13 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     }
 
     @Override
+    protected String submitVisit(boolean edit, String memberId,
+            Map<String, BaseMotherMentorVisitAction> map, String parentEventType) throws Exception {
+        if (loadClosureState(memberId, editedVisitId).isClosed()) return null;
+        return super.submitVisit(edit, memberId, map, parentEventType);
+    }
+
+    @Override
     protected String getEncounterType() {
         return getCurrentVisitType();
     }
@@ -275,6 +305,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     @Override
     protected void prepareEvent(Event event) {
         if (event == null) return;
+        restoreHistoricalEducation(event);
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
@@ -284,16 +315,59 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         for (Map.Entry<String, String> entry : snapshot.entrySet()) {
             putObservation(event, entry.getKey(), entry.getValue());
         }
-        String end = "";
-        if (!attendancePhase() && "not_found".equals(value(STATUS, DBConstants.KEY.FOLLOW_UP_STATUS))
-                && "deceased".equals(value(STATUS, DBConstants.KEY.PARTNER_NOT_FOUND_REASON))
-                && complete(STATUS)) {
-            end = "deceased";
-        } else if (attendancePhase() && attended() && complete(ARRIVAL) && complete(HIV)
-                && complete(SYPHILIS) && complete(HEPATITIS_B) && complete(EDUCATION)) {
-            end = "completed";
+        Map<String, String> values = currentValues();
+        MotherMentorPartnerClosure closure = loadClosureState(
+                memberObject.getBaseEntityId(), editedVisitId);
+        if (MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values)) {
+            closure = closure.advance(values,
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
         }
+        for (Map.Entry<String, String> entry :
+                MotherMentorPartnerClosureRepository.observationValues(closure).entrySet()) {
+            putObservation(event, entry.getKey(), entry.getValue());
+        }
+        String end = MotherMentorPartnerClosure.ATTENDED_TESTED.equals(closure.getStatus())
+                ? "completed" : (closure.isClosed() ? closure.getStatus() : "");
         putObservation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_END, end);
+    }
+
+    private Map<String, String> currentValues() {
+        Map<String, String> values = new LinkedHashMap<>(snapshot);
+        for (BaseMotherMentorVisitAction action : workflow.values()) {
+            if (!action.isValid() || StringUtils.isBlank(action.getJsonPayload())) continue;
+            try {
+                JSONObject form = new JSONObject(action.getJsonPayload());
+                for (int step = 1; step <= form.optInt("count", 1); step++) {
+                    JSONArray fields = form.getJSONObject("step" + step)
+                            .getJSONArray("fields");
+                    for (int index = 0; index < fields.length(); index++) {
+                        String key = fields.getJSONObject(index).optString("key");
+                        values.put(key, JsonFormUtils.getValue(form, key));
+                    }
+                }
+            } catch (Exception e) {
+                Timber.e(e, "Unable to read partner visit answers");
+            }
+        }
+        return values;
+    }
+
+    private void restoreHistoricalEducation(Event event) {
+        if (!attendancePhase()
+                || !"no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                || originalNonAttendanceEducation.isEmpty()) return;
+        if (event.getObs() != null) {
+            Iterator<Obs> observations = event.getObs().iterator();
+            while (observations.hasNext()) {
+                if (isEducationObservation(observations.next())) observations.remove();
+            }
+        }
+        for (Obs obs : originalNonAttendanceEducation) event.addObs(obs);
+    }
+
+    private static boolean isEducationObservation(Obs obs) {
+        return DBConstants.KEY.PARTNER_EDUCATION_PROVIDED.equals(obs.getFieldCode())
+                || DBConstants.KEY.PARTNER_EDUCATION_TOPICS.equals(obs.getFieldCode());
     }
 
     private static void putObservation(Event event, String key, String value) {

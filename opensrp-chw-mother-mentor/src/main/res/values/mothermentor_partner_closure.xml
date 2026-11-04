@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_partner_close_confirmation_title">Confirm record closure</string>
+    <string name="mothermentor_partner_close_confirmation_message">Are you sure? The partner record will be closed and removed from the follow-up list.</string>
+    <string name="mothermentor_partner_close_confirm">Yes, close</string>
+    <string name="mothermentor_partner_close_cancel">Cancel</string>
+    <string name="mothermentor_partner_closed_banner">Partner record closed — no new visits can be saved.\n%1$s · %2$s</string>
+    <string name="mothermentor_partner_history">Follow-up history</string>
+    <string name="mothermentor_partner_active_follow_up">Active follow-up</string>
+    <string name="mothermentor_partner_closure_reason">Closure reason</string>
+    <string name="mothermentor_partner_closure_date">Closure date</string>
+    <string name="mothermentor_partner_closure_active">Active</string>
+    <string name="mothermentor_partner_closure_attended_tested">Attended and tested</string>
+    <string name="mothermentor_partner_closure_deceased">Deceased</string>
+    <string name="mothermentor_partner_closure_moved">Moved from area</string>
+    <string name="mothermentor_partner_closure_refused_3">Refused (3+ visits)</string>
+    <string name="mothermentor_partner_closure_not_attended_3">Agreed but did not attend (3+ visits)</string>
+    <string name="mothermentor_partner_closure_travelled_3">Travelled (3+ visits)</string>
+    <string name="mothermentor_partner_closure_other_3">Not found — Other (3+ visits)</string>
+    <string name="mothermentor_partner_closure_lost_to_follow_up">Lost to Follow-up</string>
+    <string name="mothermentor_partner_closure_completed">Follow-up completed</string>
+    <item name="action_mothermentor_partner_history" type="id" />
+</resources>
