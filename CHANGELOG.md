@@ -8,8 +8,12 @@ Android version code.
 
 ### Changed
 
+
 - Rephrase partner facility attendance labels in English and Swahili, including
   history labels, while preserving the first-visit qualifiers (CHW #1128).
+- Place optional partner tracing comments last in the English and Swahili
+  follow-up status forms, after the selected agreement or missing-person reason.
+  Keep the separate comments action for facility-attendance visits (CHW #1125).
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 

@@ -217,6 +217,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             case SYPHILIS: return visible(HIV) && complete(HIV);
             case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
             case EDUCATION: return attendancePhase() || found();
+            case COMMENTS: return attendancePhase();
             default: return true;
         }
     }
