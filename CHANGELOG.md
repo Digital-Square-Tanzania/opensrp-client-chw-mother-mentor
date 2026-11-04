@@ -24,6 +24,7 @@ Android version code.
 
 ### Changed
 
+- Capture household follow-up status and missing-household reasons; show service actions only for new or found visits and keep comments optional. (CHW #1130).
 - Place optional partner tracing comments last in the English and Swahili
   follow-up status forms, after the selected agreement or missing-person reason.
   Keep the separate comments action for facility-attendance visits (CHW #1125).

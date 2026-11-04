@@ -215,6 +215,12 @@ public final class DBConstants {
         public static final String HAS_BEEN_LINKED_TO_IGA_GROUP = "has_been_linked_to_iga_group";
         public static final String HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP =
                 "has_been_linked_to_psychosocial_support_group";
+        public static final String HOUSEHOLD_FOLLOW_UP_SCHEMA = "household_follow_up_schema";
+        public static final String HOUSEHOLD_VISIT_TYPE = "household_visit_type";
+        public static final String HOUSEHOLD_FOLLOW_UP_STATUS = "household_follow_up_status";
+        public static final String HOUSEHOLD_NOT_FOUND_REASON = "household_not_found_reason";
+        public static final String HOUSEHOLD_NOT_FOUND_REASON_OTHER =
+                "household_not_found_reason_other";
         public static final String HOUSEHOLD_MEMBERS_FOUND = "household_members_found";
         public static final String HOUSEHOLD_REFERRAL_GIVEN = "household_referral_given";
         public static final String HOUSEHOLD_REFERRAL_OTHER = "household_referral_other";
