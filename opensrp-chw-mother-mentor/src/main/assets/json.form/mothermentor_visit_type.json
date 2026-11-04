@@ -711,7 +711,7 @@
         "key": "mama_child_path",
         "type": "hidden",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_child_path",
         "value": "false"
       },
@@ -719,7 +719,7 @@
         "key": "mama_previous_weaning_date",
         "type": "hidden",
         "value": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_parent": "",
         "openmrs_entity_id": "mama_previous_weaning_date"
       },
@@ -727,7 +727,7 @@
         "key": "mama_previous_breastfeeding_status",
         "type": "hidden",
         "value": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_parent": "",
         "openmrs_entity_id": "mama_previous_breastfeeding_status"
       },
@@ -783,7 +783,7 @@
         "key": "mama_child_age_note",
         "type": "edit_text",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_child_age_note",
         "hint": "Child age",
         "read_only": true,
@@ -800,7 +800,7 @@
         "key": "mama_hei_next_test_note",
         "type": "edit_text",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_hei_next_test_note",
         "hint": "Next HEI test",
         "read_only": true,
@@ -966,7 +966,7 @@
         "key": "mama_hei_test_type_choice",
         "type": "native_radio",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
+        "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_hei_test_type_choice",
         "label": "Test type",
         "options": [

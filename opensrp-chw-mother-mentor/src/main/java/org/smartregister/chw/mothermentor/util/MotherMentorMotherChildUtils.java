@@ -141,6 +141,8 @@ public final class MotherMentorMotherChildUtils {
         put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getTests()));
         put(form, DBConstants.KEY.MAMA_PREVIOUS_BREASTFEEDING_STATUS, state.getBreastfeedingStatus());
         put(form, DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, date(state.getWeaningDate()));
+        fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE,
+                values(form).getOrDefault(DBConstants.KEY.MAMA_HEI_TEST_TYPE, ""));
         fill(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, state.getBreastfeedingStatus());
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
