@@ -231,7 +231,7 @@ public final class MotherMentorClientRegisterDao {
                         + DBConstants.KEY.BASE_ENTITY_ID);
     }
 
-    private static String currentStatus() {
+    static String currentStatus() {
         String answer = normalizedStatus("d." + DBConstants.KEY.DETAILS);
         String enrollmentStatus =
                 normalizedStatus(ENROLLMENT + "." + DBConstants.KEY.PREGNANCY_STATUS);
