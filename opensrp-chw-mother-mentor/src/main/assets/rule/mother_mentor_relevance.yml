@@ -30,7 +30,7 @@ actions:
 name: step3_child_over_18_months
 description: Show child over 18 months toaster
 priority: 1
-condition: "!step3_child_dob.isEmpty() && helper.formatDate(step3_child_dob,'m') > 18"
+condition: "step3_pregnancy_status_selection.equalsIgnoreCase('not_pregnant') && step3_breastfeeding_status.equalsIgnoreCase('not_breast_feeding') && !step3_child_dob.isEmpty() && helper.formatDate(step3_child_dob,'m') > 18"
 actions:
   - "isRelevant = true"
 ---
