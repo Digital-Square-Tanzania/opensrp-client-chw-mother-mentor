@@ -211,10 +211,10 @@ public class PartnerFollowUpWorkflowInteractorTest {
         start(true);
         assertVisible("mothermentor_partner_follow_up_status", false);
         assertVisible("mothermentor_partner_arrival", true);
-        assertVisible("mothermentor_partner_follow_up_comment", true);
         assertTrue(new ArrayList<>(actions.values()).get(actions.size() - 1).isOptional());
         assertVisible("mothermentor_partner_hiv_test", false);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes");
+        assertVisible("mothermentor_partner_follow_up_comment", true);
         assertStatus("mothermentor_partner_arrival", false);
         assertVisible("mothermentor_partner_hiv_test", false);
         answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "01-02-2025");
