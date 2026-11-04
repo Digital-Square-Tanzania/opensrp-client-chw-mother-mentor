@@ -14,7 +14,8 @@ public final class MotherMentorHouseholdFollowUpDao {
         String condition = closed
                 ? source + "." + DBConstants.KEY.IS_CLOSED + " = 1 AND " + source + "."
                         + DBConstants.KEY.KAYA_STATUS
-                        + " IN ('moved', 'house_closed_3', 'other_3', 'lost_to_follow_up')"
+                        + " IN ('moved', 'house_closed_3', 'other_3', 'lost_to_follow_up',"
+                        + " 'mother_deceased', 'child_deceased')"
                 : source + "." + DBConstants.KEY.IS_CLOSED + " = 0 AND " + source + "."
                         + DBConstants.KEY.CONSENT + " = 'ndiyo' AND coalesce(nullif(" + source + "."
                         + DBConstants.KEY.KAYA_STATUS + ", ''), 'active') = 'active'";

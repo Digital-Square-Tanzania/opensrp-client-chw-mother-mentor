@@ -7,6 +7,8 @@ public final class MotherMentorHouseholdClosure {
     public static final String HOUSE_CLOSED_3 = "house_closed_3";
     public static final String OTHER_3 = "other_3";
     public static final String LOST_TO_FOLLOW_UP = "lost_to_follow_up";
+    public static final String MOTHER_DECEASED = "mother_deceased";
+    public static final String CHILD_DECEASED = "child_deceased";
 
     private final String status;
     private final String closedDate;
@@ -25,6 +27,15 @@ public final class MotherMentorHouseholdClosure {
 
     public static MotherMentorHouseholdClosure active() {
         return new MotherMentorHouseholdClosure(ACTIVE, "", 0, 0, 0);
+    }
+
+    /** Member exit projections use the same closed state without fabricating household visits. */
+    public MotherMentorHouseholdClosure withMemberClosure(String reason, String date) {
+        if (!MOTHER_DECEASED.equals(reason) && !CHILD_DECEASED.equals(reason)) {
+            throw new IllegalArgumentException("Unsupported member closure");
+        }
+        return new MotherMentorHouseholdClosure(reason, date,
+                houseClosedCount, otherCount, notFoundCount);
     }
 
     /** Apply valid finalized evidence; the caller orders and deduplicates this enrolment's visits. */

@@ -12,6 +12,8 @@ Android version code.
   visits, rebuilding the current enrollment's counters from finalized visit evidence.
 - Provide localized closure confirmation, reasons, dates and active/closed register
   queries while retaining earlier visit history and resetting a new enrollment.
+- Retain explicit Mother/child death closures projected by the Mother workflow
+  without manufacturing household visits or overwriting its own visit counters.
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 

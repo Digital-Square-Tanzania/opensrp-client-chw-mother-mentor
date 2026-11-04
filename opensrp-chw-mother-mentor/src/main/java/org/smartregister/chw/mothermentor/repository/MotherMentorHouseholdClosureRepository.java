@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,6 +78,25 @@ public final class MotherMentorHouseholdClosureRepository {
     }
 
     public static MotherMentorHouseholdClosure getState(
+            SQLiteDatabase database, String householdId, String excludedVisitId) {
+        MotherMentorHouseholdClosure state = getVisitState(database, householdId, excludedVisitId);
+        Map<String, String> enrollment = enrollment(database, householdId);
+        String memberReason = value(enrollment, DBConstants.KEY.KAYA_STATUS);
+        String memberDate = value(enrollment, DBConstants.KEY.KAYA_TAREHE_YA_KUFUNGWA);
+        boolean memberClosed = MotherMentorHouseholdClosure.MOTHER_DECEASED.equals(memberReason)
+                || MotherMentorHouseholdClosure.CHILD_DECEASED.equals(memberReason);
+        if (memberClosed && memberDate.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")
+                && MotherMentorDeceasedVisitUtils.parseDate(memberDate) != null
+                && memberDate.compareTo(iso(new Date())) <= 0
+                && memberDate.compareTo(iso(new Date(episode(database, householdId, enrollment).started))) >= 0
+                && (!state.isClosed() || memberDate.compareTo(state.getClosedDate()) < 0)) {
+            return state.withMemberClosure(memberReason, memberDate);
+        }
+        return state;
+    }
+
+    /** Own visit evidence only, used when a member projection is corrected or removed. */
+    public static MotherMentorHouseholdClosure getVisitState(
             SQLiteDatabase database, String householdId, String excludedVisitId) {
         Map<String, String> enrollment = enrollment(database, householdId);
         MotherMentorHouseholdClosure state = MotherMentorHouseholdClosure.active();
@@ -185,7 +205,9 @@ public final class MotherMentorHouseholdClosureRepository {
         return MotherMentorHouseholdClosure.MOVED.equals(status)
                 || MotherMentorHouseholdClosure.HOUSE_CLOSED_3.equals(status)
                 || MotherMentorHouseholdClosure.OTHER_3.equals(status)
-                || MotherMentorHouseholdClosure.LOST_TO_FOLLOW_UP.equals(status);
+                || MotherMentorHouseholdClosure.LOST_TO_FOLLOW_UP.equals(status)
+                || MotherMentorHouseholdClosure.MOTHER_DECEASED.equals(status)
+                || MotherMentorHouseholdClosure.CHILD_DECEASED.equals(status);
     }
 
     private static List<Evidence> evidence(SQLiteDatabase database, String householdId,

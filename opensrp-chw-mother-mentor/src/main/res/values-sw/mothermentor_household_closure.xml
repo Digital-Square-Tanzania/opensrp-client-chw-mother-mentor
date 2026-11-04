@@ -14,4 +14,6 @@
     <string name="mothermentor_household_closure_house_closed_3">Haijapatikana — nyumba imefungwa mara 3+</string>
     <string name="mothermentor_household_closure_other_3">Haijapatikana — Nyingine mara 3+</string>
     <string name="mothermentor_household_closure_lost_to_follow_up">Lost to Follow-up (Kaya)</string>
+    <string name="mothermentor_household_closure_mother_deceased">Mama amefariki; kaya haistahili kuendelea</string>
+    <string name="mothermentor_household_closure_child_deceased">Mtoto amefariki; hakuna Mama mwingine anayestahili</string>
 </resources>

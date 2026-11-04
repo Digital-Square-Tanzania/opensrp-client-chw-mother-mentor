@@ -110,6 +110,29 @@ public class MotherMentorHouseholdClosureRepositoryTest {
     }
 
     @Test
+    public void memberClosureRemainsClosedDuringReplayWithoutFabricatingHouseholdVisits() throws Exception {
+        visit("one", "form-one", "02-10-2026", 1, missing("house_closed"));
+        MotherMentorHouseholdClosureRepository.upgrade(database);
+        data.execSQL("UPDATE " + HOUSEHOLDS + " SET " + KAYA_STATUS + " = 'mother_deceased', "
+                + KAYA_TAREHE_YA_KUFUNGWA + " = '2026-10-03', "
+                + KAYA_SABABU_YA_KUFUNGWA + " = 'mother_deceased', " + IS_CLOSED + " = 1");
+        MotherMentorHouseholdClosureRepository.rebuild(database, HOUSEHOLD);
+        MotherMentorHouseholdClosure state = MotherMentorHouseholdClosureRepository.getState(
+                database, HOUSEHOLD, null);
+        assertTrue(state.isClosed());
+        assertEquals(MotherMentorHouseholdClosure.MOTHER_DECEASED, state.getStatus());
+        assertEquals("2026-10-03", state.getClosedDate());
+        assertEquals(1, state.getHouseClosedCount());
+        assertFalse(MotherMentorHouseholdClosureRepository.getVisitState(
+                database, HOUSEHOLD, null).isClosed());
+        assertEquals("1", stored(IS_CLOSED));
+        try (Cursor cursor = data.rawQuery("SELECT count(*) FROM " + VisitRepository.VISIT_TABLE, null)) {
+            cursor.moveToFirst();
+            assertEquals(1, cursor.getInt(0));
+        }
+    }
+
+    @Test
     public void movedClosesImmediatelyWithoutRewritingTheSourceOrDeletingHistory() throws Exception {
         visit("moved", "form-moved", "02-10-2026", 1, missing("moved"));
         String original = scalar("SELECT visit_json FROM visits");
