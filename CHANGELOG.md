@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Capture household follow-up status and missing-household reasons; show service actions only for new or found visits and keep comments optional. (CHW #1130).
+
+## Unreleased
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed
