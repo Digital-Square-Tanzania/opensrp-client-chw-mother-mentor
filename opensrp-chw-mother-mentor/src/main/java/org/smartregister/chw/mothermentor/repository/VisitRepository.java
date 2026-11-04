@@ -173,6 +173,14 @@ public class VisitRepository extends BaseRepository {
                         }
                     }
                 }
+            } else if (Boolean.TRUE.equals(incoming.getProcessed())
+                    && !Boolean.TRUE.equals(existing.getProcessed()) && identical) {
+                ContentValues finalized = new ContentValues();
+                finalized.put(PROCESSED, 1);
+                finalized.put(PRE_PROCESSED, "");
+                database.update(VISIT_TABLE, finalized, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                existing.setProcessed(true);
             }
             MotherMentorMotherChildRepository.rebuildForChild(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();

@@ -27,13 +27,27 @@ public class MotherMentorChildEidReplayTest {
         VisitDetailsRepository details = mock(VisitDetailsRepository.class);
         Visit previous = visit("local", 10), incoming = visit("generated", 11);
         Date original = previous.getCreatedAt();
-            new VisitRepository().refreshChildEidVisit(previous, incoming, db, details);
-            ArgumentCaptor<ContentValues> written = ArgumentCaptor.forClass(ContentValues.class);
-            verify(db).update(eq("visits"), written.capture(), eq("visit_id = ?"), eq(new String[] {"local"}));
-            assertEquals("local", written.getValue().getAsString(DBConstants.KEY.VISIT_ID));
-            assertEquals(incoming.getJson(), written.getValue().getAsString(DBConstants.KEY.VISIT_JSON));
-            assertEquals(original, incoming.getCreatedAt());
-            verify(db).rawQuery(anyString(), eq(new String[] {Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID}));
+        new VisitRepository().refreshChildEidVisit(previous, incoming, db, details);
+        ArgumentCaptor<ContentValues> written = ArgumentCaptor.forClass(ContentValues.class);
+        verify(db).update(eq("visits"), written.capture(), eq("visit_id = ?"), eq(new String[] {"local"}));
+        assertEquals("local", written.getValue().getAsString(DBConstants.KEY.VISIT_ID));
+        assertEquals(incoming.getJson(), written.getValue().getAsString(DBConstants.KEY.VISIT_JSON));
+        assertEquals(original, incoming.getCreatedAt());
+        verify(db).rawQuery(anyString(), eq(new String[] {Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID}));
+    }
+
+    @Test
+    public void identicalSynchronizedEvidenceFinalizesTheExistingLocalDraft() throws Exception {
+        SQLiteDatabase db = mock(SQLiteDatabase.class);
+        Visit previous = visit("local", 10), incoming = visit("generated", 10);
+        previous.setProcessed(false);
+        new VisitRepository().refreshChildEidVisit(previous, incoming, db, mock(VisitDetailsRepository.class));
+        ArgumentCaptor<ContentValues> values = ArgumentCaptor.forClass(ContentValues.class);
+        verify(db).update(eq("visits"), values.capture(), eq("visit_id = ?"), eq(new String[] {"local"}));
+        assertEquals(Integer.valueOf(1), values.getValue().getAsInteger(DBConstants.KEY.PROCESSED));
+        assertEquals("", values.getValue().getAsString(DBConstants.KEY.PRE_PROCESSED));
+        assertTrue(previous.getProcessed());
+        assertFalse(values.getValue().containsKey(DBConstants.KEY.VISIT_JSON));
     }
 
     @Test
@@ -41,8 +55,8 @@ public class MotherMentorChildEidReplayTest {
         for (long version : new long[] {0, 9}) {
             SQLiteDatabase db = mock(SQLiteDatabase.class);
             Visit previous = visit("local", 10), incoming = visit("generated", version);
-                new VisitRepository().refreshChildEidVisit(previous, incoming, db, mock(VisitDetailsRepository.class));
-                verify(db, never()).update(anyString(), any(), anyString(), any());
+            new VisitRepository().refreshChildEidVisit(previous, incoming, db, mock(VisitDetailsRepository.class));
+            verify(db, never()).update(anyString(), any(), anyString(), any());
         }
         Visit unrelated = visit("other", 10);
         unrelated.setVisitType(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
