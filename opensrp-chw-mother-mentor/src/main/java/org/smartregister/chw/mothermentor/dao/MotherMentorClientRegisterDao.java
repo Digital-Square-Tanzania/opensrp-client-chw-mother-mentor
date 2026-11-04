@@ -33,6 +33,13 @@ public final class MotherMentorClientRegisterDao {
             boolean pregnant,
             boolean breastfeeding,
             boolean underTwo) {
+        return selectClients(mainCondition, search, filterOn, pregnant, breastfeeding, underTwo, false);
+    }
+
+    public static String selectClients(
+            String mainCondition, String search, boolean filterOn, boolean pregnant,
+            boolean breastfeeding, boolean underTwo, boolean closed) {
+        boolean showClosed = filterOn && closed;
         List<String> conditions = new ArrayList<>();
         String term = search == null ? "" : search.trim();
         if (!term.isEmpty()) conditions.add(searchCondition(term));
@@ -44,9 +51,18 @@ public final class MotherMentorClientRegisterDao {
             conditions.add("(" + join(" OR ", categories) + ")");
         }
         return "SELECT * FROM ("
-                + clientProjection(mainCondition)
+                + clientProjection(showClosed ? closedClientCondition() : mainCondition, showClosed)
                 + ") mothermentor_clients"
                 + (conditions.isEmpty() ? "" : " WHERE " + join(" AND ", conditions));
+    }
+
+    /** Closed mode deliberately bypasses the active/death exclusion supplied by the presenter. */
+    public static String closedClientCondition() {
+        return ENROLLMENT + "." + DBConstants.KEY.IS_CLOSED + " = 1 AND (" + ENROLLMENT
+                + "." + DBConstants.KEY.STATUS + " IS NULL OR " + ENROLLMENT + "."
+                + DBConstants.KEY.STATUS + " = 'client') AND (" + ENROLLMENT + "."
+                + DBConstants.KEY.SCREENING_STATUS + " IS NULL OR " + ENROLLMENT + "."
+                + DBConstants.KEY.SCREENING_STATUS + " <> '-')";
     }
 
     public static String selectClientsPage(
@@ -85,7 +101,27 @@ public final class MotherMentorClientRegisterDao {
                 + ") mothermentor_client_count";
     }
 
-    private static String clientProjection(String mainCondition) {
+    public static String selectClientsPage(
+            String mainCondition, String search, boolean filterOn, boolean pregnant,
+            boolean breastfeeding, boolean underTwo, boolean closed, int limit, int offset) {
+        if (limit <= 0 || offset < 0) {
+            throw new IllegalArgumentException("A page requires a positive limit and non-negative offset");
+        }
+        return selectClients(mainCondition, search, filterOn, pregnant, breastfeeding, underTwo, closed)
+                + " ORDER BY CAST(" + DBConstants.KEY.LAST_INTERACTED_WITH + " AS INTEGER) DESC, "
+                + DBConstants.KEY.BASE_ENTITY_ID + " COLLATE NOCASE ASC LIMIT " + limit
+                + " OFFSET " + offset;
+    }
+
+    public static String countClients(
+            String mainCondition, String search, boolean filterOn, boolean pregnant,
+            boolean breastfeeding, boolean underTwo, boolean closed) {
+        return "SELECT COUNT(*) FROM ("
+                + selectClients(mainCondition, search, filterOn, pregnant, breastfeeding, underTwo, closed)
+                + ") mothermentor_client_count";
+    }
+
+    private static String clientProjection(String mainCondition, boolean closed) {
         SmartRegisterQueryBuilder query = new SmartRegisterQueryBuilder();
         List<String> columns = new ArrayList<>();
         columns.add(ENROLLMENT + "." + DBConstants.KEY.BASE_ENTITY_ID);
@@ -126,6 +162,12 @@ public final class MotherMentorClientRegisterDao {
         columns.add(memberName("T2") + " AS " + DBConstants.KEY.FAMILY_HEAD);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CTC_NUMBER);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CHILD_DOB);
+        if (closed) {
+            for (String field : new String[] {DBConstants.KEY.IS_CLOSED, DBConstants.KEY.MAMA_STATUS,
+                    DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
+                columns.add(ENROLLMENT + "." + field);
+            }
+        }
         columns.add(currentStatus() + " AS " + CURRENT_STATUS);
         columns.add(completedVisits() + " AS " + COMPLETED_VISITS);
         query.selectInitiateMainTable(ENROLLMENT, columns.toArray(new String[0]));
@@ -190,7 +232,9 @@ public final class MotherMentorClientRegisterDao {
     }
 
     private static String currentStatus() {
-        String answer = "lower(trim(d." + DBConstants.KEY.DETAILS + "))";
+        String answer = normalizedStatus("d." + DBConstants.KEY.DETAILS);
+        String enrollmentStatus =
+                normalizedStatus(ENROLLMENT + "." + DBConstants.KEY.PREGNANCY_STATUS);
         return "coalesce((SELECT "
                 + answer
                 + " FROM "
@@ -224,13 +268,23 @@ public final class MotherMentorClientRegisterDao {
                 + " AS INTEGER) DESC, d."
                 + DBConstants.KEY.VISIT_DETAILS_ID
                 + " DESC LIMIT 1), CASE WHEN "
-                + validStatus(
-                        "lower(trim(" + ENROLLMENT + "." + DBConstants.KEY.PREGNANCY_STATUS + "))")
-                + " THEN lower(trim("
-                + ENROLLMENT
-                + "."
-                + DBConstants.KEY.PREGNANCY_STATUS
-                + ")) END)";
+                + validStatus(enrollmentStatus)
+                + " THEN "
+                + enrollmentStatus
+                + " END)";
+    }
+
+    private static String normalizedStatus(String expression) {
+        String value = "lower(trim(" + expression + "))";
+        return "CASE "
+                + value
+                + " WHEN 'none' THEN '"
+                + NOT_PREGNANT
+                + "' WHEN 'bf' THEN '"
+                + BREASTFEEDING
+                + "' ELSE "
+                + value
+                + " END";
     }
 
     private static String serviceDate() {

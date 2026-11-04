@@ -6,6 +6,17 @@ Android version code.
 
 ## Unreleased
 
+## Unreleased
+
+### Added
+
+- Close the current mother enrollment after a validated exit, rebuilding its reason,
+  service date and consecutive Not found/Other counter from finalized visit history.
+- Provide English and Swahili confirmation and closed-card messages, a Closed
+  register filter and history-safe identity lookup, retaining earlier visits.
+- Show child age in the mother register metadata when a valid child date of birth
+  is available, and normalize legacy pregnancy-status display aliases.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class VisitRepository extends BaseRepository {
 
@@ -136,6 +137,7 @@ public class VisitRepository extends BaseRepository {
         }
         // Handle updated home visit details
         database.insert(VISIT_TABLE, null, createValues(visit));
+        MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
     }
 
@@ -185,12 +187,17 @@ public class VisitRepository extends BaseRepository {
 
     public void deleteVisit(String visitID) {
         try {
-            getWritableDatabase().delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
-            getWritableDatabase()
+            SQLiteDatabase database = getWritableDatabase();
+            Set<String> affectedMothers = MotherMentorMotherClosureRepository.affectedMothers(database, visitID);
+            database.delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
+            database
                     .delete(
                             VisitDetailsRepository.VISIT_DETAILS_TABLE,
                             VISIT_ID + "= ?",
                             new String[] {visitID});
+            for (String motherId : affectedMothers) {
+                MotherMentorMotherClosureRepository.rebuild(database, motherId);
+            }
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -201,8 +208,9 @@ public class VisitRepository extends BaseRepository {
             ContentValues values = new ContentValues();
             values.put(PROCESSED, 1);
             values.put(PRE_PROCESSED, "");
-            getWritableDatabase()
-                    .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            SQLiteDatabase database = getWritableDatabase();
+            database.update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            MotherMentorMotherClosureRepository.rebuildForVisit(database, getVisitByVisitId(visitID));
         } catch (Exception e) {
             Timber.e(e);
         }

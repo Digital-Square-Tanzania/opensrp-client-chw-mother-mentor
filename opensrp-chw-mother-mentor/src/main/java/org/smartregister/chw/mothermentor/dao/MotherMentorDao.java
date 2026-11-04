@@ -1646,7 +1646,17 @@ public class MotherMentorDao extends AbstractDao {
         return res.get(0);
     }
 
+    /** Primary mother identity for read-only closed history, including independent clients. */
+    public static MemberObject getPrimaryMemberForHistory(String baseEntityID) {
+        if (StringUtils.isBlank(baseEntityID)) return null;
+        return getMember(baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLLMENT, true);
+    }
+
     private static MemberObject getMember(String baseEntityID, String tableName) {
+        return getMember(baseEntityID, tableName, false);
+    }
+
+    private static MemberObject getMember(String baseEntityID, String tableName, boolean includeClosed) {
         String sql =
                 "select m."
                         + DBConstants.KEY.BASE_ENTITY_ID
@@ -1716,7 +1726,9 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.PHONE_NUMBER
                         + " as  "
                         + DBConstants.KEY.PCG_PHONE_NUMBER
-                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + " , mr.* from ec_family_member m "
+                        + (includeClosed ? "left join" : "inner join")
+                        + " ec_family f on m."
                         + DBConstants.KEY.RELATIONAL_ID
                         + " = f."
                         + DBConstants.KEY.BASE_ENTITY_ID
@@ -1734,12 +1746,12 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID
                         + " = f."
                         + DBConstants.KEY.PRIMARY_CARE_GIVER
-                        + " where mr."
-                        + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND m."
+                        + " where "
+                        + (includeClosed ? "" : "mr." + DBConstants.KEY.IS_CLOSED + " = 0 AND ")
+                        + "m."
                         + DBConstants.KEY.BASE_ENTITY_ID
                         + " ='"
-                        + baseEntityID
+                        + baseEntityID.replace("'", "''")
                         + "' ";
         List<MemberObject> res = readData(sql, memberObjectMap);
         if (res == null || res.size() != 1) return null;

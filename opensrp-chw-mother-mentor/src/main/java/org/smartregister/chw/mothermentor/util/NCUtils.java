@@ -311,6 +311,12 @@ public class NCUtils {
                     }
                 }
             }
+            Visit canonical = MotherMentorLibrary.getInstance().visitRepository()
+                    .getVisitByFormSubmissionID(baseEvent.getEvent().getFormSubmissionId());
+            org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository
+                    .rebuildForVisit(database == null ? MotherMentorLibrary.getInstance()
+                            .getRepository().getWritableDatabase() : database,
+                            canonical == null ? visit : canonical);
         } catch (JSONException e) {
             Timber.e(e);
         }

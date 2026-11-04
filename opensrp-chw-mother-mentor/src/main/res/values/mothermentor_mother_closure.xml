@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_mother_closed">Closed</string>
+    <string name="mothermentor_mother_filter_closed">Closed</string>
+    <string name="mothermentor_mother_closed_message">This card is closed; no further visits can be recorded.</string>
+    <string name="mothermentor_mother_closed_banner">%1$s — card closed. %2$s</string>
+    <string name="mothermentor_mother_close_title">Confirm card closure</string>
+    <string name="mothermentor_mother_close_message">Are you sure? This client’s card will close and leave the service recipients list.</string>
+    <string name="mothermentor_mother_close_confirm">Yes, close</string>
+    <string name="mothermentor_mother_close_cancel">Cancel</string>
+    <string name="mothermentor_mother_status_active">Active</string>
+    <string name="mothermentor_mother_status_deceased">Deceased</string>
+    <string name="mothermentor_mother_status_moved_area">Moved from area</string>
+    <string name="mothermentor_mother_status_moved_facility">Moved facility</string>
+    <string name="mothermentor_mother_status_not_found_other_3">Not found — Other (3+ visits)</string>
+    <string name="mothermentor_mother_status_pregnancy_loss">Pregnancy loss</string>
+    <string name="mothermentor_mother_status_stillbirth">Stillbirth</string>
+    <string name="mothermentor_mother_status_pregnancy_ended_other">Pregnancy ended — Other</string>
+    <string name="mothermentor_mother_status_child_deceased">Child deceased</string>
+    <string name="mothermentor_mother_status_child_confirmed_positive">Child confirmed HIV-positive — no longer eligible</string>
+    <string name="mothermentor_mother_status_graduated">Graduated — child has final result</string>
+    <string name="mothermentor_mother_close_note_deceased">The mother’s card will close as deceased. Her household closes only if no live child and no other eligible mother remains.</string>
+    <string name="mothermentor_mother_close_note_moved_area">The mother’s card will close because she moved from the area. A recorded receiving facility is retained for transfer.</string>
+    <string name="mothermentor_mother_close_note_moved_facility">The mother’s card will close as transferred to the recorded facility.</string>
+    <string name="mothermentor_mother_close_note_not_found_other_3">Three consecutive Not found — Other visits close this card. The recorded reason is retained.</string>
+    <string name="mothermentor_mother_close_note_pregnancy_loss">The mother’s card will close after the recorded pregnancy loss.</string>
+    <string name="mothermentor_mother_close_note_stillbirth">The mother’s card will close after the recorded stillbirth.</string>
+    <string name="mothermentor_mother_close_note_pregnancy_ended_other">The mother’s card will close for the recorded pregnancy outcome. The Other explanation is retained.</string>
+    <string name="mothermentor_mother_close_note_child_deceased">The child has died. The mother’s card and any linked EID follow-up close. The household closes if no other eligible mother remains.</string>
+    <string name="mothermentor_mother_close_note_child_confirmed_positive">The child has a confirmed HIV-positive result. The mother is no longer eligible; confirm the child’s CTC linkage.</string>
+    <string name="mothermentor_mother_close_note_graduated">The child’s final 18-month test is negative. The mother graduates and any linked EID follow-up closes.</string>
+</resources>
