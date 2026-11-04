@@ -398,6 +398,7 @@ public final class MotherMentorChildEidRepository {
 
         public String getChildId() { return childId; }
         public LocalDate getChildDob() { return clinical.getChildDob(); }
+        public MotherMentorMotherChildRepository.State getClinicalState() { return clinical; }
         public String getMotherId() { return value(enrollment, DBConstants.KEY.MOTHER_BASE_ENTITY_ID); }
         public String getMotherEnrollmentId() { return value(enrollment, DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID); }
         public String getEnrollmentId() { return episode.id.isEmpty() ? value(enrollment, DBConstants.KEY.MTOTO_ENROLLMENT_ID) : episode.id; }
