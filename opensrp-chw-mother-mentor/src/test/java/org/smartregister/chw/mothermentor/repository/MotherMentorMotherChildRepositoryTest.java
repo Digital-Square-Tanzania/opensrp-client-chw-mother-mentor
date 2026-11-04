@@ -245,6 +245,20 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals(died.plusDays(2), state.getTerminalServiceDate());
     }
 
+    @Test
+    public void inactiveDeathAnswersOnANotFoundVisitDoNotDeclareTheChildDead() throws Exception {
+        link("child", dob);
+        Map<String, String> values = childBreastfeeding(null);
+        values.put(FOLLOW_UP_STATUS, "not_found");
+        values.put(MTOTO_NOT_FOUND_REASON, "other");
+        values.put(MTOTO_NOT_FOUND_REASON_OTHER, "Away today");
+        values.put(MAMA_CHILD_STATUS, "deceased");
+        values.put(MAMA_TAREHE_MTOTO_ALIFARIKI, dob.plusMonths(9).toString());
+        visit("inactive-death", "inactive-death", "child", values, dob.plusMonths(10), 1, false);
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE,
+                MotherMentorMotherChildRepository.getState(db, "mother", null).getTerminalOutcome());
+    }
+
     private Map<String, String> childBreastfeeding(LocalDate cessation) {
         Map<String, String> values = new LinkedHashMap<>();
         values.put(CHILD_EID_FOLLOW_UP_SCHEMA, "3");

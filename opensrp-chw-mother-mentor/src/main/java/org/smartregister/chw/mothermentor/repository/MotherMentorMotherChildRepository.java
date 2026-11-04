@@ -312,7 +312,8 @@ public final class MotherMentorMotherChildRepository {
         if (recordedDob != null && !recordedDob.equals(state.childDob)) return;
         if (MotherMentorChildEidStatusUtils.isSchema3(values)) {
             if (!MotherMentorChildEidStatusUtils.isStatusComplete(values, state.childDob, date)) return;
-            if ("deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
+            if ("found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                    && "deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
                 state.childStatus = "deceased";
                 state.childDeathDate = MotherMentorChildEidStatusUtils.parseDate(
                         values.get(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI));

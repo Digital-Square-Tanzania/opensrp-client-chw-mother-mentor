@@ -8,6 +8,14 @@ Android version code.
 
 ### Added
 
+- Add one bilingual Child EID HEI action for shared breastfeeding, calendar-based
+  sampling eligibility and first-referral agreement/refusal (#1147). Keep pending
+  result review separate from taking a new sample and retain existing return questions.
+- Replay first-referral stage, due date and refusal counts from canonical visits in
+  the current enrollment, preserving unknown legacy projections and edit history.
+- Validate manual/daily Child EID completion with the registered child and clinical
+  history before the visit; share valid child breastfeeding updates with Mama visits.
+
 - Plan automatic Child EID enrollment only after a finalized Mama visit records an
   eligible missed test more than 14 days after its due date, linking one existing
   registered child by its explicit mother relationship and matching birth date (#1145).
