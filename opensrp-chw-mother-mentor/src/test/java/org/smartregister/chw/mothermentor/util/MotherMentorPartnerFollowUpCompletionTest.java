@@ -37,6 +37,17 @@ public class MotherMentorPartnerFollowUpCompletionTest {
     }
 
     @Test
+    public void attendanceNoCompletesWithoutEducationDateTestsOrComments() {
+        Map<String, String> values = attendance();
+        values.remove(PARTNER_EDUCATION_PROVIDED);
+        assertTrue(complete(values));
+        values.put(COMMENTS, "Follow up next time");
+        assertTrue(complete(values));
+        values.put(PARTNER_ARRIVED_AT_FACILITY, "yes");
+        assertFalse(complete(values));
+    }
+
+    @Test
     public void attendanceNoCanCompleteWithoutTestsButYesRequiresAllThreeTestBranches() {
         Map<String, String> values = attendance();
         assertTrue(complete(values));

@@ -1,8 +1,10 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.Gson;
+
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerArrivalActionHelper;
@@ -56,6 +58,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     private final LinkedHashMap<String, BaseMotherMentorVisitAction> actions = new LinkedHashMap<>();
     private final Map<String, BaseMotherMentorVisitAction> workflow = new LinkedHashMap<>();
     private final Map<String, String> snapshot = new LinkedHashMap<>();
+    private final ArrayList<Obs> originalNonAttendanceEducation = new ArrayList<>();
     private String editedVisitId = "";
     private Date serviceDate = new Date();
     private boolean frozenContext;
@@ -80,6 +83,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         editedVisitId = "";
         serviceDate = new Date();
         snapshot.clear();
+        originalNonAttendanceEducation.clear();
         frozenContext = false;
         if (!Boolean.TRUE.equals(view.getEditMode())) return;
         Visit visit = loadEditingVisit(member.getBaseEntityId());
@@ -89,8 +93,8 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(editedVisitId));
         try {
             String json = StringUtils.defaultIfBlank(visit.getJson(), visit.getPreProcessedJson());
-            Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
-                    new JSONObject(json).optJSONArray("obs"));
+            JSONArray observations = new JSONObject(json).optJSONArray("obs");
+            Map<String, String> saved = MotherMentorVisitCompletion.observationValues(observations);
             serviceDate = originalServiceDate(
                     saved.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE), visit.getDate());
             String phase = saved.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
@@ -106,6 +110,12 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 }
                 frozenContext = true;
                 active = true;
+                if (ATTENDANCE.equals(phase)
+                        && "no".equals(saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))) {
+                    for (Obs obs : new Gson().fromJson(observations.toString(), Obs[].class)) {
+                        if (isEducationObservation(obs)) originalNonAttendanceEducation.add(obs);
+                    }
+                }
             }
         } catch (Exception e) {
             serviceDate = visit.getDate() == null ? serviceDate : visit.getDate();
@@ -226,7 +236,10 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             case HIV: return attendancePhase() && attended() && complete(ARRIVAL);
             case SYPHILIS: return visible(HIV) && complete(HIV);
             case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
-            case EDUCATION: return attendancePhase() || found();
+            case EDUCATION: return attendancePhase() ? attended() && complete(ARRIVAL) : found();
+            case COMMENTS: return attendancePhase()
+                    && ("yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)));
             default: return true;
         }
     }
@@ -247,7 +260,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         clearingHiddenActions = true;
         try {
             for (Map.Entry<String, BaseMotherMentorVisitAction> entry : workflow.entrySet()) {
-                if (!visible(entry.getKey())) {
+                if (!visible(entry.getKey()) && !COMMENTS.equals(entry.getKey())) {
                     entry.getValue().setJsonPayload(null);
                     entry.getValue().setSubTitle(null);
                 }
@@ -292,6 +305,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     @Override
     protected void prepareEvent(Event event) {
         if (event == null) return;
+        restoreHistoricalEducation(event);
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
@@ -336,6 +350,24 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             }
         }
         return values;
+    }
+
+    private void restoreHistoricalEducation(Event event) {
+        if (!attendancePhase()
+                || !"no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                || originalNonAttendanceEducation.isEmpty()) return;
+        if (event.getObs() != null) {
+            Iterator<Obs> observations = event.getObs().iterator();
+            while (observations.hasNext()) {
+                if (isEducationObservation(observations.next())) observations.remove();
+            }
+        }
+        for (Obs obs : originalNonAttendanceEducation) event.addObs(obs);
+    }
+
+    private static boolean isEducationObservation(Obs obs) {
+        return DBConstants.KEY.PARTNER_EDUCATION_PROVIDED.equals(obs.getFieldCode())
+                || DBConstants.KEY.PARTNER_EDUCATION_TOPICS.equals(obs.getFieldCode());
     }
 
     private static void putObservation(Event event, String key, String value) {

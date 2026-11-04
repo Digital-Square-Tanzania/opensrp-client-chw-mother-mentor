@@ -14,6 +14,20 @@ Android version code.
   (CHW #1127).
 - Prepare library `0.1.14-SNAPSHOT` / Android code 15 for the new closure contract.
 
+### Fixed
+
+- Allow a partner who did not attend the facility to complete follow-up with only
+  the attendance answer and optional comments. Ask education after confirmed
+  attendance, and require a valid date before advancing to tests. Preserve original
+  education observations when editing a historical non-attendance visit that
+  remains non-attendance (CHW #1126).
+
+### Changed
+
+- Place optional partner tracing comments last in the English and Swahili
+  follow-up status forms, after the selected agreement or missing-person reason.
+  Keep the separate comments action for facility-attendance visits (CHW #1125).
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

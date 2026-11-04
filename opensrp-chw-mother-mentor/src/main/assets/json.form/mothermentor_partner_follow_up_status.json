@@ -157,6 +157,26 @@
             }
           }
         }
+      },
+      {
+        "key": "comments",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "comments",
+        "type": "edit_text",
+        "hint": "Comments (optional, maximum 100 characters)",
+        "v_max_length": {
+          "value": "100",
+          "is_fixed_size": "true",
+          "err": "Maximum 100 characters"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
+            }
+          }
+        }
       }
     ]
   }

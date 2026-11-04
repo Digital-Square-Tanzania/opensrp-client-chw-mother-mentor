@@ -118,9 +118,11 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertVisible("mothermentor_partner_follow_up_status", true);
         assertVisible("mothermentor_partner_arrival", false);
         assertVisible("mothermentor_partner_education", false);
-        assertTrue(new ArrayList<>(actions.values()).get(actions.size() - 1).isOptional());
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        assertVisitCanBeSubmitted(false);
         answer("mothermentor_partner_follow_up_status", "follow_up_status", "found");
         assertStatus("mothermentor_partner_follow_up_status", false);
+        assertVisitCanBeSubmitted(false);
         answer("mothermentor_partner_follow_up_status", "partner_facility_agreement", "agreed");
         assertStatus("mothermentor_partner_follow_up_status", true);
         assertVisible("mothermentor_partner_education", true);
@@ -128,6 +130,9 @@ public class PartnerFollowUpWorkflowInteractorTest {
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
                 "partner_education_topics", new JSONArray().put("hiv"));
         assertStatus("mothermentor_partner_education", true);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        assertVisitCanBeSubmitted(true);
+        answer("mothermentor_partner_follow_up_status", "comments", "Follow-up notes");
         assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
         answer("mothermentor_partner_follow_up_status", "partner_facility_agreement", "refused");
         assertStatus("mothermentor_partner_follow_up_status", true);
@@ -135,7 +140,11 @@ public class PartnerFollowUpWorkflowInteractorTest {
                 "partner_not_found_reason", "other");
         assertStatus("mothermentor_partner_follow_up_status", false);
         assertVisible("mothermentor_partner_education", false);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
         assertNull(action("mothermentor_partner_education").getJsonPayload());
+        assertEquals("", value("mothermentor_partner_follow_up_status", "partner_facility_agreement"));
+        assertEquals("Follow-up notes", value("mothermentor_partner_follow_up_status", "comments"));
+        assertVisitCanBeSubmitted(false);
         answer("mothermentor_partner_follow_up_status", "partner_not_found_reason_other", "Away for work");
         assertStatus("mothermentor_partner_follow_up_status", true);
         for (String reason : new String[] {"moved", "travelled", "deceased"}) {
@@ -144,7 +153,47 @@ public class PartnerFollowUpWorkflowInteractorTest {
             assertEquals("", value("mothermentor_partner_follow_up_status", "partner_not_found_reason_other"));
         }
         assertEquals("deceased", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
-        assertBlankCommentDoesNotBlockSave();
+        answer("mothermentor_partner_follow_up_status", "comments", "");
+        assertVisitCanBeSubmitted(true);
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishInlineTracingCommentsSurviveNativeEventAndDraftResume() throws Exception {
+        resumeTracingComments();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliInlineTracingCommentsSurviveNativeEventAndDraftResume() throws Exception {
+        resumeTracingComments();
+    }
+
+    private void resumeTracingComments() throws Exception {
+        start(false);
+        answer("mothermentor_partner_follow_up_status", "follow_up_status", "found",
+                "partner_facility_agreement", "agreed", "comments", "Return after work");
+        answer("mothermentor_partner_education", "partner_education_provided", "no");
+        assertVisitCanBeSubmitted(true);
+        Event event = aggregateNativeEvent();
+        assertEquals("Return after work", observation(event, DBConstants.KEY.COMMENTS));
+        Visit visit = NCUtils.eventToVisit(event, "tracing-visit");
+        ArrayList<VisitDetail> restored = new ArrayList<>();
+        for (java.util.List<VisitDetail> section : visit.getVisitDetails().values()) restored.addAll(section);
+        when(detailsRepository.getVisits("tracing-visit")).thenReturn(restored);
+        interactor = new TestInteractor();
+        interactor.editing = visit;
+        interactor.forbidContextRead = true;
+        calculate(true);
+        assertVisible("mothermentor_partner_follow_up_status", true);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        assertEquals("agreed", value("mothermentor_partner_follow_up_status", "partner_facility_agreement"));
+        assertEquals("Return after work", value("mothermentor_partner_follow_up_status", "comments"));
+        assertVisitCanBeSubmitted(true);
+        assertEquals("Return after work", observation(aggregateNativeEvent(), DBConstants.KEY.COMMENTS));
+        answer("mothermentor_partner_follow_up_status", "comments", "");
+        assertStatus("mothermentor_partner_follow_up_status", true);
+        assertVisitCanBeSubmitted(true);
     }
 
     @Test
@@ -163,6 +212,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
         start(true);
         assertVisible("mothermentor_partner_follow_up_status", false);
         assertVisible("mothermentor_partner_arrival", true);
+        assertTrue(new ArrayList<>(actions.values()).get(actions.size() - 1).isOptional());
         assertVisible("mothermentor_partner_hiv_test", false);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes");
         assertVisible("mothermentor_partner_follow_up_comment", true);
@@ -199,6 +249,55 @@ public class PartnerFollowUpWorkflowInteractorTest {
             assertNull(action("mothermentor_partner_" + disease + "_test").getJsonPayload());
         }
         assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    private void noAttendanceBranches() throws Exception {
+        start(true);
+        assertVisible("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertNull(action("mothermentor_partner_education").getJsonPayload());
+        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
+            assertVisible("mothermentor_partner_" + disease + "_test", false);
+        }
+        assertBlankCommentDoesNotBlockSave();
+        Event event = aggregateNativeEvent();
+        Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
+                new JSONArray(new Gson().toJson(event.getObs())));
+        assertEquals("no", saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+        assertFalse(saved.containsKey(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(saved));
+    }
+
+    @Test
+    public void malformedAttendanceDateCannotAdvanceToTestingOrEducation() throws Exception {
+        start(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "31-02-2026");
+        assertStatus("mothermentor_partner_arrival", false);
+        assertVisible("mothermentor_partner_hiv_test", false);
+        assertVisible("mothermentor_partner_education", false);
+        answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "2026-02-28");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_hiv_test", true);
+        assertVisible("mothermentor_partner_education", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
     }
 
     @Test
@@ -275,6 +374,10 @@ public class PartnerFollowUpWorkflowInteractorTest {
         }
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
                 "partner_education_topics", new JSONArray().put("hiv").put("syphilis").put("hepatitis_b"));
+        return aggregateNativeEvent();
+    }
+
+    private Event aggregateNativeEvent() throws Exception {
         Map<String, String> forms = new LinkedHashMap<>();
         for (Map.Entry<String, BaseMotherMentorVisitAction> entry : actions.entrySet()) {
             if (entry.getValue().isValid()) forms.put(entry.getKey(), entry.getValue().getJsonPayload());
@@ -338,6 +441,99 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertEquals("yes", observation(resumed, DBConstants.KEY.PARTNER_MOTHER_PREGNANT));
         assertEquals("attendance", observation(resumed, DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE));
         assertEquals("completed", observation(resumed, DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishEditingHistoricalNonAttendancePreservesRawEducation() throws Exception {
+        preserveHistoricalNonAttendanceEducation();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliEditingHistoricalNonAttendancePreservesRawEducation() throws Exception {
+        preserveHistoricalNonAttendanceEducation();
+    }
+
+    private void preserveHistoricalNonAttendanceEducation() throws Exception {
+        Event original = historicalNonAttendanceEvent();
+        Map<String, String> education = rawEducation(original);
+        editNativeEvent(original);
+        assertVisible("mothermentor_partner_education", false);
+        assertNull(action("mothermentor_partner_education").getJsonPayload());
+        Event saved = aggregateNativeEvent();
+        assertEquals("no", observation(saved, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+        assertEquals(education, rawEducation(saved));
+    }
+
+    @Test
+    public void correctingHistoricalNonAttendanceUsesNewEducationAnswers() throws Exception {
+        editNativeEvent(historicalNonAttendanceEvent());
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "01-02-2025");
+        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
+            answer("mothermentor_partner_" + disease + "_test",
+                    "partner_" + disease + "_tested", "yes",
+                    "partner_" + disease + "_result", "negative");
+        }
+        assertVisible("mothermentor_partner_education", true);
+        assertStatus("mothermentor_partner_education", false);
+        answer("mothermentor_partner_education", "partner_education_provided", "yes",
+                "partner_education_topics", new JSONArray().put("syphilis"));
+        Event saved = aggregateNativeEvent();
+        Map<String, String> values = MotherMentorVisitCompletion.observationValues(
+                new JSONArray(new Gson().toJson(saved.getObs())));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values));
+        assertEquals("yes", values.get(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
+        String topics = rawEducation(saved).get(DBConstants.KEY.PARTNER_EDUCATION_TOPICS);
+        assertTrue(topics, topics.contains("syphilis"));
+        assertFalse(topics, topics.contains("hepatitis_b"));
+        assertFalse(topics, topics.contains("hiv"));
+    }
+
+    @Test
+    public void correctingOriginalAttendanceToNoDoesNotRestoreHiddenEducation() throws Exception {
+        editNativeEvent(nativeCompletedEvent());
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        assertTrue(rawEducation(aggregateNativeEvent()).isEmpty());
+    }
+
+    private Event historicalNonAttendanceEvent() throws Exception {
+        Event attended = nativeCompletedEvent();
+        start(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        Event event = aggregateNativeEvent();
+        for (Obs obs : attended.getObs()) {
+            if (educationObservation(obs)) event.addObs(obs);
+        }
+        return event;
+    }
+
+    private void editNativeEvent(Event event) throws Exception {
+        Visit visit = NCUtils.eventToVisit(event, "saved-visit");
+        ArrayList<VisitDetail> restored = new ArrayList<>();
+        for (java.util.List<VisitDetail> section : visit.getVisitDetails().values()) restored.addAll(section);
+        when(detailsRepository.getVisits("saved-visit")).thenReturn(restored);
+        interactor = new TestInteractor();
+        interactor.editing = visit;
+        interactor.forbidContextRead = true;
+        calculate(true);
+    }
+
+    private Map<String, String> rawEducation(Event event) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Obs obs : event.getObs()) {
+            if (educationObservation(obs)) {
+                assertFalse("Duplicate education observation", result.containsKey(obs.getFieldCode()));
+                result.put(obs.getFieldCode(), new Gson().toJson(obs));
+            }
+        }
+        return result;
+    }
+
+    private boolean educationObservation(Obs obs) {
+        return DBConstants.KEY.PARTNER_EDUCATION_PROVIDED.equals(obs.getFieldCode())
+                || DBConstants.KEY.PARTNER_EDUCATION_TOPICS.equals(obs.getFieldCode());
     }
 
     @Test
@@ -497,12 +693,17 @@ public class PartnerFollowUpWorkflowInteractorTest {
         BaseMotherMentorVisitAction comment = action("mothermentor_partner_follow_up_comment");
         assertTrue(comment.isOptional());
         comment.setActionStatus(BaseMotherMentorVisitAction.Status.PENDING);
+        assertVisitCanBeSubmitted(true);
+    }
+
+    private void assertVisitCanBeSubmitted(boolean expected) {
         BaseMotherMentorVisitActivity activity = Robolectric.buildActivity(BaseMotherMentorVisitActivity.class).get();
         ReflectionHelpers.setField(activity, "tvSubmit", new TextView(activity));
         ReflectionHelpers.setField(activity, "actionList", actions);
         ReflectionHelpers.setField(activity, "mAdapter", new BaseMotherMentorVisitAdapter(activity, activity, actions));
         activity.redrawVisitUI();
-        assertTrue(((TextView) ReflectionHelpers.getField(activity, "tvSubmit")).hasOnClickListeners());
+        assertEquals(expected,
+                ((TextView) ReflectionHelpers.getField(activity, "tvSubmit")).hasOnClickListeners());
     }
 
     private static class TestInteractor extends PartnerFollowUpVisitInteractor {

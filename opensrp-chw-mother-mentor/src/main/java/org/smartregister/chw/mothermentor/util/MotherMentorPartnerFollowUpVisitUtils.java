@@ -147,7 +147,8 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                 && (!"other".equals(reason) || answered(values.get(otherKey)));
     }
 
-    private static boolean validRecordedDate(String value) {
+    /** Validates the recorded formats accepted by partner attendance and completion. */
+    public static boolean validRecordedDate(String value) {
         if (!answered(value) || !(value.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}")
                 || value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))) return false;
         for (String pattern : new String[] {"dd-MM-yyyy", "yyyy-MM-dd"}) {
