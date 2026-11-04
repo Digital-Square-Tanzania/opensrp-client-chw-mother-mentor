@@ -10,7 +10,8 @@ Android version code.
 
 
 - Rephrase partner facility attendance labels in English and Swahili, including
-  history labels, while preserving the first-visit qualifiers (CHW #1128).
+  history labels, and remove first-visit qualifiers from the attendance questions.
+  Retain the Swahili attendance form title, "Mahudhurio kituoni" (CHW #1128).
 - Place optional partner tracing comments last in the English and Swahili
   follow-up status forms, after the selected agreement or missing-person reason.
   Keep the separate comments action for facility-attendance visits (CHW #1125).

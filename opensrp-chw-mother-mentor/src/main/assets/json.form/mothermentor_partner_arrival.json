@@ -32,7 +32,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_arrived_at_facility",
-        "label": "Did the partner attend the facility (first visit)?",
+        "label": "Did the partner attend the facility?",
         "type": "native_radio",
         "options": [
           {

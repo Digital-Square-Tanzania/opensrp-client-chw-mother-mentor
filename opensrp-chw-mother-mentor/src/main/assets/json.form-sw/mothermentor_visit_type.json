@@ -523,7 +523,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_reached_facility",
         "type": "native_radio",
-        "label": "Mwenzi amehudhuria kituoni (mara ya kwanza)?",
+        "label": "Mwenzi amehudhuria kituoni?",
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"
