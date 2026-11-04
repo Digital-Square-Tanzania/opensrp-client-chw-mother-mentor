@@ -25,6 +25,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
+import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 import org.smartregister.clientandeventmodel.Event;
@@ -48,6 +49,7 @@ public class MotherMentorHouseholdClosureInteractorTest {
         when(library.context()).thenReturn(context);
         when(context.applicationContext()).thenReturn(RuntimeEnvironment.application);
         when(library.visitRepository()).thenReturn(mock(VisitRepository.class));
+        when(library.visitDetailsRepository()).thenReturn(mock(VisitDetailsRepository.class));
         ReflectionHelpers.setStaticField(MotherMentorLibrary.class, "instance", library);
         interactor = new FixtureInteractor();
     }
@@ -79,7 +81,8 @@ public class MotherMentorHouseholdClosureInteractorTest {
     public void editPreservesClinicalDateAndExcludesItsOwnOutcomeFromSnapshot() throws Exception {
         interactor.editingVisit = new Visit();
         interactor.editingVisit.setVisitId("edited-visit");
-        JSONArray obs = new JSONArray().put(observation(MOTHERMENTOR_VISIT_DATE, "02-10-2026"))
+        JSONArray obs = new JSONArray().put(observation(HOUSEHOLD_FOLLOW_UP_SCHEMA, "2"))
+                .put(observation(MOTHERMENTOR_VISIT_DATE, "02-10-2026"))
                 .put(observation(HOUSEHOLD_ENROLLMENT_ID, "enrollment-1"));
         interactor.editingVisit.setJson(new JSONObject().put("obs", obs).toString());
         initialize(true);
@@ -96,7 +99,10 @@ public class MotherMentorHouseholdClosureInteractorTest {
 
     @Test
     public void legacyAnswersDoNotInventPartTwoClosureMetadata() throws Exception {
-        initialize(false);
+        interactor.editingVisit = new Visit();
+        interactor.editingVisit.setVisitId("legacy-edit");
+        interactor.editingVisit.setJson("{}");
+        initialize(true);
         Event event = new Event();
         interactor.prepareEvent(event);
         assertFalse(values(event).containsKey(HOUSEHOLD_ENROLLMENT_ID));

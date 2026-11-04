@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+### Added
+
+- Close household follow-up after confirmed relocation or consecutive unsuccessful
+  visits, rebuilding the current enrollment's counters from finalized visit evidence.
+- Provide localized closure confirmation, reasons, dates and active/closed register
+  queries while retaining earlier visit history and resetting a new enrollment.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

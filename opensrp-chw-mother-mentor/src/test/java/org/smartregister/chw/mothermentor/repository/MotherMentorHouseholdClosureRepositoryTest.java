@@ -362,6 +362,25 @@ public class MotherMentorHouseholdClosureRepositoryTest {
     }
 
     @Test
+    public void enrollmentProjectionReplayRestoresClosureAndANewEpisodeReopens() throws Exception {
+        visit("moved", "form-moved", "02-10-2026", 1, missing("moved"));
+        MotherMentorHouseholdClosureRepository.upgrade(database);
+        assertEquals("1", stored(IS_CLOSED));
+        // ClientProcessorForJava supplies is_closed=0 with the enrollment form's active defaults.
+        changeEnrollment(map(IS_CLOSED, "0", KAYA_STATUS, "active"));
+        MotherMentorHouseholdClosureRepository.rebuild(database, HOUSEHOLD);
+        assertEquals("moved", stored(KAYA_STATUS));
+        assertEquals("1", stored(IS_CLOSED));
+        enrollment("re-enrolled", "2026-10-03T08:00:00.000+03:00", 2);
+        changeEnrollment(map(IS_CLOSED, "0", KAYA_STATUS, "active",
+                EVENT_DATE, "2026-10-03T08:00:00.000+03:00"));
+        MotherMentorHouseholdClosureRepository.rebuild(database, HOUSEHOLD);
+        assertEquals("active", stored(KAYA_STATUS));
+        assertEquals("0", stored(IS_CLOSED));
+        assertEquals("1", scalar("SELECT count(*) FROM visits"));
+    }
+
+    @Test
     public void voidedSourceRevisionRemovesItsStrikeWithoutRevivingAnOlderAlias() throws Exception {
         visit("one", "form-one", "02-10-2026", 1, missing("house_closed"));
         visit("two", "form-two", "03-10-2026", 1, missing("house_closed"));
