@@ -20,8 +20,9 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
-import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -49,6 +50,10 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
     private final String householdTable;
     private boolean legacyVisit;
     private Date serviceDate = new Date();
+    private String closureEditedVisitId;
+    private String closureEnrollmentId;
+    private String closureCurrentEnrollmentId;
+    private String closureEditingEventJson;
 
     public MotherMentorHouseholdVisitInteractor(String visitType, String householdTable) {
         super(visitType);
@@ -68,18 +73,26 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
         details = null;
         legacyVisit = false;
         serviceDate = new Date();
+        closureEditedVisitId = null;
+        closureCurrentEnrollmentId = loadHouseholdEnrollmentId(member.getBaseEntityId());
+        closureEnrollmentId = closureCurrentEnrollmentId;
+        closureEditingEventJson = null;
         if (!Boolean.TRUE.equals(view.getEditMode())) return;
-        Visit visit = loadEditingVisit(member.getBaseEntityId());
+        Visit visit = loadClosureEditingVisit(member.getBaseEntityId());
         if (visit == null) return;
         details = VisitUtils.getVisitGroups(MotherMentorLibrary.getInstance()
                 .visitDetailsRepository().getVisits(visit.getVisitId()));
+        closureEditedVisitId = visit.getVisitId();
         legacyVisit = true;
         try {
-            JSONObject event = new JSONObject(StringUtils.defaultIfBlank(
-                    visit.getJson(), visit.getPreProcessedJson()));
-            Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
+            closureEditingEventJson = StringUtils.defaultIfBlank(
+                    visit.getJson(), visit.getPreProcessedJson());
+            JSONObject event = new JSONObject(closureEditingEventJson);
+            Map<String, String> saved = MotherMentorHouseholdVisitUtils.observationValues(
                     event.optJSONArray("obs"));
             legacyVisit = !"2".equals(saved.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA));
+            closureEnrollmentId = StringUtils.defaultIfBlank(
+                    saved.get(DBConstants.KEY.HOUSEHOLD_ENROLLMENT_ID), closureEnrollmentId);
             Date recorded = MotherMentorHouseholdVisitUtils.getVisitDate(visit, event, saved);
             if (recorded != null) serviceDate = recorded;
         } catch (Exception e) {
@@ -91,6 +104,27 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
     protected Visit loadEditingVisit(String memberId) {
         return MotherMentorLibrary.getInstance().visitRepository()
                 .getLatestVisit(memberId, getCurrentVisitType());
+    }
+
+    protected Visit loadClosureEditingVisit(String memberId) {
+        return loadEditingVisit(memberId);
+    }
+
+    protected MotherMentorHouseholdClosure loadClosureState(String memberId, String excludedVisitId) {
+        return MotherMentorHouseholdClosureRepository.getState(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                memberId, excludedVisitId);
+    }
+
+    protected String loadHouseholdEnrollmentId(String memberId) {
+        return MotherMentorHouseholdClosureRepository.currentEnrollmentId(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(), memberId);
+    }
+
+    protected boolean isClosureVisitCurrentEnrollment(String memberId, String rawEvent) {
+        return MotherMentorHouseholdClosureRepository.belongsToCurrentEnrollment(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                memberId, rawEvent);
     }
 
     @Override
@@ -199,11 +233,58 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
     }
 
     @Override
+    protected String submitVisit(boolean editMode, String memberId,
+            Map<String, BaseMotherMentorVisitAction> map, String parentEventType) throws Exception {
+        if (loadClosureState(memberId, null).isClosed()
+                || !StringUtils.equals(closureCurrentEnrollmentId,
+                        loadHouseholdEnrollmentId(memberId))
+                || (editMode && !isClosureVisitCurrentEnrollment(
+                        memberId, closureEditingEventJson))) return null;
+        return super.submitVisit(editMode, memberId, map, parentEventType);
+    }
+
+    @Override
     protected void prepareEvent(Event event) {
         if (event == null) return;
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
         if (!legacyVisit) putObservation(event, DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA, "2");
+        if (legacyVisit) return;
+        putObservation(event, DBConstants.KEY.HOUSEHOLD_ENROLLMENT_ID, closureEnrollmentId);
+        Map<String, String> answers = currentClosureAnswers();
+        answers.put(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA, "2");
+        MotherMentorHouseholdClosure state = loadClosureState(
+                memberObject.getBaseEntityId(), closureEditedVisitId);
+        if (MotherMentorHouseholdVisitUtils.isComplete(answers)) {
+            state = state.advance(answers.get(DBConstants.KEY.HOUSEHOLD_VISIT_TYPE),
+                    answers.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS),
+                    answers.get(DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON),
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
+        }
+        for (Map.Entry<String, String> value :
+                MotherMentorHouseholdClosureRepository.observationValues(state).entrySet()) {
+            putObservation(event, value.getKey(), value.getValue());
+        }
+    }
+
+    private Map<String, String> currentClosureAnswers() {
+        Map<String, String> answers = new LinkedHashMap<>();
+        for (BaseMotherMentorVisitAction action : householdVisitActions.values()) {
+            if (!action.isValid() || StringUtils.isBlank(action.getJsonPayload())) continue;
+            try {
+                JSONObject form = new JSONObject(action.getJsonPayload());
+                for (int step = 1; step <= form.optInt("count", 1); step++) {
+                    JSONArray fields = form.getJSONObject("step" + step).getJSONArray("fields");
+                    for (int index = 0; index < fields.length(); index++) {
+                        String key = fields.getJSONObject(index).optString("key");
+                        answers.put(key, JsonFormUtils.getValue(form, key));
+                    }
+                }
+            } catch (Exception e) {
+                Timber.e(e, "Unable to read household visit answers");
+            }
+        }
+        return answers;
     }
 
     private void putObservation(Event event, String key, String value) {

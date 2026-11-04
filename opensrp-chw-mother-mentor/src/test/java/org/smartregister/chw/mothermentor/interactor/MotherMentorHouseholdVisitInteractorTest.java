@@ -366,6 +366,12 @@ public class MotherMentorHouseholdVisitInteractorTest {
     }
 
     private static class TestInteractor extends MotherMentorHouseholdVisitInteractor {
+        @Override protected String loadHouseholdEnrollmentId(String memberId) { return "household-enrollment"; }
+        @Override protected org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure
+                loadClosureState(String memberId, String excludedId) {
+            return org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure.active();
+        }
+
         Visit editing;
         Map<String, BaseMotherMentorVisitAction> submitted;
         TestInteractor() {

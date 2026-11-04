@@ -8,6 +8,12 @@ Android version code.
 
 ### Added
 
+- Close household follow-up after confirmed relocation or consecutive unsuccessful
+  visits, rebuilding the current enrollment's counters from finalized visit evidence.
+- Provide localized closure confirmation, reasons, dates and active/closed register
+  queries while retaining earlier visit history and resetting a new enrollment.
+- Retain explicit Mother/child death closures projected by the Mother workflow
+  without manufacturing household visits or overwriting its own visit counters.
 - Close partner follow-up on success, death, relocation or the agreed consecutive-visit
   thresholds, preserving history and storing the closure reason, date and counters.
 - Confirm death and relocation closures before submission in English and Swahili
