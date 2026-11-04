@@ -17,6 +17,7 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -95,10 +96,10 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
 
     protected LocalDate childDob() {
         LocalDate dob = memberObject == null ? null
-                : MotherMentorChildEidStatusUtils.parseDate(memberObject.getDob());
+                : MotherMentorHeiSchedule.parseBirthDate(memberObject.getDob());
         if (dob != null || memberObject == null) return dob;
         try {
-            return MotherMentorChildEidStatusUtils.parseDate(MotherMentorDao
+            return MotherMentorHeiSchedule.parseBirthDate(MotherMentorDao
                     .getChildEidTestEnrollmentValues(memberObject.getBaseEntityId())
                     .get(DBConstants.KEY.DOB));
         } catch (Exception e) {
