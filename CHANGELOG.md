@@ -6,6 +6,11 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Rephrase partner facility attendance labels in English and Swahili, including
+  history labels, while preserving the first-visit qualifiers (CHW #1128).
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

@@ -523,7 +523,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_reached_facility",
         "type": "native_radio",
-        "label": "Mwenza amefika kituoni kwa mara ya kwanza?",
+        "label": "Mwenza amehudhuria kituoni (mara ya kwanza)?",
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"
@@ -561,7 +561,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_facility_date",
         "type": "date_picker",
-        "hint": "Tarehe mwenza alipofika kituoni",
+        "hint": "Tarehe aliyohudhuria kituoni",
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"

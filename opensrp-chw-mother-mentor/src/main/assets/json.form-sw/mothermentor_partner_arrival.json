@@ -25,14 +25,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Mahudhurio kituoni",
+    "title": "Amehudhuria kituoni",
     "fields": [
       {
         "key": "partner_arrived_at_facility",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_arrived_at_facility",
-        "label": "Mwenza amehudhuria kituoni?",
+        "label": "Mwenza amehudhuria kituoni (mara ya kwanza)?",
         "type": "native_radio",
         "options": [
           {

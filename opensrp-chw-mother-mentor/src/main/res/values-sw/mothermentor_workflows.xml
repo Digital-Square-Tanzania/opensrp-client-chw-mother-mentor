@@ -80,8 +80,8 @@
     <string name="mothermentor_history_partner_non_attendance_reason">Sababu ya kutofika kituoni</string>
     <string name="mothermentor_history_partner_non_attendance_reason_other">Sababu nyingine</string>
     <string name="mothermentor_history_partner_expected_facility_visit_date">Tarehe mwenza aliyotakiwa kituoni</string>
-    <string name="mothermentor_history_partner_arrived_at_facility">Amefika kituoni</string>
-    <string name="mothermentor_history_partner_facility_arrival_date">Tarehe ya kufika kituoni</string>
+    <string name="mothermentor_history_partner_arrived_at_facility">Amehudhuria kituoni</string>
+    <string name="mothermentor_history_partner_facility_arrival_date">Tarehe aliyohudhuria kituoni</string>
     <string name="mothermentor_history_child_eid_test_type">Aina ya kipimo</string>
     <string name="mothermentor_history_child_eid_non_attendance_reason">Sababu ya kutofika kituoni</string>
     <string name="mothermentor_history_child_eid_non_attendance_reason_other">Sababu nyingine</string>
