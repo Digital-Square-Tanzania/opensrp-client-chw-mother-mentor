@@ -133,6 +133,28 @@ public class MotherMentorHouseholdVisitUtilsTest {
         assertFalse(MotherMentorHouseholdVisitUtils.hasCompletedVisitToday(null, new Date()));
     }
 
+    @Test
+    public void newRoleCountsMustBeCompleteBeforeTheyLockTheHouseholdDay() throws Exception {
+        Visit visit = completedVisit("25-10-2026");
+        JSONObject event = new JSONObject(visit.getJson());
+        JSONArray observations = event.getJSONArray("obs");
+        observations.getJSONObject(1).put("values", new JSONArray().put("mother").put("child").put("other"));
+        observations.put(new JSONObject().put("fieldCode", DBConstants.KEY.HOUSEHOLD_COUNSELLING_SCHEMA)
+                .put("values", new JSONArray().put("2")));
+        visit.setJson(event.toString());
+        assertFalse(locked(visit, "2026-10-25 12:00:00"));
+        observations.put(new JSONObject().put("fieldCode", DBConstants.KEY.COUNSELLED_CHILD_COUNT)
+                .put("values", new JSONArray().put("2")));
+        observations.put(new JSONObject().put("fieldCode", DBConstants.KEY.COUNSELLED_OTHER_COUNT)
+                .put("values", new JSONArray().put("1")));
+        visit.setJson(event.toString());
+        assertFalse(locked(visit, "2026-10-25 12:00:00"));
+        observations.put(new JSONObject().put("fieldCode", DBConstants.KEY.OTHER)
+                .put("values", new JSONArray().put("Other person")));
+        visit.setJson(event.toString());
+        assertTrue(locked(visit, "2026-10-25 12:00:00"));
+    }
+
     private boolean locked(Visit visit, String now) throws Exception {
         return MotherMentorHouseholdVisitUtils.hasCompletedVisitToday(
                 Collections.singletonList(visit), date(now));

@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Capture household counselling participants by role, with required counts for child,
+  relative, neighbour and other participants, and a calculated total (CHW #1133).
+- Retain the original counselling form for existing drafts and keep historical
+  aggregate answers readable without converting sex counts into role counts.
+- Use Mwenzi consistently in Mother Mentor Swahili copy, including historical labels.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

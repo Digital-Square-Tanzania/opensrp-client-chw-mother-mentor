@@ -27,7 +27,7 @@ public final class MotherMentorHouseholdVisitUtils {
             try {
                 JSONObject event = new JSONObject(visit.getJson());
                 Map<String, String> values =
-                        MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
+                        MotherMentorHouseholdCounselling.observationValues(event.optJSONArray("obs"));
                 if (!hasCompletedHouseholdServices(values)) continue;
                 Date visitDate = getVisitDate(visit, event, values);
                 if (visitDate != null && isSameDay(visitDate, now)) return true;
@@ -48,7 +48,7 @@ public final class MotherMentorHouseholdVisitUtils {
             String value = values.get(key);
             if (value == null || value.trim().isEmpty()) return false;
         }
-        return true;
+        return MotherMentorHouseholdCounselling.isComplete(values);
     }
 
     private static Date getVisitDate(Visit visit, JSONObject event, Map<String, String> values) {

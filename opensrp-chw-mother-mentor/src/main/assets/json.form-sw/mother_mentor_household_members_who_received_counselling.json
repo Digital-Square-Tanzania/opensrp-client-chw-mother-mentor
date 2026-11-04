@@ -56,99 +56,12 @@
     "title": "Wanakaya waliopewa ushauri",
     "fields": [
       {
-        "key": "household_members_found",
-        "openmrs_entity_parent": "",
+        "key": "household_counselling_schema",
+        "type": "hidden",
+        "value": "2",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "household_members_found",
-        "type": "edit_text",
-        "hint": "Wanakaya waliopatikana",
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali jaza sehemu hii"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Weka idadi kamili"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Weka 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Isipungue sifuri"
-        },
-        "v_relative_min": {
-          "value": "counselled_total",
-          "err": "Idadi ya waliopewa ushauri haiwezi kuzidi waliokutwa"
-        }
-      },
-      {
-        "key": "counselled_male",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_male",
-        "type": "edit_text",
-        "hint": "Wanaume/wavulana waliopewa ushauri",
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali jaza sehemu hii"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Weka idadi kamili"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Weka 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Isipungue sifuri"
-        }
-      },
-      {
-        "key": "counselled_female",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_female",
-        "type": "edit_text",
-        "hint": "Wanawake/wasichana waliopewa ushauri",
-        "v_required": {
-          "value": true,
-          "err": "Tafadhali jaza sehemu hii"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Weka idadi kamili"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Weka 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Isipungue sifuri"
-        }
-      },
-      {
-        "key": "counselled_total",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_total",
-        "type": "edit_text",
-        "hint": "Jumla waliopewa ushauri",
-        "read_only": true,
-        "calculation": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_reporting_calculation.yml"
-            }
-          }
-        }
+        "openmrs_entity_id": "household_counselling_schema"
       },
       {
         "key": "participants",
@@ -156,13 +69,10 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "participants",
         "type": "check_box",
-        "label": "Washiriki",
+        "label": "Walioshiriki",
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
-        "exclusive": [
-          "none"
-        ],
         "options": [
           {
             "key": "mother",
@@ -172,7 +82,7 @@
           },
           {
             "key": "partner",
-            "text": "mwenza",
+            "text": "Mwenzi",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "partner"
           },
@@ -207,9 +117,117 @@
         }
       },
       {
+        "key": "counselled_child_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_child_count",
+        "type": "edit_text",
+        "hint": "Idadi — Mtoto",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka idadi kamili kati ya 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Weka angalau mmoja"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "child"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_relative_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_relative_count",
+        "type": "edit_text",
+        "hint": "Idadi — Ndugu",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka idadi kamili kati ya 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Weka angalau mmoja"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "relative"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_neighbour_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_neighbour_count",
+        "type": "edit_text",
+        "hint": "Idadi — Jirani",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka idadi kamili kati ya 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Weka angalau mmoja"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "neighbour"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
         "key": "other",
         "type": "edit_text",
-        "hint": "Mwingine (taja)",
+        "hint": "Taja mshiriki mwingine",
         "openmrs_entity_id": "other",
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",
@@ -228,6 +246,59 @@
             ]
           }
         }
+      },
+      {
+        "key": "counselled_other_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_other_count",
+        "type": "edit_text",
+        "hint": "Idadi — Mwingine",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Weka idadi kamili"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Weka idadi kamili kati ya 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Weka angalau mmoja"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "other"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_total",
+        "type": "edit_text",
+        "hint": "Jumla waliopewa ushauri",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_calculation.yml"
+            }
+          }
+        },
+        "value": "0"
       }
     ]
   }

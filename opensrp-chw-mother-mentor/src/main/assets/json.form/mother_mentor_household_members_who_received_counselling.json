@@ -56,99 +56,12 @@
     "title": "Household members counselled",
     "fields": [
       {
-        "key": "household_members_found",
-        "openmrs_entity_parent": "",
+        "key": "household_counselling_schema",
+        "type": "hidden",
+        "value": "2",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "household_members_found",
-        "type": "edit_text",
-        "hint": "Household members found",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Enter a whole number"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Must be zero or more"
-        },
-        "v_relative_min": {
-          "value": "counselled_total",
-          "err": "Counselled total cannot exceed members found"
-        }
-      },
-      {
-        "key": "counselled_male",
         "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_male",
-        "type": "edit_text",
-        "hint": "Men/boys counselled",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Enter a whole number"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Must be zero or more"
-        }
-      },
-      {
-        "key": "counselled_female",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_female",
-        "type": "edit_text",
-        "hint": "Women/girls counselled",
-        "v_required": {
-          "value": true,
-          "err": "Please complete this field"
-        },
-        "edit_type": "number",
-        "v_numeric": {
-          "value": true,
-          "err": "Enter a whole number"
-        },
-        "v_regex": {
-          "value": "^[0-9]{1,5}$",
-          "err": "Enter 0–99999"
-        },
-        "v_min": {
-          "value": "0",
-          "err": "Must be zero or more"
-        }
-      },
-      {
-        "key": "counselled_total",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_id": "counselled_total",
-        "type": "edit_text",
-        "hint": "Total counselled",
-        "read_only": true,
-        "calculation": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_reporting_calculation.yml"
-            }
-          }
-        }
+        "openmrs_entity_id": "household_counselling_schema"
       },
       {
         "key": "participants",
@@ -160,9 +73,6 @@
         "combine_checkbox_option_values": "true",
         "label_text_style": "normal",
         "text_color": "#C0C0C0",
-        "exclusive": [
-          "none"
-        ],
         "options": [
           {
             "key": "mother",
@@ -196,7 +106,7 @@
           },
           {
             "key": "other",
-            "text": "Other",
+            "text": "Other (specify)",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "other"
           }
@@ -207,9 +117,117 @@
         }
       },
       {
+        "key": "counselled_child_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_child_count",
+        "type": "edit_text",
+        "hint": "Number — Child",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter a whole number from 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Enter at least one"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "child"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_relative_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_relative_count",
+        "type": "edit_text",
+        "hint": "Number — Relative",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter a whole number from 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Enter at least one"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "relative"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_neighbour_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_neighbour_count",
+        "type": "edit_text",
+        "hint": "Number — Neighbour",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter a whole number from 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Enter at least one"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "neighbour"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
         "key": "other",
         "type": "edit_text",
-        "hint": "Please specify the other",
+        "hint": "Specify the other participant",
         "openmrs_entity_id": "other",
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",
@@ -228,6 +246,59 @@
             ]
           }
         }
+      },
+      {
+        "key": "counselled_other_count",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_other_count",
+        "type": "edit_text",
+        "hint": "Number — Other",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "edit_type": "number",
+        "v_numeric": {
+          "value": true,
+          "err": "Enter a whole number"
+        },
+        "v_regex": {
+          "value": "^[0-9]{1,5}$",
+          "err": "Enter a whole number from 1–99999"
+        },
+        "v_min": {
+          "value": "1",
+          "err": "Enter at least one"
+        },
+        "relevance": {
+          "step1:participants": {
+            "ex-checkbox": [
+              {
+                "or": [
+                  "other"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "counselled_total",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "counselled_total",
+        "type": "edit_text",
+        "hint": "Total counselled",
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_counselling_calculation.yml"
+            }
+          }
+        },
+        "value": "0"
       }
     ]
   }
