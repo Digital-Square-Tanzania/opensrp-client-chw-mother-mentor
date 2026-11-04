@@ -165,6 +165,7 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
                     JSONArray fields = form.getJSONObject("step" + step).getJSONArray("fields");
                     for (int i = 0; i < fields.length(); i++) {
                         JSONObject field = fields.getJSONObject(i);
+                        if ("hidden".equals(field.optString("type"))) continue;
                         field.put("value", "");
                         if ("check_box".equals(field.optString("type"))) {
                             JSONArray options = field.optJSONArray("options");

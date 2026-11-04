@@ -56,6 +56,8 @@ public class MotherMentorHouseholdVisitInteractorTest {
     private VisitDetailsRepository detailsRepository;
     private TestInteractor interactor;
     private LinkedHashMap<String, BaseMotherMentorVisitAction> actions;
+    private boolean includeImmutableServiceMetadata;
+    private static final String SERVICE_SCHEMA = "fixture_service_schema";
     private static final String STATUS = "mothermentor_household_follow_up_status";
     private static final String PURPOSE = "mothermentor_household_visit_purpose";
     private static final String COUNSELLING = "mother_mentor_household_members_who_received_counselling";
@@ -89,7 +91,13 @@ public class MotherMentorHouseholdVisitInteractorTest {
                                                     .getAssets()
                                                     .open(directory + "/" + formName + ".json"),
                                             "UTF-8")) {
-                                return new JSONObject(scanner.useDelimiter("\\A").next());
+                                JSONObject form = new JSONObject(scanner.useDelimiter("\\A").next());
+                                if (includeImmutableServiceMetadata && COUNSELLING.equals(formName)) {
+                                    form.getJSONObject("step1").getJSONArray("fields").put(
+                                            new JSONObject().put("key", SERVICE_SCHEMA)
+                                                    .put("type", "hidden").put("value", "2"));
+                                }
+                                return form;
                             }
                         });
         ReflectionHelpers.setStaticField(FormUtils.class, "instance", formUtils);
@@ -155,6 +163,37 @@ public class MotherMentorHouseholdVisitInteractorTest {
         assertCanSubmit(false);
         fillServices();
         assertCanSubmit(true);
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishServiceMetadataSurvivesInitialHidingAndBranchCorrections() throws Exception {
+        checkServiceMetadataSurvivesBranchCorrections();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliServiceMetadataSurvivesInitialHidingAndBranchCorrections() throws Exception {
+        checkServiceMetadataSurvivesBranchCorrections();
+    }
+
+    private void checkServiceMetadataSurvivesBranchCorrections() throws Exception {
+        includeImmutableServiceMetadata = true;
+        start(false, null);
+        assertEquals("2", field(action(COUNSELLING), SERVICE_SCHEMA).getString("value"));
+        answer(STATUS, DBConstants.KEY.HOUSEHOLD_VISIT_TYPE, "repeat",
+                DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS, "found");
+        fillServices();
+        assertCanSubmit(true);
+        answer(STATUS, DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS, "not_found",
+                DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON, "house_closed");
+        assertEquals("2", field(action(COUNSELLING), SERVICE_SCHEMA).getString("value"));
+        assertEquals("", field(action(COUNSELLING), DBConstants.KEY.PARTICIPANTS).optString("value"));
+        assertEquals("", field(action(PURPOSE), DBConstants.KEY.PURPOSE_OF_VISIT).optString("value"));
+        assertEquals("", field(action(EDUCATION), DBConstants.KEY.TOPICS_TAUGHT).optString("value"));
+        answer(STATUS, DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS, "found");
+        assertEquals("2", field(action(COUNSELLING), SERVICE_SCHEMA).getString("value"));
+        assertCanSubmit(false);
     }
 
     @Test
