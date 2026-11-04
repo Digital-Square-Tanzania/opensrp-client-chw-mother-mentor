@@ -6,16 +6,40 @@ Android version code.
 
 ## Unreleased
 
-## Unreleased
-
 ### Added
 
+- Close household follow-up after confirmed relocation or consecutive unsuccessful
+  visits, rebuilding the current enrollment's counters from finalized visit evidence.
+- Provide localized closure confirmation, reasons, dates and active/closed register
+  queries while retaining earlier visit history and resetting a new enrollment.
+- Retain explicit Mother/child death closures projected by the Mother workflow
+  without manufacturing household visits or overwriting its own visit counters.
+- Close partner follow-up on success, death, relocation or the agreed consecutive-visit
+  thresholds, preserving history and storing the closure reason, date and counters.
+- Confirm death and relocation closures before submission in English and Swahili
+  (CHW #1127).
+- Prepare library `0.1.14-SNAPSHOT` / Android code 15 for the new closure contract.
 - Close the current mother enrollment after a validated exit, rebuilding its reason,
   service date and consecutive Not found/Other counter from finalized visit history.
 - Provide English and Swahili confirmation and closed-card messages, a Closed
   register filter and history-safe identity lookup, retaining earlier visits.
 - Show child age in the mother register metadata when a valid child date of birth
   is available, and normalize legacy pregnancy-status display aliases.
+
+### Fixed
+
+- Allow a partner who did not attend the facility to complete follow-up with only
+  the attendance answer and optional comments. Ask education after confirmed
+  attendance, and require a valid date before advancing to tests. Preserve original
+  education observations when editing a historical non-attendance visit that
+  remains non-attendance (CHW #1126).
+
+### Changed
+
+- Capture household follow-up status and missing-household reasons; show service actions only for new or found visits and keep comments optional. (CHW #1130).
+- Place optional partner tracing comments last in the English and Swahili
+  follow-up status forms, after the selected agreement or missing-person reason.
+  Keep the separate comments action for facility-attendance visits (CHW #1125).
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 

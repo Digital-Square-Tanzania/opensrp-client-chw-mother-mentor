@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
@@ -51,7 +52,13 @@ public final class MotherMentorPartnerFollowUpDao {
             String motherId = value(enrollment, DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
             Map<String, String> maternal = mother(motherId);
             List<Visit> history = finalizedVisits(partnerId, excludedVisitId);
-            return context(partnerId, enrollment, maternal, history, date);
+            Context state = context(partnerId, enrollment, maternal, history, date);
+            boolean closed = MotherMentorPartnerClosureRepository.getState(
+                    MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                    partnerId, excludedVisitId).isClosed();
+            return new Context(state.getLinkageId(), state.getMotherId(),
+                    state.getPregnancyEpisodeId(), state.getMotherPregnant(),
+                    state.isAttendancePending() && !closed, state.isActive() && !closed);
         } catch (Exception e) {
             Timber.e(e);
             return Context.empty();
@@ -71,6 +78,9 @@ public final class MotherMentorPartnerFollowUpDao {
                     now == null ? new Date() : now);
             // Earlier unlinked partner records can acquire their first explicit mother linkage.
             return !state.isActive()
+                    || MotherMentorPartnerClosureRepository.getState(
+                            MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                            partnerId, null).isClosed()
                     || StringUtils.isBlank(enrollment.get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID));
         } catch (Exception e) {
             Timber.e(e);
@@ -90,6 +100,10 @@ public final class MotherMentorPartnerFollowUpDao {
                         .format(now == null ? new Date() : now) + "')");
     }
 
+    public static String closedEnrollmentCondition(String alias) {
+        return "NOT " + activeEnrollmentCondition(alias);
+    }
+
     private static String activeEnrollmentCondition(String alias, String today) {
         if (alias == null || !alias.matches("[A-Za-z_][A-Za-z0-9_]*")) {
             throw new IllegalArgumentException("Invalid enrollment table alias");
@@ -104,10 +118,13 @@ public final class MotherMentorPartnerFollowUpDao {
                 + ", ''), 'legacy:' || " + alias + "." + DBConstants.KEY.BASE_ENTITY_ID + ")";
         String serviceDate = normalizedDate(f + "." + DBConstants.KEY.MOTHERMENTOR_VISIT_DATE);
         String complete = schema + " = '2' AND " + linked + " AND "
+                + "trim(coalesce(" + alias + "." + DBConstants.KEY.MWENZI_STATUS + ", '')) = '' AND "
                 + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'completed' AND "
                 + attendanceCompleteCondition(f) + " AND "
                 + serviceDate + " < " + today;
-        return "(" + MotherMentorDao.getActiveClientCondition(alias) + " AND NOT EXISTS (SELECT 1 FROM "
+        return "(" + MotherMentorDao.getActiveClientCondition(alias)
+                + " AND coalesce(nullif(" + alias + "." + DBConstants.KEY.MWENZI_STATUS
+                + ", ''), 'active') = 'active' AND NOT EXISTS (SELECT 1 FROM "
                 + Constants.TABLES.MOTHERMENTOR_FOLLOWUP_VISIT + " " + f + " JOIN "
                 + VisitRepository.VISIT_TABLE + " " + v + " ON "
                 + v + "." + DBConstants.KEY.FORM_SUBMISSION_ID + " = "
@@ -280,6 +297,7 @@ public final class MotherMentorPartnerFollowUpDao {
         String linkageId = value(enrollment, DBConstants.KEY.PARTNER_LINKAGE_ID);
         if (linkageId.isEmpty()) linkageId = "legacy:" + partnerId;
         boolean active = "0".equals(enrollment.get(DBConstants.KEY.IS_CLOSED));
+        boolean unprojected = value(enrollment, DBConstants.KEY.MWENZI_STATUS).isEmpty();
         Map<String, String> latest = Collections.emptyMap();
         Date latestDate = null;
         String latestId = "";
@@ -295,7 +313,7 @@ public final class MotherMentorPartnerFollowUpDao {
             if (!linkageId.equals(visitLinkage)) continue;
             Date date = date(visit, values);
             if (date == null || !beforeDay(date, day)) continue;
-            if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+            if (unprojected && "2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
                     && "completed".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END))
                     && "attendance".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
                     && "yes".equals(values.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))) {
@@ -314,7 +332,8 @@ public final class MotherMentorPartnerFollowUpDao {
                         && "found".equals(latest.get(DBConstants.KEY.FOLLOW_UP_STATUS))
                         && "agreed".equals(latest.get(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT)))
                     || ("attendance".equals(latest.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
-                        && "no".equals(latest.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))));
+                        && ("no".equals(latest.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
+                            || "yes".equals(latest.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)))));
         String pregnant = value(maternal, DBConstants.KEY.PREGNANCY_STATUS);
         pregnant = "pregnant".equals(pregnant) ? "yes"
                 : ("not_pregnant".equals(pregnant) || "breast_feeding".equals(pregnant)

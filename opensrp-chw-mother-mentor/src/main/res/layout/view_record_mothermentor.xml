@@ -246,6 +246,13 @@
             android:visibility="visible"
             android:textColor="@color/white"
             />
+        <TextView
+            android:id="@+id/mothermentor_household_closed_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone" />
         <org.smartregister.view.customcontrols.CustomFontTextView
             android:id="@+id/textview_record_mother_mentor_start_date"
             style="@style/CustomFontTextViewStyle.ListView.Normal.MultipleLines"

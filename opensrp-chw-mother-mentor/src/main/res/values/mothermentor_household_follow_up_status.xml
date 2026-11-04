@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_household_follow_up_status">Household Follow-up Status</string>
+    <string name="mothermentor_household_visit_type_new">New registration</string>
+    <string name="mothermentor_household_visit_type_repeat">Follow-up Visit</string>
+    <string name="mothermentor_household_status_found">Found</string>
+    <string name="mothermentor_household_status_not_found">Not found</string>
+    <string name="mothermentor_household_missing_moved">Whole household moved from area</string>
+    <string name="mothermentor_household_missing_house_closed">No one found (house closed)</string>
+    <string name="mothermentor_household_missing_other">Other (specify)</string>
+</resources>

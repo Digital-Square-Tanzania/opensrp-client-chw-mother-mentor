@@ -162,6 +162,12 @@ public final class DBConstants {
         public static final String ENROLLMENT_DATE = "enrollment_date";
         public static final String ENTITY_TYPE = "entity_type";
         public static final String HOUSEHOLD_ID = "household_id";
+        public static final String KAYA_STATUS = "kaya_status";
+        public static final String KAYA_TAREHE_YA_KUFUNGWA = "kaya_tarehe_ya_kufungwa";
+        public static final String KAYA_SABABU_YA_KUFUNGWA = "kaya_sababu_ya_kufungwa";
+        public static final String KAYA_COUNTER_NYUMBA_IMEFUNGWA = "kaya_counter_nyumba_imefungwa";
+        public static final String KAYA_COUNTER_NYINGINE = "kaya_counter_nyingine";
+        public static final String KAYA_COUNTER_HAIJAPATIKANA = "kaya_counter_haijapatikana";
 
         // ec_mothermentor_mobilization.
         public static final String FACILITY_REFERRAL_OTHER = "facility_referral_other";
@@ -226,6 +232,13 @@ public final class DBConstants {
         public static final String HAS_BEEN_LINKED_TO_IGA_GROUP = "has_been_linked_to_iga_group";
         public static final String HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP =
                 "has_been_linked_to_psychosocial_support_group";
+        public static final String HOUSEHOLD_FOLLOW_UP_SCHEMA = "household_follow_up_schema";
+        public static final String HOUSEHOLD_VISIT_TYPE = "household_visit_type";
+        public static final String HOUSEHOLD_FOLLOW_UP_STATUS = "household_follow_up_status";
+        public static final String HOUSEHOLD_NOT_FOUND_REASON = "household_not_found_reason";
+        public static final String HOUSEHOLD_NOT_FOUND_REASON_OTHER =
+                "household_not_found_reason_other";
+        public static final String HOUSEHOLD_ENROLLMENT_ID = "household_enrollment_id";
         public static final String HOUSEHOLD_MEMBERS_FOUND = "household_members_found";
         public static final String HOUSEHOLD_REFERRAL_GIVEN = "household_referral_given";
         public static final String HOUSEHOLD_REFERRAL_OTHER = "household_referral_other";
@@ -321,6 +334,14 @@ public final class DBConstants {
         public static final String PARTNER_NOT_FOUND_REASON = "partner_not_found_reason";
         public static final String PARTNER_NOT_FOUND_REASON_OTHER = "partner_not_found_reason_other";
         public static final String PARTNER_FOLLOW_UP_END = "partner_follow_up_end";
+        public static final String MWENZI_STATUS = "mwenzi_status";
+        public static final String MWENZI_TAREHE_YA_KUFUNGWA = "mwenzi_tarehe_ya_kufungwa";
+        public static final String MWENZI_SABABU_YA_KUFUNGWA = "mwenzi_sababu_ya_kufungwa";
+        public static final String MWENZI_COUNTER_AMEKATAA = "mwenzi_counter_amekataa";
+        public static final String MWENZI_COUNTER_HAJAHUDHURIA = "mwenzi_counter_hajahudhuria";
+        public static final String MWENZI_COUNTER_AMESAFIRI = "mwenzi_counter_amesafiri";
+        public static final String MWENZI_COUNTER_NYINGINE = "mwenzi_counter_nyingine";
+        public static final String MWENZI_COUNTER_HAJAPATIKANA = "mwenzi_counter_hajapatikana";
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";

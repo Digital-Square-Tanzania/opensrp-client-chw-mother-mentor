@@ -1,0 +1,164 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Household Follow-up Status",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Hali ya Ufuatiliaji wa Kaya",
+    "fields": [
+      {
+        "key": "household_follow_up_schema",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_follow_up_schema",
+        "type": "hidden",
+        "value": "2"
+      },
+      {
+        "key": "household_visit_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_visit_type",
+        "type": "native_radio",
+        "label": "Aina ya Tembeleo",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "new",
+            "text": "Usajili mpya",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "new"
+          },
+          {
+            "key": "repeat",
+            "text": "Tembeleo la Marudio",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "repeat"
+          }
+        ]
+      },
+      {
+        "key": "household_follow_up_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_follow_up_status",
+        "type": "native_radio",
+        "label": "Hali ya Ziara ya Kaya",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "found",
+            "text": "Imepatikana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Haijapatikana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "household_not_found_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_not_found_reason",
+        "type": "native_radio",
+        "label": "Sababu",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "moved",
+            "text": "Kaya nzima imehama eneo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved"
+          },
+          {
+            "key": "house_closed",
+            "text": "Hakuna aliyepatikana (nyumba imefungwa)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "house_closed"
+          },
+          {
+            "key": "other",
+            "text": "Nyingine (Taja)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "household_not_found_reason_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_not_found_reason_other",
+        "type": "edit_text",
+        "hint": "Taja sababu",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali taja sababu"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
