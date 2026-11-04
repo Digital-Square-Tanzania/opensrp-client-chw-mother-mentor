@@ -22,6 +22,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
@@ -50,6 +51,7 @@ public class ChildEidTracingWorkflowTest {
     private LinkedHashMap<String, BaseMotherMentorVisitAction> visible;
     private TestInteractor interactor;
     private Visit edited;
+    private MotherMentorChildEidRepository.State stateFixture;
 
     @Before
     public void setup() throws Exception {
@@ -185,6 +187,57 @@ public class ChildEidTracingWorkflowTest {
         assertEquals("20-10-2026", values(event).get(MOTHERMENTOR_VISIT_DATE));
     }
 
+    @Test
+    public void newVisitUsesTheEnrollmentIdentityCapturedBeforeAnswersWereEntered() throws Exception {
+        stateFixture = episode("child-episode-one", "mother-episode-one");
+        calculate(false);
+        stateFixture = episode("child-episode-two", "mother-episode-two");
+        Event event = new Event(); interactor.enrich(event);
+        assertEquals("child-episode-one", values(event).get(MTOTO_ENROLLMENT_ID));
+        assertEquals("mother-episode-one", values(event).get(MTOTO_MOTHER_ENROLLMENT_ID));
+        assertEquals(1, interactor.identityReads);
+        assertNull(interactor.loadedBeforeVisit);
+    }
+
+    @Test
+    public void editingRetainsItsOriginalEpisodeTagsInsteadOfCurrentEnrollmentTags() throws Exception {
+        edited = visit("3", "20-10-2026");
+        JSONObject source = new JSONObject(edited.getJson());
+        source.getJSONArray("obs")
+                .put(observation(MTOTO_ENROLLMENT_ID, "old-child-episode"))
+                .put(observation(MTOTO_MOTHER_ENROLLMENT_ID, "old-mother-episode"));
+        edited.setJson(source.toString());
+        stateFixture = episode("current-child-episode", "current-mother-episode");
+        calculate(true);
+        Event event = new Event(); interactor.enrich(event);
+        assertEquals("old-child-episode", values(event).get(MTOTO_ENROLLMENT_ID));
+        assertEquals("old-mother-episode", values(event).get(MTOTO_MOTHER_ENROLLMENT_ID));
+        assertEquals("editing", interactor.loadedBeforeVisit);
+        assertEquals(1, interactor.identityReads);
+    }
+
+    @Test
+    public void legacyVisitDoesNotAcquireTheCurrentEpisodeIdentityOnEdit() throws Exception {
+        edited = visit("2", "20-10-2026");
+        stateFixture = episode("current-child-episode", "current-mother-episode");
+        calculate(true);
+        Event event = new Event(); interactor.enrich(event);
+        assertFalse(values(event).containsKey(MTOTO_ENROLLMENT_ID));
+        assertFalse(values(event).containsKey(MTOTO_MOTHER_ENROLLMENT_ID));
+        assertEquals(0, interactor.identityReads);
+    }
+
+    private MotherMentorChildEidRepository.State episode(String child, String mother) {
+        MotherMentorChildEidRepository.State state = mock(MotherMentorChildEidRepository.State.class);
+        when(state.getEnrollmentId()).thenReturn(child);
+        when(state.getMotherEnrollmentId()).thenReturn(mother);
+        return state;
+    }
+
+    private JSONObject observation(String key, String value) throws Exception {
+        return new JSONObject().put("fieldCode", key).put("values", new JSONArray().put(value));
+    }
+
     private void calculate(boolean editing) {
         interactor = new TestInteractor();
         AppExecutors executors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
@@ -230,7 +283,15 @@ public class ChildEidTracingWorkflowTest {
                 new com.google.gson.Gson().toJson(event)).optJSONArray("obs"));
     }
     private class TestInteractor extends ChildEidFollowUpVisitInteractor {
+        private int identityReads;
+        private String loadedBeforeVisit;
         TestInteractor() { super("Mother Mentor Child EID Follow Up"); }
+        @Override protected MotherMentorChildEidRepository.State loadEnrollmentState(
+                String memberId, String editingVisitId) {
+            identityReads++;
+            loadedBeforeVisit = editingVisitId;
+            return stateFixture;
+        }
         @Override protected Visit loadEditingVisit(String id) { return edited; }
         @Override protected Map<String, List<VisitDetail>> loadVisitDetails(Visit visit) { return Collections.emptyMap(); }
         void enrich(Event event) { prepareEvent(event); }

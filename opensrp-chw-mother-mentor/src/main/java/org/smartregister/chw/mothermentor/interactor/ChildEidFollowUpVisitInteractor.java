@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
@@ -15,6 +17,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -44,6 +47,8 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     private boolean legacyVisit;
     private String originalSchema;
     private LocalDate serviceDate = LocalDate.now();
+    private MotherMentorChildEidRepository.State enrollmentState;
+    private Map<String, String> originalEpisode = Collections.emptyMap();
 
     public ChildEidFollowUpVisitInteractor(String eventType) {
         super(eventType);
@@ -57,23 +62,48 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
         originalSchema = null;
         statusSaved = false;
         serviceDate = LocalDate.now();
-        if (!Boolean.TRUE.equals(view.getEditMode()) || member == null) return;
-        Visit visit = loadEditingVisit(member.getBaseEntityId());
-        if (visit == null) return;
-        details = loadVisitDetails(visit);
-        LocalDate recorded = MotherMentorMotherVisitDao.getServiceDate(visit);
-        if (recorded != null) serviceDate = recorded;
-        try {
-            Map<String, String> values = MotherMentorVisitCompletion.observationValues(
-                    new JSONObject(visit.getJson()).optJSONArray("obs"));
-            originalSchema = values.get(DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA);
-            legacyVisit = !MotherMentorChildEidStatusUtils.isSchema3(values);
-            statusSaved = !legacyVisit && MotherMentorChildEidStatusUtils.isStatusComplete(
-                    values, childDob(), serviceDate);
-        } catch (Exception e) {
-            legacyVisit = true;
-            Timber.e(e, "Unable to restore the Child EID visit schema");
+        enrollmentState = null;
+        originalEpisode = new LinkedHashMap<>();
+        if (member == null) return;
+        Visit visit = Boolean.TRUE.equals(view.getEditMode())
+                ? loadEditingVisit(member.getBaseEntityId()) : null;
+        if (visit != null) {
+            details = loadVisitDetails(visit);
+            LocalDate recorded = MotherMentorMotherVisitDao.getServiceDate(visit);
+            if (recorded != null) serviceDate = recorded;
+            try {
+                Map<String, String> values = MotherMentorVisitCompletion.observationValues(
+                        new JSONObject(visit.getJson()).optJSONArray("obs"));
+                originalSchema = values.get(DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA);
+                legacyVisit = !MotherMentorChildEidStatusUtils.isSchema3(values);
+                for (String key : new String[] {DBConstants.KEY.MTOTO_ENROLLMENT_ID,
+                        DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID}) {
+                    if (StringUtils.isNotBlank(values.get(key))) originalEpisode.put(key, values.get(key));
+                }
+                statusSaved = !legacyVisit && MotherMentorChildEidStatusUtils.isStatusComplete(
+                        values, childDob(), serviceDate);
+            } catch (Exception e) {
+                legacyVisit = true;
+                Timber.e(e, "Unable to restore the Child EID visit schema");
+            }
         }
+        if (!useLegacyWorkflow()) {
+            try {
+                enrollmentState = loadEnrollmentState(member.getBaseEntityId(),
+                        visit == null ? null : visit.getVisitId());
+            } catch (Exception e) {
+                Timber.e(e, "Unable to capture the Child EID enrollment episode");
+            }
+        }
+    }
+
+    protected MotherMentorChildEidRepository.State loadEnrollmentState(String memberId,
+            String editingVisitId) {
+        SQLiteDatabase db =
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        return StringUtils.isBlank(editingVisitId)
+                ? MotherMentorChildEidRepository.getState(db, memberId, null, serviceDate)
+                : MotherMentorChildEidRepository.getStateBeforeVisit(db, memberId, editingVisitId);
     }
 
     protected Visit loadEditingVisit(String memberId) {
@@ -208,6 +238,10 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
                 serviceDate.toString("dd-MM-yyyy"));
         putObservation(event, DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA,
                 useLegacyWorkflow() ? originalSchema : "3");
+        for (Map.Entry<String, String> episode : originalEpisode.entrySet()) {
+            putObservation(event, episode.getKey(), episode.getValue());
+        }
+        if (!useLegacyWorkflow()) MotherMentorChildEidRepository.tagEvent(event, enrollmentState);
     }
 
     private void putObservation(Event event, String key, String value) {
