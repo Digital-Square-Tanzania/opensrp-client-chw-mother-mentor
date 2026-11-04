@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_household_follow_up_status">Hali ya Ufuatiliaji wa Kaya</string>
+    <string name="mothermentor_household_visit_type_new">Usajili mpya</string>
+    <string name="mothermentor_household_visit_type_repeat">Tembeleo la Marudio</string>
+    <string name="mothermentor_household_status_found">Imepatikana</string>
+    <string name="mothermentor_household_status_not_found">Haijapatikana</string>
+    <string name="mothermentor_household_missing_moved">Kaya nzima imehama eneo</string>
+    <string name="mothermentor_household_missing_house_closed">Hakuna aliyepatikana (nyumba imefungwa)</string>
+    <string name="mothermentor_household_missing_other">Nyingine (Taja)</string>
+</resources>

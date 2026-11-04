@@ -28,7 +28,7 @@ public final class MotherMentorHouseholdVisitUtils {
                 JSONObject event = new JSONObject(visit.getJson());
                 Map<String, String> values =
                         MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
-                if (!hasCompletedHouseholdServices(values)) continue;
+                if (!isComplete(values)) continue;
                 Date visitDate = getVisitDate(visit, event, values);
                 if (visitDate != null && isSameDay(visitDate, now)) return true;
             } catch (Exception ignored) {
@@ -38,7 +38,29 @@ public final class MotherMentorHouseholdVisitUtils {
         return false;
     }
 
-    private static boolean hasCompletedHouseholdServices(Map<String, String> values) {
+    public static boolean isStatusComplete(String type, String status, String reason, String other) {
+        if ("new".equals(type)) return true;
+        if (!"repeat".equals(type)) return false;
+        if ("found".equals(status)) return true;
+        return "not_found".equals(status)
+                && ("moved".equals(reason) || "house_closed".equals(reason)
+                        || ("other".equals(reason) && other != null && !other.trim().isEmpty()));
+    }
+
+    public static boolean areServicesRequired(Map<String, String> values) {
+        String type = values.get(DBConstants.KEY.HOUSEHOLD_VISIT_TYPE);
+        return "new".equals(type) || ("repeat".equals(type)
+                && "found".equals(values.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS)));
+    }
+
+    public static boolean isComplete(Map<String, String> values) {
+        if ("2".equals(values.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA))) {
+            if (!isStatusComplete(values.get(DBConstants.KEY.HOUSEHOLD_VISIT_TYPE),
+                    values.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS),
+                    values.get(DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON),
+                    values.get(DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON_OTHER))) return false;
+            if (!areServicesRequired(values)) return true;
+        }
         for (String key :
                 new String[] {
                     DBConstants.KEY.PURPOSE_OF_VISIT,
@@ -51,7 +73,7 @@ public final class MotherMentorHouseholdVisitUtils {
         return true;
     }
 
-    private static Date getVisitDate(Visit visit, JSONObject event, Map<String, String> values) {
+    public static Date getVisitDate(Visit visit, JSONObject event, Map<String, String> values) {
         String recordedDate = values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE);
         if (recordedDate != null && !recordedDate.trim().isEmpty()) {
             for (String pattern : new String[] {"dd-MM-yyyy", "yyyy-MM-dd"}) {
