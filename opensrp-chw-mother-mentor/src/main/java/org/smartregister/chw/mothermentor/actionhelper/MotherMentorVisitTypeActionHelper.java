@@ -6,6 +6,11 @@ import com.vijay.jsonwizard.constants.JsonFormConstants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.joda.time.LocalDate;
+import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
@@ -95,6 +100,15 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                     field.put(JsonFormConstants.VALUE, value);
                 }
             }
+            if (MotherMentorMotherPregnancyUtils.values(form)
+                    .containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) {
+                MotherMentorMotherVisitDao.Context original = loadMotherContext();
+                Map<String, String> previous = loadDeliveryAnswers();
+                MotherMentorMotherPregnancyUtils.prepare(form,
+                        original.getEnrollmentPregnancyStatus(), previous.getOrDefault(
+                                DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, original.getEnrollmentChildDob()),
+                        previous, StringUtils.isNotBlank(currentVisitId));
+            }
             return form.toString();
         } catch (Exception e) {
             Timber.e(e);
@@ -106,6 +120,55 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         return member == null || StringUtils.isBlank(member.getBaseEntityId())
                 ? Collections.emptyMap()
                 : MotherMentorDao.getVisitEnrollmentValues(member.getBaseEntityId());
+    }
+
+    protected MotherMentorMotherVisitDao.Context loadMotherContext() {
+        return member == null || StringUtils.isBlank(member.getBaseEntityId())
+                ? MotherMentorMotherVisitDao.Context.empty()
+                : MotherMentorMotherVisitDao.getContext(member.getBaseEntityId());
+    }
+
+    protected Map<String, String> loadDeliveryAnswers() {
+        return member == null || StringUtils.isBlank(member.getBaseEntityId())
+                ? Collections.emptyMap()
+                : MotherMentorMotherDeliveryRepository.getState(
+                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                        member.getBaseEntityId(), currentVisitId).getAnswers();
+    }
+
+    protected LocalDate loadServiceDate() {
+        return StringUtils.isBlank(currentVisitId) ? LocalDate.now()
+                : MotherMentorMotherVisitDao.getServiceDate(MotherMentorLibrary.getInstance()
+                        .visitRepository().getVisitByVisitId(currentVisitId));
+    }
+
+    @Override
+    public void onPayloadReceived(String jsonPayload) {
+        super.onPayloadReceived(jsonPayload);
+        if (payload == null) return;
+        try {
+            if (!MotherMentorMotherPregnancyUtils.values(payload)
+                    .containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) return;
+            MotherMentorMotherVisitDao.Context original = loadMotherContext();
+            MotherMentorMotherPregnancyUtils.restoreContext(payload,
+                    original.getEnrollmentPregnancyStatus(), loadDeliveryAnswers().getOrDefault(
+                            DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, original.getEnrollmentChildDob()));
+            MotherMentorMotherPregnancyUtils.normalize(payload);
+        } catch (Exception e) {
+            Timber.e(e, "Unable to restore the original mother pregnancy context");
+        }
+    }
+
+    @Override
+    public String postProcess(String jsonPayload) {
+        if (payload == null) return null;
+        try {
+            return MotherMentorMotherPregnancyUtils.values(payload)
+                    .containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB) ? payload.toString() : null;
+        } catch (Exception e) {
+            Timber.e(e);
+            return null;
+        }
     }
 
     @Override
@@ -122,7 +185,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                         field.optString(JsonFormConstants.KEY),
                         field.optString(JsonFormConstants.VALUE));
             }
-            return completed(MotherMentorVisitCompletion.isVisitTypeComplete(values));
+            return completed(MotherMentorVisitCompletion.isVisitTypeComplete(values)
+                    && (!values.containsKey(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS)
+                            || MotherMentorMotherPregnancyUtils.isComplete(values, loadServiceDate())));
         } catch (Exception e) {
             Timber.e(e);
             return BaseMotherMentorVisitAction.Status.PENDING;

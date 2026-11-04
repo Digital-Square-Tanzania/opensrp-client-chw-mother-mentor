@@ -6,6 +6,11 @@ Android version code.
 
 ## Unreleased
 
+- Add the mother visit pregnancy outcome branches in English and Swahili, including
+  strict delivery/loss dates, immutable enrollment context, and branch clearing.
+- Rebuild current delivery date, child DOB and pregnancy status from finalized
+  visit evidence through an explicit database-63 migration API; retain raw history.
+
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
 ### Changed

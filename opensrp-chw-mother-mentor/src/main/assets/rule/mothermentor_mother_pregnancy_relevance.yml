@@ -1,0 +1,70 @@
+---
+name: step1_visit_pregnancy_status
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = ((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant')"
+---
+name: step1_mama_pregnancy_outcome
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant')"
+---
+name: step1_mama_delivery_date_input
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && step1_mama_pregnancy_outcome == 'delivered'"
+---
+name: step1_mama_preterm_delivery_date_input
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && step1_mama_pregnancy_outcome == 'preterm'"
+---
+name: step1_mama_stillbirth_date_input
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && step1_mama_pregnancy_outcome == 'stillbirth'"
+---
+name: step1_mama_pregnancy_loss_date
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && step1_mama_pregnancy_outcome == 'pregnancy_loss'"
+---
+name: step1_mama_pregnancy_outcome_other
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = (((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && step1_mama_pregnancy_outcome == 'other'"
+---
+name: step1_mama_enrollment_delivery_date
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = ((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && (step1_mama_enrollment_pregnancy_status == 'breast_feeding' || step1_mama_enrollment_pregnancy_status == 'not_pregnant'))"
+---
+name: step1_mama_delivery_edit_note
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = ((((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm'))"
+---
+name: step1_mama_delivery_schedule_note
+description: Mother pregnancy branch
+priority: 1
+condition: "true"
+actions:
+  - "isRelevant = ((((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm'))"

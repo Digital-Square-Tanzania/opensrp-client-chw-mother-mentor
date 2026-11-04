@@ -21,6 +21,12 @@ public final class MotherMentorVisitCompletion {
     }
 
     public static boolean isVisitTypeComplete(Map<String, String> values) {
+        if (values.containsKey(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS)) {
+            org.joda.time.LocalDate date = values.containsKey(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE)
+                    ? MotherMentorMotherPregnancyUtils.parseDate(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
+                    : org.joda.time.LocalDate.now();
+            if (!MotherMentorMotherPregnancyUtils.isComplete(values, date)) return false;
+        }
         String attendance = values.get(DBConstants.KEY.ATTENDANCE_TYPE);
         if (!matches(attendance, "new", "Mpya", "repeat", "Marudio")) return false;
         if (matches(attendance, "repeat", "Marudio")

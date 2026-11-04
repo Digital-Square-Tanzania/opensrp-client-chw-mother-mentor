@@ -161,12 +161,28 @@
         "openmrs_entity_parent": ""
       },
       {
+        "key": "mama_enrollment_pregnancy_status",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_enrollment_pregnancy_status",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
+        "key": "mama_enrollment_child_dob",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_enrollment_child_dob",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
         "key": "visit_pregnancy_status",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "visit_pregnancy_status",
         "type": "native_radio",
-        "label": "Hali ya ujauzito katika ziara hii",
+        "label": "Hali ya ujauzito",
         "v_required": {
           "value": true,
           "err": "Tafadhali jaza sehemu hii"
@@ -179,14 +195,8 @@
             "openmrs_entity_id": "pregnant"
           },
           {
-            "key": "breast_feeding",
-            "text": "Ananyonyesha",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "breast_feeding"
-          },
-          {
             "key": "not_pregnant",
-            "text": "Si mjamzito",
+            "text": "Si Mjamzito",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_pregnant"
           }
@@ -194,7 +204,233 @@
         "relevance": {
           "rules-engine": {
             "ex-rules": {
-              "rules-file": "mothermentor_reporting_relevance.yml"
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome",
+        "type": "native_radio",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "label": "Hali ya sasa",
+        "text_color": "#000000",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "delivered",
+            "text": "Amejifungua",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "delivered"
+          },
+          {
+            "key": "preterm",
+            "text": "Amejifungua kabla ya wakati (njiti)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "preterm"
+          },
+          {
+            "key": "pregnancy_loss",
+            "text": "Mimba imeharibika",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnancy_loss"
+          },
+          {
+            "key": "stillbirth",
+            "text": "Mtoto kuzaliwa mfu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stillbirth"
+          },
+          {
+            "key": "other",
+            "text": "Nyingine (Taja)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe ya kujifungua",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua tarehe isiyo ya baadaye"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_preterm_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe ya kujifungua",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua tarehe isiyo ya baadaye"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_stillbirth_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe ya kujifungua",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua tarehe isiyo ya baadaye"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_loss_date",
+        "type": "date_picker",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_loss_date",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe mimba ilipoharibika",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua tarehe isiyo ya baadaye"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_enrollment_delivery_date",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe ya kujifungua (kutoka usajili)",
+        "max_date": "today",
+        "expanded": false,
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_kujifungua",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_kujifungua",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome_other",
+        "type": "edit_text",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome_other",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Taja sababu",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali taja sababu"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_edit_note",
+        "type": "toaster_notes",
+        "text": "Inaweza kuhaririwa baadaye kama tarehe ilikosewa.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_schedule_note",
+        "type": "toaster_notes",
+        "text": "Kuhifadhi tarehe ya kujifungua kutaanzisha ratiba ya vipimo vya HEI vya mtoto. Uandikishaji wa mtoto kwenye ufuatiliaji wa EID unafanywa kando.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
             }
           }
         }
