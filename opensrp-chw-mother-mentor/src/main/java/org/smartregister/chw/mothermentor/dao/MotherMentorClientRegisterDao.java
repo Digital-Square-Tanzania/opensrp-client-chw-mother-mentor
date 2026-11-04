@@ -189,7 +189,7 @@ public final class MotherMentorClientRegisterDao {
                         + DBConstants.KEY.BASE_ENTITY_ID);
     }
 
-    private static String currentStatus() {
+    static String currentStatus() {
         String answer = "lower(trim(d." + DBConstants.KEY.DETAILS + "))";
         return "coalesce((SELECT "
                 + answer
