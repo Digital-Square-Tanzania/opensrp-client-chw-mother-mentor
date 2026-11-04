@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.DateTime;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 
@@ -16,6 +17,10 @@ import java.util.Map;
 public final class MotherMentorHouseholdVisitUtils {
     private MotherMentorHouseholdVisitUtils() {}
 
+    public static Map<String, String> observationValues(JSONArray observations) {
+        return MotherMentorVisitCompletion.observationValues(observations);
+    }
+
     public static boolean hasCompletedVisitToday(List<Visit> visits, Date now) {
         if (visits == null || now == null) return false;
         for (Visit visit : visits) {
@@ -27,7 +32,7 @@ public final class MotherMentorHouseholdVisitUtils {
             try {
                 JSONObject event = new JSONObject(visit.getJson());
                 Map<String, String> values =
-                        MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
+                        observationValues(event.optJSONArray("obs"));
                 if (!isComplete(values)) continue;
                 Date visitDate = getVisitDate(visit, event, values);
                 if (visitDate != null && isSameDay(visitDate, now)) return true;
