@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
@@ -223,6 +224,7 @@ public final class MotherMentorChildEidRepository {
             MotherMentorMotherChildRepository.State clinical = MotherMentorMotherChildRepository.getStateForChildBeforeEvidence(
                     db, childId, visit);
             answers.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
+            answers.put(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
             answers.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(clinical.getSamplingHistory()));
             if (!MotherMentorMotherPregnancyUtils.isComplete(answers, day)
                     || !MotherMentorMotherChildUtils.applies(answers)
@@ -239,7 +241,7 @@ public final class MotherMentorChildEidRepository {
                 if (StringUtils.isBlank(source)) continue;
                 latest = new EnrollmentPlan(childId, motherId, context.getEnrollmentId(), source, day, stage,
                         due, person, MotherMentorChildEidDao.person(db, motherId), answers,
-                        MotherMentorChildEidDao.json(visit), existing);
+                        MotherMentorChildEidDao.json(visit), existing, visit.getDate());
                 if (!updateOpen) return latest;
                 break;
             }
@@ -294,11 +296,12 @@ public final class MotherMentorChildEidRepository {
         private final Map<String, String> answers;
         private final JSONObject parent;
         private final Map<String, String> previous;
+        private final java.util.Date recordedAt;
 
         EnrollmentPlan(String childId, String motherId, String motherEnrollmentId, String sourceId,
                 LocalDate serviceDate, Stage stage, LocalDate due, Map<String, String> child,
                 Map<String, String> mother, Map<String, String> answers, JSONObject parent,
-                Map<String, String> previous) {
+                Map<String, String> previous, java.util.Date recordedAt) {
             this.childId = childId;
             this.motherId = motherId;
             this.motherEnrollmentId = motherEnrollmentId;
@@ -311,6 +314,7 @@ public final class MotherMentorChildEidRepository {
             this.answers = answers;
             this.parent = parent;
             this.previous = previous;
+            this.recordedAt = recordedAt == null ? serviceDate.toDate() : recordedAt;
         }
 
         public String getChildId() { return childId; }
@@ -326,7 +330,12 @@ public final class MotherMentorChildEidRepository {
         }
 
         public boolean isPersisted(SQLiteDatabase db) {
-            return MotherMentorChildEidDao.hasEvent(db, childId, getFormSubmissionId());
+            return getStoredEventJson(db) != null;
+        }
+
+        /** Retry the stored enrollment itself, rather than reconstructing mutable parent answers. */
+        public JSONObject getStoredEventJson(SQLiteDatabase db) {
+            return MotherMentorChildEidDao.storedEnrollmentEvent(db, childId, getFormSubmissionId());
         }
 
         public Event toEvent() {
@@ -340,9 +349,16 @@ public final class MotherMentorChildEidRepository {
             event.setBaseEntityId(childId);
             event.setEntityType(Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
             event.setEventType(Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID);
-            event.setEventDate(serviceDate.toDate());
+            // eventDate orders actual enrollment episodes; the observation retains clinical day.
+            try {
+                event.setEventDate(new DateTime(parent.optString(DBConstants.KEY.EVENT_DATE_TIMESTAMP)).toDate());
+            } catch (IllegalArgumentException invalidTimestamp) {
+                event.setEventDate(recordedAt);
+            }
             event.setFormSubmissionId(getFormSubmissionId());
             Map<String, String> fields = new LinkedHashMap<>();
+            for (String column : COLUMNS) fields.put(column, counter(column) ? "0" : "");
+            fields.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, serviceDate.toString());
             fields.put(DBConstants.KEY.MOTHER_BASE_ENTITY_ID, motherId);
             fields.put(DBConstants.KEY.RELATIONAL_ID, value(child, DBConstants.KEY.RELATIONAL_ID));
             fields.put(DBConstants.KEY.CHILD_DOB, MotherMentorHeiSchedule.parseBirthDate(value(child, DBConstants.KEY.DOB)).toString());

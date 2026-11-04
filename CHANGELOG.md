@@ -6,6 +6,17 @@ Android version code.
 
 ## Unreleased
 
+### Added
+
+- Plan automatic Child EID enrollment only after a finalized Mama visit records an
+  eligible missed test more than 14 days after its due date, linking one existing
+  registered child by its explicit mother relationship and matching birth date (#1145).
+- Keep clinical test history across child tracing episodes while isolating current
+  mother closure evidence; expose library-owned register/card queries and an explicit
+  database-66 metadata migration without resetting existing referral progress.
+- Preserve the source event timestamp and service day in idempotent enrollment
+  events, and retry their stored payload when projection processing is interrupted.
+
 ### Changed
 
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).

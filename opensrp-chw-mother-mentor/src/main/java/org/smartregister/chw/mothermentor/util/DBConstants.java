@@ -330,6 +330,8 @@ public final class DBConstants {
         public static final String AGE = "age";
         public static final String EVENT_BASE_ENTITY_ID = "baseEntityId";
         public static final String EVENT_JSON = "json";
+        public static final String EVENT_VERSION = "version";
+        public static final String EVENT_VOIDED = "voided";
         public static final String EVENT_FORM_SUBMISSION_ID = "formSubmissionId";
         public static final String DOB_UNKNOWN = "dob_unknown";
         public static final String EVENT_DATE_TIMESTAMP = "eventDate";
