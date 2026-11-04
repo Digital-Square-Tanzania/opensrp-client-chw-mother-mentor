@@ -10,7 +10,9 @@ Android version code.
 
 - Allow a partner who did not attend the facility to complete follow-up with only
   the attendance answer and optional comments. Ask education after confirmed
-  attendance, and require a valid date before advancing to tests (CHW #1126).
+  attendance, and require a valid date before advancing to tests. Preserve original
+  education observations when editing a historical non-attendance visit that
+  remains non-attendance (CHW #1126).
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
