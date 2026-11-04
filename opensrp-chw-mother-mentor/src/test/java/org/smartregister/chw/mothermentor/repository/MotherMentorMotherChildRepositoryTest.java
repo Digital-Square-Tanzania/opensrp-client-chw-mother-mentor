@@ -162,6 +162,99 @@ public class MotherMentorMotherChildRepositoryTest {
         assertTrue(MotherMentorMotherChildRepository.getState(db, "mother", null).getTests().isEmpty());
     }
 
+    @Test
+    public void schema3BreastfeedingIsSharedWithTheMotherAndChildWithoutAResult() throws Exception {
+        link("child", dob);
+        LocalDate day = dob.plusMonths(10);
+        LocalDate cessation = dob.plusMonths(6);
+        visit("new-child", "new-child", "child", childBreastfeeding(cessation), day, 1, false);
+        MotherMentorMotherChildRepository.State mother = MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals("not_breastfeeding", mother.getBreastfeedingStatus());
+        assertEquals(cessation, mother.getWeaningDate());
+        MotherMentorMotherChildRepository.State child = MotherMentorMotherChildRepository.getStateForChild(db, "child", null);
+        assertEquals(mother.getBreastfeedingStatus(), child.getBreastfeedingStatus());
+        assertEquals(mother.getWeaningDate(), child.getWeaningDate());
+        assertTrue(child.getTests().isEmpty());
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals("not_breastfeeding", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
+        assertEquals(cessation.toString(), scalar("SELECT mama_tarehe_acha_kunyonyesha FROM ec_mothermentor_enrollment"));
+    }
+
+    @Test
+    public void laterMotherAndChildAnswersShareChronologyAndBeforeEditContext() throws Exception {
+        link("child", dob);
+        LocalDate firstDay = dob.plusMonths(10);
+        visit("child-first", "child-first", "child", childBreastfeeding(dob.plusMonths(6)), firstDay, 1, false);
+        Map<String, String> motherAnswer = MotherMentorMotherChildUtilsTest.test("nine_months", "negative", dob.plusMonths(9));
+        visit("mother-next", "mother-next", "mother", motherAnswer, firstDay.plusDays(1), 1, false);
+        visit("child-last", "child-last", "child", childBreastfeeding(dob.plusMonths(8)), firstDay.plusDays(2), 1, false);
+        assertEquals(dob.plusMonths(8), MotherMentorMotherChildRepository.getState(db, "mother", null).getWeaningDate());
+        MotherMentorMotherChildRepository.State before = MotherMentorMotherChildRepository
+                .getStateForChildBeforeVisit(db, "child", "child-last");
+        assertEquals("breastfeeding", before.getBreastfeedingStatus());
+        assertNull(before.getWeaningDate());
+        data.delete("visits", "visit_id = ?", new String[] {"child-last"});
+        assertEquals("breastfeeding", MotherMentorMotherChildRepository.getState(db, "mother", null).getBreastfeedingStatus());
+        data.delete("visits", "visit_id = ?", new String[] {"mother-next"});
+        assertEquals(dob.plusMonths(6), MotherMentorMotherChildRepository.getState(db, "mother", null).getWeaningDate());
+    }
+
+    @Test
+    public void invalidOrInactiveChildBreastfeedingNeverErasesAnEarlierValidAnswer() throws Exception {
+        link("child", dob);
+        LocalDate day = dob.plusMonths(10);
+        visit("valid", "valid", "child", childBreastfeeding(dob.plusMonths(6)), day, 1, false);
+        visit("future-date", "future-date", "child", childBreastfeeding(day.plusDays(3)), day.plusDays(1), 1, false);
+        Map<String, String> notFound = childBreastfeeding(null);
+        notFound.put(FOLLOW_UP_STATUS, "not_found");
+        notFound.put(MTOTO_NOT_FOUND_REASON, "other");
+        notFound.put(MTOTO_NOT_FOUND_REASON_OTHER, "Not available");
+        visit("not-found", "not-found", "child", notFound, day.plusDays(2), 1, false);
+        assertEquals("not_breastfeeding", MotherMentorMotherChildRepository.getState(db, "mother", null).getBreastfeedingStatus());
+        assertEquals(dob.plusMonths(6), MotherMentorMotherChildRepository.getState(db, "mother", null).getWeaningDate());
+    }
+
+    @Test
+    public void aStaleReferralBranchDoesNotDiscardAValidClinicalBreastfeedingAnswer() throws Exception {
+        link("child", dob);
+        data.execSQL("ALTER TABLE ec_mothermentor_enroll_child_eid ADD COLUMN mtoto_rufaa_state TEXT");
+        data.execSQL("UPDATE ec_mothermentor_enroll_child_eid SET mtoto_rufaa_state = 'referred'");
+        LocalDate day = dob.plusMonths(10);
+        Map<String, String> values = childBreastfeeding(dob.plusMonths(6));
+        values.put(MTOTO_RUFAA_STATE_BEFORE, "none");
+        values.put(MTOTO_REFERRAL_AGREEMENT, "refused");
+        visit("offline-first", "offline-first", "child", values, day, 1, false);
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals("not_breastfeeding", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
+        assertEquals("referred", scalar("SELECT mtoto_rufaa_state FROM ec_mothermentor_enroll_child_eid"));
+    }
+
+    @Test
+    public void schema3ChildDeathWithAValidDateFeedsTheExistingMaternalTerminalState() throws Exception {
+        link("child", dob);
+        LocalDate died = dob.plusMonths(10);
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(CHILD_EID_FOLLOW_UP_SCHEMA, "3");
+        values.put(FOLLOW_UP_STATUS, "found");
+        values.put(MAMA_CHILD_STATUS, "deceased");
+        values.put(MAMA_TAREHE_MTOTO_ALIFARIKI, died.toString());
+        visit("deceased", "deceased", "child", values, died.plusDays(2), 1, false);
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_DECEASED, state.getTerminalOutcome());
+        assertEquals(died, state.getChildDeathDate());
+        assertEquals(died.plusDays(2), state.getTerminalServiceDate());
+    }
+
+    private Map<String, String> childBreastfeeding(LocalDate cessation) {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(CHILD_EID_FOLLOW_UP_SCHEMA, "3");
+        values.put(FOLLOW_UP_STATUS, "found");
+        values.put(MAMA_CHILD_STATUS, "alive");
+        values.put(MAMA_BREASTFEEDING_STATUS, cessation == null ? "breastfeeding" : "not_breastfeeding");
+        if (cessation != null) values.put(MAMA_TAREHE_ACHA_KUNYONYESHA, cessation.toString());
+        return values;
+    }
+
     private Map<String, String> childResult(String result) {
         Map<String, String> values = new LinkedHashMap<>();
         values.put(FOLLOW_UP_STATUS, "found"); values.put(CHILD_EID_TEST_TYPE, "eighteen_months");
