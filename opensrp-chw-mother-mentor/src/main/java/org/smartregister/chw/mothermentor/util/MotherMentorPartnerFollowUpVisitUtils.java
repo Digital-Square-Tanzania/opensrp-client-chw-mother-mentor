@@ -101,10 +101,11 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                     && (!"other".equals(reason)
                             || answered(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER)));
         }
-        if (!"attendance".equals(phase) || !educationComplete(values)) return false;
+        if (!"attendance".equals(phase)) return false;
         String attendance = values.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY);
         if ("no".equals(attendance)) return true;
         return "yes".equals(attendance)
+                && educationComplete(values)
                 && validRecordedDate(values.get(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))
                 && testComplete(values, DBConstants.KEY.PARTNER_HIV_TESTED,
                         DBConstants.KEY.PARTNER_HIV_RESULT,
@@ -146,7 +147,8 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                 && (!"other".equals(reason) || answered(values.get(otherKey)));
     }
 
-    private static boolean validRecordedDate(String value) {
+    /** Validates the recorded formats accepted by partner attendance and completion. */
+    public static boolean validRecordedDate(String value) {
         if (!answered(value) || !(value.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}")
                 || value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))) return false;
         for (String pattern : new String[] {"dd-MM-yyyy", "yyyy-MM-dd"}) {

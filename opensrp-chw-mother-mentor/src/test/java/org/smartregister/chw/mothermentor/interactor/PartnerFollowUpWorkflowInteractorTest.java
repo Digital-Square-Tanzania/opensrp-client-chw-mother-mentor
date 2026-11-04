@@ -249,6 +249,55 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
+    @Config(qualifiers = "en")
+    public void englishNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliNoAttendanceRequiresOnlyAttendanceAndKeepsCommentsOptional() throws Exception {
+        noAttendanceBranches();
+    }
+
+    private void noAttendanceBranches() throws Exception {
+        start(true);
+        assertVisible("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
+        assertVisible("mothermentor_partner_education", false);
+        assertNull(action("mothermentor_partner_education").getJsonPayload());
+        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
+            assertVisible("mothermentor_partner_" + disease + "_test", false);
+        }
+        assertBlankCommentDoesNotBlockSave();
+        Event event = aggregateNativeEvent();
+        Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
+                new JSONArray(new Gson().toJson(event.getObs())));
+        assertEquals("no", saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+        assertFalse(saved.containsKey(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(saved));
+    }
+
+    @Test
+    public void malformedAttendanceDateCannotAdvanceToTestingOrEducation() throws Exception {
+        start(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "31-02-2026");
+        assertStatus("mothermentor_partner_arrival", false);
+        assertVisible("mothermentor_partner_hiv_test", false);
+        assertVisible("mothermentor_partner_education", false);
+        answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "2026-02-28");
+        assertStatus("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_hiv_test", true);
+        assertVisible("mothermentor_partner_education", true);
+        assertVisible("mothermentor_partner_follow_up_comment", true);
+    }
+
+    @Test
     public void changingTestAnswersClearsOnlyHiddenResultsAndRequiresOtherText() throws Exception {
         start(true);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
@@ -389,6 +438,99 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertEquals("yes", observation(resumed, DBConstants.KEY.PARTNER_MOTHER_PREGNANT));
         assertEquals("attendance", observation(resumed, DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE));
         assertEquals("completed", observation(resumed, DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishEditingHistoricalNonAttendancePreservesRawEducation() throws Exception {
+        preserveHistoricalNonAttendanceEducation();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliEditingHistoricalNonAttendancePreservesRawEducation() throws Exception {
+        preserveHistoricalNonAttendanceEducation();
+    }
+
+    private void preserveHistoricalNonAttendanceEducation() throws Exception {
+        Event original = historicalNonAttendanceEvent();
+        Map<String, String> education = rawEducation(original);
+        editNativeEvent(original);
+        assertVisible("mothermentor_partner_education", false);
+        assertNull(action("mothermentor_partner_education").getJsonPayload());
+        Event saved = aggregateNativeEvent();
+        assertEquals("no", observation(saved, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+        assertEquals(education, rawEducation(saved));
+    }
+
+    @Test
+    public void correctingHistoricalNonAttendanceUsesNewEducationAnswers() throws Exception {
+        editNativeEvent(historicalNonAttendanceEvent());
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "01-02-2025");
+        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
+            answer("mothermentor_partner_" + disease + "_test",
+                    "partner_" + disease + "_tested", "yes",
+                    "partner_" + disease + "_result", "negative");
+        }
+        assertVisible("mothermentor_partner_education", true);
+        assertStatus("mothermentor_partner_education", false);
+        answer("mothermentor_partner_education", "partner_education_provided", "yes",
+                "partner_education_topics", new JSONArray().put("syphilis"));
+        Event saved = aggregateNativeEvent();
+        Map<String, String> values = MotherMentorVisitCompletion.observationValues(
+                new JSONArray(new Gson().toJson(saved.getObs())));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values));
+        assertEquals("yes", values.get(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
+        String topics = rawEducation(saved).get(DBConstants.KEY.PARTNER_EDUCATION_TOPICS);
+        assertTrue(topics, topics.contains("syphilis"));
+        assertFalse(topics, topics.contains("hepatitis_b"));
+        assertFalse(topics, topics.contains("hiv"));
+    }
+
+    @Test
+    public void correctingOriginalAttendanceToNoDoesNotRestoreHiddenEducation() throws Exception {
+        editNativeEvent(nativeCompletedEvent());
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        assertTrue(rawEducation(aggregateNativeEvent()).isEmpty());
+    }
+
+    private Event historicalNonAttendanceEvent() throws Exception {
+        Event attended = nativeCompletedEvent();
+        start(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        Event event = aggregateNativeEvent();
+        for (Obs obs : attended.getObs()) {
+            if (educationObservation(obs)) event.addObs(obs);
+        }
+        return event;
+    }
+
+    private void editNativeEvent(Event event) throws Exception {
+        Visit visit = NCUtils.eventToVisit(event, "saved-visit");
+        ArrayList<VisitDetail> restored = new ArrayList<>();
+        for (java.util.List<VisitDetail> section : visit.getVisitDetails().values()) restored.addAll(section);
+        when(detailsRepository.getVisits("saved-visit")).thenReturn(restored);
+        interactor = new TestInteractor();
+        interactor.editing = visit;
+        interactor.forbidContextRead = true;
+        calculate(true);
+    }
+
+    private Map<String, String> rawEducation(Event event) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Obs obs : event.getObs()) {
+            if (educationObservation(obs)) {
+                assertFalse("Duplicate education observation", result.containsKey(obs.getFieldCode()));
+                result.put(obs.getFieldCode(), new Gson().toJson(obs));
+            }
+        }
+        return result;
+    }
+
+    private boolean educationObservation(Obs obs) {
+        return DBConstants.KEY.PARTNER_EDUCATION_PROVIDED.equals(obs.getFieldCode())
+                || DBConstants.KEY.PARTNER_EDUCATION_TOPICS.equals(obs.getFieldCode());
     }
 
     @Test
