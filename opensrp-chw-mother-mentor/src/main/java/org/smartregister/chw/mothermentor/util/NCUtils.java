@@ -311,6 +311,9 @@ public class NCUtils {
                     }
                 }
             }
+            org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository
+                    .rebuildForVisit(database == null ? MotherMentorLibrary.getInstance()
+                            .getRepository().getWritableDatabase() : database, visit);
         } catch (JSONException e) {
             Timber.e(e);
         }

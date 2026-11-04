@@ -171,6 +171,37 @@ public final class DBConstants {
         public static final String EXPECTED_RETURN_DATE = "expected_return_date";
         public static final String WEEKS_LOST = "weeks_lost";
 
+        public static final String MAMA_PREVIOUS_BREASTFEEDING_STATUS = "mama_previous_breastfeeding_status";
+        public static final String MAMA_PREVIOUS_WEANING_DATE = "mama_previous_weaning_date";
+        public static final String MAMA_HEI_TEST_TYPE_CHOICE = "mama_hei_test_type_choice";
+        public static final String MAMA_CHILD_PATH = "mama_child_path";
+
+        // Mama routine child assessment and serial HEI test observations (#1142).
+        public static final String MAMA_CHILD_STATUS = "mama_child_status";
+        public static final String MAMA_BREASTFEEDING_STATUS = "mama_breastfeeding_status";
+        public static final String MAMA_TAREHE_ACHA_KUNYONYESHA = "mama_tarehe_acha_kunyonyesha";
+        public static final String MAMA_TAREHE_MTOTO_ALIFARIKI = "mama_tarehe_mtoto_alifariki";
+        public static final String MAMA_HEI_TEST_DONE = "mama_hei_test_done";
+        public static final String MAMA_HEI_TEST_TYPE = "mama_hei_test_type";
+        public static final String MAMA_HEI_TEST_DATE = "mama_hei_test_date";
+        public static final String MAMA_HEI_TEST_RESULT = "mama_hei_test_result";
+        public static final String HEI_CHANYA_IMETHIBITISHWA = "hei_chanya_imethibitishwa";
+        public static final String MAMA_HEI_TEST_HISTORY = "mama_hei_test_history";
+        public static final String MAMA_HEI_ASSESSMENT_DATE = "mama_hei_assessment_date";
+        public static final String MAMA_HEI_DUE_TESTS = "mama_hei_due_tests";
+        public static final String MAMA_HEI_DUE_TEST = "mama_hei_due_test";
+        public static final String MAMA_HEI_DUE_DATE = "mama_hei_due_date";
+        public static final String MAMA_CHILD_AGE_NOTE = "mama_child_age_note";
+        public static final String MAMA_HEI_NEXT_TEST_NOTE = "mama_hei_next_test_note";
+        public static final String HEI_TEST_WIKI6_RESULT = "hei_test_wiki6_result";
+        public static final String HEI_TEST_WIKI6_DATE = "hei_test_wiki6_date";
+        public static final String HEI_TEST_MIEZI9_RESULT = "hei_test_miezi9_result";
+        public static final String HEI_TEST_MIEZI9_DATE = "hei_test_miezi9_date";
+        public static final String HEI_TEST_MIEZI15_RESULT = "hei_test_miezi15_result";
+        public static final String HEI_TEST_MIEZI15_DATE = "hei_test_miezi15_date";
+        public static final String HEI_TEST_MIEZI18_RESULT = "hei_test_miezi18_result";
+        public static final String HEI_TEST_MIEZI18_DATE = "hei_test_miezi18_date";
+
         // ec_mothermentor_enroll_child_eid.
         public static final String BREASTFEEDING_STATUS = "breastfeeding_status";
         public static final String CHILD_NAME = "child_name";

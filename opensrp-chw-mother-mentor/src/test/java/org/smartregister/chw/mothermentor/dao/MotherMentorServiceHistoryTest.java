@@ -198,6 +198,11 @@ public class MotherMentorServiceHistoryTest {
         MotherMentorVisitTypeActionHelper helper =
                 new MotherMentorVisitTypeActionHelper(member) {
                     @Override
+                    protected void prepareChildAssessment(JSONObject form) {
+                        // These cases isolate attendance defaults from the separate child assessment.
+                    }
+
+                    @Override
                     protected Map<String, String> loadEnrollmentValues() {
                         return Collections.emptyMap();
                     }

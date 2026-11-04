@@ -136,6 +136,7 @@ public class VisitRepository extends BaseRepository {
         }
         // Handle updated home visit details
         database.insert(VISIT_TABLE, null, createValues(visit));
+        MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
     }
 
@@ -185,12 +186,14 @@ public class VisitRepository extends BaseRepository {
 
     public void deleteVisit(String visitID) {
         try {
+            Visit removed = getVisitByVisitId(visitID);
             getWritableDatabase().delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
             getWritableDatabase()
                     .delete(
                             VisitDetailsRepository.VISIT_DETAILS_TABLE,
                             VISIT_ID + "= ?",
                             new String[] {visitID});
+            MotherMentorMotherChildRepository.rebuildForVisit(getWritableDatabase(), removed);
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -203,6 +206,7 @@ public class VisitRepository extends BaseRepository {
             values.put(PRE_PROCESSED, "");
             getWritableDatabase()
                     .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            MotherMentorMotherChildRepository.rebuildForVisit(getWritableDatabase(), getVisitByVisitId(visitID));
         } catch (Exception e) {
             Timber.e(e);
         }
