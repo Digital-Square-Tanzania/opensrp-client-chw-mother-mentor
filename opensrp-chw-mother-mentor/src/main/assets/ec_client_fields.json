@@ -358,6 +358,70 @@
             "field": "obs.fieldCode",
             "concept": "client_challenge_types"
           }
+        },
+        {
+          "column_name": "mwenzi_status",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_status"
+          }
+        },
+        {
+          "column_name": "mwenzi_tarehe_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_tarehe_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "mwenzi_sababu_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_sababu_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_amekataa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_amekataa"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_hajahudhuria",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_hajahudhuria"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_amesafiri",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_amesafiri"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_nyingine",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_nyingine"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_hajapatikana",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_hajapatikana"
+          }
         }
       ]
     },
@@ -727,6 +791,54 @@
           "json_mapping": {
             "field": "version"
           }
+        },
+        {
+          "column_name": "kaya_status",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_status"
+          }
+        },
+        {
+          "column_name": "kaya_tarehe_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_tarehe_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "kaya_sababu_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_sababu_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "kaya_counter_nyumba_imefungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_counter_nyumba_imefungwa"
+          }
+        },
+        {
+          "column_name": "kaya_counter_nyingine",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_counter_nyingine"
+          }
+        },
+        {
+          "column_name": "kaya_counter_haijapatikana",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "kaya_counter_haijapatikana"
+          }
         }
       ]
     },
@@ -937,6 +1049,240 @@
           "json_mapping": {
             "field": "obs.fieldCode",
             "concept": "maoni"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ec_mothermentor_enroll_partner",
+      "columns": [
+        {
+          "column_name": "entity_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "baseEntityId"
+          }
+        },
+        {
+          "column_name": "base_entity_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "baseEntityId"
+          }
+        },
+        {
+          "column_name": "relational_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "relational_id"
+          }
+        },
+        {
+          "column_name": "mother_base_entity_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mother_base_entity_id"
+          }
+        },
+        {
+          "column_name": "partner_name",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_name"
+          }
+        },
+        {
+          "column_name": "partner_sex",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_sex"
+          }
+        },
+        {
+          "column_name": "partner_dob",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_dob"
+          }
+        },
+        {
+          "column_name": "partner_phone_number",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_phone_number"
+          }
+        },
+        {
+          "column_name": "mother_name",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mother_name"
+          }
+        },
+        {
+          "column_name": "mother_ctc_number",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mother_ctc_number"
+          }
+        },
+        {
+          "column_name": "relationship_to_mother",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "relationship_to_mother"
+          }
+        },
+        {
+          "column_name": "other_relationship",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "other_relationship"
+          }
+        },
+        {
+          "column_name": "hiv_disclosure",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "hiv_disclosure"
+          }
+        },
+        {
+          "column_name": "hiv_tested",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "hiv_tested"
+          }
+        },
+        {
+          "column_name": "test_result",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "test_result"
+          }
+        },
+        {
+          "column_name": "on_ctc",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "on_ctc"
+          }
+        },
+        {
+          "column_name": "partner_ctc",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_ctc"
+          }
+        },
+        {
+          "column_name": "last_interacted_with",
+          "type": "Event",
+          "json_mapping": {
+            "field": "version"
+          }
+        },
+        {
+          "column_name": "partner_linkage_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_linkage_id"
+          }
+        },
+        {
+          "column_name": "mother_pregnancy_episode_id",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mother_pregnancy_episode_id"
+          }
+        },
+        {
+          "column_name": "partner_mother_pregnant",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "partner_mother_pregnant"
+          }
+        },
+        {
+          "column_name": "mwenzi_status",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_status"
+          }
+        },
+        {
+          "column_name": "mwenzi_tarehe_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_tarehe_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "mwenzi_sababu_ya_kufungwa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_sababu_ya_kufungwa"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_amekataa",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_amekataa"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_hajahudhuria",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_hajahudhuria"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_amesafiri",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_amesafiri"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_nyingine",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_nyingine"
+          }
+        },
+        {
+          "column_name": "mwenzi_counter_hajapatikana",
+          "type": "Event",
+          "json_mapping": {
+            "field": "obs.fieldCode",
+            "concept": "mwenzi_counter_hajapatikana"
           }
         }
       ]
