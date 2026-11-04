@@ -71,22 +71,53 @@ public final class MotherMentorHeiSchedule {
             return Collections.emptyList();
         }
         Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        List<Stage> sampling = eligibleForSampling(dob, cessation, history, assessment);
         List<Stage> due = new ArrayList<>();
         for (Stage stage : Stage.values()) {
             TestRecord result = history.get(stage);
-            if (result != null) {
-                // Review outstanding results even if the ordinary testing age window has passed.
-                if (result.requiresFollowUp()) due.add(stage);
-                continue;
-            }
-            LocalDate date = dueDate(stage, dob, cessation);
-            if (date == null || date.isAfter(assessment)) continue;
-            if (stage == Stage.SIX_WEEKS && !assessment.isBefore(dob.plusMonths(9))) continue;
-            if ((stage == Stage.NINE_MONTHS || stage == Stage.AFTER_WEANING)
-                    && !assessment.isBefore(dob.plusMonths(18))) continue;
-            due.add(stage);
+            // Result review is different from taking another sample for the same stage.
+            if (sampling.contains(stage) || result != null && result.requiresFollowUp()) due.add(stage);
         }
         return Collections.unmodifiableList(due);
+    }
+
+    public static List<Stage> eligibleForSampling(LocalDate dob, LocalDate cessation,
+            Map<Stage, TestRecord> tests, LocalDate assessment) {
+        if (dob == null || assessment == null || dob.isAfter(assessment)) {
+            return Collections.emptyList();
+        }
+        Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        List<Stage> eligible = new ArrayList<>();
+        for (Stage stage : Stage.values()) {
+            if (history.containsKey(stage) || !inAgeWindow(stage, dob, assessment)) continue;
+            LocalDate date = dueDate(stage, dob, cessation);
+            if (date != null && !date.isAfter(assessment)) eligible.add(stage);
+        }
+        return Collections.unmodifiableList(eligible);
+    }
+
+    public static Stage next(LocalDate dob, LocalDate cessation,
+            Map<Stage, TestRecord> tests, LocalDate assessment) {
+        if (dob == null || assessment == null || dob.isAfter(assessment)) return null;
+        Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        Stage next = null;
+        LocalDate earliest = null;
+        for (Stage stage : Stage.values()) {
+            if (history.containsKey(stage)) continue;
+            LocalDate date = dueDate(stage, dob, cessation);
+            if (date == null || !date.isAfter(assessment) || !inAgeWindow(stage, dob, date)) continue;
+            if (earliest == null || date.isBefore(earliest)) {
+                next = stage;
+                earliest = date;
+            }
+        }
+        return next;
+    }
+
+    private static boolean inAgeWindow(Stage stage, LocalDate dob, LocalDate assessment) {
+        if (stage == Stage.SIX_WEEKS) return assessment.isBefore(dob.plusMonths(9));
+        return stage != Stage.NINE_MONTHS && stage != Stage.AFTER_WEANING
+                || assessment.isBefore(dob.plusMonths(18));
     }
 
     public static LocalDate dueDate(Stage stage, LocalDate dob, LocalDate cessation) {
