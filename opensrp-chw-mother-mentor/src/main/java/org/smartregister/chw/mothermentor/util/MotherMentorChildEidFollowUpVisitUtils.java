@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 
@@ -46,6 +47,8 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
     }
 
     public static boolean isComplete(Map<String, String> values, boolean childSchema) {
+        // Schema3 tracing needs the registered child's birth date and the service day.
+        if (MotherMentorChildEidStatusUtils.isSchema3(values)) return false;
         String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
         if (!matches(
                 status,
@@ -88,6 +91,14 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
                     values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE));
         }
         return complete;
+    }
+
+    /** Current tracing validation; the HEI referral part supplies found/alive completion. */
+    public static boolean isComplete(Map<String, String> values, boolean childSchema,
+            LocalDate dob, LocalDate serviceDate) {
+        if (!MotherMentorChildEidStatusUtils.isSchema3(values)) return isComplete(values, childSchema);
+        return childSchema && MotherMentorChildEidStatusUtils.isStatusComplete(values, dob, serviceDate)
+                && !MotherMentorChildEidStatusUtils.isFoundAlive(values);
     }
 
     public static boolean isFinalTestComplete(String done, String result, String date) {

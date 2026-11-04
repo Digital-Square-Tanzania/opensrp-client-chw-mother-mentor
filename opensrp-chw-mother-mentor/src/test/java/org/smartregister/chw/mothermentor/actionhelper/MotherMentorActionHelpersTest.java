@@ -218,10 +218,11 @@ public class MotherMentorActionHelpersTest {
                         DBConstants.KEY.PARTNER_FACILITY_AGREEMENT, "agreed");
             }
             assertStatus(helper, found, true);
-            // Partner callbacks run after action post-processing, rather than on raw JSON.
-            if (partner) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
+            // Category-specific callbacks run after action post-processing.
+            boolean deferred = partner || helper instanceof MotherMentorChildEidFollowUpStatusActionHelper;
+            if (deferred) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
             assertStatus(helper, (String) null, false);
-            if (partner) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
+            if (deferred) helper.onPayloadReceived(mock(BaseMotherMentorVisitAction.class));
         }
         assertEquals(6, callbacks[0]);
     }

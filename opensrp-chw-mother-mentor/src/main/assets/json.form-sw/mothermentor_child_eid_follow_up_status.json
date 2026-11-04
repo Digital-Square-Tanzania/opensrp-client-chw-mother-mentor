@@ -1,1 +1,243 @@
-{"count":"1","skip_blank_steps":true,"encounter_type":"Mother Mentor Child EID Follow-up Status","entity_id":"","metadata":{"start":{"openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_data_type":"start","openmrs_entity_id":"start"},"end":{"openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_data_type":"end","openmrs_entity_id":"end"},"today":{"openmrs_entity_parent":"","openmrs_entity":"encounter","openmrs_entity_id":"encounter_date"},"encounter_location":""},"global":{},"step1":{"title":"Hali ya ufuatiliaji","fields":[{"key":"follow_up_status","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"follow_up_status","label":"Hali ya ufuatiliaji","type":"native_radio","options":[{"key":"found","text":"Amepatikana","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"found"},{"key":"not_found","text":"Hajapatikana","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"not_found"},{"key":"deceased","text":"Amefariki","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"deceased"},{"key":"transferred_facility","text":"Amehamia kituo kingine","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"transferred_facility"},{"key":"refused_return","text":"Amekataa kurudi","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"refused_return"},{"key":"under_follow_up","text":"Bado anafuatiliwa","openmrs_entity_parent":"","openmrs_entity":"concept","openmrs_entity_id":"under_follow_up"}],"v_required":{"value":"true","err":"Jibu linahitajika"}}]}}
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Child EID Follow-up Status",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Hali ya Ufuatiliaji",
+    "fields": [
+      {
+        "key": "child_eid_follow_up_schema",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "child_eid_follow_up_schema",
+        "value": "3"
+      },
+      {
+        "key": "child_dob",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_dob",
+        "value": ""
+      },
+      {
+        "key": "follow_up_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_status",
+        "label": "Hali ya Ufuatiliaji",
+        "options": [
+          {
+            "key": "found",
+            "text": "Amepatikana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Hajapatikana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        }
+      },
+      {
+        "key": "mama_child_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_status",
+        "label": "Hali ya mtoto",
+        "options": [
+          {
+            "key": "alive",
+            "text": "Mtoto yupo hai",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "alive"
+          },
+          {
+            "key": "deceased",
+            "text": "Mtoto amefariki",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_mtoto_alifariki",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_mtoto_alifariki",
+        "hint": "Tarehe mtoto alipofariki",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_alive_note",
+        "type": "toaster_notes",
+        "text": "Hifadhi; endelea na sehemu ya Kipimo cha HEI.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        },
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_alive_note"
+      },
+      {
+        "key": "mtoto_not_found_reason",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_not_found_reason",
+        "label": "Sababu ya kutopatikana",
+        "options": [
+          {
+            "key": "moved_area",
+            "text": "Amehama eneo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_area"
+          },
+          {
+            "key": "moved_facility",
+            "text": "Amehamia kituo kingine",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved_facility"
+          },
+          {
+            "key": "other",
+            "text": "Nyingine (Taja)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_moved_area_facility",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_moved_area_facility",
+        "hint": "Kituo anachohamia (hiari)",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_new_facility",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_new_facility",
+        "hint": "Jina la kituo kipya",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza jina la kituo kipya"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_not_found_reason_other",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_not_found_reason_other",
+        "hint": "Taja sababu",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali taja sababu"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_status_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

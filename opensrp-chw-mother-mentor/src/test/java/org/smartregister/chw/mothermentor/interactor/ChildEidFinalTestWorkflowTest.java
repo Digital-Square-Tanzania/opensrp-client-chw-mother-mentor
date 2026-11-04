@@ -88,7 +88,10 @@ public class ChildEidFinalTestWorkflowTest {
     public void swahiliFinalTestIsOnlyShownAtEighteenMonthsAndClearsWhenBranchChanges() throws Exception { branches(); }
 
     private void branches() throws Exception {
-        ChildEidFollowUpVisitInteractor i = new ChildEidFollowUpVisitInteractor("Mother Mentor Child EID Follow Up");
+        ChildEidFollowUpVisitInteractor i = new ChildEidFollowUpVisitInteractor("Mother Mentor Child EID Follow Up") {
+            @Override protected boolean useLegacyWorkflow() { return true; }
+            @Override protected boolean usesFinalTestSection() { return true; }
+        };
         AppExecutors executors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
         i.appExecutors = executors;
         ((BaseMotherMentorVisitInteractor) i).appExecutors = executors;
@@ -120,7 +123,7 @@ public class ChildEidFinalTestWorkflowTest {
     }
 
     private BaseMotherMentorVisitAction action(String name) {
-        for (BaseMotherMentorVisitAction a : actions.values()) if (name.equals(a.getFormName())) return a;
+        for (BaseMotherMentorVisitAction a : actions.values()) if (name.equals(a.getFormName()) || (name + "_legacy").equals(a.getFormName())) return a;
         throw new AssertionError("Missing action " + name);
     }
     private void answer(String name, String... pairs) throws Exception {
