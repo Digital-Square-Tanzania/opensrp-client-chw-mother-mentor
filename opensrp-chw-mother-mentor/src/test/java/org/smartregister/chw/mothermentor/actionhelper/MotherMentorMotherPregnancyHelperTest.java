@@ -71,6 +71,25 @@ public class MotherMentorMotherPregnancyHelperTest {
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
     }
 
+    @Test
+    public void unavailablePregnancyHistoryRetainsAlreadyPreparedAttendance() throws Exception {
+        for (String locale : new String[] {"json.form", "json.form-sw"}) {
+            JSONObject form = form(locale);
+            set(form, ATTENDANCE_TYPE, "repeat");
+            MotherMentorVisitTypeActionHelper helper = new MotherMentorVisitTypeActionHelper(null) {
+                @Override protected Map<String, String> loadEnrollmentValues() { return Collections.emptyMap(); }
+                @Override protected MotherMentorMotherVisitDao.Context loadMotherContext() {
+                    throw new IllegalStateException("Enrollment context unavailable");
+                }
+            };
+            helper.onJsonFormLoaded(form.toString(), RuntimeEnvironment.getApplication(), Collections.emptyMap());
+            JSONObject prepared = new JSONObject(helper.getPreProcessed());
+            assertEquals("repeat", MotherMentorMotherPregnancyUtils.values(prepared).get(ATTENDANCE_TYPE));
+            assertTrue(com.vijay.jsonwizard.utils.FormUtils.getFieldFromForm(prepared, ATTENDANCE_TYPE)
+                    .getBoolean("read_only"));
+        }
+    }
+
     private MotherMentorVisitTypeActionHelper helper(String pregnancy, String dob) {
         return new MotherMentorVisitTypeActionHelper(null) {
             @Override protected MotherMentorMotherVisitDao.Context loadMotherContext() {

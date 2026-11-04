@@ -100,6 +100,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                     field.put(JsonFormConstants.VALUE, value);
                 }
             }
+            try {
             if (MotherMentorMotherPregnancyUtils.values(form)
                     .containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) {
                 MotherMentorMotherVisitDao.Context original = loadMotherContext();
@@ -108,6 +109,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                         original.getEnrollmentPregnancyStatus(), previous.getOrDefault(
                                 DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, original.getEnrollmentChildDob()),
                         previous, StringUtils.isNotBlank(currentVisitId));
+            }
+            } catch (Exception unavailable) {
+                Timber.w(unavailable, "Unable to prepare the mother pregnancy assessment");
             }
             return form.toString();
         } catch (Exception e) {
