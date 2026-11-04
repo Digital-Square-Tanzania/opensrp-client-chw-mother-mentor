@@ -32,11 +32,22 @@ public final class MotherMentorHeiSchedule {
         }
 
         public String getCode() { return code; }
+        public String getMetadataCode() {
+            switch (this) {
+                case SIX_WEEKS: return "wiki6";
+                case NINE_MONTHS: return "miezi9";
+                case AFTER_WEANING: return "miezi15";
+                case EIGHTEEN_MONTHS: return "miezi18";
+                default: throw new IllegalStateException("Unknown HEI stage");
+            }
+        }
         public String getResultKey() { return resultKey; }
         public String getDateKey() { return dateKey; }
 
         public static Stage fromCode(String code) {
-            for (Stage stage : values()) if (stage.code.equals(code)) return stage;
+            for (Stage stage : values()) {
+                if (stage.code.equals(code) || stage.getMetadataCode().equals(code)) return stage;
+            }
             return null;
         }
     }
