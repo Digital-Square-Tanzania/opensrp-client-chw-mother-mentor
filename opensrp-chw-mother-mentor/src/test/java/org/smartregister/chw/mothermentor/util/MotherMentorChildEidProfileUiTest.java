@@ -64,8 +64,10 @@ public class MotherMentorChildEidProfileUiTest {
         Activity activity = screen();
         MotherMentorChildEidProfileUi ui = new MotherMentorChildEidProfileUi();
         MotherMentorChildEidRepository.State child = state(true);
-        ui.bind(activity, child, identity(), day, null);
         TextView cta = text(activity, R.id.textview_record_mothermentor);
+        cta.setVisibility(View.GONE);
+        ui.bind(activity, child, identity(), day, null);
+        assertEquals(View.VISIBLE, cta.getVisibility());
         assertFalse(cta.isEnabled());
         LinearLayout parent = (LinearLayout) cta.getParent();
         View banner = parent.getChildAt(parent.indexOfChild(cta) + 1);

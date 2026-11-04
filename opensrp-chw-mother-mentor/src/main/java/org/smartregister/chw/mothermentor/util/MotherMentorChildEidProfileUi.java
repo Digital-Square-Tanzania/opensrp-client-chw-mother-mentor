@@ -67,6 +67,7 @@ public final class MotherMentorChildEidProfileUi {
         text(R.id.mothermentor_eid_profile_reason_title).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);
         button.setText(R.string.mothermentor_eid_record_visit);
         if (child.isClosed()) {
+            button.setVisibility(View.VISIBLE);
             button.setEnabled(false);
             button.setAlpha(0.5f);
         }
