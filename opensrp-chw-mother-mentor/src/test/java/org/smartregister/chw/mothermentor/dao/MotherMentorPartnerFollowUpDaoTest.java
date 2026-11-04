@@ -25,6 +25,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.repository.Repository;
@@ -54,7 +55,9 @@ public class MotherMentorPartnerFollowUpDaoTest {
         create("event", EVENT_FORM_SUBMISSION_ID, EVENT_JSON);
         create(Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER,
                 BASE_ENTITY_ID, MOTHER_BASE_ENTITY_ID, PARTNER_LINKAGE_ID, IS_CLOSED,
-                LAST_INTERACTED_WITH);
+                LAST_INTERACTED_WITH, MWENZI_STATUS, MWENZI_TAREHE_YA_KUFUNGWA,
+                MWENZI_SABABU_YA_KUFUNGWA, MWENZI_COUNTER_AMEKATAA, MWENZI_COUNTER_HAJAHUDHURIA,
+                MWENZI_COUNTER_AMESAFIRI, MWENZI_COUNTER_NYINGINE, MWENZI_COUNTER_HAJAPATIKANA);
         create(Constants.TABLES.MOTHERMENTOR_ENROLLMENT,
                 BASE_ENTITY_ID, PREGNANCY_STATUS, MOTHER_PREGNANCY_EPISODE_ID,
                 IS_CLOSED, LAST_INTERACTED_WITH);
@@ -72,7 +75,9 @@ public class MotherMentorPartnerFollowUpDaoTest {
                 PARTNER_SYPHILIS_RESULT, PARTNER_SYPHILIS_NOT_TESTED_REASON,
                 PARTNER_SYPHILIS_NOT_TESTED_REASON_OTHER, PARTNER_HEPATITIS_B_TESTED,
                 PARTNER_HEPATITIS_B_RESULT, PARTNER_HEPATITIS_B_NOT_TESTED_REASON,
-                PARTNER_HEPATITIS_B_NOT_TESTED_REASON_OTHER);
+                PARTNER_HEPATITIS_B_NOT_TESTED_REASON_OTHER, MWENZI_STATUS, MWENZI_TAREHE_YA_KUFUNGWA,
+                MWENZI_SABABU_YA_KUFUNGWA, MWENZI_COUNTER_AMEKATAA, MWENZI_COUNTER_HAJAHUDHURIA,
+                MWENZI_COUNTER_AMESAFIRI, MWENZI_COUNTER_NYINGINE, MWENZI_COUNTER_HAJAPATIKANA);
         MotherMentorLibrary library = mock(MotherMentorLibrary.class);
         Repository repository = mock(Repository.class);
         cipher = mock(net.zetetic.database.sqlcipher.SQLiteDatabase.class);
@@ -81,6 +86,9 @@ public class MotherMentorPartnerFollowUpDaoTest {
         when(repository.getReadableDatabase()).thenReturn(cipher);
         when(cipher.rawQuery(anyString(), any(String[].class)))
                 .thenAnswer(call -> data.rawQuery(call.getArgument(0), call.getArgument(1)));
+        when(cipher.update(anyString(), any(ContentValues.class), anyString(), any(String[].class)))
+                .thenAnswer(call -> data.update(call.getArgument(0), call.getArgument(1),
+                        call.getArgument(2), call.getArgument(3)));
         enroll("link-one");
         insert(Constants.TABLES.MOTHERMENTOR_ENROLLMENT, map(BASE_ENTITY_ID, "mother",
                 PREGNANCY_STATUS, "pregnant", MOTHER_PREGNANCY_EPISODE_ID, "maternal-enrollment",
@@ -95,11 +103,11 @@ public class MotherMentorPartnerFollowUpDaoTest {
     }
 
     @Test
-    public void completionExpiresAtLocalMidnightAndCannotCloseAFutureLinkage() throws Exception {
+    public void qualifyingCompletionClosesImmediatelyAndCannotCloseAFutureLinkage() throws Exception {
         addVisit("complete", "28-10-2026", true, completed());
-        assertTrue(active("2026-10-28 23:59:59"));
-        assertTrue(context("2026-10-28 23:59:59").isActive());
-        assertFalse(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date("2026-10-28 23:59:59")));
+        assertFalse(active("2026-10-28 23:59:59"));
+        assertFalse(context("2026-10-28 23:59:59").isActive());
+        assertTrue(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date("2026-10-28 23:59:59")));
         assertFalse(active("2026-10-29 00:00:00"));
         assertFalse(context("2026-10-29 00:00:00").isActive());
         assertTrue(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date("2026-10-29 00:00:00")));
@@ -110,6 +118,33 @@ public class MotherMentorPartnerFollowUpDaoTest {
         assertTrue(state.isActive());
         assertEquals("link-two", state.getLinkageId());
         assertEquals("maternal-enrollment", state.getPregnancyEpisodeId());
+    }
+
+    @Test
+    public void lateImportedLegacyCompletionAgreesAcrossRegisterContextAndRelinking() throws Exception {
+        MotherMentorPartnerClosureRepository.rebuild(cipher, "partner");
+        addVisit("late-legacy", "27-10-2026", true, legacyAllNo());
+        assertFalse(active("2026-10-28 12:00:00"));
+        assertFalse(context("2026-10-28 12:00:00").isActive());
+        assertTrue(MotherMentorPartnerFollowUpDao.canLinkPartner(
+                "partner", date("2026-10-28 12:00:00")));
+        data.delete(Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER, null, null);
+        enroll("link-two");
+        MotherMentorPartnerClosureRepository.rebuild(cipher, "partner");
+        assertTrue(active("2026-10-28 12:00:00"));
+        assertTrue(context("2026-10-28 12:00:00").isActive());
+    }
+
+    @Test
+    public void auditedTodayAllNoRemainsActiveAndCannotRelinkAfterMidnight() throws Exception {
+        String today = new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(new Date());
+        String tomorrow = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+                .format(new Date(System.currentTimeMillis() + 86400000));
+        addVisit("ongoing-all-no", today, true, legacyAllNo());
+        assertTrue(active(tomorrow));
+        assertTrue(context(tomorrow).isActive());
+        assertTrue(context(tomorrow).isAttendancePending());
+        assertFalse(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date(tomorrow)));
     }
 
     @Test
@@ -291,6 +326,20 @@ public class MotherMentorPartnerFollowUpDaoTest {
                 PARTNER_HEPATITIS_B_TESTED, "yes", PARTNER_HEPATITIS_B_RESULT, "negative");
     }
 
+    private Map<String, String> legacyAllNo() {
+        Map<String, String> values = completed();
+        values.put(PARTNER_HIV_TESTED, "no");
+        values.put(PARTNER_HIV_NOT_TESTED_REASON, "refused");
+        values.remove(PARTNER_HIV_RESULT);
+        values.put(PARTNER_SYPHILIS_TESTED, "no");
+        values.put(PARTNER_SYPHILIS_NOT_TESTED_REASON, "stock_out");
+        values.remove(PARTNER_SYPHILIS_RESULT);
+        values.put(PARTNER_HEPATITIS_B_TESTED, "no");
+        values.put(PARTNER_HEPATITIS_B_NOT_TESTED_REASON, "stock_out");
+        values.remove(PARTNER_HEPATITIS_B_RESULT);
+        return values;
+    }
+
     private Map<String, String> tracingAgreement(String agreement) {
         return map(FOLLOW_UP_CATEGORY, "PARTNER", PARTNER_FOLLOW_UP_SCHEMA, "2",
                 PARTNER_LINKAGE_ID, "link-one", PARTNER_FOLLOW_UP_PHASE, "tracing",
@@ -322,6 +371,7 @@ public class MotherMentorPartnerFollowUpDaoTest {
         projection.put(BASE_ENTITY_ID, id + "-form");
         projection.put(ENTITY_ID, "partner");
         insert(Constants.TABLES.MOTHERMENTOR_FOLLOWUP_VISIT, projection);
+        MotherMentorPartnerClosureRepository.rebuild(cipher, "partner");
     }
 
     private void create(String table, String... columns) {

@@ -316,6 +316,14 @@ public final class DBConstants {
         public static final String PARTNER_NOT_FOUND_REASON = "partner_not_found_reason";
         public static final String PARTNER_NOT_FOUND_REASON_OTHER = "partner_not_found_reason_other";
         public static final String PARTNER_FOLLOW_UP_END = "partner_follow_up_end";
+        public static final String MWENZI_STATUS = "mwenzi_status";
+        public static final String MWENZI_TAREHE_YA_KUFUNGWA = "mwenzi_tarehe_ya_kufungwa";
+        public static final String MWENZI_SABABU_YA_KUFUNGWA = "mwenzi_sababu_ya_kufungwa";
+        public static final String MWENZI_COUNTER_AMEKATAA = "mwenzi_counter_amekataa";
+        public static final String MWENZI_COUNTER_HAJAHUDHURIA = "mwenzi_counter_hajahudhuria";
+        public static final String MWENZI_COUNTER_AMESAFIRI = "mwenzi_counter_amesafiri";
+        public static final String MWENZI_COUNTER_NYINGINE = "mwenzi_counter_nyingine";
+        public static final String MWENZI_COUNTER_HAJAPATIKANA = "mwenzi_counter_hajapatikana";
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
