@@ -3,6 +3,9 @@ package org.smartregister.chw.mothermentor.repository;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +16,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.repository.BaseRepository;
 
 import timber.log.Timber;
@@ -140,8 +144,53 @@ public class VisitRepository extends BaseRepository {
         }
         // Handle updated home visit details
         database.insert(VISIT_TABLE, null, createValues(visit));
+        MotherMentorPartnerClosureRepository.rebuildForVisit(database, visit);
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
+    }
+
+    /** Refresh only partner evidence on replay; other visit types keep their existing sync path. */
+    public void refreshPartnerVisit(Visit existing, Visit incoming, SQLiteDatabase database,
+            VisitDetailsRepository detailsRepository) {
+        if (existing == null || incoming == null
+                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
+                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())
+                || !MotherMentorPartnerClosureRepository.isPartnerVisit(existing)
+                || !StringUtils.equals(existing.getVisitType(), incoming.getVisitType())) return;
+        if (database == null) database = getWritableDatabase();
+        long incomingVersion = sourceVersion(incoming);
+        long existingVersion = sourceVersion(existing);
+        boolean identical = StringUtils.equals(existing.getJson(), incoming.getJson());
+        // Unversioned replays may rebuild, but cannot replace a different source payload.
+        boolean replace = !identical && incomingVersion > 0 && incomingVersion >= existingVersion;
+        boolean ownTransaction = !database.inTransaction();
+        if (ownTransaction) database.beginTransaction();
+        try {
+            if (replace) {
+                incoming.setVisitId(existing.getVisitId());
+                incoming.setCreatedAt(existing.getCreatedAt());
+                incoming.setDate(existing.getDate());
+                incoming.setParentVisitID(existing.getParentVisitID());
+                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                if (incoming.getVisitDetails() != null) {
+                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
+                        if (details == null) continue;
+                        for (VisitDetail detail : details) {
+                            detail.setVisitId(existing.getVisitId());
+                            detailsRepository.addVisitDetails(detail, database);
+                        }
+                    }
+                }
+            }
+            MotherMentorPartnerClosureRepository.rebuild(database, existing.getBaseEntityId());
+            if (ownTransaction) database.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) database.endTransaction();
+        }
+        EventBus.getDefault().post(replace ? incoming : existing);
     }
 
     /** Refresh household source evidence without changing another workflow's replay contract. */
@@ -194,6 +243,23 @@ public class VisitRepository extends BaseRepository {
         }
     }
 
+    private long sourceVersion(Visit visit) {
+        try {
+            JsonObject payload = JsonFormUtils.gson.fromJson(
+                    visit.getJson(), JsonObject.class);
+            // Event's constructor initializes a timestamp even when old JSON omits this field.
+            if (payload == null || !payload.has("version") || payload.get("version").isJsonNull()) {
+                return 0;
+            }
+            org.smartregister.domain.Event event =
+                    JsonFormUtils.gson.fromJson(visit.getJson(), org.smartregister.domain.Event.class);
+            Long version = event == null ? null : event.getVersion();
+            return version == null ? 0 : Math.max(0, version);
+        } catch (JsonParseException invalid) {
+            return 0;
+        }
+    }
+
     public String getParentVisitEventID(
             String baseEntityID, String parentEventType, Date eventDate) {
         if (StringUtils.isBlank(baseEntityID)
@@ -241,14 +307,22 @@ public class VisitRepository extends BaseRepository {
     public void deleteVisit(String visitID) {
         try {
             SQLiteDatabase database = getWritableDatabase();
-            Set<String> households = MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID);
+            Set<String> households =
+                    MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID);
+            Set<String> affectedPartners =
+                    MotherMentorPartnerClosureRepository.affectedPartners(database, visitID);
             database.delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
             database
                     .delete(
                             VisitDetailsRepository.VISIT_DETAILS_TABLE,
                             VISIT_ID + "= ?",
                             new String[] {visitID});
-            for (String household : households) MotherMentorHouseholdClosureRepository.rebuild(database, household);
+            for (String household : households) {
+                MotherMentorHouseholdClosureRepository.rebuild(database, household);
+            }
+            for (String partner : affectedPartners) {
+                MotherMentorPartnerClosureRepository.rebuild(database, partner);
+            }
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -260,9 +334,13 @@ public class VisitRepository extends BaseRepository {
             ContentValues values = new ContentValues();
             values.put(PROCESSED, 1);
             values.put(PRE_PROCESSED, "");
-            database.update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            database
+                    .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
             for (String household : MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID)) {
                 MotherMentorHouseholdClosureRepository.rebuild(database, household);
+            }
+            for (String partner : MotherMentorPartnerClosureRepository.affectedPartners(database, visitID)) {
+                MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
         } catch (Exception e) {
             Timber.e(e);

@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
+import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -33,8 +34,6 @@ import org.smartregister.repository.AllSharedPreferences;
 import org.smartregister.repository.BaseRepository;
 import org.smartregister.sync.ClientProcessorForJava;
 import org.smartregister.sync.helper.ECSyncHelper;
-
-import timber.log.Timber;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -47,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import timber.log.Timber;
 
 
 public class NCUtils {
@@ -311,6 +312,10 @@ public class NCUtils {
                         }
                     }
                 }
+            } else if (MotherMentorPartnerClosureRepository.isPartnerVisit(visit)) {
+                MotherMentorLibrary.getInstance().visitRepository().refreshPartnerVisit(
+                        visit, eventToVisit(baseEvent.getEvent()), database,
+                        MotherMentorLibrary.getInstance().visitDetailsRepository());
             } else if (MotherMentorHouseholdClosureRepository.isHouseholdVisit(visit)) {
                 MotherMentorLibrary.getInstance().visitRepository().refreshHouseholdVisit(
                         visit, eventToVisit(baseEvent.getEvent()), database,
