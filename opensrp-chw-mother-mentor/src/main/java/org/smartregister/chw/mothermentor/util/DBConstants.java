@@ -9,6 +9,17 @@ public final class DBConstants {
 
         public static final String MOTHERMENTOR_CURRENT_STATUS = "mothermentor_current_status";
         public static final String MOTHERMENTOR_COMPLETED_VISITS = "mothermentor_completed_visits";
+        public static final String MAMA_STATUS = "mama_status";
+        public static final String MAMA_TAREHE_YA_KUFUNGWA = "mama_tarehe_ya_kufungwa";
+        public static final String MAMA_SABABU_YA_KUFUNGWA = "mama_sababu_ya_kufungwa";
+        public static final String MAMA_COUNTER_NYINGINE = "mama_counter_nyingine";
+        // Durable ownership for reversible cross-module closure projections.
+        public static final String MAMA_CASCADE_TARGET_TABLE = "mama_cascade_target_table";
+        public static final String MAMA_CASCADE_TARGET_ID = "mama_cascade_target_id";
+        public static final String MAMA_CASCADE_TARGET_ENROLLMENT_ID = "mama_cascade_target_enrollment_id";
+        public static final String MAMA_CASCADE_PREVIOUS_VALUES = "mama_cascade_previous_values";
+        public static final String MAMA_CASCADE_APPLIED_VALUES = "mama_cascade_applied_values";
+        public static final String MAMA_CASCADE_CLAIMS = "mama_cascade_claims";
         public static final String FIRST_NAME = "first_name";
         public static final String MIDDLE_NAME = "middle_name";
         public static final String LAST_NAME = "last_name";

@@ -19,12 +19,15 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 
 import timber.log.Timber;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -186,7 +189,24 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private boolean shouldShowFullVisitActions() {
-        return entrySaved && MotherMentorMotherVisitUtils.isFullVisit(entryValues());
+        if (!entrySaved) return false;
+        Map<String, String> values = new HashMap<>(entryValues());
+        if (!MotherMentorMotherVisitUtils.isSchema2(values)) {
+            return MotherMentorMotherVisitUtils.isFullVisit(values);
+        }
+        if (StringUtils.isBlank(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
+                && details != null && details.containsKey(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE)
+                && !details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).isEmpty()) {
+            values.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
+                    details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).get(0).getDetails());
+        }
+        if (StringUtils.isBlank(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
+                && StringUtils.isBlank(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE))
+                && serviceDate != null) {
+            values.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
+                    new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
+        }
+        return MotherMentorMotherClosureRepository.outcome(values) == VisitOutcome.CONTINUE;
     }
 
     private Map<String, String> entryValues() {

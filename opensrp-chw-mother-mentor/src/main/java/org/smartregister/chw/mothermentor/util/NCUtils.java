@@ -314,10 +314,6 @@ public class NCUtils {
                         }
                     }
                 }
-            } else if (org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository.isMotherVisit(visit)) {
-                Visit incoming = eventToVisit(baseEvent.getEvent());
-                MotherMentorLibrary.getInstance().visitRepository().refreshMotherVisit(
-                        visit, incoming, database, MotherMentorLibrary.getInstance().visitDetailsRepository());
             } else if (MotherMentorPartnerClosureRepository.isPartnerVisit(visit)) {
                 MotherMentorLibrary.getInstance().visitRepository().refreshPartnerVisit(
                         visit, eventToVisit(baseEvent.getEvent()), database,
@@ -326,6 +322,11 @@ public class NCUtils {
                 MotherMentorLibrary.getInstance().visitRepository().refreshHouseholdVisit(
                         visit, eventToVisit(baseEvent.getEvent()), database,
                         MotherMentorLibrary.getInstance().visitDetailsRepository());
+            }
+            if (org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository.isMotherVisit(visit)) {
+                Visit incoming = eventToVisit(baseEvent.getEvent());
+                MotherMentorLibrary.getInstance().visitRepository().refreshMotherVisit(
+                        visit, incoming, database, MotherMentorLibrary.getInstance().visitDetailsRepository());
             }
             if (org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository
                     .isChildEidVisit(visit)) {
@@ -337,6 +338,12 @@ public class NCUtils {
             org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository
                     .rebuildForVisit(database == null ? MotherMentorLibrary.getInstance()
                             .getRepository().getWritableDatabase() : database, visit);
+            Visit canonical = MotherMentorLibrary.getInstance().visitRepository()
+                    .getVisitByFormSubmissionID(baseEvent.getEvent().getFormSubmissionId());
+            org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository
+                    .rebuildForVisit(database == null ? MotherMentorLibrary.getInstance()
+                            .getRepository().getWritableDatabase() : database,
+                            canonical == null ? visit : canonical);
         } catch (JSONException e) {
             Timber.e(e);
         }

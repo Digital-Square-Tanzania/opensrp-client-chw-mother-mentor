@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_mother_closed">Imefungwa</string>
+    <string name="mothermentor_mother_filter_closed">Waliofungwa</string>
+    <string name="mothermentor_mother_closed_message">Kadi hii imefungwa; haiwezi kurekodiwa tena.</string>
+    <string name="mothermentor_mother_closed_banner">%1$s — kadi imefungwa. %2$s</string>
+    <string name="mothermentor_mother_close_title">Thibitisha kufunga kadi</string>
+    <string name="mothermentor_mother_close_message">Je, una uhakika? Kadi ya mteja itafungwa na haitaonekana tena kwenye orodha ya wapokea huduma.</string>
+    <string name="mothermentor_mother_close_confirm">Ndiyo, Funga</string>
+    <string name="mothermentor_mother_close_cancel">Ghairi</string>
+    <string name="mothermentor_mother_status_active">Hai</string>
+    <string name="mothermentor_mother_status_deceased">Amefariki</string>
+    <string name="mothermentor_mother_status_moved_area">Amehama eneo</string>
+    <string name="mothermentor_mother_status_moved_facility">Amehama kituo</string>
+    <string name="mothermentor_mother_status_not_found_other_3">Hajapatikana — Nyingine mara 3+</string>
+    <string name="mothermentor_mother_status_pregnancy_loss">Mimba imeharibika</string>
+    <string name="mothermentor_mother_status_stillbirth">Mtoto kuzaliwa mfu</string>
+    <string name="mothermentor_mother_status_pregnancy_ended_other">Ujauzito umeisha — Nyingine</string>
+    <string name="mothermentor_mother_status_child_deceased">Mtoto amefariki</string>
+    <string name="mothermentor_mother_status_child_confirmed_positive">Mtoto amethibitika VVU — hastahili</string>
+    <string name="mothermentor_mother_status_graduated">Amehitimu — mtoto ana majibu ya mwisho</string>
+    <string name="mothermentor_mother_close_note_deceased">Kadi ya Mama itafungwa kwa Amefariki. Kaya itafungwa tu kama hakuna mtoto hai wala Mama mwingine anayestahili.</string>
+    <string name="mothermentor_mother_close_note_moved_area">Kadi ya Mama itafungwa kwa Amehama eneo. Kituo anachohamia kikijazwa kitahifadhiwa kwa uhamisho.</string>
+    <string name="mothermentor_mother_close_note_moved_facility">Kadi ya Mama itafungwa kwa uhamisho kwenda kituo kilichorekodiwa.</string>
+    <string name="mothermentor_mother_close_note_not_found_other_3">Ziara tatu mfululizo za Hajapatikana — Nyingine zitafunga kadi hii. Sababu iliyoandikwa itahifadhiwa.</string>
+    <string name="mothermentor_mother_close_note_pregnancy_loss">Kadi ya Mama itafungwa kwa Mimba imeharibika iliyorekodiwa.</string>
+    <string name="mothermentor_mother_close_note_stillbirth">Kadi ya Mama itafungwa kwa Mtoto kuzaliwa mfu kulikorekodiwa.</string>
+    <string name="mothermentor_mother_close_note_pregnancy_ended_other">Kadi ya Mama itafungwa kwa Ujauzito umeisha — Nyingine. Maelezo yaliyoandikwa yatahifadhiwa.</string>
+    <string name="mothermentor_mother_close_note_child_deceased">Mtoto amefariki. Kadi ya Mama na ufuatiliaji wa Mtoto EID uliounganishwa vitafungwa. Kaya itafungwa kama hakuna Mama mwingine anayestahili.</string>
+    <string name="mothermentor_mother_close_note_child_confirmed_positive">Mtoto ana majibu chanya ya VVU yaliyothibitishwa. Mama hastahili kuendelea; hakikisha mtoto ameunganishwa na huduma za CTC.</string>
+    <string name="mothermentor_mother_close_note_graduated">Kipimo cha mwisho cha mtoto cha miezi 18 ni hasi. Mama amehitimu na ufuatiliaji wa Mtoto EID uliounganishwa utafungwa.</string>
+</resources>

@@ -35,6 +35,21 @@
                 android:textSize="14.5sp" />
 
             <TextView
+                android:id="@+id/mama_kinara_client_closed_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:background="@color/mama_kinara_divider"
+                android:text="@string/mothermentor_mother_closed"
+                android:textColor="@color/mama_kinara_secondary"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/mama_kinara_client_metadata"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
