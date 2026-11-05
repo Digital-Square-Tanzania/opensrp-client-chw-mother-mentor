@@ -6,6 +6,15 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.19-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Use one routine Mother visit schema for entry, editing, history, and completion.
+- Capture pregnancy outcomes, child assessments and HEI results, and card closure
+  from the same workflow while preserving enrollment and service-date evidence.
+- Increment the library to `0.1.19-SNAPSHOT` / Android code 20.
+
 ### Changed
 
 - Rephrase partner facility attendance labels in English and Swahili, including
