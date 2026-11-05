@@ -8,6 +8,31 @@ Android version code.
 
 ### Changed
 
+- Rephrase partner facility attendance labels in English and Swahili, including
+  history labels, and remove first-visit qualifiers from the attendance questions.
+  Retain the Swahili attendance form title, "Mahudhurio kituoni" (CHW #1128).
+
+## 0.1.17-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Offer three household visit purposes, require an explanation for Other, and
+  display legacy choices without rewriting recorded answers (CHW #1131).
+- Increment the library to `0.1.17-SNAPSHOT` / Android code 18.
+
+## 0.1.16-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Capture household counselling participants by role and calculate the total (CHW #1133).
+- Keep the original counselling form for existing drafts and retain aggregate history.
+- Use Mwenzi in Mother Mentor Swahili labels, including historical answers.
+- Increment the library to `0.1.16-SNAPSHOT` / Android code 17.
+
+## 0.1.15-SNAPSHOT — 2026-11-04
+
+### Changed
+
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).
 - Increment the library to `0.1.15-SNAPSHOT` / Android code 16 for the shared eligibility API.
 
@@ -15,6 +40,20 @@ Android version code.
 
 ### Added
 
+- Add the mother visit pregnancy outcome branches in English and Swahili, including
+  strict delivery/loss dates, immutable enrollment context, and branch clearing.
+- Rebuild current delivery date, child DOB and pregnancy status from finalized
+  visit evidence through an explicit database-63 migration API; retain raw history.
+- Refresh routine mother evidence on source replay and rebuild delivery projections
+  after finalized insert, completion, correction, deletion and enrollment processing.
+- Add the mother's child-status, breastfeeding and serial HEI-test questions to
+  the existing routine-visit action in English and Swahili (#1142).
+- Calculate calendar-based due stages, retain pending/unconfirmed results, and
+  rebuild the current enrollment's child state from finalized visit history.
+- Read dated results from an unambiguously linked existing Child EID client;
+  automatic enrollment and grace-period classification remain outside this change.
+- Expose explicit database-64/fresh-schema migration and native wizard adapters
+  for the host app. This change depends on Mother visit Parts 1 and 2.
 - Close household follow-up after confirmed relocation or consecutive unsuccessful
   visits, rebuilding the current enrollment's counters from finalized visit evidence.
 - Provide localized closure confirmation, reasons, dates and active/closed register
@@ -47,6 +86,14 @@ Android version code.
 - Place optional partner tracing comments last in the English and Swahili
   follow-up status forms, after the selected agreement or missing-person reason.
   Keep the separate comments action for facility-attendance visits (CHW #1125).
+- Reorganize mother service visit entry in English and Swahili: show attendance
+  and optional comments first, then show services for a new or found client.
+- Capture the four nested reasons when a returning mother is not found and clear
+  inapplicable answers.
+- Ask new-client ART initiation in group linkage while preserving the original
+  field codes, previous-initiation rule, and read-only returning attendance.
+- Provide enrollment-scoped, deduplicated mother visit context and clinical-day
+  history for subsequent mother workflow sections.
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 

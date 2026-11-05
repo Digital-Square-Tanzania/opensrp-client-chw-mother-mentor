@@ -114,10 +114,8 @@ public final class MotherMentorMotherClosureRepository {
                 .thenComparingLong(item -> item.order).thenComparing(item -> item.id));
         for (Evidence item : evidence) {
             Map<String, String> values = new HashMap<>(item.values);
-            if (MotherMentorMotherVisitUtils.isSchema2(values)) {
-                values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
-                values.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
-            }
+            values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
+            values.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
             VisitOutcome outcome = item.outcome == null ? classify(values, item.date) : item.outcome;
             state = state.advance(outcome, item.date.toString(),
                     value(values, outcome == VisitOutcome.PREGNANCY_ENDED_OTHER
@@ -145,15 +143,6 @@ public final class MotherMentorMotherClosureRepository {
     public static VisitOutcome classify(Map<String, String> values, LocalDate date) {
         if (values == null || date == null || date.isAfter(LocalDate.now())
                 || !MotherMentorMotherVisitUtils.isEntryComplete(values)) return null;
-        if (!MotherMentorMotherVisitUtils.isSchema2(values)) {
-            String status = value(values, FOLLOW_UP_STATUS);
-            if ("deceased".equals(status)) return VisitOutcome.DECEASED;
-            if ("relocated".equals(status)) return VisitOutcome.MOVED_AREA;
-            if ("transferred".equals(status) || "transferred_to_another_facility".equals(status)) {
-                return VisitOutcome.MOVED_FACILITY;
-            }
-            return VisitOutcome.CONTINUE;
-        }
         if ("new".equals(value(values, ATTENDANCE_TYPE))) return VisitOutcome.CONTINUE;
         if ("not_found".equals(value(values, FOLLOW_UP_STATUS))) {
             switch (value(values, MAMA_NOT_FOUND_REASON)) {
@@ -243,7 +232,7 @@ public final class MotherMentorMotherClosureRepository {
 
     public static void rebuildForVisit(SQLiteDatabase db, Visit visit) {
         if (visit == null || !Boolean.TRUE.equals(visit.getProcessed())) return;
-        if (Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType())) {
+        if (MotherMentorMotherDeliveryRepository.isMotherVisit(visit)) {
             rebuild(db, visit.getBaseEntityId());
         } else if (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(visit.getVisitType())) {
             rebuildForChild(db, visit.getBaseEntityId());

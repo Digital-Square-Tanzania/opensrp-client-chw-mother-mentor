@@ -33,7 +33,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_education_provided",
         "type": "native_radio",
-        "label": "Mwenza amepewa elimu ya afya?",
+        "label": "Mwenzi amepewa elimu ya afya?",
         "v_required": {
           "value": true,
           "err": "Tafadhali chagua jibu"

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_household_counselling_legacy_format">Legacy counselling format</string>
+    <string name="mothermentor_history_household_members_found">Household members found (legacy format)</string>
+    <string name="mothermentor_history_counselled_male">Men/boys counselled (legacy format)</string>
+    <string name="mothermentor_history_counselled_female">Women/girls counselled (legacy format)</string>
+    <string name="mothermentor_household_counselling_legacy_total">Total counselled (legacy format)</string>
+    <string name="mothermentor_history_mwenza">Partner</string>
+</resources>

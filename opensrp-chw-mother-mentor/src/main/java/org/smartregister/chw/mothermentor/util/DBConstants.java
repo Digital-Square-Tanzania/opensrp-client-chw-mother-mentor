@@ -188,6 +188,37 @@ public final class DBConstants {
         public static final String EXPECTED_RETURN_DATE = "expected_return_date";
         public static final String WEEKS_LOST = "weeks_lost";
 
+        public static final String MAMA_PREVIOUS_BREASTFEEDING_STATUS = "mama_previous_breastfeeding_status";
+        public static final String MAMA_PREVIOUS_WEANING_DATE = "mama_previous_weaning_date";
+        public static final String MAMA_HEI_TEST_TYPE_CHOICE = "mama_hei_test_type_choice";
+        public static final String MAMA_CHILD_PATH = "mama_child_path";
+
+        // Mama routine child assessment and serial HEI test observations (#1142).
+        public static final String MAMA_CHILD_STATUS = "mama_child_status";
+        public static final String MAMA_BREASTFEEDING_STATUS = "mama_breastfeeding_status";
+        public static final String MAMA_TAREHE_ACHA_KUNYONYESHA = "mama_tarehe_acha_kunyonyesha";
+        public static final String MAMA_TAREHE_MTOTO_ALIFARIKI = "mama_tarehe_mtoto_alifariki";
+        public static final String MAMA_HEI_TEST_DONE = "mama_hei_test_done";
+        public static final String MAMA_HEI_TEST_TYPE = "mama_hei_test_type";
+        public static final String MAMA_HEI_TEST_DATE = "mama_hei_test_date";
+        public static final String MAMA_HEI_TEST_RESULT = "mama_hei_test_result";
+        public static final String HEI_CHANYA_IMETHIBITISHWA = "hei_chanya_imethibitishwa";
+        public static final String MAMA_HEI_TEST_HISTORY = "mama_hei_test_history";
+        public static final String MAMA_HEI_ASSESSMENT_DATE = "mama_hei_assessment_date";
+        public static final String MAMA_HEI_DUE_TESTS = "mama_hei_due_tests";
+        public static final String MAMA_HEI_DUE_TEST = "mama_hei_due_test";
+        public static final String MAMA_HEI_DUE_DATE = "mama_hei_due_date";
+        public static final String MAMA_CHILD_AGE_NOTE = "mama_child_age_note";
+        public static final String MAMA_HEI_NEXT_TEST_NOTE = "mama_hei_next_test_note";
+        public static final String HEI_TEST_WIKI6_RESULT = "hei_test_wiki6_result";
+        public static final String HEI_TEST_WIKI6_DATE = "hei_test_wiki6_date";
+        public static final String HEI_TEST_MIEZI9_RESULT = "hei_test_miezi9_result";
+        public static final String HEI_TEST_MIEZI9_DATE = "hei_test_miezi9_date";
+        public static final String HEI_TEST_MIEZI15_RESULT = "hei_test_miezi15_result";
+        public static final String HEI_TEST_MIEZI15_DATE = "hei_test_miezi15_date";
+        public static final String HEI_TEST_MIEZI18_RESULT = "hei_test_miezi18_result";
+        public static final String HEI_TEST_MIEZI18_DATE = "hei_test_miezi18_date";
+
         // ec_mothermentor_enroll_child_eid.
         public static final String BREASTFEEDING_STATUS = "breastfeeding_status";
         public static final String CHILD_NAME = "child_name";
@@ -219,11 +250,24 @@ public final class DBConstants {
         // Visit observations.
         public static final String ART_RETURN_DATE = "art_return_date";
         public static final String ATTENDANCE_TYPE = "attendance_type";
+        public static final String MAMA_NOT_FOUND_REASON = "mama_not_found_reason";
+        public static final String MAMA_SABABU_NYINGINE_TEXT = "mama_sababu_nyingine_text";
+        public static final String MAMA_KITUO_KIPYA = "mama_kituo_kipya";
+        // Optional area-transfer control; normalized into MAMA_KITUO_KIPYA before saving.
+        public static final String MAMA_KITUO_ANACHOHAMIA = "mama_kituo_anachohamia";
+        public static final String MAMA_ENROLLMENT_ID = "mama_enrollment_id";
+        public static final String MAMA_ENROLLMENT_PREGNANCY_STATUS =
+                "mama_enrollment_pregnancy_status";
         public static final String CHILD_EID_ENROLLED = "child_eid_enrolled";
         public static final String CHILD_FACILITY_DATE = "child_facility_date";
         public static final String CHILD_FOLLOWUP_TEST_STAGE = "child_followup_test_stage";
         public static final String CHILD_LINKING = "child_linking";
         public static final String CHILD_REACHED_FACILITY = "child_reached_facility";
+        public static final String HOUSEHOLD_COUNSELLING_SCHEMA = "household_counselling_schema";
+        public static final String COUNSELLED_CHILD_COUNT = "counselled_child_count";
+        public static final String COUNSELLED_RELATIVE_COUNT = "counselled_relative_count";
+        public static final String COUNSELLED_NEIGHBOUR_COUNT = "counselled_neighbour_count";
+        public static final String COUNSELLED_OTHER_COUNT = "counselled_other_count";
         public static final String COUNSELLED_FEMALE = "counselled_female";
         public static final String COUNSELLED_MALE = "counselled_male";
         public static final String COUNSELLED_TOTAL = "counselled_total";
@@ -272,6 +316,19 @@ public final class DBConstants {
         public static final String VISIT_ART_START_DATE = "visit_art_start_date";
         public static final String VISIT_PREGNANCY_STATUS = "visit_pregnancy_status";
         public static final String WAY_EDUCATION_PROVIDED = "way_education_provided";
+
+        // Mother pregnancy outcome observations and native-form delivery inputs.
+        public static final String MAMA_PREGNANCY_OUTCOME = "mama_pregnancy_outcome";
+        public static final String MAMA_PREGNANCY_OUTCOME_OTHER = "mama_pregnancy_outcome_other";
+        public static final String MAMA_TAREHE_KUJIFUNGUA = "mama_tarehe_kujifungua";
+        public static final String MAMA_PREGNANCY_LOSS_DATE = "mama_pregnancy_loss_date";
+        public static final String MAMA_ENROLLMENT_CHILD_DOB = "mama_enrollment_child_dob";
+        public static final String MAMA_DELIVERY_DATE_INPUT = "mama_delivery_date_input";
+        public static final String MAMA_PRETERM_DELIVERY_DATE_INPUT = "mama_preterm_delivery_date_input";
+        public static final String MAMA_STILLBIRTH_DATE_INPUT = "mama_stillbirth_date_input";
+        public static final String MAMA_ENROLLMENT_DELIVERY_DATE = "mama_enrollment_delivery_date";
+        public static final String MAMA_DELIVERY_SCHEDULE_NOTE = "mama_delivery_schedule_note";
+        public static final String MAMA_DELIVERY_EDIT_NOTE = "mama_delivery_edit_note";
 
         // Shared visit and event columns.
         public static final String AGE = "age";
