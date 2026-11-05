@@ -1534,8 +1534,19 @@ public class MotherMentorDao extends AbstractDao {
                 baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
     }
 
+    public static MemberObject getPartnerHistoryMember(String baseEntityID) {
+        if (StringUtils.isBlank(baseEntityID)) return null;
+        return getSecondaryEnrollmentMember(
+                baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER, true);
+    }
+
     private static MemberObject getSecondaryEnrollmentMember(
             String baseEntityID, String tableName) {
+        return getSecondaryEnrollmentMember(baseEntityID, tableName, false);
+    }
+
+    private static MemberObject getSecondaryEnrollmentMember(
+            String baseEntityID, String tableName, boolean includeClosed) {
         String sql =
                 "select m."
                         + DBConstants.KEY.BASE_ENTITY_ID
@@ -1605,7 +1616,9 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.PHONE_NUMBER
                         + " as  "
                         + DBConstants.KEY.PCG_PHONE_NUMBER
-                        + " , mr.* from ec_family_member m inner join ec_family f on m."
+                        + " , mr.* from ec_family_member m "
+                        + (includeClosed ? "left" : "inner")
+                        + " join ec_family f on m."
                         + DBConstants.KEY.RELATIONAL_ID
                         + " = f."
                         + DBConstants.KEY.BASE_ENTITY_ID
@@ -1623,20 +1636,18 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID
                         + " = f."
                         + DBConstants.KEY.PRIMARY_CARE_GIVER
-                        + " where mr."
-                        + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND "
-                        + (Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER.equals(tableName)
-                                ? MotherMentorPartnerFollowUpDao.activeEnrollmentCondition("mr")
-                                : "1 = 1")
-                        + " AND m."
-                        + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND f."
-                        + DBConstants.KEY.IS_CLOSED
-                        + " = 0 AND m."
+                        + " where "
+                        + (includeClosed ? "" : "mr." + DBConstants.KEY.IS_CLOSED
+                                + " = 0 AND "
+                                + (Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER.equals(tableName)
+                                    ? MotherMentorPartnerFollowUpDao.activeEnrollmentCondition("mr")
+                                    : "1 = 1")
+                                + " AND m." + DBConstants.KEY.IS_CLOSED
+                                + " = 0 AND f." + DBConstants.KEY.IS_CLOSED + " = 0 AND ")
+                        + "m."
                         + DBConstants.KEY.BASE_ENTITY_ID
                         + " = '"
-                        + baseEntityID
+                        + baseEntityID.replace("'", "''")
                         + "' ORDER BY mr."
                         + DBConstants.KEY.LAST_INTERACTED_WITH
                         + " DESC LIMIT 1";
