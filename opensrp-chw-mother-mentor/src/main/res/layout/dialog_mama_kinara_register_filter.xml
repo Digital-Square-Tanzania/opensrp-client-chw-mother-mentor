@@ -131,6 +131,17 @@
                     android:text="@string/mama_kinara_register_filter_under_two"
                     android:textColor="@color/mama_kinara_text"
                     android:textSize="18sp" />
+                <CheckBox
+                    android:id="@+id/mama_kinara_filter_closed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/mama_kinara_blue"
+                    android:minHeight="64dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/mothermentor_mother_filter_closed"
+                    android:textColor="@color/mama_kinara_text"
+                    android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

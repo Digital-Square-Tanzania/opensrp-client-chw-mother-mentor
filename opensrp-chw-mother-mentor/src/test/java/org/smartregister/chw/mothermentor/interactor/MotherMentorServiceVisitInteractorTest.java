@@ -146,7 +146,13 @@ public class MotherMentorServiceVisitInteractorTest {
             assertEquals(2, visible(actions));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, entry.getActionStatus());
             assertTrue(byForm(actions, "mothermentor_visit_comment").isOptional());
-            answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, returning ? "found" : "");
+            if (returning) {
+                answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, "found");
+                assertEquals(2, visible(actions));
+                answer(entry, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
+            } else {
+                answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, "");
+            }
             assertEquals(6, visible(actions));
             BaseMotherMentorVisitAction group = byForm(actions, "mothermentor_visit_group_linkage");
             answer(group, DBConstants.KEY.HAS_BEEN_LINKED_TO_IGA_GROUP, "yes",
@@ -176,6 +182,7 @@ public class MotherMentorServiceVisitInteractorTest {
         List<VisitDetail> saved = new ArrayList<>();
         addDetail(saved, DBConstants.KEY.ATTENDANCE_TYPE, "repeat");
         addDetail(saved, DBConstants.KEY.FOLLOW_UP_STATUS, "found");
+        addDetail(saved, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
         Visit visit = new Visit();
         visit.setVisitId("saved-visit");
         visit.setDate(new Date());
@@ -285,8 +292,7 @@ public class MotherMentorServiceVisitInteractorTest {
     }
 
     private void assertLocalizedVisitFlow(String... titles) throws Exception {
-        MotherMentorServiceVisitInteractor interactor =
-                new MotherMentorServiceVisitInteractor(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
+        MotherMentorServiceVisitInteractor interactor = new TestInteractor();
         AppExecutors executors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
         interactor.appExecutors = executors;
         ((BaseMotherMentorVisitInteractor) interactor).appExecutors = executors;
@@ -334,6 +340,8 @@ public class MotherMentorServiceVisitInteractorTest {
                 field.put("value", attendance);
             } else if (DBConstants.KEY.FOLLOW_UP_STATUS.equals(field.optString("key"))) {
                 field.put("value", status);
+            } else if (DBConstants.KEY.VISIT_PREGNANCY_STATUS.equals(field.optString("key"))) {
+                field.put("value", "found".equals(status) ? "pregnant" : "");
             }
         }
         action.setJsonPayload(form.toString());

@@ -77,6 +77,62 @@ public class MotherMentorClientRegisterDaoTest {
     }
 
     @Test
+    public void closedFilterBypassesTheActiveConditionButPreservesPrimaryCohortAndCounts() {
+        addClosureColumns();
+        client("active", "Asha", "pregnant", "1", "household");
+        client("closed-a", "Neema", "pregnant", "2", null);
+        client("closed-b", "Rehema", "not_pregnant", "3", "household");
+        client("screened", "Screened", "pregnant", "4", "household");
+        database.execSQL("UPDATE " + TABLE + " SET is_closed = 1 WHERE base_entity_id <> 'active'");
+        database.execSQL("UPDATE " + TABLE + " SET status = 'screened' WHERE base_entity_id = 'screened'");
+        String selected = MotherMentorClientRegisterDao.selectClients(CONDITION, "", true,
+                false, false, false, true);
+        try (Cursor rows = database.rawQuery(selected, null)) {
+            assertEquals(2, rows.getCount());
+        }
+        try (Cursor count = database.rawQuery(MotherMentorClientRegisterDao.countClients(
+                CONDITION, "", true, false, false, false, true), null)) {
+            count.moveToFirst();
+            assertEquals(2, count.getInt(0));
+        }
+        try (Cursor page = database.rawQuery(MotherMentorClientRegisterDao.selectClientsPage(
+                CONDITION, "", true, false, false, false, true, 1, 1), null)) {
+            assertEquals(1, page.getCount());
+            page.moveToFirst();
+            assertEquals("closed-b", string(page, DBConstants.KEY.BASE_ENTITY_ID));
+            assertEquals("1", string(page, DBConstants.KEY.IS_CLOSED));
+        }
+    }
+
+    @Test
+    public void closedFilterSupportsSearchAndCategoryWhileTurningFiltersOffRestoresActiveRows() {
+        addClosureColumns();
+        client("active", "Asha", "pregnant", "1", "household");
+        client("closed-a", "Neema", "pregnant", "2", null);
+        client("closed-b", "Rehema", "not_pregnant", "3", "household");
+        database.execSQL("UPDATE " + TABLE + " SET is_closed = 1 WHERE base_entity_id <> 'active'");
+        try (Cursor rows = database.rawQuery(MotherMentorClientRegisterDao.selectClients(
+                CONDITION, "Neema", true, true, false, false, true), null)) {
+            rows.moveToFirst();
+            assertEquals(1, rows.getCount());
+            assertEquals("closed-a", string(rows, DBConstants.KEY.BASE_ENTITY_ID));
+        }
+        try (Cursor rows = database.rawQuery(MotherMentorClientRegisterDao.selectClients(
+                CONDITION, "", false, true, false, false, true), null)) {
+            rows.moveToFirst();
+            assertEquals(1, rows.getCount());
+            assertEquals("active", string(rows, DBConstants.KEY.BASE_ENTITY_ID));
+        }
+    }
+
+    private void addClosureColumns() {
+        for (String field : new String[] {DBConstants.KEY.MAMA_STATUS,
+                DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
+            database.execSQL("ALTER TABLE " + TABLE + " ADD COLUMN " + field + " TEXT");
+        }
+    }
+
+    @Test
     public void projectionPreservesIdentityCtcAndIndependentClientsWithoutAncRows() {
         client("family-client", "Asha", "pregnant", "12-34-1234-123456", "household");
         client("independent", "Rehema", "breast_feeding", "12-34-1234-654321", null);
@@ -167,6 +223,36 @@ public class MotherMentorClientRegisterDaoTest {
                             rows.getColumnIndexOrThrow(
                                     DBConstants.KEY.MOTHERMENTOR_COMPLETED_VISITS)));
         }
+    }
+
+    @Test
+    public void mockupStatusAliasesNormalizeWithoutRewritingRecordedAnswers() {
+        client("mother", "Asha", " none ", "123", "household");
+        assertEquals("not_pregnant", currentStatus());
+        try (Cursor row = database.rawQuery("SELECT pregnancy_status FROM " + TABLE, null)) {
+            row.moveToFirst();
+            assertEquals(" none ", row.getString(0));
+        }
+
+        database.execSQL("UPDATE " + TABLE + " SET pregnancy_status = 'bf'");
+        assertEquals("breast_feeding", currentStatus());
+        visit("service", "mother", SERVICE, 1, 1);
+        status("service", " none ", "2026-01-01");
+        assertEquals("not_pregnant", currentStatus());
+        visit("newer-service", "mother", SERVICE, 1, 2);
+        status("newer-service", " BF ", "2026-02-01");
+        assertEquals("breast_feeding", currentStatus());
+    }
+
+    @Test
+    public void normalizedAliasesUseExistingRegisterCategoryFilters() {
+        client("breastfeeding", "Rehema", "bf", "123", "household");
+        client("not-pregnant", "Asha", "none", "456", "household");
+        database.execSQL("UPDATE " + TABLE + " SET child_dob = date('now', 'localtime', '-5 months')"
+                + " WHERE base_entity_id = 'not-pregnant'");
+
+        assertIdsAndCount("", true, false, true, false, "breastfeeding");
+        assertIdsAndCount("", true, false, false, true, "breastfeeding", "not-pregnant");
     }
 
     @Test

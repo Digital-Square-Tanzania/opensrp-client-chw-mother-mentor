@@ -17,6 +17,11 @@ public final class MotherMentorDeceasedVisitUtils {
         try {
             Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                     new JSONObject(json).optJSONArray("obs"));
+            if (values.containsKey(DBConstants.KEY.ATTENDANCE_TYPE)) {
+                return "repeat".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
+                        && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                        && "deceased".equals(values.get(DBConstants.KEY.MAMA_NOT_FOUND_REASON));
+            }
             return "deceased".equalsIgnoreCase(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
                     || "deceased".equalsIgnoreCase(values.get(DBConstants.KEY.IIT_TRACING_OUTCOME))
                     || "client_deceased".equalsIgnoreCase(

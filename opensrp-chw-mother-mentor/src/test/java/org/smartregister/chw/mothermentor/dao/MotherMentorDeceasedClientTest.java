@@ -118,6 +118,25 @@ public class MotherMentorDeceasedClientTest {
     }
 
     @Test
+    public void finalizedNestedMotherDeathUsesTheSharedDeathPathButAChildDeathDoesNot() throws Exception {
+        JSONObject mother = new JSONObject(event(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"));
+        mother.getJSONArray("obs")
+                .put(new JSONObject().put("fieldCode", DBConstants.KEY.ATTENDANCE_TYPE)
+                        .put("values", new JSONArray().put("repeat")))
+                .put(new JSONObject().put("fieldCode", DBConstants.KEY.MAMA_NOT_FOUND_REASON)
+                        .put("values", new JSONArray().put("deceased")));
+        insertVisit(CLIENT, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 0, mother.toString(), "9");
+        assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+        data.execSQL("UPDATE visits SET processed = 1");
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+        assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.delete("visits", null, null);
+        insertVisit(CLIENT, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 1,
+                event("mama_child_status", "deceased"), "9");
+        assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+    }
+
+    @Test
     public void draftsAndOtherModulesCannotMarkTheClientDeceased() throws Exception {
         insertVisit(CLIENT, MotherMentorFollowUpType.PARTNER.getEventType(), 0,
                 event(DBConstants.KEY.FOLLOW_UP_STATUS, "deceased"), "9");

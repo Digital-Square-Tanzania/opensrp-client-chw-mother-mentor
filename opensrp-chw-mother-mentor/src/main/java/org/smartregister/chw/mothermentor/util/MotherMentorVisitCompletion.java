@@ -1,8 +1,9 @@
 package org.smartregister.chw.mothermentor.util;
 
-import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,20 +17,14 @@ public final class MotherMentorVisitCompletion {
     }
 
     public static boolean isVisitTypeComplete(Map<String, String> values) {
-        return MotherMentorMotherVisitUtils.isEntryComplete(values)
-                && MotherMentorMotherPregnancyUtils.isComplete(values, serviceDate(values))
-                && MotherMentorMotherChildUtils.isComplete(values, serviceDate(values));
+        return MotherMentorMotherClosureRepository.outcome(values) != null;
     }
 
     public static boolean isComplete(JSONArray observations) {
         Map<String, String> values = observationValues(observations);
-        return isVisitTypeComplete(values) && MotherMentorMotherVisitUtils.isComplete(values);
-    }
-
-    private static LocalDate serviceDate(Map<String, String> values) {
-        return values.containsKey(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE)
-                ? MotherMentorMotherPregnancyUtils.parseDate(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
-                : LocalDate.now();
+        VisitOutcome outcome = MotherMentorMotherClosureRepository.outcome(values);
+        return outcome != null && (outcome != VisitOutcome.CONTINUE
+                || MotherMentorMotherVisitUtils.isComplete(values));
     }
 
     public static Map<String, String> observationValues(JSONArray observations) {

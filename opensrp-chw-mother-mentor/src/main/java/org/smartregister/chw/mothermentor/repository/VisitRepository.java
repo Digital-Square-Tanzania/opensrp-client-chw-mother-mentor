@@ -148,6 +148,7 @@ public class VisitRepository extends BaseRepository {
         MotherMentorPartnerClosureRepository.rebuildForVisit(database, visit);
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
         MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
+        MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
     }
 
@@ -429,6 +430,7 @@ public class VisitRepository extends BaseRepository {
                     MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID);
             Set<String> affectedPartners =
                     MotherMentorPartnerClosureRepository.affectedPartners(database, visitID);
+            Set<String> affectedMothers = MotherMentorMotherClosureRepository.affectedMothers(database, visitID);
             database.delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
             database
                     .delete(
@@ -444,6 +446,9 @@ public class VisitRepository extends BaseRepository {
             }
             for (String partner : affectedPartners) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
+            }
+            for (String motherId : affectedMothers) {
+                MotherMentorMotherClosureRepository.rebuild(database, motherId);
             }
         } catch (Exception e) {
             Timber.e(e);
@@ -466,6 +471,7 @@ public class VisitRepository extends BaseRepository {
             for (String partner : MotherMentorPartnerClosureRepository.affectedPartners(database, visitID)) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
+            MotherMentorMotherClosureRepository.rebuildForVisit(database, getVisitByVisitId(visitID));
         } catch (Exception e) {
             Timber.e(e);
         }

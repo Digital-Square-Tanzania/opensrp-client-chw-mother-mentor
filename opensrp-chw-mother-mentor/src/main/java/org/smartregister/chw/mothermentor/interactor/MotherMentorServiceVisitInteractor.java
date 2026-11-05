@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.interactor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
@@ -16,8 +17,10 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -181,7 +184,9 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private boolean shouldShowFullVisitActions() {
-        return entrySaved && MotherMentorMotherVisitUtils.isFullVisit(entryValues());
+        return entrySaved
+                && MotherMentorMotherClosureRepository.classify(
+                        entryValues(), LocalDate.fromDateFields(serviceDate)) == VisitOutcome.CONTINUE;
     }
 
     private Map<String, String> entryValues() {
