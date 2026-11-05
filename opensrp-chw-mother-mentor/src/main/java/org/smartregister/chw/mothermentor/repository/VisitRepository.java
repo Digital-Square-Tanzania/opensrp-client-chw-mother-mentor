@@ -152,7 +152,7 @@ public class VisitRepository extends BaseRepository {
         EventBus.getDefault().post(visit);
     }
 
-    /** Replace only schema-2 mother evidence when its source revision advances. */
+    /** Replace only routine mother evidence when its source revision advances. */
     public void refreshMotherVisit(Visit existing, Visit incoming, SQLiteDatabase database,
             VisitDetailsRepository detailsRepository) {
         if (existing == null || incoming == null
