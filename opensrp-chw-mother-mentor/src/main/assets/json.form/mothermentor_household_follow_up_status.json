@@ -1,0 +1,164 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Household Follow-up Status",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Household Follow-up Status",
+    "fields": [
+      {
+        "key": "household_follow_up_schema",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_follow_up_schema",
+        "type": "hidden",
+        "value": "2"
+      },
+      {
+        "key": "household_visit_type",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_visit_type",
+        "type": "native_radio",
+        "label": "Visit Type",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "new",
+            "text": "New registration",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "new"
+          },
+          {
+            "key": "repeat",
+            "text": "Follow-up Visit",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "repeat"
+          }
+        ]
+      },
+      {
+        "key": "household_follow_up_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_follow_up_status",
+        "type": "native_radio",
+        "label": "Household Visit Status",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "found",
+            "text": "Found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Not found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "household_not_found_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_not_found_reason",
+        "type": "native_radio",
+        "label": "Reason",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "moved",
+            "text": "Whole household moved from area",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved"
+          },
+          {
+            "key": "house_closed",
+            "text": "No one found (house closed)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "house_closed"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "household_not_found_reason_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "household_not_found_reason_other",
+        "type": "edit_text",
+        "hint": "Specify reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_household_follow_up_status.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
