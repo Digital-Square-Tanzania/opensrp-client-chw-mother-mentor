@@ -213,6 +213,11 @@ public final class DBConstants {
         public static final String CHILD_FOLLOWUP_TEST_STAGE = "child_followup_test_stage";
         public static final String CHILD_LINKING = "child_linking";
         public static final String CHILD_REACHED_FACILITY = "child_reached_facility";
+        public static final String HOUSEHOLD_COUNSELLING_SCHEMA = "household_counselling_schema";
+        public static final String COUNSELLED_CHILD_COUNT = "counselled_child_count";
+        public static final String COUNSELLED_RELATIVE_COUNT = "counselled_relative_count";
+        public static final String COUNSELLED_NEIGHBOUR_COUNT = "counselled_neighbour_count";
+        public static final String COUNSELLED_OTHER_COUNT = "counselled_other_count";
         public static final String COUNSELLED_FEMALE = "counselled_female";
         public static final String COUNSELLED_MALE = "counselled_male";
         public static final String COUNSELLED_TOTAL = "counselled_total";

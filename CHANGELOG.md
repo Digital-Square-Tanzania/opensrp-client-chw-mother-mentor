@@ -8,6 +8,15 @@ Android version code.
 
 ### Changed
 
+- Capture household counselling participants by role and calculate the total (CHW #1133).
+- Keep the original counselling form for existing drafts and retain aggregate history.
+- Use Mwenzi in Mother Mentor Swahili labels, including historical answers.
+- Increment the library to `0.1.16-SNAPSHOT` / Android code 17.
+
+## 0.1.15-SNAPSHOT — 2026-11-04
+
+### Changed
+
 - Require an actively enrolled, eligible Mama Kinara mother before household enrollment, using the same PMTCT window as mother enrollment (CHW #1129).
 - Increment the library to `0.1.15-SNAPSHOT` / Android code 16 for the shared eligibility API.
 

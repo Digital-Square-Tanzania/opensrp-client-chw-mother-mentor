@@ -1,0 +1,7 @@
+---
+name: step1_counselled_total
+description: Sum selected participant roles, counting mother and partner once each
+priority: 1
+condition: "true"
+actions:
+  - "calculation = (step1_participants != null && step1_participants.contains('mother') ? 1 : 0) + (step1_participants != null && step1_participants.contains('partner') ? 1 : 0) + (step1_participants != null && step1_participants.contains('child') && step1_counselled_child_count != null && String.valueOf(step1_counselled_child_count).matches('^[0-9]{1,5}$') ? Integer.parseInt(String.valueOf(step1_counselled_child_count)) : 0) + (step1_participants != null && step1_participants.contains('relative') && step1_counselled_relative_count != null && String.valueOf(step1_counselled_relative_count).matches('^[0-9]{1,5}$') ? Integer.parseInt(String.valueOf(step1_counselled_relative_count)) : 0) + (step1_participants != null && step1_participants.contains('neighbour') && step1_counselled_neighbour_count != null && String.valueOf(step1_counselled_neighbour_count).matches('^[0-9]{1,5}$') ? Integer.parseInt(String.valueOf(step1_counselled_neighbour_count)) : 0) + (step1_participants != null && step1_participants.contains('other') && step1_counselled_other_count != null && String.valueOf(step1_counselled_other_count).matches('^[0-9]{1,5}$') ? Integer.parseInt(String.valueOf(step1_counselled_other_count)) : 0)"
