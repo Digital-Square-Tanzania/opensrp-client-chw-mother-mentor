@@ -73,10 +73,15 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         try {
             JSONObject form = new JSONObject(sourceForm);
             Map<String, String> defaults = new HashMap<>(loadEnrollmentValues());
-            MotherMentorMotherVisitDao.Context enrollment = loadMotherContext();
-            defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_ID, enrollment.getEnrollmentId());
-            defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS,
-                    enrollment.getEnrollmentPregnancyStatus());
+            MotherMentorMotherVisitDao.Context enrollment = MotherMentorMotherVisitDao.Context.empty();
+            try {
+                enrollment = loadMotherContext();
+                defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_ID, enrollment.getEnrollmentId());
+                defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS,
+                        enrollment.getEnrollmentPregnancyStatus());
+            } catch (Exception unavailable) {
+                Timber.w(unavailable, "Unable to load the mother enrollment context");
+            }
             JSONArray fields = form.getJSONObject(JsonFormConstants.STEP1)
                                        .getJSONArray(JsonFormConstants.FIELDS);
             for (int i = 0; i < fields.length(); i++) {
@@ -119,7 +124,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     private void preparePregnancyAssessment(JSONObject form, MotherMentorMotherVisitDao.Context enrollment) {
-        if (!MotherMentorMotherVisitUtils.formValues(form).containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) {
+        if (StringUtils.isBlank(enrollment.getEnrollmentId())
+                || !MotherMentorMotherVisitUtils.formValues(form)
+                        .containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) {
             return;
         }
         try {
