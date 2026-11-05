@@ -14,6 +14,7 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 
 import timber.log.Timber;
 
@@ -21,18 +22,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorActionHelper {
     private final MemberObject member;
     private String currentVisitId;
     private Set<String> priorGroupLinkages = Collections.emptySet();
+    private final Supplier<Map<String, String>> entryValues;
 
     public MotherMentorGroupLinkageActionHelper() {
         this(null);
     }
 
     public MotherMentorGroupLinkageActionHelper(MemberObject member) {
+        this(member, null);
+    }
+
+    public MotherMentorGroupLinkageActionHelper(
+            MemberObject member, Supplier<Map<String, String>> entryValues) {
         this.member = member;
+        this.entryValues = entryValues;
     }
 
     @Override
@@ -55,12 +64,13 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
 
     @Override
     public String getPreProcessed() {
-        if (sourceForm == null || member == null) return null;
+        if (sourceForm == null || (member == null && entryValues == null)) return null;
         try {
-            priorGroupLinkages =
-                    MotherMentorDao.getPriorGroupLinkages(
-                            member.getBaseEntityId(), currentVisitId);
-            return populatePriorGroupLinkages(sourceForm);
+            if (member != null && StringUtils.isNotBlank(member.getBaseEntityId())) {
+                priorGroupLinkages = MotherMentorDao.getPriorGroupLinkages(
+                        member.getBaseEntityId(), currentVisitId);
+            }
+            return populateVisitContext(populatePriorGroupLinkages(sourceForm));
         } catch (Exception e) {
             Timber.e(e);
             return sourceForm;
@@ -69,14 +79,54 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
 
     @Override
     public void onPayloadReceived(BaseMotherMentorVisitAction action) {
-        if (priorGroupLinkages.isEmpty() || StringUtils.isBlank(action.getJsonPayload())) return;
+        if (StringUtils.isBlank(action.getJsonPayload())) return;
         // Saved blank details are reapplied after preprocessing by the action's form lifecycle.
-        String prepared = populatePriorGroupLinkages(action.getJsonPayload());
+        String prepared = populateVisitContext(populatePriorGroupLinkages(action.getJsonPayload()));
         action.setProcessedJsonPayload(prepared);
         super.onPayloadReceived(prepared);
     }
 
+    private String populateVisitContext(String source) {
+        try {
+            JSONObject form = new JSONObject(source);
+            Map<String, String> values =
+                    entryValues == null ? Collections.emptyMap() : entryValues.get();
+            JSONObject attendance =
+                    FormUtils.getFieldFromForm(form, DBConstants.KEY.ATTENDANCE_TYPE);
+            if (attendance != null && values != null)
+                attendance.put(JsonFormConstants.VALUE,
+                        StringUtils.defaultString(values.get(DBConstants.KEY.ATTENDANCE_TYPE)));
+            JSONObject priorArt =
+                    FormUtils.getFieldFromForm(form, DBConstants.KEY.ART_INITIATED_BEFORE_VISIT);
+            if (priorArt != null && priorArt.optString(JsonFormConstants.VALUE).isEmpty()) {
+                boolean initiated = member != null
+                        && StringUtils.isNotBlank(member.getBaseEntityId())
+                        && MotherMentorDao.wasArtInitiatedBeforeVisit(
+                                member.getBaseEntityId(), currentVisitId);
+                priorArt.put(JsonFormConstants.VALUE, Boolean.toString(initiated));
+            }
+            if (!"new".equals(
+                        attendance == null ? "" : attendance.optString(JsonFormConstants.VALUE))
+                    || (priorArt != null
+                            && "true".equals(priorArt.optString(JsonFormConstants.VALUE)))) {
+                for (String key : new String[] {DBConstants.KEY.NEW_PMTCT_ART_INITIATION,
+                             DBConstants.KEY.VISIT_ART_START_DATE}) {
+                    JSONObject field = FormUtils.getFieldFromForm(form, key);
+                    if (field != null) field.put(JsonFormConstants.VALUE, "");
+                }
+            }
+            return form.toString();
+        } catch (Exception e) {
+            Timber.e(e, "Unable to prepare group linkage visit context");
+            return source;
+        }
+    }
+
     private String populatePriorGroupLinkages(String jsonPayload) {
+        Map<String, String> entry = entryValues == null ? null : entryValues.get();
+        if (entry != null && !entry.isEmpty()
+                && !MotherMentorMotherVisitUtils.isFullVisit(entry))
+            return jsonPayload;
         try {
             JSONObject form = new JSONObject(jsonPayload);
             for (String key : priorGroupLinkages) {
@@ -96,12 +146,10 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        return completed(
-                StringUtils.isNotBlank(
-                                getValue(
-                                        DBConstants.KEY
-                                                .HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP))
-                        && StringUtils.isNotBlank(
-                                getValue(DBConstants.KEY.HAS_BEEN_LINKED_TO_IGA_GROUP)));
+        return completed(MotherMentorMotherVisitUtils.isArtComplete(
+                                 MotherMentorMotherVisitUtils.formValues(payload))
+                && StringUtils.isNotBlank(
+                        getValue(DBConstants.KEY.HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP))
+                && StringUtils.isNotBlank(getValue(DBConstants.KEY.HAS_BEEN_LINKED_TO_IGA_GROUP)));
     }
 }

@@ -31,8 +31,7 @@ public final class MotherMentorMotherChildUtils {
     private MotherMentorMotherChildUtils() {}
 
     public static boolean applies(Map<String, String> values) {
-        if (values == null || !"2".equals(values.get(DBConstants.KEY.MAMA_VISIT_SCHEMA))
-                || !"repeat".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
+        if (values == null || !"repeat".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
                 || !"found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))) return false;
         String original = values.get(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS);
         boolean enrolledWithChild = Arrays.asList("breast_feeding", "not_pregnant", "bf", "none").contains(original);

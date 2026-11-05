@@ -115,12 +115,10 @@ public class MotherMentorServiceHistoryTest {
     public void editingPreservesSavedAttendanceWithoutQueryingHistory() throws Exception {
         insertVisit(CLIENT_ID, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 1);
         for (String language : new String[] {"json.form", "json.form-sw"}) {
-            for (String saved : new String[] {"new", "repeat", "Mpya", "Marudio"}) {
+            for (String saved : new String[] {"new", "repeat"}) {
                 JSONObject form = loadForm(language);
                 FormUtils.getFieldFromForm(form, DBConstants.KEY.ATTENDANCE_TYPE)
                         .put("value", saved);
-                FormUtils.getFieldFromForm(form, DBConstants.KEY.ART_INITIATED_BEFORE_VISIT)
-                        .put("value", "false");
                 assertEquals(saved, prepareAttendance(member(CLIENT_ID), form));
             }
         }
@@ -167,9 +165,6 @@ public class MotherMentorServiceHistoryTest {
             assertEquals(
                     "repeat".equals(expected), attendance.optBoolean(JsonFormConstants.READ_ONLY));
             assertFalse(
-                    FormUtils.getFieldFromForm(prepared, DBConstants.KEY.VISIT_PREGNANCY_STATUS)
-                            .optBoolean(JsonFormConstants.READ_ONLY));
-            assertFalse(
                     FormUtils.getFieldFromForm(prepared, DBConstants.KEY.FOLLOW_UP_STATUS)
                             .optBoolean(JsonFormConstants.READ_ONLY));
         }
@@ -180,8 +175,6 @@ public class MotherMentorServiceHistoryTest {
             JSONObject form = loadForm(language);
             FormUtils.getFieldFromForm(form, DBConstants.KEY.ATTENDANCE_TYPE)
                     .put(JsonFormConstants.VALUE, saved);
-            FormUtils.getFieldFromForm(form, DBConstants.KEY.ART_INITIATED_BEFORE_VISIT)
-                    .put(JsonFormConstants.VALUE, "false");
             JSONObject attendance =
                     FormUtils.getFieldFromForm(
                             prepareForm(member(CLIENT_ID), form), DBConstants.KEY.ATTENDANCE_TYPE);
@@ -196,11 +189,8 @@ public class MotherMentorServiceHistoryTest {
 
     private JSONObject prepareForm(MemberObject member, JSONObject form) throws Exception {
         MotherMentorVisitTypeActionHelper helper =
-                new MotherMentorVisitTypeActionHelper(member) {
-                    @Override
-                    protected void prepareChildAssessment(JSONObject form) {
-                        // These cases isolate attendance defaults from the separate child assessment.
-                    }
+                new MotherMentorVisitTypeActionHelper(
+                        member, null, MotherMentorMotherVisitDao.Context.empty()) {
 
                     @Override
                     protected Map<String, String> loadEnrollmentValues() {

@@ -1,0 +1,49 @@
+---
+name: step1_follow_up_status
+description: Return visits ask whether the mother was found
+priority: 1
+condition: "step1_attendance_type == 'repeat'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_not_found_reason
+description: Not found requires a reason
+priority: 1
+condition: "step1_attendance_type == 'repeat' && step1_follow_up_status == 'not_found'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_sababu_nyingine_text
+description: Other reason explanation
+priority: 1
+condition: "step1_attendance_type == 'repeat' && step1_follow_up_status == 'not_found' && step1_mama_not_found_reason == 'other'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_kituo_anachohamia
+description: Optional destination after moving area
+priority: 1
+condition: "step1_attendance_type == 'repeat' && step1_follow_up_status == 'not_found' && step1_mama_not_found_reason == 'moved_area'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_kituo_kipya
+description: Required destination after facility transfer
+priority: 1
+condition: "step1_attendance_type == 'repeat' && step1_follow_up_status == 'not_found' && step1_mama_not_found_reason == 'moved_facility'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_new_pmtct_art_initiation
+description: New clients not previously initiated on ART
+priority: 1
+condition: "step1_attendance_type == 'new' && step1_art_initiated_before_visit != 'true'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_visit_art_start_date
+description: ART initiation date is required after initiation
+priority: 1
+condition: "step1_attendance_type == 'new' && step1_art_initiated_before_visit != 'true' && step1_new_pmtct_art_initiation == 'yes'"
+actions:
+  - "isRelevant = true"

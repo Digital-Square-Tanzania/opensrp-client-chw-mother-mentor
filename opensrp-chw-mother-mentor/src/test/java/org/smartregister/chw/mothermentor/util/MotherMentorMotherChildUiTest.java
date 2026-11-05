@@ -72,7 +72,7 @@ public class MotherMentorMotherChildUiTest {
                     .open(directory + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
-            put(MAMA_VISIT_SCHEMA, "2"); put(ATTENDANCE_TYPE, "repeat"); put(FOLLOW_UP_STATUS, "found");
+            put(ATTENDANCE_TYPE, "repeat"); put(FOLLOW_UP_STATUS, "found");
             put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
             put(MAMA_TAREHE_KUJIFUNGUA, dob.toString("dd-MM-yyyy"));
             put(MAMA_HEI_ASSESSMENT_DATE, date.toString()); put(MAMA_CHILD_STATUS, "alive");

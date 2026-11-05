@@ -25,7 +25,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Facility attendance",
+    "title": "Attended facility",
     "fields": [
       {
         "key": "partner_arrived_at_facility",

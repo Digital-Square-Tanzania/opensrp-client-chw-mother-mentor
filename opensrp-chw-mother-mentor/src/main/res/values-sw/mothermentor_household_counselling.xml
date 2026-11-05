@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_household_counselling_legacy_format">Muundo wa zamani wa ushauri</string>
+    <string name="mothermentor_history_household_members_found">Wanakaya waliopatikana (muundo wa zamani)</string>
+    <string name="mothermentor_history_counselled_male">Wanaume/wavulana waliopewa ushauri (muundo wa zamani)</string>
+    <string name="mothermentor_history_counselled_female">Wanawake/wasichana waliopewa ushauri (muundo wa zamani)</string>
+    <string name="mothermentor_household_counselling_legacy_total">Jumla waliopewa ushauri (muundo wa zamani)</string>
+    <string name="mothermentor_history_mwenza">Mwenzi</string>
+</resources>

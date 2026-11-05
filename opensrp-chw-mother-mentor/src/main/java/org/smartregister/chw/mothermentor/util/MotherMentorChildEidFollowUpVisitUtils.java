@@ -46,6 +46,9 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
     }
 
     public static boolean isComplete(Map<String, String> values, boolean childSchema) {
+        if (values == null || (!childSchema && values.containsKey(DBConstants.KEY.ATTENDANCE_TYPE))) {
+            return false;
+        }
         String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
         if (!matches(
                 status,
