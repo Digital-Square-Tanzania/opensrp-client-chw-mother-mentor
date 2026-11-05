@@ -220,6 +220,273 @@
         }
       },
       {
+        "key": "mama_enrollment_child_dob",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_enrollment_child_dob",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
+        "key": "visit_pregnancy_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "visit_pregnancy_status",
+        "type": "native_radio",
+        "label": "Pregnancy status",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "options": [
+          {
+            "key": "pregnant",
+            "text": "Pregnant",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnant"
+          },
+          {
+            "key": "not_pregnant",
+            "text": "Not pregnant",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_pregnant"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome",
+        "type": "native_radio",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "label": "Current status",
+        "text_color": "#000000",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "delivered",
+            "text": "Delivered",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "delivered"
+          },
+          {
+            "key": "preterm",
+            "text": "Delivered preterm",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "preterm"
+          },
+          {
+            "key": "pregnancy_loss",
+            "text": "Pregnancy loss (miscarriage)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pregnancy_loss"
+          },
+          {
+            "key": "stillbirth",
+            "text": "Stillbirth",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stillbirth"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_preterm_delivery_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_stillbirth_date_input",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_loss_date",
+        "type": "date_picker",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_loss_date",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of pregnancy loss",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": true,
+          "err": "Please select a date that is not in the future"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_enrollment_delivery_date",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Date of delivery (from enrolment)",
+        "max_date": "today",
+        "expanded": false,
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_kujifungua",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_kujifungua",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_pregnancy_outcome_other",
+        "type": "edit_text",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_pregnancy_outcome_other",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Specify the reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_edit_note",
+        "type": "toaster_notes",
+        "text": "Can be edited later if the date was entered wrongly.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_delivery_schedule_note",
+        "type": "toaster_notes",
+        "text": "Saving the delivery date starts the child's HEI test schedule. EID follow-up enrollment is handled separately.",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "mama_enrollment_id",
         "type": "hidden",
         "value": "",
