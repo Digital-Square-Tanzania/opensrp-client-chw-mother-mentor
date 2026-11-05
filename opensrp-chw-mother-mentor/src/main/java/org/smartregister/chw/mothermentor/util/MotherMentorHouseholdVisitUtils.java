@@ -1,8 +1,8 @@
 package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.DateTime;
-import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.smartregister.chw.mothermentor.domain.Visit;
 
 import java.text.ParsePosition;
@@ -18,7 +18,7 @@ public final class MotherMentorHouseholdVisitUtils {
     private MotherMentorHouseholdVisitUtils() {}
 
     public static Map<String, String> observationValues(JSONArray observations) {
-        return MotherMentorVisitCompletion.observationValues(observations);
+        return MotherMentorHouseholdCounselling.observationValues(observations);
     }
 
     public static boolean hasCompletedVisitToday(List<Visit> visits, Date now) {
@@ -75,7 +75,7 @@ public final class MotherMentorHouseholdVisitUtils {
             String value = values.get(key);
             if (value == null || value.trim().isEmpty()) return false;
         }
-        return true;
+        return MotherMentorHouseholdCounselling.isComplete(values);
     }
 
     public static Date getVisitDate(Visit visit, JSONObject event, Map<String, String> values) {

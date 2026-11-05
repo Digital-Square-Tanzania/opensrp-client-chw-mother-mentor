@@ -210,7 +210,8 @@ public class MotherMentorChildEidFollowUpDailyVisitTest {
                                 DBConstants.KEY.FOLLOW_UP_CATEGORY,
                                 MotherMentorFollowUpType.PARTNER.getValue()),
                         "2026-10-25 12:00:00"));
-        visit = childVisit("continuing_services", DBConstants.KEY.ATTENDANCE_TYPE, "repeat");
+        visit = childVisit("not_found", DBConstants.KEY.ATTENDANCE_TYPE, "repeat",
+                DBConstants.KEY.MAMA_NOT_FOUND_REASON, "moved_area");
         visit.setVisitType(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
         assertFalse(locked(visit, "2026-10-25 12:00:00"));
     }

@@ -283,7 +283,7 @@ public class MotherMentorMotherDeliveryRepositoryTest {
     }
 
     @Test
-    public void aliasesIdentifyOnlyMotherSchema2SourcesAndLegacyRemainsUnchanged()
+    public void aliasesIdentifyRoutineMotherVisitsAndExcludeCategoryFollowUps()
             throws Exception {
         MotherMentorMotherDeliveryRepository.upgrade(db);
         FixtureVisits repository = new FixtureVisits();
@@ -297,7 +297,7 @@ public class MotherMentorMotherDeliveryRepositoryTest {
         JSONObject event = new JSONObject(legacy.getJson());
         JSONArray observations = event.getJSONArray("obs");
         for (int i = observations.length() - 1; i >= 0; i--)
-            if (MAMA_VISIT_SCHEMA.equals(observations.getJSONObject(i).optString("fieldCode")))
+            if (ATTENDANCE_TYPE.equals(observations.getJSONObject(i).optString("fieldCode")))
                 observations.remove(i);
         legacy.setJson(event.toString());
         assertFalse(MotherMentorMotherDeliveryRepository.isMotherVisit(legacy));
@@ -370,7 +370,7 @@ public class MotherMentorMotherDeliveryRepositoryTest {
                         .put("eventDate", ENROLLED)
                         .put("version", version)
                         .put("obs",
-                                obs(MAMA_VISIT_SCHEMA, "2", MAMA_ENROLLMENT_ID, episode,
+                                obs(MAMA_ENROLLMENT_ID, episode,
                                         MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant",
                                         MAMA_ENROLLMENT_CHILD_DOB, "", ATTENDANCE_TYPE, "repeat",
                                         FOLLOW_UP_STATUS, "found", MOTHERMENTOR_VISIT_DATE, service,

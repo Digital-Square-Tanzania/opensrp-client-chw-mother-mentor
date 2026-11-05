@@ -30,7 +30,7 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorJsonFormUtils;
-import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 import org.smartregister.repository.Repository;
 
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class MotherMentorArtInitiationTest {
                         + " art_start_date TEXT)");
         data.execSQL(
                 "CREATE TABLE visits (visit_id TEXT, base_entity_id TEXT, visit_type TEXT,"
-                        + " processed INTEGER)");
+                        + " processed INTEGER, visit_date INTEGER)");
         data.execSQL("CREATE TABLE visit_details (visit_id TEXT, visit_key TEXT, details TEXT)");
         MotherMentorLibrary library = mock(MotherMentorLibrary.class);
         Repository repository = mock(Repository.class);
@@ -70,7 +70,7 @@ public class MotherMentorArtInitiationTest {
         rules =
                 AssetsFileSource.INSTANCE.getRulesFromFile(
                         RuntimeEnvironment.application,
-                        "rule/mothermentor_reporting_relevance.yml");
+                        "rule/mothermentor_mother_visit_relevance.yml");
     }
 
     @After
@@ -90,7 +90,7 @@ public class MotherMentorArtInitiationTest {
             // Even a stale yes answer must not reveal the initiation date.
             set(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION, "yes");
             assertFalse(relevant(prepared, DBConstants.KEY.VISIT_ART_START_DATE));
-            assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values(prepared)));
+            assertTrue(MotherMentorMotherVisitUtils.isArtComplete(values(prepared)));
         }
     }
 
@@ -112,14 +112,14 @@ public class MotherMentorArtInitiationTest {
             assertEquals("false", value(prepared, DBConstants.KEY.ART_INITIATED_BEFORE_VISIT));
             assertTrue(relevant(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION));
             assertFalse(relevant(prepared, DBConstants.KEY.VISIT_ART_START_DATE));
-            assertFalse(MotherMentorVisitCompletion.isVisitTypeComplete(values(prepared)));
+            assertFalse(MotherMentorMotherVisitUtils.isArtComplete(values(prepared)));
             set(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION, "no");
-            assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values(prepared)));
+            assertTrue(MotherMentorMotherVisitUtils.isArtComplete(values(prepared)));
             set(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION, "yes");
             assertTrue(relevant(prepared, DBConstants.KEY.VISIT_ART_START_DATE));
-            assertFalse(MotherMentorVisitCompletion.isVisitTypeComplete(values(prepared)));
+            assertFalse(MotherMentorMotherVisitUtils.isArtComplete(values(prepared)));
             set(prepared, DBConstants.KEY.VISIT_ART_START_DATE, "20-10-2026");
-            assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values(prepared)));
+            assertTrue(MotherMentorMotherVisitUtils.isArtComplete(values(prepared)));
         }
     }
 
@@ -155,7 +155,7 @@ public class MotherMentorArtInitiationTest {
     }
 
     @Test
-    public void editingLegacyInitiationExcludesTheCurrentVisit() throws Exception {
+    public void editingInitiationExcludesTheCurrentVisit() throws Exception {
         enroll(CLIENT_ID, "no", null);
         visit("current", CLIENT_ID, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 0, "yes");
         Map<String, List<VisitDetail>> details =
@@ -200,48 +200,24 @@ public class MotherMentorArtInitiationTest {
     }
 
     @Test
-    public void newQuestionKeepsExistingPrimaryAndFullVisitRestrictions() throws Exception {
+    public void repeatAttendanceHidesNewClientArtQuestions() throws Exception {
         JSONObject prepared = prepare(loadForm("json.form"), Collections.emptyMap());
         set(prepared, DBConstants.KEY.ATTENDANCE_TYPE, "repeat");
-        set(prepared, DBConstants.KEY.FOLLOW_UP_STATUS, "continuing_services");
-        assertTrue(relevant(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION));
-        set(prepared, DBConstants.KEY.FOLLOW_UP_STATUS, "not_available");
         assertFalse(relevant(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION));
-        set(prepared, DBConstants.KEY.ATTENDANCE_TYPE, "new");
-        set(prepared, DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT, "false");
-        assertFalse(relevant(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION));
-    }
-
-    @Test
-    public void legacyVisitWithoutSnapshotStillRequiresTheInitiationAnswer() {
-        Map<String, String> values = new HashMap<>();
-        values.put(DBConstants.KEY.MOTHERMENTOR_REPORTING_VERSION, "2");
-        values.put(DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT, "true");
-        values.put(DBConstants.KEY.ATTENDANCE_TYPE, "new");
-        values.put(DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
-        assertFalse(MotherMentorVisitCompletion.isVisitTypeComplete(values));
-        values.put(DBConstants.KEY.NEW_PMTCT_ART_INITIATION, "no");
-        assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values));
+        set(prepared, DBConstants.KEY.NEW_PMTCT_ART_INITIATION, "yes");
+        assertFalse(relevant(prepared, DBConstants.KEY.VISIT_ART_START_DATE));
     }
 
     private JSONObject prepare(JSONObject form, Map<String, List<VisitDetail>> details)
             throws Exception {
         MemberObject member = new MemberObject();
         member.setBaseEntityId(CLIENT_ID);
-        MotherMentorVisitTypeActionHelper helper =
-                new MotherMentorVisitTypeActionHelper(member) {
-                    @Override
-                    protected Map<String, String> loadEnrollmentValues() {
-                        return Collections.singletonMap(
-                                DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT, "true");
-                    }
-                };
+        MotherMentorGroupLinkageActionHelper helper = new MotherMentorGroupLinkageActionHelper(
+                member, () -> Collections.singletonMap(DBConstants.KEY.ATTENDANCE_TYPE, "new"));
         MotherMentorJsonFormUtils.populateForm(form, details);
         helper.onJsonFormLoaded(form.toString(), RuntimeEnvironment.application, details);
         JSONObject prepared = new JSONObject(helper.getPreProcessed());
         MotherMentorJsonFormUtils.populateForm(prepared, details);
-        set(prepared, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
-        set(prepared, DBConstants.KEY.FOLLOW_UP_STATUS, "continuing_services");
         return prepared;
     }
 
@@ -252,7 +228,7 @@ public class MotherMentorArtInitiationTest {
                         .getJSONObject("rules-engine")
                         .getJSONObject("ex-rules")
                         .getString("rules-file");
-        assertEquals("mothermentor_reporting_relevance.yml", file);
+        assertEquals("mothermentor_mother_visit_relevance.yml", file);
         Facts facts = new Facts();
         for (Map.Entry<String, String> entry : values(form).entrySet()) {
             facts.put("step1_" + entry.getKey(), entry.getValue());
@@ -268,7 +244,7 @@ public class MotherMentorArtInitiationTest {
                 new Scanner(
                         RuntimeEnvironment.application
                                 .getAssets()
-                                .open(directory + "/mothermentor_visit_type.json"),
+                                .open(directory + "/mothermentor_visit_group_linkage.json"),
                         "UTF-8")) {
             return new JSONObject(scanner.useDelimiter("\\A").next());
         }
@@ -293,8 +269,8 @@ public class MotherMentorArtInitiationTest {
     private void visit(
             String visitId, String clientId, String type, int processed, String initiated) {
         data.execSQL(
-                "INSERT INTO visits VALUES (?, ?, ?, ?)",
-                new Object[] {visitId, clientId, type, processed});
+                "INSERT INTO visits VALUES (?, ?, ?, ?, ?)",
+                new Object[] {visitId, clientId, type, processed, 1L});
         data.execSQL(
                 "INSERT INTO visit_details VALUES (?, ?, ?)",
                 new Object[] {visitId, DBConstants.KEY.NEW_PMTCT_ART_INITIATION, initiated});
