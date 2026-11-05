@@ -46,7 +46,9 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
     }
 
     public static boolean isComplete(Map<String, String> values, boolean partnerSchema) {
-        if (values == null) return false;
+        if (values == null || (!partnerSchema && values.containsKey(DBConstants.KEY.ATTENDANCE_TYPE))) {
+            return false;
+        }
         if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))) {
             return isCompleteSchema2(values);
         }
