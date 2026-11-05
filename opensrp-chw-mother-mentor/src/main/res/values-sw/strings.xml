@@ -210,7 +210,7 @@
     <string name="mothermentor_household_visit_maoni">Maoni</string>
     <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Wanakaya waliopewa ushauri</string>
     <string name="mothermentor_interruption_reason_section">Sababu ya kukatisha huduma</string>
-    <string name="mothermentor_partner_arrival_section">Amefika kituoni</string>
+    <string name="mothermentor_partner_arrival_section">Amehudhuria kituoni</string>
     <string name="mothermentor_partner_non_attendance_reason_section">Sababu ya kutofika kituoni</string>
     <string name="mothermentor_return_to_facility_section">Kurudi kituoni</string>
 
@@ -225,7 +225,7 @@
     <string name="mothermentor_death_record_failed">Imeshindikana kurekodi kifo cha mteja. Tafadhali jaribu tena.</string>
 
     <!-- Partner follow-up workflow -->
-    <string name="mothermentor_partner_attendance_section">Mahudhurio kituoni</string>
+    <string name="mothermentor_partner_attendance_section">Amehudhuria kituoni</string>
     <string name="mothermentor_partner_hiv_test_section">Kipimo cha VVU</string>
     <string name="mothermentor_partner_syphilis_test_section">Kipimo cha Kaswende</string>
     <string name="mothermentor_partner_hepatitis_b_test_section">Kipimo cha Homa ya Ini aina B</string>
