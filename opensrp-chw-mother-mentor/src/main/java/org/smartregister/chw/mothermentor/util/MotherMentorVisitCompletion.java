@@ -17,7 +17,8 @@ public final class MotherMentorVisitCompletion {
 
     public static boolean isVisitTypeComplete(Map<String, String> values) {
         return MotherMentorMotherVisitUtils.isEntryComplete(values)
-                && MotherMentorMotherPregnancyUtils.isComplete(values, serviceDate(values));
+                && MotherMentorMotherPregnancyUtils.isComplete(values, serviceDate(values))
+                && MotherMentorMotherChildUtils.isComplete(values, serviceDate(values));
     }
 
     public static boolean isComplete(JSONArray observations) {

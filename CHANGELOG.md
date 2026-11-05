@@ -46,6 +46,14 @@ Android version code.
   visit evidence through an explicit database-63 migration API; retain raw history.
 - Refresh routine mother evidence on source replay and rebuild delivery projections
   after finalized insert, completion, correction, deletion and enrollment processing.
+- Add the mother's child-status, breastfeeding and serial HEI-test questions to
+  the existing routine-visit action in English and Swahili (#1142).
+- Calculate calendar-based due stages, retain pending/unconfirmed results, and
+  rebuild the current enrollment's child state from finalized visit history.
+- Read dated results from an unambiguously linked existing Child EID client;
+  automatic enrollment and grace-period classification remain outside this change.
+- Expose explicit database-64/fresh-schema migration and native wizard adapters
+  for the host app. This change depends on Mother visit Parts 1 and 2.
 - Close household follow-up after confirmed relocation or consecutive unsuccessful
   visits, rebuilding the current enrollment's counters from finalized visit evidence.
 - Provide localized closure confirmation, reasons, dates and active/closed register

@@ -15,8 +15,11 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
@@ -116,6 +119,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                 }
             }
             preparePregnancyAssessment(form, enrollment);
+            prepareChildAssessment(form, enrollment);
             return form.toString();
         } catch (Exception e) {
             Timber.e(e);
@@ -137,6 +141,41 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         } catch (Exception unavailable) {
             Timber.w(unavailable, "Unable to prepare the mother pregnancy assessment");
         }
+    }
+
+    private void prepareChildAssessment(JSONObject form, MotherMentorMotherVisitDao.Context mother) {
+        if (MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_CHILD_STATUS) == null
+                || StringUtils.isBlank(mother.getEnrollmentId())
+                || member == null || StringUtils.isBlank(member.getBaseEntityId())) return;
+        try {
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS,
+                    mother.getEnrollmentPregnancyStatus());
+            JSONObject delivery = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA);
+            if (delivery != null && delivery.optString("value").isEmpty()) {
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA, mother.getChildDob());
+            }
+            MotherMentorMotherChildUtils.prepare(form, loadChildState(), childAssessmentDate(form));
+        } catch (Exception unavailable) {
+            Timber.w(unavailable, "Unable to prepare the routine mother child assessment");
+        }
+    }
+
+    protected MotherMentorMotherChildRepository.State loadChildState() {
+        return MotherMentorMotherChildRepository.getState(MotherMentorLibrary.getInstance()
+                .getRepository().getReadableDatabase(), member.getBaseEntityId(), currentVisitId);
+    }
+
+    private LocalDate childAssessmentDate(JSONObject form) {
+        Map<String, String> values = MotherMentorMotherChildUtils.values(form);
+        LocalDate date = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE));
+        if (StringUtils.isNotBlank(currentVisitId)) {
+            try {
+                LocalDate clinical = MotherMentorMotherVisitDao.getServiceDate(MotherMentorLibrary.getInstance()
+                        .visitRepository().getVisitByVisitId(currentVisitId));
+                if (clinical != null) return clinical;
+            } catch (Exception unavailable) { Timber.w(unavailable); }
+        }
+        return date == null ? LocalDate.now() : date;
     }
 
     protected Map<String, String> loadEnrollmentValues() {
@@ -197,6 +236,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                                 original.getEnrollmentChildDob()));
                 MotherMentorMotherPregnancyUtils.normalize(payload);
             }
+            if (MotherMentorMotherChildUtils.field(payload, DBConstants.KEY.MAMA_CHILD_STATUS) != null) {
+                MotherMentorMotherChildUtils.normalize(payload, childAssessmentDate(payload));
+            }
         } catch (Exception e) {
             Timber.e(e, "Unable to clear dependent mother entry answers");
         }
@@ -219,8 +261,10 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
+        if (payload == null) return BaseMotherMentorVisitAction.Status.PENDING;
         Map<String, String> values = MotherMentorMotherVisitUtils.formValues(payload);
         return completed(MotherMentorMotherVisitUtils.isEntryComplete(values)
-                && MotherMentorMotherPregnancyUtils.isComplete(values, loadServiceDate()));
+                && MotherMentorMotherPregnancyUtils.isComplete(values, loadServiceDate())
+                && MotherMentorMotherChildUtils.isComplete(values, childAssessmentDate(payload)));
     }
 }

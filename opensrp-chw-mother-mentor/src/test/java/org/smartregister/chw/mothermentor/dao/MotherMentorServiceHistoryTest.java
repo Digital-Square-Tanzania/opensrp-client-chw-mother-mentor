@@ -191,6 +191,7 @@ public class MotherMentorServiceHistoryTest {
         MotherMentorVisitTypeActionHelper helper =
                 new MotherMentorVisitTypeActionHelper(
                         member, null, MotherMentorMotherVisitDao.Context.empty()) {
+
                     @Override
                     protected Map<String, String> loadEnrollmentValues() {
                         return Collections.emptyMap();
