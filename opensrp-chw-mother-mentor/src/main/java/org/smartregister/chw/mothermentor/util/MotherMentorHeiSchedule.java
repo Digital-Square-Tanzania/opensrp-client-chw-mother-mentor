@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,11 +33,22 @@ public final class MotherMentorHeiSchedule {
         }
 
         public String getCode() { return code; }
+        public String getMetadataCode() {
+            switch (this) {
+                case SIX_WEEKS: return "wiki6";
+                case NINE_MONTHS: return "miezi9";
+                case AFTER_WEANING: return "miezi15";
+                case EIGHTEEN_MONTHS: return "miezi18";
+                default: throw new IllegalStateException("Unknown HEI stage");
+            }
+        }
         public String getResultKey() { return resultKey; }
         public String getDateKey() { return dateKey; }
 
         public static Stage fromCode(String code) {
-            for (Stage stage : values()) if (stage.code.equals(code)) return stage;
+            for (Stage stage : values()) {
+                if (stage.code.equals(code) || stage.getMetadataCode().equals(code)) return stage;
+            }
             return null;
         }
     }
@@ -59,7 +71,8 @@ public final class MotherMentorHeiSchedule {
         public boolean isConfirmed() { return confirmed; }
         public LocalDate getServiceDate() { return serviceDate; }
         public boolean requiresFollowUp() {
-            return "pending".equals(result) || ("positive".equals(result) && !confirmed);
+            return "pending".equals(result) || "unknown".equals(result)
+                    || ("positive".equals(result) && !confirmed);
         }
     }
 
@@ -71,22 +84,53 @@ public final class MotherMentorHeiSchedule {
             return Collections.emptyList();
         }
         Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        List<Stage> sampling = eligibleForSampling(dob, cessation, history, assessment);
         List<Stage> due = new ArrayList<>();
         for (Stage stage : Stage.values()) {
             TestRecord result = history.get(stage);
-            if (result != null) {
-                // Review outstanding results even if the ordinary testing age window has passed.
-                if (result.requiresFollowUp()) due.add(stage);
-                continue;
-            }
-            LocalDate date = dueDate(stage, dob, cessation);
-            if (date == null || date.isAfter(assessment)) continue;
-            if (stage == Stage.SIX_WEEKS && !assessment.isBefore(dob.plusMonths(9))) continue;
-            if ((stage == Stage.NINE_MONTHS || stage == Stage.AFTER_WEANING)
-                    && !assessment.isBefore(dob.plusMonths(18))) continue;
-            due.add(stage);
+            // Result review is different from taking another sample for the same stage.
+            if (sampling.contains(stage) || result != null && result.requiresFollowUp()) due.add(stage);
         }
         return Collections.unmodifiableList(due);
+    }
+
+    public static List<Stage> eligibleForSampling(LocalDate dob, LocalDate cessation,
+            Map<Stage, TestRecord> tests, LocalDate assessment) {
+        if (dob == null || assessment == null || dob.isAfter(assessment)) {
+            return Collections.emptyList();
+        }
+        Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        List<Stage> eligible = new ArrayList<>();
+        for (Stage stage : Stage.values()) {
+            if (history.containsKey(stage) || !inAgeWindow(stage, dob, assessment)) continue;
+            LocalDate date = dueDate(stage, dob, cessation);
+            if (date != null && !date.isAfter(assessment)) eligible.add(stage);
+        }
+        return Collections.unmodifiableList(eligible);
+    }
+
+    public static Stage next(LocalDate dob, LocalDate cessation,
+            Map<Stage, TestRecord> tests, LocalDate assessment) {
+        if (dob == null || assessment == null || dob.isAfter(assessment)) return null;
+        Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
+        Stage next = null;
+        LocalDate earliest = null;
+        for (Stage stage : Stage.values()) {
+            if (history.containsKey(stage)) continue;
+            LocalDate date = dueDate(stage, dob, cessation);
+            if (date == null || !date.isAfter(assessment) || !inAgeWindow(stage, dob, date)) continue;
+            if (earliest == null || date.isBefore(earliest)) {
+                next = stage;
+                earliest = date;
+            }
+        }
+        return next;
+    }
+
+    private static boolean inAgeWindow(Stage stage, LocalDate dob, LocalDate assessment) {
+        if (stage == Stage.SIX_WEEKS) return assessment.isBefore(dob.plusMonths(9));
+        return stage != Stage.NINE_MONTHS && stage != Stage.AFTER_WEANING
+                || assessment.isBefore(dob.plusMonths(18));
     }
 
     public static LocalDate dueDate(Stage stage, LocalDate dob, LocalDate cessation) {
@@ -114,6 +158,20 @@ public final class MotherMentorHeiSchedule {
             }
         }
         return null;
+    }
+
+    /** Registered client DOBs may be timestamps; retain the date in the recorded offset. */
+    public static LocalDate parseBirthDate(String value) {
+        LocalDate date = parseDate(value);
+        if (date != null || value == null) return date;
+        if (!value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:?\\d{2})?")) return null;
+        try {
+            LocalDate recorded = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
+                    .parseDateTime(value).toLocalDate();
+            return recorded.toString().equals(value.substring(0, 10)) ? recorded : null;
+        } catch (IllegalArgumentException invalid) {
+            return null;
+        }
     }
 
     public static boolean validDate(LocalDate date, LocalDate dob, LocalDate assessment) {

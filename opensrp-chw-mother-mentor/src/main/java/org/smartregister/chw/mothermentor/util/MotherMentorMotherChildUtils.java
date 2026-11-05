@@ -137,7 +137,7 @@ public final class MotherMentorMotherChildUtils {
     public static void prepare(JSONObject form, MotherMentorMotherChildRepository.State state,
             LocalDate serviceDate) {
         put(form, DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE, serviceDate.toString());
-        put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getTests()));
+        put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getSamplingHistory()));
         put(form, DBConstants.KEY.MAMA_PREVIOUS_BREASTFEEDING_STATUS, state.getBreastfeedingStatus());
         put(form, DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, date(state.getWeaningDate()));
         fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE,
@@ -145,13 +145,15 @@ public final class MotherMentorMotherChildUtils {
         fill(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, state.getBreastfeedingStatus());
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
-        for (Map.Entry<Stage, TestRecord> entry : state.getTests().entrySet()) {
+        for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
             if (!entry.getValue().requiresFollowUp()) continue;
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_DONE, "yes");
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE, entry.getKey().getCode());
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, entry.getKey().getCode());
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_DATE, date(entry.getValue().getDate()));
-            fill(form, DBConstants.KEY.MAMA_HEI_TEST_RESULT, entry.getValue().getResult());
+            if (!"unknown".equals(entry.getValue().getResult())) {
+                fill(form, DBConstants.KEY.MAMA_HEI_TEST_RESULT, entry.getValue().getResult());
+            }
             if ("positive".equals(entry.getValue().getResult())) fill(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "no");
             break;
         }
@@ -210,7 +212,7 @@ public final class MotherMentorMotherChildUtils {
             JSONObject values = new JSONObject(StringUtils.defaultIfBlank(raw, "{}"));
             for (Stage stage : Stage.values()) {
                 JSONObject entry = values.optJSONObject(stage.getCode());
-                if (entry == null || !Arrays.asList("negative", "positive", "pending").contains(entry.optString("result"))) continue;
+                if (entry == null || !Arrays.asList("negative", "positive", "pending", "unknown").contains(entry.optString("result"))) continue;
                 result.put(stage, new TestRecord(entry.optString("result"),
                         MotherMentorHeiSchedule.parseDate(entry.optString("date")),
                         entry.optBoolean("confirmed"), MotherMentorHeiSchedule.parseDate(entry.optString("service_date"))));

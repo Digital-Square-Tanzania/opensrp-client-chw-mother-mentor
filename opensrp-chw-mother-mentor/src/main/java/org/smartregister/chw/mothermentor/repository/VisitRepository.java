@@ -148,6 +148,7 @@ public class VisitRepository extends BaseRepository {
         MotherMentorPartnerClosureRepository.rebuildForVisit(database, visit);
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
         MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
+        MotherMentorChildEidRepository.rebuildForVisit(database, visit);
         MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
     }
@@ -196,6 +197,8 @@ public class VisitRepository extends BaseRepository {
                 existing.setProcessed(true);
             }
             MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorMotherChildRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorChildEidRepository.rebuildForMother(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
@@ -365,6 +368,7 @@ public class VisitRepository extends BaseRepository {
                 existing.setProcessed(true);
             }
             MotherMentorMotherChildRepository.rebuildForChild(database, existing.getBaseEntityId());
+            MotherMentorChildEidRepository.rebuild(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
@@ -447,6 +451,7 @@ public class VisitRepository extends BaseRepository {
             for (String partner : affectedPartners) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
+            MotherMentorChildEidRepository.rebuildForVisit(database, removed);
             for (String motherId : affectedMothers) {
                 MotherMentorMotherClosureRepository.rebuild(database, motherId);
             }
@@ -463,15 +468,17 @@ public class VisitRepository extends BaseRepository {
             values.put(PRE_PROCESSED, "");
             database
                     .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
-            MotherMentorMotherDeliveryRepository.rebuildForVisit(database, getVisitByVisitId(visitID));
-            MotherMentorMotherChildRepository.rebuildForVisit(database, getVisitByVisitId(visitID));
+            Visit canonical = getVisitByVisitId(visitID);
+            MotherMentorMotherDeliveryRepository.rebuildForVisit(database, canonical);
+            MotherMentorMotherChildRepository.rebuildForVisit(database, canonical);
             for (String household : MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID)) {
                 MotherMentorHouseholdClosureRepository.rebuild(database, household);
             }
             for (String partner : MotherMentorPartnerClosureRepository.affectedPartners(database, visitID)) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
-            MotherMentorMotherClosureRepository.rebuildForVisit(database, getVisitByVisitId(visitID));
+            MotherMentorChildEidRepository.rebuildForVisit(database, canonical);
+            MotherMentorMotherClosureRepository.rebuildForVisit(database, canonical);
         } catch (Exception e) {
             Timber.e(e);
         }

@@ -6,6 +6,25 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.20-SNAPSHOT — 2026-11-05
+
+### Added
+
+- Plan automatic Child EID enrollment only after a finalized Mama visit records an
+  eligible missed test more than 14 days after its due date, linking one existing
+  registered child by its explicit mother relationship and matching birth date (#1145).
+- Keep clinical test history across child tracing episodes while isolating current
+  mother closure evidence; expose library-owned register/card queries and an explicit
+  database-66 metadata migration without resetting existing referral progress.
+- Preserve the source event timestamp and service day in idempotent enrollment
+  events, and retry their stored payload when projection processing is interrupted.
+- Add bilingual Child EID list rows and profile details for missed tests, referral
+  state, full HEI identity, age and closed-history access (#1145).
+
+### Changed
+
+- Increment the library to `0.1.20-SNAPSHOT` / Android code 21.
+
 ## 0.1.19-SNAPSHOT — 2026-11-05
 
 ### Changed
