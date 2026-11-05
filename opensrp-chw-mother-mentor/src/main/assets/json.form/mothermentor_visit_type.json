@@ -855,6 +855,41 @@
         }
       },
       {
+        "key": "hei_chanya_imethibitishwa",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_chanya_imethibitishwa",
+        "label": "Has the confirmatory result been received?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "mama_enrollment_id",
         "type": "hidden",
         "value": "",

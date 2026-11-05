@@ -855,6 +855,41 @@
         }
       },
       {
+        "key": "hei_chanya_imethibitishwa",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_chanya_imethibitishwa",
+        "label": "Majibu ya uthibitisho yamepatikana?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "mama_enrollment_id",
         "type": "hidden",
         "value": "",
