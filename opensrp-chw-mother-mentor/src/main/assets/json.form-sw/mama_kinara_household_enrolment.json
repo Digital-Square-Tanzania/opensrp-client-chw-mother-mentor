@@ -101,6 +101,54 @@
             }
           }
         }
+      },
+      {
+        "key": "kaya_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_status",
+        "type": "hidden",
+        "value": "active"
+      },
+      {
+        "key": "kaya_tarehe_ya_kufungwa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_tarehe_ya_kufungwa",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "kaya_sababu_ya_kufungwa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_sababu_ya_kufungwa",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "kaya_counter_nyumba_imefungwa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_counter_nyumba_imefungwa",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "kaya_counter_nyingine",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_counter_nyingine",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "kaya_counter_haijapatikana",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "kaya_counter_haijapatikana",
+        "type": "hidden",
+        "value": "0"
       }
     ]
   }

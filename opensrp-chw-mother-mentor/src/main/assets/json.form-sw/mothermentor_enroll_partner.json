@@ -67,6 +67,70 @@
         "type": "hidden"
       },
       {
+        "key": "mwenzi_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_status",
+        "type": "hidden",
+        "value": "active"
+      },
+      {
+        "key": "mwenzi_tarehe_ya_kufungwa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_tarehe_ya_kufungwa",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "mwenzi_sababu_ya_kufungwa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_sababu_ya_kufungwa",
+        "type": "hidden",
+        "value": ""
+      },
+      {
+        "key": "mwenzi_counter_amekataa",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_counter_amekataa",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "mwenzi_counter_hajahudhuria",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_counter_hajahudhuria",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "mwenzi_counter_amesafiri",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_counter_amesafiri",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "mwenzi_counter_nyingine",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_counter_nyingine",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
+        "key": "mwenzi_counter_hajapatikana",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mwenzi_counter_hajapatikana",
+        "type": "hidden",
+        "value": "0"
+      },
+      {
         "key": "partner_linking",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",

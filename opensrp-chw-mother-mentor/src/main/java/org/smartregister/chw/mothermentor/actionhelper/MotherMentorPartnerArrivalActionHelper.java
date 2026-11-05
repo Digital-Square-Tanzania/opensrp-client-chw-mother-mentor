@@ -3,6 +3,7 @@ package org.smartregister.chw.mothermentor.actionhelper;
 import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 
 public class MotherMentorPartnerArrivalActionHelper extends BaseMotherMentorActionHelper {
     private final Runnable onArrivalChanged;
@@ -37,7 +38,7 @@ public class MotherMentorPartnerArrivalActionHelper extends BaseMotherMentorActi
         return completed(
                 ("yes".equals(answer) || "no".equals(answer))
                         && (!"yes".equals(answer)
-                                || StringUtils.isNotBlank(
+                                || MotherMentorPartnerFollowUpVisitUtils.validRecordedDate(
                                         getValue(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))));
     }
 
