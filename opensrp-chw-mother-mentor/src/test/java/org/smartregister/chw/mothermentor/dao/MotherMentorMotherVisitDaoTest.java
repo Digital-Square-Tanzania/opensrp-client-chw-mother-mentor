@@ -249,7 +249,7 @@ public class MotherMentorMotherVisitDaoTest {
                                    .put("version", version)
                                    .put("voided", voided)
                                    .put("obs",
-                                           obs(MAMA_VISIT_SCHEMA, "2", MAMA_ENROLLMENT_ID, episode,
+                                           obs(MAMA_ENROLLMENT_ID, episode,
                                                    ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS,
                                                    "found", MOTHERMENTOR_VISIT_DATE, day));
         ContentValues row = new ContentValues();

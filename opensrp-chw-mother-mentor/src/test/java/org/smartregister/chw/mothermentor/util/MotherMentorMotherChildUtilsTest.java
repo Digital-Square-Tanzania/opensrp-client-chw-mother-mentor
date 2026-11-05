@@ -102,7 +102,7 @@ public class MotherMentorMotherChildUtilsTest {
 
     public static Map<String, String> child(LocalDate dob) {
         Map<String, String> values = new LinkedHashMap<>();
-        values.put(MAMA_VISIT_SCHEMA, "2"); values.put(ATTENDANCE_TYPE, "repeat");
+        values.put(ATTENDANCE_TYPE, "repeat");
         values.put(FOLLOW_UP_STATUS, "found"); values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
         values.put(MAMA_TAREHE_KUJIFUNGUA, dob.toString()); values.put(MAMA_CHILD_STATUS, "alive");
         values.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");

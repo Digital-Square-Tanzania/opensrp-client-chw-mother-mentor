@@ -33,7 +33,7 @@ public class MotherMentorChildEidReplayTest {
         assertEquals("local", written.getValue().getAsString(DBConstants.KEY.VISIT_ID));
         assertEquals(incoming.getJson(), written.getValue().getAsString(DBConstants.KEY.VISIT_JSON));
         assertEquals(original, incoming.getCreatedAt());
-        verify(db).rawQuery(anyString(), eq(new String[] {Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID}));
+        verify(db, atLeastOnce()).rawQuery(anyString(), eq(new String[] {Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID}));
     }
 
     @Test

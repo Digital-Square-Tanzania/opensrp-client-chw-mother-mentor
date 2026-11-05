@@ -34,7 +34,7 @@ public final class MotherMentorMotherChildUi {
         if (refreshing || activity.getmJSONObject() == null) return;
         JSONObject form = activity.getmJSONObject();
         Map<String, String> values = MotherMentorMotherChildUtils.values(form);
-        if (!"2".equals(values.get(DBConstants.KEY.MAMA_VISIT_SCHEMA))) return;
+        if (!values.containsKey(DBConstants.KEY.MAMA_CHILD_STATUS)) return;
         View root = activity.getWindow().getDecorView();
         RadioGroup choices = radioGroup(root, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE);
         // Wait until the normal factory has registered the complete stage control.

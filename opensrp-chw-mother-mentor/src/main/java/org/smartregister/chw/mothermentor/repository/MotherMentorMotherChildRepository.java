@@ -93,12 +93,8 @@ public final class MotherMentorMotherChildRepository {
         if (org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType.CHILD_EID
                 .getEventType().equals(visit.getVisitType())) {
             rebuildForChild(db, visit.getBaseEntityId());
-        } else if (Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType())) {
-            try {
-                Map<String, String> values = MotherMentorVisitCompletion.observationValues(
-                        new JSONObject(visit.getJson()).optJSONArray("obs"));
-                if ("2".equals(values.get(DBConstants.KEY.MAMA_VISIT_SCHEMA))) rebuild(db, visit.getBaseEntityId());
-            } catch (Exception ignored) { }
+        } else if (MotherMentorMotherDeliveryRepository.isMotherVisit(visit)) {
+            rebuild(db, visit.getBaseEntityId());
         }
     }
 

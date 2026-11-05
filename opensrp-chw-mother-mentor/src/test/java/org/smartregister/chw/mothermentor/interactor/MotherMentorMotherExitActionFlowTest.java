@@ -200,7 +200,6 @@ public class MotherMentorMotherExitActionFlowTest {
         assertEquals(2, visible(actions));
         assertEquals("", value(group, HAS_BEEN_LINKED_TO_IGA_GROUP));
         assertEquals("", value(group, HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP));
-        assertEquals("2", value(group, MAMA_VISIT_SCHEMA));
         assertEquals("Keep this comment", value(comments, COMMENTS));
         answer(entry(actions), VISIT_PREGNANCY_STATUS, "pregnant");
         assertEquals(6, visible(actions));

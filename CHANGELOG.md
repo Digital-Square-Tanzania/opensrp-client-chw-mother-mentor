@@ -6,6 +6,8 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.20-SNAPSHOT — 2026-11-05
+
 ### Added
 
 - Plan automatic Child EID enrollment only after a finalized Mama visit records an
@@ -16,9 +18,46 @@ Android version code.
   database-66 metadata migration without resetting existing referral progress.
 - Preserve the source event timestamp and service day in idempotent enrollment
   events, and retry their stored payload when projection processing is interrupted.
-
 - Add bilingual Child EID list rows and profile details for missed tests, referral
   state, full HEI identity, age and closed-history access (#1145).
+
+### Changed
+
+- Increment the library to `0.1.20-SNAPSHOT` / Android code 21.
+
+## 0.1.19-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Use one routine Mother visit schema for entry, editing, history, and completion.
+- Capture pregnancy outcomes, child assessments and HEI results, and card closure
+  from the same workflow while preserving enrollment and service-date evidence.
+- Increment the library to `0.1.19-SNAPSHOT` / Android code 20.
+
+### Changed
+
+- Rephrase partner facility attendance labels in English and Swahili, including
+  history labels, and remove first-visit qualifiers from the attendance questions.
+  Retain the Swahili attendance form title, "Mahudhurio kituoni" (CHW #1128).
+
+## 0.1.17-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Offer three household visit purposes, require an explanation for Other, and
+  display legacy choices without rewriting recorded answers (CHW #1131).
+- Increment the library to `0.1.17-SNAPSHOT` / Android code 18.
+
+## 0.1.16-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Capture household counselling participants by role and calculate the total (CHW #1133).
+- Keep the original counselling form for existing drafts and retain aggregate history.
+- Use Mwenzi in Mother Mentor Swahili labels, including historical answers.
+- Increment the library to `0.1.16-SNAPSHOT` / Android code 17.
+
+## 0.1.15-SNAPSHOT — 2026-11-04
 
 ### Changed
 
@@ -33,7 +72,7 @@ Android version code.
   strict delivery/loss dates, immutable enrollment context, and branch clearing.
 - Rebuild current delivery date, child DOB and pregnancy status from finalized
   visit evidence through an explicit database-63 migration API; retain raw history.
-- Refresh schema-2 mother evidence on source replay and rebuild delivery projections
+- Refresh routine mother evidence on source replay and rebuild delivery projections
   after finalized insert, completion, correction, deletion and enrollment processing.
 - Add the mother's child-status, breastfeeding and serial HEI-test questions to
   the existing routine-visit action in English and Swahili (#1142).
@@ -77,8 +116,8 @@ Android version code.
   Keep the separate comments action for facility-attendance visits (CHW #1125).
 - Reorganize mother service visit entry in English and Swahili: show attendance
   and optional comments first, then show services for a new or found client.
-- Capture the four nested reasons when a returning mother is not found, clear
-  inapplicable answers, and retain the original assets for legacy visit edits.
+- Capture the four nested reasons when a returning mother is not found and clear
+  inapplicable answers.
 - Ask new-client ART initiation in group linkage while preserving the original
   field codes, previous-initiation rule, and read-only returning attendance.
 - Provide enrollment-scoped, deduplicated mother visit context and clinical-day

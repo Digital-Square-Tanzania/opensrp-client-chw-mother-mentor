@@ -250,7 +250,6 @@ public final class DBConstants {
         // Visit observations.
         public static final String ART_RETURN_DATE = "art_return_date";
         public static final String ATTENDANCE_TYPE = "attendance_type";
-        public static final String MAMA_VISIT_SCHEMA = "mama_visit_schema";
         public static final String MAMA_NOT_FOUND_REASON = "mama_not_found_reason";
         public static final String MAMA_SABABU_NYINGINE_TEXT = "mama_sababu_nyingine_text";
         public static final String MAMA_KITUO_KIPYA = "mama_kituo_kipya";
@@ -264,6 +263,11 @@ public final class DBConstants {
         public static final String CHILD_FOLLOWUP_TEST_STAGE = "child_followup_test_stage";
         public static final String CHILD_LINKING = "child_linking";
         public static final String CHILD_REACHED_FACILITY = "child_reached_facility";
+        public static final String HOUSEHOLD_COUNSELLING_SCHEMA = "household_counselling_schema";
+        public static final String COUNSELLED_CHILD_COUNT = "counselled_child_count";
+        public static final String COUNSELLED_RELATIVE_COUNT = "counselled_relative_count";
+        public static final String COUNSELLED_NEIGHBOUR_COUNT = "counselled_neighbour_count";
+        public static final String COUNSELLED_OTHER_COUNT = "counselled_other_count";
         public static final String COUNSELLED_FEMALE = "counselled_female";
         public static final String COUNSELLED_MALE = "counselled_male";
         public static final String COUNSELLED_TOTAL = "counselled_total";
