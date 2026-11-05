@@ -6,6 +6,16 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.17-SNAPSHOT — 2026-11-05
+
+### Changed
+
+- Offer three household visit purposes, require an explanation for Other, and
+  display legacy choices without rewriting recorded answers (CHW #1131).
+- Increment the library to `0.1.17-SNAPSHOT` / Android code 18.
+
+## 0.1.16-SNAPSHOT — 2026-11-05
+
 ### Changed
 
 - Capture household counselling participants by role and calculate the total (CHW #1133).
