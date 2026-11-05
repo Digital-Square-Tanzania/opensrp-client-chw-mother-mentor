@@ -119,7 +119,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     private void preparePregnancyAssessment(JSONObject form, MotherMentorMotherVisitDao.Context enrollment) {
-        if (FormUtils.getFieldFromForm(form, DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB).length() == 0) {
+        if (!MotherMentorMotherVisitUtils.formValues(form).containsKey(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)) {
             return;
         }
         try {
