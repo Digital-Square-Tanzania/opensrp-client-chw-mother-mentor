@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Rephrase partner facility attendance labels in English and Swahili, including
+  history labels, and remove first-visit qualifiers from the attendance questions.
+  Retain the Swahili attendance form title, "Mahudhurio kituoni" (CHW #1128).
+
 ## 0.1.17-SNAPSHOT — 2026-11-05
 
 ### Changed
