@@ -66,6 +66,14 @@ Android version code.
 - Place optional partner tracing comments last in the English and Swahili
   follow-up status forms, after the selected agreement or missing-person reason.
   Keep the separate comments action for facility-attendance visits (CHW #1125).
+- Reorganize mother service visit entry in English and Swahili: show attendance
+  and optional comments first, then show services for a new or found client.
+- Capture the four nested reasons when a returning mother is not found and clear
+  inapplicable answers.
+- Ask new-client ART initiation in group linkage while preserving the original
+  field codes, previous-initiation rule, and read-only returning attendance.
+- Provide enrollment-scoped, deduplicated mother visit context and clinical-day
+  history for subsequent mother workflow sections.
 
 ## 0.1.13-SNAPSHOT — 2026-10-30
 
