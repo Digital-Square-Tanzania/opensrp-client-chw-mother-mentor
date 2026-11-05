@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
-import com.vijay.jsonwizard.utils.NativeFormLangUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -27,10 +26,8 @@ import java.util.Map;
 
 public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHelper {
     private final MemberObject member;
-    private String currentVisitId;
     private final Runnable onEntryChanged;
     private final MotherMentorMotherVisitDao.Context enrollmentContext;
-    private String legacyForm;
 
     public MotherMentorVisitTypeActionHelper(MemberObject member) {
         this(member, null);
@@ -51,50 +48,19 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     public void onJsonFormLoaded(
             String jsonPayload, Context context, Map<String, List<VisitDetail>> details) {
         super.onJsonFormLoaded(jsonPayload, context, details);
-        currentVisitId = null;
-        legacyForm = null;
         payload = null;
-        if (details == null) return;
-        if (!details.containsKey(DBConstants.KEY.MAMA_VISIT_SCHEMA)
-                && (details.containsKey(DBConstants.KEY.ATTENDANCE_TYPE)
-                        || details.containsKey(DBConstants.KEY.FOLLOW_UP_STATUS))) {
-            try {
-                JSONObject form = org.smartregister.util.FormUtils.getInstance(context).getFormJson(
-                        "mothermentor_visit_type_legacy");
-                legacyForm = NativeFormLangUtils.getTranslatedString(form.toString(), context);
-            } catch (Exception e) {
-                Timber.e(e, "Unable to restore the original mother visit form");
-            }
-        }
-        for (List<VisitDetail> group : details.values()) {
-            if (group == null) continue;
-            for (VisitDetail detail : group) {
-                if (detail != null && StringUtils.isNotBlank(detail.getVisitId())) {
-                    currentVisitId = detail.getVisitId();
-                    return;
-                }
-            }
-        }
     }
 
     @Override
     public String getPreProcessed() {
         if (sourceForm == null) return null;
         try {
-            JSONObject form = new JSONObject(legacyForm == null ? sourceForm : legacyForm);
-            Map<String, String> defaults = loadEnrollmentValues();
-            if (MotherMentorMotherVisitUtils.isSchema2(
-                        MotherMentorMotherVisitUtils.formValues(form))) {
-                try {
-                    MotherMentorMotherVisitDao.Context enrollment = loadMotherContext();
-                    defaults = new HashMap<>(defaults);
-                    defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_ID, enrollment.getEnrollmentId());
-                    defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS,
-                            enrollment.getEnrollmentPregnancyStatus());
-                } catch (Exception e) {
-                    Timber.e(e, "Unable to prepare the original mother enrollment context");
-                }
-            }
+            JSONObject form = new JSONObject(sourceForm);
+            Map<String, String> defaults = new HashMap<>(loadEnrollmentValues());
+            MotherMentorMotherVisitDao.Context enrollment = loadMotherContext();
+            defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_ID, enrollment.getEnrollmentId());
+            defaults.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS,
+                    enrollment.getEnrollmentPregnancyStatus());
             JSONArray fields = form.getJSONObject(JsonFormConstants.STEP1)
                                        .getJSONArray(JsonFormConstants.FIELDS);
             for (int i = 0; i < fields.length(); i++) {
@@ -108,13 +74,6 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                             ? "repeat"
                             : "new";
                 }
-                if (DBConstants.KEY.ART_INITIATED_BEFORE_VISIT.equals(key)
-                        && field.optString(JsonFormConstants.VALUE).isEmpty() && member != null
-                        && StringUtils.isNotBlank(member.getBaseEntityId())) {
-                    // Keep this snapshot when editing the visit where ART was first initiated.
-                    value = Boolean.toString(MotherMentorDao.wasArtInitiatedBeforeVisit(
-                            member.getBaseEntityId(), currentVisitId));
-                }
                 // Preserve answers already saved in an unfinished visit.
                 if (value != null && !value.isEmpty()
                         && field.optString(JsonFormConstants.VALUE).isEmpty()) {
@@ -124,17 +83,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                         && "repeat".equalsIgnoreCase(field.optString(JsonFormConstants.VALUE))) {
                     field.put(JsonFormConstants.READ_ONLY, true);
                 }
-                if (DBConstants.KEY.PRIMARY_MOTHERMENTOR_CLIENT.equals(key)
-                        || DBConstants.KEY.IIT_ENROLLED.equals(key)
-                        || DBConstants.KEY.PARTNER_ENROLLED.equals(key)
-                        || DBConstants.KEY.CHILD_EID_ENROLLED.equals(key)) {
-                    field.put(JsonFormConstants.VALUE, value);
-                }
             }
-            if (legacyForm == null
-                    && "moved_area".equals(
-                            org.smartregister.chw.mothermentor.util.JsonFormUtils.getValue(
-                                    form, DBConstants.KEY.MAMA_NOT_FOUND_REASON))) {
+            if ("moved_area".equals(org.smartregister.chw.mothermentor.util.JsonFormUtils.getValue(
+                    form, DBConstants.KEY.MAMA_NOT_FOUND_REASON))) {
                 JSONObject optional =
                         FormUtils.getFieldFromForm(form, DBConstants.KEY.MAMA_KITUO_ANACHOHAMIA);
                 if (optional != null && optional.optString(JsonFormConstants.VALUE).isEmpty()) {
@@ -166,9 +117,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     @Override
     public void onPayloadReceived(String jsonPayload) {
         super.onPayloadReceived(jsonPayload);
-        if (!MotherMentorMotherVisitUtils.isSchema2(
-                    MotherMentorMotherVisitUtils.formValues(payload)))
-            return;
+        if (payload == null) return;
         try {
             String attendance = getValue(DBConstants.KEY.ATTENDANCE_TYPE);
             if (!"repeat".equals(attendance)) {
@@ -196,10 +145,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
 
     @Override
     public String postProcess(String jsonPayload) {
-        return MotherMentorMotherVisitUtils.isSchema2(
-                       MotherMentorMotherVisitUtils.formValues(payload))
-                ? payload.toString()
-                : null;
+        return payload == null ? null : payload.toString();
     }
 
     @Override
@@ -214,20 +160,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        if (payload == null) return BaseMotherMentorVisitAction.Status.PENDING;
-        try {
-            JSONArray fields = payload.getJSONObject(JsonFormConstants.STEP1)
-                                       .getJSONArray(JsonFormConstants.FIELDS);
-            Map<String, String> values = new HashMap<>();
-            for (int i = 0; i < fields.length(); i++) {
-                JSONObject field = fields.getJSONObject(i);
-                values.put(field.optString(JsonFormConstants.KEY),
-                        field.optString(JsonFormConstants.VALUE));
-            }
-            return completed(MotherMentorVisitCompletion.isVisitTypeComplete(values));
-        } catch (Exception e) {
-            Timber.e(e);
-            return BaseMotherMentorVisitAction.Status.PENDING;
-        }
+        return completed(MotherMentorVisitCompletion.isVisitTypeComplete(
+                MotherMentorMotherVisitUtils.formValues(payload)));
     }
 }

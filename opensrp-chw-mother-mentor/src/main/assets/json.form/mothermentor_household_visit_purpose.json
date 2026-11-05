@@ -53,34 +53,27 @@
   },
   "global": {},
   "step1": {
-    "title": "Purpose of visit",
+    "title": "Purpose of Visit",
     "fields": [
       {
         "key": "purpose_of_visit",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "purpose_of_visit",
-        "label": "Purpose of visit",
+        "label": "Purpose of Visit",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "routine_follow_up",
-            "text": "Routine follow-up",
+            "text": "Follow up household progress",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "routine_follow_up"
           },
           {
-            "key": "new_registration",
-            "text": "New registration",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "new_registration"
-          },
-          {
             "key": "psychological_support",
-            "text": "Psychological support",
+            "text": "Psychosocial support",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "psychological_support"
@@ -101,7 +94,7 @@
       {
         "key": "other_purpose",
         "type": "edit_text",
-        "hint": "Please specify the other purpose",
+        "hint": "Specify the purpose",
         "openmrs_entity_id": "other_purpose",
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",

@@ -45,7 +45,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             new LinkedHashMap<>();
     private boolean actionsReady;
     private boolean entrySaved;
-    private boolean legacyVisit;
     private String attendanceContext;
     private Date serviceDate = new Date();
     protected MotherMentorMotherVisitDao.Context enrollmentContext =
@@ -61,7 +60,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void getDetailsOnEdit(BaseMotherMentorVisitContract.View view, MemberObject member) {
         memberObject = member;
         details = null;
-        legacyVisit = false;
         serviceDate = new Date();
         enrollmentContext = loadMotherContext(member == null ? null : member.getBaseEntityId());
         visitEnrollmentId = enrollmentContext.getEnrollmentId();
@@ -72,13 +70,11 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         details = VisitUtils.getVisitGroups(
                 MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(
                         visit.getVisitId()));
-        legacyVisit = true;
         try {
             JSONObject event = new JSONObject(visit.getJson());
             Map<String, String> values =
                     org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion
                             .observationValues(event.optJSONArray("obs"));
-            legacyVisit = !MotherMentorMotherVisitUtils.isSchema2(values);
             visitEnrollmentId = StringUtils.defaultIfBlank(
                     values.get(DBConstants.KEY.MAMA_ENROLLMENT_ID), visitEnrollmentId);
             originalPregnancyStatus = StringUtils.defaultIfBlank(
@@ -113,8 +109,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         final Runnable runnable = () -> {
             motherMentorVisitActions.clear();
             actionsReady = false;
-            entrySaved = legacyVisit
-                    || (details != null && details.containsKey(DBConstants.KEY.MAMA_VISIT_SCHEMA));
+            entrySaved = details != null && details.containsKey(DBConstants.KEY.ATTENDANCE_TYPE);
             try {
                 addVisitAction(context.getString(R.string.mothermentor_visit_type_section),
                         FORM_VISIT_TYPE, createVisitTypeActionHelper(), null);
@@ -226,7 +221,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private void clearHiddenServices() {
-        if (legacyVisit || shouldShowFullVisitActions()) return;
+        if (shouldShowFullVisitActions()) return;
         for (BaseMotherMentorVisitAction action : motherMentorVisitActions.values()) {
             if (!FORM_VISIT_TYPE.equals(action.getFormName())
                     && !FORM_COMMENT.equals(action.getFormName()))
@@ -268,8 +263,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
-        if (legacyVisit) return;
-        putObservation(event, DBConstants.KEY.MAMA_VISIT_SCHEMA, "2");
         putObservation(event, DBConstants.KEY.MAMA_ENROLLMENT_ID, visitEnrollmentId);
         putObservation(
                 event, DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, originalPregnancyStatus);

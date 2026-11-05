@@ -53,30 +53,23 @@
   },
   "global": {},
   "step1": {
-    "title": "Kusudi la ziara",
+    "title": "Kusudi la Ziara",
     "fields": [
       {
         "key": "purpose_of_visit",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "purpose_of_visit",
-        "label": "Kusudi la ziara",
+        "label": "Kusudi la Ziara",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
           {
             "key": "routine_follow_up",
-            "text": "Ufuatiliaji wa kawaida",
+            "text": "Kufuatilia maendeleo ya kaya",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "routine_follow_up"
-          },
-          {
-            "key": "new_registration",
-            "text": "Usajili mpya",
-            "openmrs_entity_parent": "",
-            "openmrs_entity": "concept",
-            "openmrs_entity_id": "new_registration"
           },
           {
             "key": "psychological_support",
@@ -101,7 +94,7 @@
       {
         "key": "other_purpose",
         "type": "edit_text",
-        "hint": "Taja nyingine",
+        "hint": "Taja kusudi",
         "openmrs_entity_id": "other_purpose",
         "openmrs_entity": "concept",
         "openmrs_entity_parent": "",
