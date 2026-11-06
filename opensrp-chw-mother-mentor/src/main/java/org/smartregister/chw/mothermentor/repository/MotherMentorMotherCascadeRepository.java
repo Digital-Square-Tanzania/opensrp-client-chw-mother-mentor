@@ -300,7 +300,7 @@ public final class MotherMentorMotherCascadeRepository {
         return new Target(table, id, episode, started, row);
     }
 
-    private static Enrollment latestEnrollment(SQLiteDatabase db, String id, String type) {
+    static Enrollment latestEnrollment(SQLiteDatabase db, String id, String type) {
         if (!columns(db, "event").containsAll(Arrays.asList(EVENT_BASE_ENTITY_ID, EVENT_TYPE, EVENT_JSON))) return null;
         Map<String, Enrollment> sources = new HashMap<>();
         try (Cursor rows = db.rawQuery("SELECT * FROM event WHERE " + EVENT_BASE_ENTITY_ID
@@ -394,7 +394,7 @@ public final class MotherMentorMotherCascadeRepository {
                 + MAMA_CASCADE_TARGET_ENROLLMENT_ID + " = ?", new String[] {target.table, target.id, target.episode});
     }
 
-    private static Map<String, String> row(SQLiteDatabase db, String table, String id) {
+    static Map<String, String> row(SQLiteDatabase db, String table, String id) {
         if (!columns(db, table).contains(BASE_ENTITY_ID)) return Collections.emptyMap();
         try (Cursor rows = db.rawQuery("SELECT * FROM " + table + " WHERE " + BASE_ENTITY_ID + " = ? LIMIT 1", new String[] {id})) {
             return rows.moveToFirst() ? values(rows) : Collections.emptyMap();
@@ -415,14 +415,14 @@ public final class MotherMentorMotherCascadeRepository {
                 || dod != null && !dod.isAfter(LocalDate.now());
     }
     private static boolean hasTable(SQLiteDatabase db, String table) { return !columns(db, table).isEmpty(); }
-    private static List<String> columns(SQLiteDatabase db, String table) {
+    static List<String> columns(SQLiteDatabase db, String table) {
         List<String> result = new ArrayList<>();
         try (Cursor rows = db.rawQuery("PRAGMA table_info(" + table + ")", new String[0])) {
             while (rows.moveToNext()) result.add(rows.getString(rows.getColumnIndexOrThrow("name")));
         }
         return result;
     }
-    private static String text(Cursor rows, String column) {
+    static String text(Cursor rows, String column) {
         int index = rows.getColumnIndex(column); return index < 0 ? "" : StringUtils.defaultString(rows.getString(index));
     }
 
@@ -458,7 +458,7 @@ public final class MotherMentorMotherCascadeRepository {
             this.target = target; this.previous = previous; this.applied = applied; this.claims = claims;
         }
     }
-    private static final class Enrollment {
+    static final class Enrollment {
         final String id; final LocalDate date; final long time, version; final boolean valid;
         Enrollment(String id, LocalDate date, long time, long version, boolean valid) {
             this.id = id; this.date = date; this.time = time; this.version = version; this.valid = valid;
