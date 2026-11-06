@@ -123,9 +123,12 @@ public final class MotherMentorIitRepository {
 
     private static boolean isComplete(Map<String, String> answers, MotherMentorIitState state,
             LocalDate serviceDate) {
-        return isStatusComplete(answers) && (!"found".equals(value(answers, FOLLOW_UP_STATUS))
+        if (!isStatusComplete(answers)) return false;
+        String missedDate = StringUtils.defaultIfBlank(value(answers, IIT_MISSED_APPOINTMENT_DATE),
+                state.getMissedAppointmentDate());
+        return !"found".equals(value(answers, FOLLOW_UP_STATUS))
                 || MotherMentorIitReturnUtils.isComplete(answers, state.getReturnState(),
-                        state.getMissedAppointmentDate(), serviceDate));
+                        missedDate, serviceDate);
     }
 
     /** Called by the explicit app migration, using the same database as the rest of the upgrade. */

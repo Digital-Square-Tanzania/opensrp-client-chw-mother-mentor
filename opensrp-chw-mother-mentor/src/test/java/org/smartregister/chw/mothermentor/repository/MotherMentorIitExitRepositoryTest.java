@@ -26,9 +26,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
@@ -189,6 +191,63 @@ public class MotherMentorIitExitRepositoryTest {
         assertFalse(MotherMentorIitRepository.belongsToCurrentEnrollment(db, CLIENT, field("visits", VISIT_JSON)));
     }
 
+    @Test
+    public void newMamaEpisodeDoesNotReopenItsPreviouslyClosedIitTarget() throws Exception {
+        linkMama();
+        mamaVisit("mother-move", "2020-04-11", "moved_area");
+        MotherMentorMotherClosureRepository.rebuild(db, CLIENT);
+        assertEquals("I3", field(IIT, IIT_STATUS));
+        enrollment(Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLLMENT, "mama-two",
+                "2020-04-11T17:00:00+03:00");
+        data.execSQL("UPDATE " + MOTHERS + " SET is_closed = 0");
+        MotherMentorMotherClosureRepository.rebuild(db, CLIENT);
+        assertEquals("active", field(MOTHERS, MAMA_STATUS));
+        assertEquals("I3", field(IIT, IIT_STATUS));
+        assertEquals("mama-one", field(IIT, IIT_CASCADE_SOURCE_EPISODE));
+    }
+
+    @Test
+    public void sameDayMidnightLegacyTimestampUsesTheExactEpisodeAndReturnUsesMissedDateSnapshot()
+            throws Exception {
+        Map<String, String> agreement = initial("agreed");
+        agreement.put(IIT_FOLLOW_UP_SCHEMA, "2");
+        agreement.put(IIT_ENROLLMENT_ID, "iit-one");
+        visit("agreement", "agreement", IIT_EVENT, "2020-04-10", "00:00:00", 1, true, agreement);
+        assertEquals("referred", state().getReturnState());
+
+        Map<String, String> returned = new LinkedHashMap<>();
+        returned.put(FOLLOW_UP_STATUS, "found");
+        returned.put(RETURNED_TO_FACILITY, "yes");
+        returned.put(IIT_MISSED_APPOINTMENT_DATE, "2020-04-08");
+        returned.put(FACILITY_RETURN_DATE, "2020-04-07");
+        iitVisit("return-invalid", "return", "2020-04-11", 1, true, returned);
+        assertFalse(state().isClosed());
+
+        data.execSQL("UPDATE " + IIT + " SET expected_return_date = '2020-04-09'");
+        returned.put(FACILITY_RETURN_DATE, "2020-04-08");
+        iitVisit("return-valid", "return", "2020-04-11", 2, true, returned);
+        assertEquals("I1", state().getStatus());
+        assertFalse(state().requiresConfirmation());
+        assertFalse(state().isMamaKinaraLinked());
+    }
+
+    @Test
+    public void voidedIitImportPreservesTheSourceTimestampButSuppliesNoReportDetails() throws Exception {
+        String date = "2020-04-10T11:30:00+03:00";
+        JSONObject event = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, "source")
+                .put(EVENT_BASE_ENTITY_ID, CLIENT).put(EVENT_TYPE, IIT_EVENT)
+                .put(EVENT_DATE_TIMESTAMP, date).put(EVENT_VOIDED, true)
+                .put("obs", new JSONArray().put(new JSONObject().put("fieldCode", FOLLOW_UP_STATUS)
+                        .put("formSubmissionField", FOLLOW_UP_STATUS)
+                        .put("values", new JSONArray().put("not_found"))
+                        .put("humanReadableValues", new JSONArray().put("Not found"))));
+        org.smartregister.domain.Event source = JsonFormUtils.gson.fromJson(
+                event.toString(), org.smartregister.domain.Event.class);
+        org.smartregister.chw.mothermentor.domain.Visit visit = NCUtils.eventToVisit(source);
+        assertEquals(DateTime.parse(date).getMillis(), visit.getDate().getTime());
+        assertTrue(visit.getVisitDetails().isEmpty());
+    }
+
     private void linkMama() throws Exception {
         data.execSQL("INSERT INTO " + MOTHERS + " (base_entity_id, pregnancy_status, is_closed, "
                 + "last_interacted_with) VALUES (?, 'pregnant', 0, 1)", new Object[] {CLIENT});
@@ -222,13 +281,18 @@ public class MotherMentorIitExitRepositoryTest {
 
     private void visit(String id, String source, String type, String day, int version,
             boolean processed, Map<String, String> values) throws Exception {
+        visit(id, source, type, day, "12:00:00", version, processed, values);
+    }
+
+    private void visit(String id, String source, String type, String day, String clock, int version,
+            boolean processed, Map<String, String> values) throws Exception {
         values.put(MOTHERMENTOR_VISIT_DATE, day);
         JSONArray answers = new JSONArray();
         for (Map.Entry<String, String> entry : values.entrySet()) {
             answers.put(new JSONObject().put("fieldCode", entry.getKey())
                     .put("values", new JSONArray().put(entry.getValue())));
         }
-        String date = day + "T12:00:00+03:00";
+        String date = day + "T" + clock + "+03:00";
         long time = DateTime.parse(date).getMillis();
         JSONObject event = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, source)
                 .put(EVENT_DATE_TIMESTAMP, date).put(EVENT_VERSION, version).put("obs", answers);
