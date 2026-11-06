@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.dao;
 
 import android.database.Cursor;
+import android.provider.BaseColumns;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
@@ -231,7 +232,8 @@ public final class MotherMentorChildEidDao {
     }
 
     public static String pageQuery(String search, boolean closed, int limit, int offset) {
-        return selectColumns() + from() + condition(search, closed) + " ORDER BY m."
+        return selectColumns() + ", m." + DBConstants.KEY.ID + " AS " + BaseColumns._ID
+                + from() + condition(search, closed) + " ORDER BY m."
                 + DBConstants.KEY.FIRST_NAME + " COLLATE NOCASE, m." + DBConstants.KEY.LAST_NAME
                 + " COLLATE NOCASE, m." + DBConstants.KEY.BASE_ENTITY_ID + " LIMIT "
                 + Math.max(1, limit) + " OFFSET " + Math.max(0, offset);
