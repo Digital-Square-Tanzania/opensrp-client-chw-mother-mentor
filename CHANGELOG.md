@@ -6,6 +6,21 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.22-SNAPSHOT — 2026-11-06
+
+### Added
+
+- Add the standalone Mama IIT register and bilingual tracing checklist, including
+  missed appointment details and active and closed case history (CHW #1160).
+- Record first contact agreements and subsequent facility returns separately, and
+  replay saved visits and synchronized corrections (CHW #1161).
+- Apply the nine Mama IIT exit rules, including linked Mama Kinara card closure
+  where applicable, while preserving earlier enrollment history (CHW #1162).
+
+### Changed
+
+- Increment the library to `0.1.22-SNAPSHOT` / Android code 23.
+
 ## 0.1.21-SNAPSHOT — 2026-11-06
 
 ### Added
