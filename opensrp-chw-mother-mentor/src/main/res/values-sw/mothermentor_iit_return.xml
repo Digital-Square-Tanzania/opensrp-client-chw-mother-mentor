@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_iit_return_missed_appointment_unknown">Tarehe ya miadi aliyokosa haipatikani</string>
+    <string name="mothermentor_iit_missed_appointment_return_banner">Miadi aliyokosa: %1$s · siku %2$d zilizopita</string>
+    <string name="mothermentor_iit_return_agreement_agreed">Amekubali kurudi kituoni</string>
+    <string name="mothermentor_iit_return_agreement_refused">Amekataa kurudi kituoni</string>
+    <string name="mothermentor_iit_refusal_strike">Mara 3 — Swali hili litaulizwa tena ziara ijayo. Akikataa ziara 3 mfululizo, rekodi itafungwa. (Sasa: %1$d/3)</string>
+    <string name="mothermentor_iit_refusal_close">Mara ya 3 — itafungwa kwa “Amekataa kurudi mara 3+”.</string>
+    <string name="mothermentor_iit_not_returned_strike">Mara 3 — Swali hili litaulizwa tena ziara ijayo. Asiporudi ziara 3 mfululizo, rekodi itafungwa. (Sasa: %1$d/3)</string>
+    <string name="mothermentor_iit_not_returned_close">Mara ya 3 — itafungwa kwa “Hajarudi baada ya kukubali mara 3+”.</string>
+    <string name="mothermentor_iit_reason_travel_or_moved">Safari</string>
+</resources>

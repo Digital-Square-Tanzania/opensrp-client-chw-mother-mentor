@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_iit_return_missed_appointment_unknown">Missed appointment date unavailable</string>
+    <string name="mothermentor_iit_missed_appointment_return_banner">Missed appointment: %1$s · %2$d days ago</string>
+    <string name="mothermentor_iit_return_agreement_agreed">Agreed to return to the facility</string>
+    <string name="mothermentor_iit_return_agreement_refused">Refused to return to the facility</string>
+    <string name="mothermentor_iit_refusal_strike">3 strikes — This question will be asked again on the next visit. Three consecutive refusals close the record. (Current: %1$d/3)</string>
+    <string name="mothermentor_iit_refusal_close">3rd time — will close as “Refused to return (3+ visits)”.</string>
+    <string name="mothermentor_iit_not_returned_strike">3 strikes — This question will be asked again on the next visit. Three consecutive visits without returning close the record. (Current: %1$d/3)</string>
+    <string name="mothermentor_iit_not_returned_close">3rd time — will close as “Agreed but did not return (3+ visits)”.</string>
+    <string name="mothermentor_iit_reason_travel_or_moved">Travelled</string>
+</resources>

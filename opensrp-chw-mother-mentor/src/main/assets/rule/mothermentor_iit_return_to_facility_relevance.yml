@@ -1,0 +1,76 @@
+---
+name: step1_service_interruption_reason
+priority: 1
+condition: "step1_iit_return_state == 'none'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_service_interruption_reason_other
+priority: 1
+condition: "step1_iit_return_state == 'none' && step1_service_interruption_reason.contains('other')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_return_agreement
+priority: 1
+condition: "step1_iit_return_state == 'none'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_agreed_note
+priority: 1
+condition: "step1_iit_return_state == 'none' && step1_iit_return_agreement.contains('agreed')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_refused_note
+priority: 1
+condition: "step1_iit_return_state == 'none' && step1_iit_return_agreement.contains('refused')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_returned_to_facility
+priority: 1
+condition: "step1_iit_return_state == 'referred'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_facility_return_date
+priority: 1
+condition: "step1_iit_return_state == 'referred' && step1_returned_to_facility.contains('yes')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_returned_note
+priority: 1
+condition: "step1_iit_return_state == 'referred' && step1_returned_to_facility.contains('yes')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_sababu_kutorudi
+priority: 1
+condition: "step1_iit_return_state == 'referred' && step1_returned_to_facility.contains('no')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_sababu_kutorudi_other
+priority: 1
+condition: "step1_iit_return_state == 'referred' && step1_returned_to_facility.contains('no') && step1_iit_sababu_kutorudi.contains('other')"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_not_returned_note
+priority: 1
+condition: "step1_iit_return_state == 'referred' && step1_returned_to_facility.contains('no')"
+actions:
+  - "isRelevant = true"

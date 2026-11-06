@@ -1,0 +1,368 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Return to Facility",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Return to facility",
+    "fields": [
+      {
+        "key": "iit_return_state",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_return_state",
+        "type": "hidden",
+        "value": "none"
+      },
+      {
+        "key": "iit_missed_appointment_note",
+        "type": "toaster_notes",
+        "text": "Missed appointment",
+        "toaster_type": "info"
+      },
+      {
+        "key": "service_interruption_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "service_interruption_reason",
+        "type": "native_radio",
+        "label": "Reason for interrupting treatment",
+        "options": [
+          {
+            "key": "medicine_side_effects",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medicine_side_effects",
+            "text": "Side effects"
+          },
+          {
+            "key": "forgot",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "forgot",
+            "text": "Forgot"
+          },
+          {
+            "key": "travel_or_moved",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travel_or_moved",
+            "text": "Travelled"
+          },
+          {
+            "key": "transport_cost",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transport_cost",
+            "text": "No fare"
+          },
+          {
+            "key": "facility_congestion",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "facility_congestion",
+            "text": "Facility overcrowded"
+          },
+          {
+            "key": "stigma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stigma",
+            "text": "Stigma"
+          },
+          {
+            "key": "other",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other",
+            "text": "Other (specify)"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "service_interruption_reason_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "service_interruption_reason_other",
+        "type": "edit_text",
+        "hint": "Specify the reason",
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_return_agreement",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_return_agreement",
+        "type": "native_radio",
+        "label": "Return status",
+        "options": [
+          {
+            "key": "agreed",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "agreed",
+            "text": "Agreed to return to the facility"
+          },
+          {
+            "key": "refused",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "refused",
+            "text": "Refused to return to the facility"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_agreed_note",
+        "type": "toaster_notes",
+        "text": "Save to keep the mother on the list. The next visit starts by asking whether she returned to the facility.",
+        "toaster_type": "positive",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_refused_note",
+        "type": "toaster_notes",
+        "text": "",
+        "toaster_type": "warning",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "returned_to_facility",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "returned_to_facility",
+        "type": "native_radio",
+        "label": "Has the mother returned to the facility?",
+        "options": [
+          {
+            "key": "yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "text": "Yes"
+          },
+          {
+            "key": "no",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "text": "No"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_return_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_return_date",
+        "type": "date_picker",
+        "hint": "Date of return to facility",
+        "display_format": "dd/MM/yyyy",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_returned_note",
+        "type": "toaster_notes",
+        "text": "On save, the follow-up record closes as “Returned to care”.",
+        "toaster_type": "positive",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_sababu_kutorudi",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_sababu_kutorudi",
+        "type": "native_radio",
+        "label": "Reason for not returning to the facility",
+        "options": [
+          {
+            "key": "medicine_side_effects",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medicine_side_effects",
+            "text": "Side effects"
+          },
+          {
+            "key": "forgot",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "forgot",
+            "text": "Forgot"
+          },
+          {
+            "key": "travel_or_moved",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travel_or_moved",
+            "text": "Travelled"
+          },
+          {
+            "key": "transport_cost",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transport_cost",
+            "text": "No fare"
+          },
+          {
+            "key": "facility_congestion",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "facility_congestion",
+            "text": "Facility overcrowded"
+          },
+          {
+            "key": "stigma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stigma",
+            "text": "Stigma"
+          },
+          {
+            "key": "other",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other",
+            "text": "Other (specify)"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_sababu_kutorudi_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_sababu_kutorudi_other",
+        "type": "edit_text",
+        "hint": "Specify the reason",
+        "v_required": {
+          "value": "true",
+          "err": "Please answer the question"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_not_returned_note",
+        "type": "toaster_notes",
+        "text": "",
+        "toaster_type": "warning",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
