@@ -194,8 +194,9 @@ public class NCUtils {
         Visit visit = new Visit();
         visit.setVisitId(visitID);
         visit.setBaseEntityId(event.getBaseEntityId());
-        visit.setDate(new Date());
         visit.setVisitType(event.getEventType());
+        visit.setDate(MotherMentorIitRepository.isIitVisit(visit) && event.getEventDate() != null
+                ? event.getEventDate() : new Date());
         visit.setEventId(event.getEventId());
         visit.setFormSubmissionId(event.getFormSubmissionId());
         visit.setJson(new JSONObject(JsonFormUtils.gson.toJson(event)).toString());
@@ -367,16 +368,18 @@ public class NCUtils {
         visit.setVisitType(event.getEventType());
         visit.setEventId(event.getEventId());
         visit.setFormSubmissionId(event.getFormSubmissionId());
-        visit.setJson(new JSONObject(JsonFormUtils.gson.toJson(event)).toString());
+        JSONObject source = new JSONObject(JsonFormUtils.gson.toJson(event));
+        visit.setJson(source.toString());
         visit.setProcessed(true);
         visit.setCreatedAt(new Date());
         visit.setUpdatedAt(new Date());
-        visit.setDate(new Date());
+        boolean iit = MotherMentorIitRepository.isIitVisit(visit);
+        visit.setDate(iit && event.getEventDate() != null ? event.getEventDate().toDate() : new Date());
         Map<String, String> eventDetails = event.getDetails();
         if (eventDetails != null) visit.setVisitGroup(eventDetails.get(JsonFormUtils.HOME_VISIT_GROUP));
 
         Map<String, List<VisitDetail>> details = new HashMap<>();
-        if (event.getObs() != null) {
+        if (event.getObs() != null && !(iit && source.optBoolean(DBConstants.KEY.EVENT_VOIDED))) {
             for (org.smartregister.domain.Obs obs : event.getObs()) {
                 if (!exceptions.contains(obs.getFormSubmissionField())) {
                     VisitDetail detail = new VisitDetail();

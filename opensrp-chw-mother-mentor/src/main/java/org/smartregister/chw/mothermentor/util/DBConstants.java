@@ -293,6 +293,7 @@ public final class DBConstants {
         public static final String IIT_INTERRUPTION_REASON = "iit_interruption_reason";
         public static final String IIT_ENROLLMENT_ID = "iit_enrollment_id";
         public static final String IIT_EXPECTED_RETURN_DATE = "expected_return_date";
+        public static final String IIT_MISSED_APPOINTMENT_DATE = "iit_tarehe_miadi_aliyokosa";
         public static final String IIT_FOLLOW_UP_SCHEMA = "iit_follow_up_schema";
         public static final String IIT_KITUO_KIPYA = "iit_kituo_kipya";
         public static final String IIT_NOT_FOUND_REASON = "iit_sababu_kutopatikana";
@@ -310,6 +311,7 @@ public final class DBConstants {
         public static final String IIT_COUNTER_NYINGINE = "iit_counter_nyingine";
         public static final String IIT_COUNTER_HAJAPATIKANA = "iit_counter_hajapatikana";
         public static final String IIT_MAMA_KINARA_LINK = "iit_mama_kinara_link";
+        public static final String IIT_CASCADE_SOURCE_EPISODE = "iit_cascade_source_episode";
         public static final String IIT_TRACING_OUTCOME = "iit_tracing_outcome";
         public static final String IIT_TRACING_VISIT = "iit_tracing_visit";
         public static final String MOTHERMENTOR_REPORTING_VERSION =

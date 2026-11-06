@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_iit_confirm_close_title">Confirm closing the record</string>
+    <string name="mothermentor_iit_confirm_close_confirm">Yes, close</string>
+    <string name="mothermentor_iit_confirm_close_cancel">Cancel</string>
+    <string name="mothermentor_iit_closure_reason">Closure reason</string>
+    <string name="mothermentor_iit_closure_date">Closure date</string>
+    <string name="mothermentor_iit_closed_toast">The follow-up record is closed</string>
+</resources>

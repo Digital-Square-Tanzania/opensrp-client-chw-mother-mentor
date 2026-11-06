@@ -400,7 +400,6 @@ public class VisitRepository extends BaseRepository {
             if (replace) {
                 incoming.setVisitId(existing.getVisitId());
                 incoming.setCreatedAt(existing.getCreatedAt());
-                incoming.setDate(existing.getDate());
                 incoming.setParentVisitID(existing.getParentVisitID());
                 database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
                         new String[] {existing.getVisitId()});

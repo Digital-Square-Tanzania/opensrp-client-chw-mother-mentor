@@ -108,6 +108,8 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
         event.setEventDate(new Date());
         putObservation(event, DBConstants.KEY.IIT_FOLLOW_UP_SCHEMA, "2");
         putObservation(event, DBConstants.KEY.IIT_ENROLLMENT_ID, state.getEnrollmentId());
+        putObservation(event, DBConstants.KEY.IIT_MISSED_APPOINTMENT_DATE,
+                state.getMissedAppointmentDate());
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, serviceDate.toString("dd-MM-yyyy"));
     }
 
