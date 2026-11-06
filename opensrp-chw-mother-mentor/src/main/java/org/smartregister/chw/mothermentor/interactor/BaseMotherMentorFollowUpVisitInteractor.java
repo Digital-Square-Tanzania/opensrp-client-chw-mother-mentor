@@ -94,7 +94,7 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
                                         definition.commentsTitle,
                                         definition.commentsForm,
                                         createCommentsActionHelper(),
-                                        new AnsweredValidator(),
+                                        commentsRequireStatus() ? new AnsweredValidator() : null,
                                         true);
                             } catch (BaseMotherMentorVisitAction.ValidationException e) {
                                 Timber.e(e);
@@ -193,6 +193,10 @@ public abstract class BaseMotherMentorFollowUpVisitInteractor
         clearAction(ARRIVAL);
         clearAction(TEST_TYPE);
         clearAdditionalActions();
+    }
+
+    protected boolean commentsRequireStatus() {
+        return true;
     }
 
     protected void addAdditionalActions() throws BaseMotherMentorVisitAction.ValidationException {}

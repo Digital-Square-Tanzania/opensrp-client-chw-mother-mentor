@@ -4,4 +4,5 @@
     <color name="mothermentor_risk_high">#C62828</color>
     <color name="mothermentor_tab_indicator">#FFD600</color>
     <color name="mothermentor_tab_text_inactive">#CCFFFFFF</color>
+    <color name="mothermentor_iit_amber">#915314</color>
 </resources>

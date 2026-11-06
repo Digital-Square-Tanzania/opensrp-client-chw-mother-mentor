@@ -1565,6 +1565,12 @@ public class MotherMentorDao extends AbstractDao {
                 baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID);
     }
 
+    public static MemberObject getIitHistoryMember(String baseEntityID) {
+        if (StringUtils.isBlank(baseEntityID)) return null;
+        return getSecondaryEnrollmentMember(
+                baseEntityID, Constants.TABLES.MOTHERMENTOR_ENROLL_IIT, true);
+    }
+
     public static MemberObject getPartnerHistoryMember(String baseEntityID) {
         if (StringUtils.isBlank(baseEntityID)) return null;
         return getSecondaryEnrollmentMember(
