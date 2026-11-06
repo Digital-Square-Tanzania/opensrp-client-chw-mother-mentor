@@ -314,7 +314,7 @@ public class MotherMentorChildEidEntryRepositoryTest {
     }
 
     private Map<String, String> missed() {
-        return fields(MAMA_VISIT_SCHEMA, "2", ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "found",
+        return fields(ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "found",
                 MAMA_ENROLLMENT_ID, "mother-epoch", MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding",
                 MAMA_TAREHE_KUJIFUNGUA, dob.toString(), MAMA_CHILD_STATUS, "alive",
                 MAMA_BREASTFEEDING_STATUS, "breastfeeding", MAMA_HEI_TEST_DONE, "no");

@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
-import com.vijay.jsonwizard.utils.NativeFormLangUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
@@ -30,7 +29,6 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
     private String currentVisitId;
     private Set<String> priorGroupLinkages = Collections.emptySet();
     private final Supplier<Map<String, String>> entryValues;
-    private String legacyForm;
 
     public MotherMentorGroupLinkageActionHelper() {
         this(null);
@@ -52,20 +50,7 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
         super.onJsonFormLoaded(jsonPayload, context, details);
         currentVisitId = null;
         priorGroupLinkages = Collections.emptySet();
-        legacyForm = null;
         if (details == null) return;
-        if (!details.containsKey(DBConstants.KEY.MAMA_VISIT_SCHEMA)
-                && (details.containsKey(DBConstants.KEY.ATTENDANCE_TYPE)
-                        || details.containsKey(
-                                DBConstants.KEY.HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP))) {
-            try {
-                JSONObject form = org.smartregister.util.FormUtils.getInstance(context).getFormJson(
-                        "mothermentor_visit_group_linkage_legacy");
-                legacyForm = NativeFormLangUtils.getTranslatedString(form.toString(), context);
-            } catch (Exception e) {
-                Timber.e(e, "Unable to restore the original group linkage form");
-            }
-        }
         for (List<VisitDetail> group : details.values()) {
             if (group == null) continue;
             for (VisitDetail detail : group) {
@@ -85,8 +70,7 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
                 priorGroupLinkages = MotherMentorDao.getPriorGroupLinkages(
                         member.getBaseEntityId(), currentVisitId);
             }
-            return populateVisitContext(
-                    populatePriorGroupLinkages(legacyForm == null ? sourceForm : legacyForm));
+            return populateVisitContext(populatePriorGroupLinkages(sourceForm));
         } catch (Exception e) {
             Timber.e(e);
             return sourceForm;
@@ -103,7 +87,6 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
     }
 
     private String populateVisitContext(String source) {
-        if (legacyForm != null) return source;
         try {
             JSONObject form = new JSONObject(source);
             Map<String, String> values =
@@ -141,7 +124,7 @@ public class MotherMentorGroupLinkageActionHelper extends BaseMotherMentorAction
 
     private String populatePriorGroupLinkages(String jsonPayload) {
         Map<String, String> entry = entryValues == null ? null : entryValues.get();
-        if (MotherMentorMotherVisitUtils.isSchema2(entry)
+        if (entry != null && !entry.isEmpty()
                 && !MotherMentorMotherVisitUtils.isFullVisit(entry))
             return jsonPayload;
         try {

@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.interactor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
@@ -16,18 +17,17 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
-import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
-import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 
 import timber.log.Timber;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -48,7 +48,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             new LinkedHashMap<>();
     private boolean actionsReady;
     private boolean entrySaved;
-    private boolean legacyVisit;
     private String attendanceContext;
     private Date serviceDate = new Date();
     protected MotherMentorMotherVisitDao.Context enrollmentContext =
@@ -64,7 +63,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void getDetailsOnEdit(BaseMotherMentorVisitContract.View view, MemberObject member) {
         memberObject = member;
         details = null;
-        legacyVisit = false;
         serviceDate = new Date();
         enrollmentContext = loadMotherContext(member == null ? null : member.getBaseEntityId());
         visitEnrollmentId = enrollmentContext.getEnrollmentId();
@@ -75,13 +73,11 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         details = VisitUtils.getVisitGroups(
                 MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(
                         visit.getVisitId()));
-        legacyVisit = true;
         try {
             JSONObject event = new JSONObject(visit.getJson());
             Map<String, String> values =
                     org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion
                             .observationValues(event.optJSONArray("obs"));
-            legacyVisit = !MotherMentorMotherVisitUtils.isSchema2(values);
             visitEnrollmentId = StringUtils.defaultIfBlank(
                     values.get(DBConstants.KEY.MAMA_ENROLLMENT_ID), visitEnrollmentId);
             originalPregnancyStatus = StringUtils.defaultIfBlank(
@@ -116,8 +112,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         final Runnable runnable = () -> {
             motherMentorVisitActions.clear();
             actionsReady = false;
-            entrySaved = legacyVisit
-                    || (details != null && details.containsKey(DBConstants.KEY.MAMA_VISIT_SCHEMA));
+            entrySaved = details != null && details.containsKey(DBConstants.KEY.ATTENDANCE_TYPE);
             try {
                 addVisitAction(context.getString(R.string.mothermentor_visit_type_section),
                         FORM_VISIT_TYPE, createVisitTypeActionHelper(), null);
@@ -189,24 +184,9 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private boolean shouldShowFullVisitActions() {
-        if (!entrySaved) return false;
-        Map<String, String> values = new HashMap<>(entryValues());
-        if (!MotherMentorMotherVisitUtils.isSchema2(values)) {
-            return MotherMentorMotherVisitUtils.isFullVisit(values);
-        }
-        if (StringUtils.isBlank(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
-                && details != null && details.containsKey(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE)
-                && !details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).isEmpty()) {
-            values.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
-                    details.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE).get(0).getDetails());
-        }
-        if (StringUtils.isBlank(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE))
-                && StringUtils.isBlank(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE))
-                && serviceDate != null) {
-            values.put(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
-                    new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
-        }
-        return MotherMentorMotherClosureRepository.outcome(values) == VisitOutcome.CONTINUE;
+        return entrySaved
+                && MotherMentorMotherClosureRepository.classify(
+                        entryValues(), LocalDate.fromDateFields(serviceDate)) == VisitOutcome.CONTINUE;
     }
 
     private Map<String, String> entryValues() {
@@ -246,7 +226,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private void clearHiddenServices() {
-        if (legacyVisit || shouldShowFullVisitActions()) return;
+        if (shouldShowFullVisitActions()) return;
         for (BaseMotherMentorVisitAction action : motherMentorVisitActions.values()) {
             if (!FORM_VISIT_TYPE.equals(action.getFormName())
                     && !FORM_COMMENT.equals(action.getFormName()))
@@ -288,8 +268,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
-        if (legacyVisit) return;
-        putObservation(event, DBConstants.KEY.MAMA_VISIT_SCHEMA, "2");
         putObservation(event, DBConstants.KEY.MAMA_ENROLLMENT_ID, visitEnrollmentId);
         putObservation(
                 event, DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, originalPregnancyStatus);

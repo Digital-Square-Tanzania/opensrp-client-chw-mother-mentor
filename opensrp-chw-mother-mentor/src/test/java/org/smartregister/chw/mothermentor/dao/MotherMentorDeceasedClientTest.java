@@ -121,8 +121,6 @@ public class MotherMentorDeceasedClientTest {
     public void finalizedNestedMotherDeathUsesTheSharedDeathPathButAChildDeathDoesNot() throws Exception {
         JSONObject mother = new JSONObject(event(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"));
         mother.getJSONArray("obs")
-                .put(new JSONObject().put("fieldCode", DBConstants.KEY.MAMA_VISIT_SCHEMA)
-                        .put("values", new JSONArray().put("2")))
                 .put(new JSONObject().put("fieldCode", DBConstants.KEY.ATTENDANCE_TYPE)
                         .put("values", new JSONArray().put("repeat")))
                 .put(new JSONObject().put("fieldCode", DBConstants.KEY.MAMA_NOT_FOUND_REASON)

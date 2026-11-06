@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
@@ -24,9 +25,7 @@ import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
@@ -106,47 +105,25 @@ public class MotherMentorActionHelpersTest {
     }
 
     @Test
-    public void visitTypePrefillsBlankAnswersRefreshesFlagsAndPreservesSavedAnswers()
-            throws Exception {
-        Map<String, String> defaults = new HashMap<>();
-        defaults.put(DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
-        defaults.put(DBConstants.KEY.IIT_ENROLLED, "true");
+    public void visitTypePrefillsEnrollmentContextAndPreservesSavedAnswers() throws Exception {
+        MotherMentorMotherVisitDao.Context enrollment = new MotherMentorMotherVisitDao.Context(
+                "current-enrollment", "", "pregnant", "", "", "", 0);
         MotherMentorVisitTypeActionHelper helper =
-                new MotherMentorVisitTypeActionHelper(new MemberObject()) {
-                    @Override
-                    protected Map<String, String> loadEnrollmentValues() {
-                        return defaults;
-                    }
-                };
-        JSONObject source =
-                form(
-                        DBConstants.KEY.VISIT_PREGNANCY_STATUS,
-                        "postnatal",
-                        DBConstants.KEY.IIT_ENROLLED,
-                        "false");
+                new MotherMentorVisitTypeActionHelper(null, null, enrollment);
+        JSONObject source = form(DBConstants.KEY.MAMA_ENROLLMENT_ID, "saved-enrollment",
+                DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, "");
         helper.onJsonFormLoaded(
                 source.toString(), RuntimeEnvironment.application, Collections.emptyMap());
         JSONObject prepared = new JSONObject(helper.getPreProcessed());
-        assertEquals(
-                "postnatal",
-                JsonFormUtils.getValue(prepared, DBConstants.KEY.VISIT_PREGNANCY_STATUS));
-        assertEquals("true", JsonFormUtils.getValue(prepared, DBConstants.KEY.IIT_ENROLLED));
-        FormUtils.getFieldFromForm(source, DBConstants.KEY.VISIT_PREGNANCY_STATUS).put("value", "");
-        helper.onJsonFormLoaded(
-                source.toString(), RuntimeEnvironment.application, Collections.emptyMap());
-        assertEquals(
-                "pregnant",
-                JsonFormUtils.getValue(
-                        new JSONObject(helper.getPreProcessed()),
-                        DBConstants.KEY.VISIT_PREGNANCY_STATUS));
+        assertEquals("saved-enrollment",
+                JsonFormUtils.getValue(prepared, DBConstants.KEY.MAMA_ENROLLMENT_ID));
+        assertEquals("pregnant",
+                JsonFormUtils.getValue(prepared, DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS));
         assertStatus(helper, form(DBConstants.KEY.ATTENDANCE_TYPE, "repeat"), false);
-        assertStatus(
-                helper,
-                form(
-                        DBConstants.KEY.ATTENDANCE_TYPE,
-                        "repeat",
-                        DBConstants.KEY.FOLLOW_UP_STATUS,
-                        "not_available"),
+        assertStatus(helper,
+                form(DBConstants.KEY.ATTENDANCE_TYPE, "repeat",
+                        DBConstants.KEY.FOLLOW_UP_STATUS, "not_found",
+                        DBConstants.KEY.MAMA_NOT_FOUND_REASON, "moved_area"),
                 true);
         assertStatus(helper, "invalid-json", false);
     }

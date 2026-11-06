@@ -71,15 +71,15 @@ public final class MotherMentorMotherDeliveryRepository {
         db.update(TABLE, values, BASE_ENTITY_ID + " = ?", new String[] {motherId});
     }
 
-    /** Legacy mother services retain their original processing contract. */
+    /** Routine visits carry attendance, while category follow-ups share only status fields. */
     public static boolean isMotherVisit(Visit visit) {
         if (visit == null
                 || !Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType()))
             return false;
         try {
-            return "2".equals(MotherMentorVisitCompletion
-                            .observationValues(new JSONObject(visit.getJson()).optJSONArray("obs"))
-                            .get(MAMA_VISIT_SCHEMA));
+            return hasRoutineAttendance(MotherMentorVisitCompletion
+                    .observationValues(new JSONObject(visit.getJson()).optJSONArray("obs"))
+                    .get(ATTENDANCE_TYPE));
         } catch (JSONException invalid) {
             return false;
         }
@@ -89,12 +89,16 @@ public final class MotherMentorMotherDeliveryRepository {
         if (event == null || !Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(event.getEventType())
                 || event.getObs() == null) return false;
         for (org.smartregister.domain.Obs observation : event.getObs()) {
-            if ((MAMA_VISIT_SCHEMA.equals(observation.getFieldCode())
-                    || MAMA_VISIT_SCHEMA.equals(observation.getFormSubmissionField()))
+            if ((ATTENDANCE_TYPE.equals(observation.getFieldCode())
+                    || ATTENDANCE_TYPE.equals(observation.getFormSubmissionField()))
                     && observation.getValues() != null && !observation.getValues().isEmpty()
-                    && "2".equals(String.valueOf(observation.getValues().get(0)))) return true;
+                    && hasRoutineAttendance(String.valueOf(observation.getValues().get(0)))) return true;
         }
         return false;
+    }
+
+    private static boolean hasRoutineAttendance(String value) {
+        return "new".equals(value) || "repeat".equals(value);
     }
 
     public static void rebuildForVisit(SQLiteDatabase db, Visit visit) {
@@ -161,7 +165,7 @@ public final class MotherMentorMotherDeliveryRepository {
             try {
                 Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                         new JSONObject(visit.getJson()).optJSONArray("obs"));
-                if (!"2".equals(values.get(MAMA_VISIT_SCHEMA))) continue;
+
                 values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, original);
                 values.put(MAMA_ENROLLMENT_CHILD_DOB, enrollmentDob);
                 LocalDate serviceDate = MotherMentorMotherVisitDao.getServiceDate(visit);
@@ -194,8 +198,7 @@ public final class MotherMentorMotherDeliveryRepository {
                 try {
                     Map<String, String> recorded = MotherMentorVisitCompletion.observationValues(
                             new JSONObject(visit.getJson()).optJSONArray("obs"));
-                    if ("2".equals(recorded.get(MAMA_VISIT_SCHEMA))
-                            && recorded.containsKey(MAMA_ENROLLMENT_CHILD_DOB)
+                    if (recorded.containsKey(MAMA_ENROLLMENT_CHILD_DOB)
                             && context.getEnrollmentPregnancyStatus().equals(
                                     MotherMentorMotherPregnancyUtils.normalizeStatus(
                                             recorded.get(MAMA_ENROLLMENT_PREGNANCY_STATUS)))) {

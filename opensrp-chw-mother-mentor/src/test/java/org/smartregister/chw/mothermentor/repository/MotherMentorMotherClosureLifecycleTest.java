@@ -217,7 +217,6 @@ public class MotherMentorMotherClosureLifecycleTest {
 
     private static Map<String, String> other() {
         Map<String, String> v = new HashMap<>();
-        v.put(MAMA_VISIT_SCHEMA, "2");
         v.put(ATTENDANCE_TYPE, "repeat");
         v.put(FOLLOW_UP_STATUS, "not_found");
         v.put(MAMA_NOT_FOUND_REASON, "other");

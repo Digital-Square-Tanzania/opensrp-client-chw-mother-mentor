@@ -1,0 +1,35 @@
+---
+name: step1_counselled_child_count
+description: Show child count when a child participated
+priority: 1
+condition: "step1_participants != null && step1_participants.contains('child')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_counselled_relative_count
+description: Show relative count when a relative participated
+priority: 1
+condition: "step1_participants != null && step1_participants.contains('relative')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_counselled_neighbour_count
+description: Show neighbour count when a neighbour participated
+priority: 1
+condition: "step1_participants != null && step1_participants.contains('neighbour')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_counselled_other_count
+description: Show other participant count when another participant attended
+priority: 1
+condition: "step1_participants != null && step1_participants.contains('other')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_other
+description: Identify other participants when another participant attended
+priority: 1
+condition: "step1_participants != null && step1_participants.contains('other')"
+actions:
+  - "isRelevant = true"

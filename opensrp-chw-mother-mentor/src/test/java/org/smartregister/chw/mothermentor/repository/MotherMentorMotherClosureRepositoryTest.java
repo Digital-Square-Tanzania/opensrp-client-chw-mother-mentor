@@ -321,10 +321,13 @@ public class MotherMentorMotherClosureRepositoryTest {
     }
 
     @Test
-    public void legacyFacilityTransferUsesTheRetainedOriginalFormCode() {
+    public void facilityTransferUsesTheNestedReasonAndRequiredFacility() {
         Map<String, String> values = new HashMap<>();
         values.put(ATTENDANCE_TYPE, "repeat");
-        values.put(FOLLOW_UP_STATUS, "transferred_to_another_facility");
+        values.put(FOLLOW_UP_STATUS, "not_found");
+        values.put(MAMA_NOT_FOUND_REASON, "moved_facility");
+        assertNull(MotherMentorMotherClosureRepository.classify(values, new LocalDate(2026, 10, 5)));
+        values.put(MAMA_KITUO_KIPYA, "Receiving facility");
         assertEquals(VisitOutcome.MOVED_FACILITY,
                 MotherMentorMotherClosureRepository.classify(values, new LocalDate(2026, 10, 5)));
     }
@@ -365,7 +368,6 @@ public class MotherMentorMotherClosureRepositoryTest {
     }
     private static Map<String, String> other() {
         Map<String, String> v = new HashMap<>();
-        v.put(MAMA_VISIT_SCHEMA, "2");
         v.put(ATTENDANCE_TYPE, "repeat");
         v.put(FOLLOW_UP_STATUS, "not_found");
         v.put(MAMA_NOT_FOUND_REASON, "other");

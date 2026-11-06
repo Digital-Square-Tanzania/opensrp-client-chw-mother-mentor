@@ -52,14 +52,6 @@
     "title": "Group linkage",
     "fields": [
       {
-        "key": "mama_visit_schema",
-        "type": "hidden",
-        "value": "2",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "mama_visit_schema"
-      },
-      {
         "key": "attendance_type",
         "type": "hidden",
         "value": "",

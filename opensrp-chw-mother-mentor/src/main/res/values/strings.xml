@@ -213,7 +213,7 @@
     <string name="mothermentor_household_visit_maoni">Comment</string>
     <string name="mothermentor_household_visit_wanakaya_waliopewa_ushauri">Household members counselled</string>
     <string name="mothermentor_interruption_reason_section">Reason for service interruption</string>
-    <string name="mothermentor_partner_arrival_section">Arrived at the facility</string>
+    <string name="mothermentor_partner_arrival_section">Attended facility</string>
     <string name="mothermentor_partner_non_attendance_reason_section">Reason for not attending the facility</string>
     <string name="mothermentor_return_to_facility_section">Return to facility</string>
 
@@ -228,7 +228,7 @@
     <string name="mothermentor_death_record_failed">Unable to record the client’s death. Please try again.</string>
 
     <!-- Partner follow-up workflow -->
-    <string name="mothermentor_partner_attendance_section">Facility attendance</string>
+    <string name="mothermentor_partner_attendance_section">Attended facility</string>
     <string name="mothermentor_partner_hiv_test_section">HIV test</string>
     <string name="mothermentor_partner_syphilis_test_section">Syphilis test</string>
     <string name="mothermentor_partner_hepatitis_b_test_section">Hepatitis B test</string>

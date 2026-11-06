@@ -41,6 +41,7 @@ public class MotherMentorMotherPregnancyHelperTest {
             set(form, MAMA_PRETERM_DELIVERY_DATE_INPUT, "18-10-2026");
             set(form, MAMA_CHILD_STATUS, "alive");
             set(form, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+            set(form, MAMA_HEI_TEST_DONE, "no");
             helper.onPayloadReceived(form.toString());
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
         }

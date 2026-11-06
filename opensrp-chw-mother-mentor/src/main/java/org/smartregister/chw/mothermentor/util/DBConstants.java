@@ -251,7 +251,6 @@ public final class DBConstants {
         // Visit observations.
         public static final String ART_RETURN_DATE = "art_return_date";
         public static final String ATTENDANCE_TYPE = "attendance_type";
-        public static final String MAMA_VISIT_SCHEMA = "mama_visit_schema";
         public static final String MAMA_NOT_FOUND_REASON = "mama_not_found_reason";
         public static final String MAMA_SABABU_NYINGINE_TEXT = "mama_sababu_nyingine_text";
         public static final String MAMA_KITUO_KIPYA = "mama_kituo_kipya";
@@ -265,6 +264,11 @@ public final class DBConstants {
         public static final String CHILD_FOLLOWUP_TEST_STAGE = "child_followup_test_stage";
         public static final String CHILD_LINKING = "child_linking";
         public static final String CHILD_REACHED_FACILITY = "child_reached_facility";
+        public static final String HOUSEHOLD_COUNSELLING_SCHEMA = "household_counselling_schema";
+        public static final String COUNSELLED_CHILD_COUNT = "counselled_child_count";
+        public static final String COUNSELLED_RELATIVE_COUNT = "counselled_relative_count";
+        public static final String COUNSELLED_NEIGHBOUR_COUNT = "counselled_neighbour_count";
+        public static final String COUNSELLED_OTHER_COUNT = "counselled_other_count";
         public static final String COUNSELLED_FEMALE = "counselled_female";
         public static final String COUNSELLED_MALE = "counselled_male";
         public static final String COUNSELLED_TOTAL = "counselled_total";
@@ -401,11 +405,6 @@ public final class DBConstants {
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
-        public static final String MTOTO_NOT_FOUND_REASON = "mtoto_not_found_reason";
-        public static final String MTOTO_NEW_FACILITY = "mtoto_new_facility";
-        public static final String MTOTO_NOT_FOUND_REASON_OTHER = "mtoto_not_found_reason_other";
-        public static final String MTOTO_MOVED_AREA_FACILITY = "mtoto_moved_area_facility";
-        public static final String MTOTO_ALIVE_NOTE = "mtoto_alive_note";
         public static final String MTOTO_MISSED_TEST = "mtoto_missed_test";
         public static final String MTOTO_MISSED_DUE = "mtoto_missed_due";
         public static final String MTOTO_RUFAA_STATE = "mtoto_rufaa_state";
@@ -423,6 +422,11 @@ public final class DBConstants {
         public static final String MTOTO_IS_CLOSED = "mtoto_is_closed";
         public static final String MTOTO_VISIT_COUNT = "mtoto_visit_count";
         public static final String MOTHER_ENTITY_ID = "mother_entity_id";
+        public static final String MTOTO_NOT_FOUND_REASON = "mtoto_not_found_reason";
+        public static final String MTOTO_NEW_FACILITY = "mtoto_new_facility";
+        public static final String MTOTO_NOT_FOUND_REASON_OTHER = "mtoto_not_found_reason_other";
+        public static final String MTOTO_MOVED_AREA_FACILITY = "mtoto_moved_area_facility";
+        public static final String MTOTO_ALIVE_NOTE = "mtoto_alive_note";
         public static final String CHILD_EID_FINAL_HIV_TEST_DONE = "child_eid_final_hiv_test_done";
         public static final String CHILD_EID_FINAL_HIV_RESULT = "child_eid_final_hiv_result";
         public static final String CHILD_EID_FINAL_HIV_TEST_DATE = "child_eid_final_hiv_test_date";
