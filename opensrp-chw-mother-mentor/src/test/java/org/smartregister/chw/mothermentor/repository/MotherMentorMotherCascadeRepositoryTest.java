@@ -369,7 +369,7 @@ public class MotherMentorMotherCascadeRepositoryTest {
         } catch (Exception error) { throw new AssertionError(error); }
     }
     private void deceasedVisit(String id) {
-        service(id, id + "-death", MAMA_VISIT_SCHEMA, "2", MAMA_ENROLLMENT_ID, id + "-episode",
+        service(id, id + "-death", MAMA_ENROLLMENT_ID, id + "-episode",
                 ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "not_found", MAMA_NOT_FOUND_REASON,
                 "deceased", MOTHERMENTOR_VISIT_DATE, "20-10-2026");
     }

@@ -47,6 +47,9 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
     }
 
     public static boolean isComplete(Map<String, String> values, boolean childSchema) {
+        if (values == null || (!childSchema && values.containsKey(DBConstants.KEY.ATTENDANCE_TYPE))) {
+            return false;
+        }
         // Schema3 tracing needs the registered child's birth date and the service day.
         if (MotherMentorChildEidStatusUtils.isSchema3(values)) return false;
         String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);

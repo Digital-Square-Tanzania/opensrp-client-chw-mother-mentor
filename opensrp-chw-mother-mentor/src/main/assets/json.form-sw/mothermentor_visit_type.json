@@ -220,46 +220,6 @@
         }
       },
       {
-        "key": "mama_visit_schema",
-        "type": "hidden",
-        "value": "2",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "mama_visit_schema"
-      },
-      {
-        "key": "mama_enrollment_id",
-        "type": "hidden",
-        "value": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "mama_enrollment_id"
-      },
-      {
-        "key": "mama_enrollment_pregnancy_status",
-        "type": "hidden",
-        "value": "",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "mama_enrollment_pregnancy_status"
-      },
-      {
-        "key": "primary_mothermentor_client",
-        "type": "hidden",
-        "value": "true",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "primary_mothermentor_client"
-      },
-      {
-        "key": "mothermentor_reporting_version",
-        "type": "hidden",
-        "value": "2",
-        "openmrs_entity": "concept",
-        "openmrs_entity_parent": "",
-        "openmrs_entity_id": "mothermentor_reporting_version"
-      },
-      {
         "key": "mama_enrollment_child_dob",
         "type": "hidden",
         "openmrs_entity": "concept",
@@ -928,6 +888,38 @@
             }
           }
         }
+      },
+      {
+        "key": "mama_enrollment_id",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_enrollment_id"
+      },
+      {
+        "key": "mama_enrollment_pregnancy_status",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_enrollment_pregnancy_status"
+      },
+      {
+        "key": "primary_mothermentor_client",
+        "type": "hidden",
+        "value": "true",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "primary_mothermentor_client"
+      },
+      {
+        "key": "mothermentor_reporting_version",
+        "type": "hidden",
+        "value": "2",
+        "openmrs_entity": "concept",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mothermentor_reporting_version"
       }
     ]
   }

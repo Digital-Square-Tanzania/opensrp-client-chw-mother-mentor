@@ -144,13 +144,74 @@ public class VisitRepository extends BaseRepository {
         }
         // Handle updated home visit details
         database.insert(VISIT_TABLE, null, createValues(visit));
+        MotherMentorMotherDeliveryRepository.rebuildForVisit(database, visit);
         MotherMentorPartnerClosureRepository.rebuildForVisit(database, visit);
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
-        MotherMentorMotherDeliveryRepository.rebuildForVisit(database, visit);
         MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
         MotherMentorChildEidRepository.rebuildForVisit(database, visit);
         MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
         EventBus.getDefault().post(visit);
+    }
+
+    /** Replace only routine mother evidence when its source revision advances. */
+    public void refreshMotherVisit(Visit existing, Visit incoming, SQLiteDatabase database,
+            VisitDetailsRepository detailsRepository) {
+        if (existing == null || incoming == null
+                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
+                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())
+                || !MotherMentorMotherDeliveryRepository.isMotherVisit(existing)
+                || !MotherMentorMotherDeliveryRepository.isMotherVisit(incoming)) return;
+        if (database == null) database = getWritableDatabase();
+        long incomingVersion = motherSourceVersion(incoming);
+        boolean identical = StringUtils.equals(existing.getJson(), incoming.getJson());
+        boolean replace = !identical && incomingVersion > 0
+                && incomingVersion >= motherSourceVersion(existing);
+        boolean ownTransaction = !database.inTransaction();
+        if (ownTransaction) database.beginTransaction();
+        try {
+            if (replace) {
+                incoming.setVisitId(existing.getVisitId());
+                incoming.setCreatedAt(existing.getCreatedAt());
+                incoming.setDate(existing.getDate());
+                incoming.setParentVisitID(existing.getParentVisitID());
+                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                if (incoming.getVisitDetails() != null) {
+                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
+                        if (details == null) continue;
+                        for (VisitDetail detail : details) {
+                            detail.setVisitId(existing.getVisitId());
+                            detailsRepository.addVisitDetails(detail, database);
+                        }
+                    }
+                }
+            } else if (Boolean.TRUE.equals(incoming.getProcessed())
+                    && !Boolean.TRUE.equals(existing.getProcessed()) && identical) {
+                ContentValues finalized = new ContentValues();
+                finalized.put(PROCESSED, 1);
+                finalized.put(PRE_PROCESSED, "");
+                database.update(VISIT_TABLE, finalized, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                existing.setProcessed(true);
+            }
+            MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorMotherChildRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorChildEidRepository.rebuildForMother(database, existing.getBaseEntityId());
+            if (ownTransaction) database.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) database.endTransaction();
+        }
+        EventBus.getDefault().post(replace ? incoming : existing);
+    }
+
+    private long motherSourceVersion(Visit visit) {
+        try {
+            return Math.max(0, new JSONObject(visit.getJson()).optLong("version", 0));
+        } catch (JSONException invalid) {
+            return 0;
+        }
     }
 
     /** Refresh only partner evidence on replay; other visit types keep their existing sync path. */
@@ -320,67 +381,6 @@ public class VisitRepository extends BaseRepository {
         catch (org.json.JSONException invalid) { return 0; }
     }
 
-    /** Replace only schema-2 mother evidence when its source revision advances. */
-    public void refreshMotherVisit(Visit existing, Visit incoming, SQLiteDatabase database,
-            VisitDetailsRepository detailsRepository) {
-        if (existing == null || incoming == null
-                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
-                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())
-                || !MotherMentorMotherDeliveryRepository.isMotherVisit(existing)
-                || !MotherMentorMotherDeliveryRepository.isMotherVisit(incoming)) return;
-        if (database == null) database = getWritableDatabase();
-        long incomingVersion = motherSourceVersion(incoming);
-        boolean identical = StringUtils.equals(existing.getJson(), incoming.getJson());
-        boolean replace = !identical && incomingVersion > 0
-                && incomingVersion >= motherSourceVersion(existing);
-        boolean ownTransaction = !database.inTransaction();
-        if (ownTransaction) database.beginTransaction();
-        try {
-            if (replace) {
-                incoming.setVisitId(existing.getVisitId());
-                incoming.setCreatedAt(existing.getCreatedAt());
-                incoming.setDate(existing.getDate());
-                incoming.setParentVisitID(existing.getParentVisitID());
-                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
-                        new String[] {existing.getVisitId()});
-                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
-                        new String[] {existing.getVisitId()});
-                if (incoming.getVisitDetails() != null) {
-                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
-                        if (details == null) continue;
-                        for (VisitDetail detail : details) {
-                            detail.setVisitId(existing.getVisitId());
-                            detailsRepository.addVisitDetails(detail, database);
-                        }
-                    }
-                }
-            } else if (Boolean.TRUE.equals(incoming.getProcessed())
-                    && !Boolean.TRUE.equals(existing.getProcessed()) && identical) {
-                ContentValues finalized = new ContentValues();
-                finalized.put(PROCESSED, 1);
-                finalized.put(PRE_PROCESSED, "");
-                database.update(VISIT_TABLE, finalized, VISIT_ID + " = ?",
-                        new String[] {existing.getVisitId()});
-                existing.setProcessed(true);
-            }
-            MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
-            MotherMentorMotherChildRepository.rebuild(database, existing.getBaseEntityId());
-            MotherMentorChildEidRepository.rebuildForMother(database, existing.getBaseEntityId());
-            if (ownTransaction) database.setTransactionSuccessful();
-        } finally {
-            if (ownTransaction) database.endTransaction();
-        }
-        EventBus.getDefault().post(replace ? incoming : existing);
-    }
-
-    private long motherSourceVersion(Visit visit) {
-        try {
-            return Math.max(0, new JSONObject(visit.getJson()).optLong("version", 0));
-        } catch (JSONException invalid) {
-            return 0;
-        }
-    }
-
     public String getParentVisitEventID(
             String baseEntityID, String parentEventType, Date eventDate) {
         if (StringUtils.isBlank(baseEntityID)
@@ -428,29 +428,33 @@ public class VisitRepository extends BaseRepository {
     public void deleteVisit(String visitID) {
         try {
             SQLiteDatabase database = getWritableDatabase();
+            Set<String> mothers = MotherMentorMotherDeliveryRepository.affectedMothers(database, visitID);
             Visit removed = getVisitByVisitId(visitID);
-            Set<String> affectedDeliveryMothers = MotherMentorMotherDeliveryRepository.affectedMothers(database, visitID);
-            Set<String> affectedMothers = MotherMentorMotherClosureRepository.affectedMothers(database, visitID);
             Set<String> households =
                     MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID);
             Set<String> affectedPartners =
                     MotherMentorPartnerClosureRepository.affectedPartners(database, visitID);
+            Set<String> affectedMothers = MotherMentorMotherClosureRepository.affectedMothers(database, visitID);
             database.delete(VISIT_TABLE, VISIT_ID + "= ?", new String[] {visitID});
             database
                     .delete(
                             VisitDetailsRepository.VISIT_DETAILS_TABLE,
                             VISIT_ID + "= ?",
                             new String[] {visitID});
+            for (String mother : mothers) {
+                MotherMentorMotherDeliveryRepository.rebuild(database, mother);
+            }
+            MotherMentorMotherChildRepository.rebuildForVisit(database, removed);
             for (String household : households) {
                 MotherMentorHouseholdClosureRepository.rebuild(database, household);
             }
             for (String partner : affectedPartners) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
-            for (String mother : affectedDeliveryMothers) MotherMentorMotherDeliveryRepository.rebuild(database, mother);
-            MotherMentorMotherChildRepository.rebuildForVisit(database, removed);
             MotherMentorChildEidRepository.rebuildForVisit(database, removed);
-            for (String mother : affectedMothers) MotherMentorMotherClosureRepository.rebuild(database, mother);
+            for (String motherId : affectedMothers) {
+                MotherMentorMotherClosureRepository.rebuild(database, motherId);
+            }
         } catch (Exception e) {
             Timber.e(e);
         }
@@ -464,15 +468,15 @@ public class VisitRepository extends BaseRepository {
             values.put(PRE_PROCESSED, "");
             database
                     .update(VISIT_TABLE, values, VISIT_ID + " = ?", new String[] {visitID});
+            Visit canonical = getVisitByVisitId(visitID);
+            MotherMentorMotherDeliveryRepository.rebuildForVisit(database, canonical);
+            MotherMentorMotherChildRepository.rebuildForVisit(database, canonical);
             for (String household : MotherMentorHouseholdClosureRepository.affectedHouseholds(database, visitID)) {
                 MotherMentorHouseholdClosureRepository.rebuild(database, household);
             }
             for (String partner : MotherMentorPartnerClosureRepository.affectedPartners(database, visitID)) {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
-            Visit canonical = getVisitByVisitId(visitID);
-            MotherMentorMotherDeliveryRepository.rebuildForVisit(database, canonical);
-            MotherMentorMotherChildRepository.rebuildForVisit(database, canonical);
             MotherMentorChildEidRepository.rebuildForVisit(database, canonical);
             MotherMentorMotherClosureRepository.rebuildForVisit(database, canonical);
         } catch (Exception e) {

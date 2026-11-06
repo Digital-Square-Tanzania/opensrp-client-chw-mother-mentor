@@ -7,16 +7,12 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Schema-specific completion for the mother visit entry and its applicable service sections. */
+/** Completion for the mother visit entry and its applicable service sections. */
 public final class MotherMentorMotherVisitUtils {
     private MotherMentorMotherVisitUtils() {}
 
-    public static boolean isSchema2(Map<String, String> values) {
-        return values != null && "2".equals(values.get(DBConstants.KEY.MAMA_VISIT_SCHEMA));
-    }
-
     public static boolean isEntryComplete(Map<String, String> values) {
-        if (!isSchema2(values)) return MotherMentorVisitCompletion.isVisitTypeComplete(values);
+        if (values == null) return false;
         String type = values.get(DBConstants.KEY.ATTENDANCE_TYPE);
         if ("new".equals(type)) return true;
         if (!"repeat".equals(type)) return false;
@@ -33,13 +29,9 @@ public final class MotherMentorMotherVisitUtils {
     }
 
     public static boolean isFullVisit(Map<String, String> values) {
-        if (!isSchema2(values))
-            return MotherMentorVisitCompletion.isFullVisit(
-                    values.get(DBConstants.KEY.ATTENDANCE_TYPE),
-                    values.get(DBConstants.KEY.FOLLOW_UP_STATUS));
-        return "new".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
-                || ("repeat".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
-                        && "found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS)));
+        return values != null && MotherMentorVisitCompletion.isFullVisit(
+                values.get(DBConstants.KEY.ATTENDANCE_TYPE),
+                values.get(DBConstants.KEY.FOLLOW_UP_STATUS));
     }
 
     public static boolean isComplete(Map<String, String> values) {
@@ -59,7 +51,7 @@ public final class MotherMentorMotherVisitUtils {
 
     /** ART initiation remains New-only and is not asked again after previously starting ART. */
     public static boolean isArtComplete(Map<String, String> values) {
-        if (!isSchema2(values) || !"new".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
+        if (values == null || !"new".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
                 || "true".equals(values.get(DBConstants.KEY.ART_INITIATED_BEFORE_VISIT)))
             return true;
         String started = values.get(DBConstants.KEY.NEW_PMTCT_ART_INITIATION);

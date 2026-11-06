@@ -8,6 +8,9 @@ public class MotherMentorHouseholdVisitPurposeActionHelper extends BaseMotherMen
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
         return completed(
                 MotherMentorActionAnswers.hasAnswer(
-                        payload, DBConstants.KEY.PURPOSE_OF_VISIT, false));
+                        payload, DBConstants.KEY.PURPOSE_OF_VISIT, false)
+                        && (!"other".equals(getValue(DBConstants.KEY.PURPOSE_OF_VISIT))
+                            || MotherMentorActionAnswers.hasAnswer(
+                                    payload, DBConstants.KEY.OTHER_PURPOSE, false)));
     }
 }

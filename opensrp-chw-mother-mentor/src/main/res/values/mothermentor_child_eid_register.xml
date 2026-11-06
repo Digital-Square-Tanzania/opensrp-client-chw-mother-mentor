@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="action_mothermentor_child_eid_filter" type="id" />
+    <string name="mothermentor_eid_title">Child EID</string>
+    <string name="mothermentor_eid_newborn">Newborn</string>
+    <string name="mothermentor_eid_not_recorded">Not recorded</string>
+    <plurals name="mothermentor_eid_age_weeks">
+        <item quantity="one">%d week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <string name="mothermentor_eid_test_six_weeks">6 weeks</string>
+    <string name="mothermentor_eid_test_nine_months">9 months</string>
+    <string name="mothermentor_eid_test_after_weaning">15 months</string>
+    <string name="mothermentor_eid_test_eighteen_months">18 months</string>
+    <string name="mothermentor_eid_missed_test">Missed test</string>
+    <string name="mothermentor_eid_to_refer">To be referred</string>
+    <string name="mothermentor_eid_referred">Referred</string>
+    <string name="mothermentor_eid_result_pending">Result pending</string>
+    <string name="mothermentor_eid_negative">Negative</string>
+    <string name="mothermentor_eid_positive">Positive</string>
+    <string name="mothermentor_eid_awaiting_confirmation">Awaiting confirmation</string>
+    <string name="mothermentor_eid_state_test">%1$s: %2$s</string>
+    <string name="mothermentor_eid_missed_due">Missed %1$s — due %2$s</string>
+    <string name="mothermentor_eid_mother_name">Mother: %1$s</string>
+    <string name="mothermentor_eid_visit_number">Visit %1$d</string>
+    <string name="mothermentor_eid_child_age">Child age: %1$s</string>
+    <string name="mothermentor_eid_referral_status">Referral status: %1$s</string>
+    <string name="mothermentor_eid_last_test">Last test: %1$s — %2$s</string>
+    <string name="mothermentor_eid_reason">Reason</string>
+    <string name="mothermentor_eid_entry_reason">Added to follow-up for missing the %1$s test that was due on %2$s.</string>
+    <string name="mothermentor_eid_closed">Closed</string>
+    <string name="mothermentor_eid_closed_message">This record is closed; no further visits can be recorded.</string>
+    <string name="mothermentor_eid_closed_on">%1$s\nClosed on %2$s</string>
+    <string name="mothermentor_eid_record_visit">Record Follow-up Visit</string>
+    <string name="mothermentor_eid_child_deceased">Child has died — record closed.</string>
+    <string name="mothermentor_eid_moved_area">Moved from area — record closed.</string>
+    <string name="mothermentor_eid_moved_facility">Transferred to another facility — record closed.</string>
+    <string name="mothermentor_eid_not_found_three">Not found — Other (3+ visits).</string>
+    <string name="mothermentor_eid_refused_three">Caregiver refused (3+ visits).</string>
+    <string name="mothermentor_eid_graduated">Graduated — child has the final result.</string>
+    <string name="mothermentor_eid_confirmed_positive">Child confirmed HIV-positive — record closed.</string>
+    <string name="mothermentor_eid_filter">Filter</string>
+    <string name="mothermentor_eid_closed_filter">Closed</string>
+    <string name="mothermentor_eid_apply_filter">Apply</string>
+    <string name="mothermentor_eid_cancel_filter">Cancel</string>
+    <color name="mothermentor_eid_alert">#C54242</color>
+    <color name="mothermentor_eid_success">#2E8B57</color>
+    <color name="mothermentor_eid_alert_background">#FDECEC</color>
+    <color name="mothermentor_eid_success_background">#E4F2EA</color>
+    <color name="mothermentor_eid_referred_background">#E5EEF9</color>
+    <color name="mothermentor_eid_pending_background">#FFF4DC</color>
+    <color name="mothermentor_eid_pending_text">#8D661C</color>
+</resources>

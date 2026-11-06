@@ -127,18 +127,18 @@ public class MotherMentorMotherExitCompletionTest {
     }
 
     @Test
-    public void legacyCompletionKeepsItsOriginalContinuingAndNonContinuingRules() throws Exception {
-        Map<String, String> legacy = new HashMap<>();
-        legacy.put(ATTENDANCE_TYPE, "repeat"); legacy.put(FOLLOW_UP_STATUS, "deceased");
-        assertTrue(complete(legacy));
-        legacy.put(FOLLOW_UP_STATUS, "continuing_services");
-        assertFalse(complete(legacy));
-        services(legacy); assertTrue(complete(legacy));
+    public void retiredFlatOutcomesCannotFinalizeRoutineVisits() throws Exception {
+        Map<String, String> visit = base();
+        services(visit);
+        visit.put(FOLLOW_UP_STATUS, "deceased");
+        assertFalse(complete(visit));
+        visit.put(FOLLOW_UP_STATUS, "continuing_services");
+        assertFalse(complete(visit));
     }
 
     private Map<String, String> base() {
         Map<String, String> values = new HashMap<>();
-        values.put(MAMA_VISIT_SCHEMA, "2"); values.put(ATTENDANCE_TYPE, "repeat");
+        values.put(ATTENDANCE_TYPE, "repeat");
         values.put(FOLLOW_UP_STATUS, "found"); values.put(MAMA_HEI_ASSESSMENT_DATE, DAY);
         values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant");
         return values;

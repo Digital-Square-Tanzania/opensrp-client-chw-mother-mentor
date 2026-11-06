@@ -47,7 +47,6 @@ public class MotherMentorMotherEntryFormTest {
             assertFalse(field(form, MAMA_KITUO_ANACHOHAMIA).has("v_required"));
             assertTrue(
                     field(form, MAMA_KITUO_KIPYA).getJSONObject("v_required").getBoolean("value"));
-            assertEquals("2", field(form, MAMA_VISIT_SCHEMA).getString("value"));
             JSONObject group = form(language, "mothermentor_visit_group_linkage");
             assertNotNull(field(group, NEW_PMTCT_ART_INITIATION));
             assertEquals("today", field(group, VISIT_ART_START_DATE).getString("max_date"));
@@ -98,7 +97,6 @@ public class MotherMentorMotherEntryFormTest {
             for (String cleared : new String[] {MAMA_NOT_FOUND_REASON, MAMA_SABABU_NYINGINE_TEXT,
                          MAMA_KITUO_KIPYA, MAMA_KITUO_ANACHOHAMIA})
                 assertEquals("", value(found, cleared));
-            assertEquals("2", value(found, MAMA_VISIT_SCHEMA));
         }
     }
 
