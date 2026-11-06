@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_iit_missed_appointment">Missed appointment — %1$s (%2$d days)</string>
+    <string name="mothermentor_iit_missing_appointment">Missed appointment — date unavailable</string>
+    <string name="mothermentor_iit_missed_appointment_details">Missed appointment: %1$s · %2$d days ago</string>
+    <string name="mothermentor_iit_return_status">Return status</string>
+    <string name="mothermentor_iit_counter_label">3-strike counter</string>
+    <string name="mothermentor_iit_no_counter">0/3</string>
+    <string name="mothermentor_iit_not_agreed">Not yet agreed to return</string>
+    <string name="mothermentor_iit_agreed_pending">Agreed to return — pending</string>
+    <string name="mothermentor_iit_agreed">Agreed to return</string>
+    <string name="mothermentor_iit_closed">Closed</string>
+    <string name="mothermentor_iit_closed_banner">%1$s · %2$s</string>
+    <string name="mothermentor_iit_badge">IIT</string>
+    <string name="mothermentor_iit_linked_tag">Mama Kinara</string>
+    <string name="mothermentor_iit_ctc">CTC %1$s</string>
+    <string name="mothermentor_iit_visit_count">Visits %1$d</string>
+    <string name="mothermentor_iit_linked_card_note">This mother is also a Mama Kinara client. If she dies or moves, her Mama Kinara card closes too.</string>
+    <string name="mothermentor_iit_linked_close_note">Her Mama Kinara card will also close.</string>
+    <string name="mothermentor_iit_close_now">Closes immediately — %1$s</string>
+    <string name="mothermentor_iit_close_third">3rd time — will close as %1$s</string>
+    <string name="mothermentor_iit_remains_open">3-strike rule (%1$d/3 after this visit) — she stays on the list.</string>
+    <string name="mothermentor_iit_refused_count">Refused %1$d/3</string>
+    <string name="mothermentor_iit_not_returned_count">Not returned %1$d/3</string>
+    <string name="mothermentor_iit_travelled_count">Travelled %1$d/3</string>
+    <string name="mothermentor_iit_other_count">Other %1$d/3</string>
+    <string name="mothermentor_iit_not_found_count">Not found %1$d/3</string>
+    <string name="mothermentor_iit_exit_returned">Returned to care</string>
+    <string name="mothermentor_iit_exit_deceased">Deceased</string>
+    <string name="mothermentor_iit_exit_moved">Moved from area</string>
+    <string name="mothermentor_iit_exit_transferred">Moved facility</string>
+    <string name="mothermentor_iit_exit_refused">Refused to return (3+ visits)</string>
+    <string name="mothermentor_iit_exit_not_returned">Agreed but did not return (3+ visits)</string>
+    <string name="mothermentor_iit_exit_travelled">Travelled (3+ visits)</string>
+    <string name="mothermentor_iit_exit_other">Not found — Other (3+ visits)</string>
+    <string name="mothermentor_iit_exit_ltfu">Lost to Follow-up</string>
+    <string name="mothermentor_iit_reason_deceased">Deceased</string>
+    <string name="mothermentor_iit_reason_moved_area">Moved from area</string>
+    <string name="mothermentor_iit_reason_moved_facility">Transferred to another facility</string>
+    <string name="mothermentor_iit_reason_travelled">Travelled</string>
+    <string name="mothermentor_iit_reason_other">Other (specify)</string>
+</resources>

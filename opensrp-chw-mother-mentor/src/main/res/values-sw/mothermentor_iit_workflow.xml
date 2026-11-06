@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_iit_missed_appointment">Amekosa miadi — %1$s (siku %2$d)</string>
+    <string name="mothermentor_iit_missing_appointment">Amekosa miadi — tarehe haipatikani</string>
+    <string name="mothermentor_iit_missed_appointment_details">Miadi aliyokosa: %1$s · siku %2$d zilizopita</string>
+    <string name="mothermentor_iit_return_status">Hali ya kurudi</string>
+    <string name="mothermentor_iit_counter_label">Kaunta ya mara 3</string>
+    <string name="mothermentor_iit_no_counter">0/3</string>
+    <string name="mothermentor_iit_not_agreed">Hajakubali kurudi bado</string>
+    <string name="mothermentor_iit_agreed_pending">Amekubali kurudi — inasubiri</string>
+    <string name="mothermentor_iit_agreed">Amekubali kurudi</string>
+    <string name="mothermentor_iit_closed">Imefungwa</string>
+    <string name="mothermentor_iit_closed_banner">%1$s · %2$s</string>
+    <string name="mothermentor_iit_badge">IIT</string>
+    <string name="mothermentor_iit_linked_tag">Mama Kinara</string>
+    <string name="mothermentor_iit_ctc">CTC %1$s</string>
+    <string name="mothermentor_iit_visit_count">ziara %1$d</string>
+    <string name="mothermentor_iit_linked_card_note">Mama huyu pia ni mpokea huduma wa Mama Kinara. Akifariki au kuhama, kadi yake ya Mama Kinara nayo itafungwa.</string>
+    <string name="mothermentor_iit_linked_close_note">Kadi yake ya Mama Kinara nayo itafungwa.</string>
+    <string name="mothermentor_iit_close_now">Fungwa mara moja — %1$s</string>
+    <string name="mothermentor_iit_close_third">Mara ya 3 — itafungwa kwa %1$s</string>
+    <string name="mothermentor_iit_remains_open">Mara 3 (%1$d/3 baada ya ziara hii) — mama anabaki kwenye orodha.</string>
+    <string name="mothermentor_iit_refused_count">Amekataa %1$d/3</string>
+    <string name="mothermentor_iit_not_returned_count">Hajarudi %1$d/3</string>
+    <string name="mothermentor_iit_travelled_count">Amesafiri %1$d/3</string>
+    <string name="mothermentor_iit_other_count">Nyingine %1$d/3</string>
+    <string name="mothermentor_iit_not_found_count">Hajapatikana %1$d/3</string>
+    <string name="mothermentor_iit_exit_returned">Amerudi kwenye huduma</string>
+    <string name="mothermentor_iit_exit_deceased">Amefariki</string>
+    <string name="mothermentor_iit_exit_moved">Amehama eneo</string>
+    <string name="mothermentor_iit_exit_transferred">Amehama kituo</string>
+    <string name="mothermentor_iit_exit_refused">Amekataa kurudi mara 3+</string>
+    <string name="mothermentor_iit_exit_not_returned">Hajarudi baada ya kukubali mara 3+</string>
+    <string name="mothermentor_iit_exit_travelled">Amesafiri mara 3+</string>
+    <string name="mothermentor_iit_exit_other">Hajapatikana — Nyingine mara 3+</string>
+    <string name="mothermentor_iit_exit_ltfu">Lost to Follow-up (LTFU)</string>
+    <string name="mothermentor_iit_reason_deceased">Amefariki</string>
+    <string name="mothermentor_iit_reason_moved_area">Amehama eneo</string>
+    <string name="mothermentor_iit_reason_moved_facility">Amehamia kituo kingine</string>
+    <string name="mothermentor_iit_reason_travelled">Amesafiri</string>
+    <string name="mothermentor_iit_reason_other">Nyingine (Taja)</string>
+</resources>
