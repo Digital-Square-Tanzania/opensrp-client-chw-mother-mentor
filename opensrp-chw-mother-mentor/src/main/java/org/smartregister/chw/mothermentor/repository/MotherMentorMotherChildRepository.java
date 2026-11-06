@@ -14,6 +14,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -141,6 +142,9 @@ public final class MotherMentorMotherChildRepository {
         if ("breast_feeding".equals(state.originalStatus)) state.breastfeedingStatus = "breastfeeding";
         else if ("not_pregnant".equals(state.originalStatus)) state.breastfeedingStatus = "not_breastfeeding";
         if (context.getEnrollmentId().isEmpty()) return state;
+        if (before == null && !state.childBaseEntityId.isEmpty()) {
+            loadTracingContext(db, state, context, assessmentDate);
+        }
         List<Evidence> evidence = new ArrayList<>();
         for (Visit visit : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, excludedVisitId)) {
             Evidence item = new Evidence(visit, false);
@@ -165,6 +169,28 @@ public final class MotherMentorMotherChildRepository {
             else applyMother(state, item.values, item.date);
         }
         return state;
+    }
+
+    private static void loadTracingContext(SQLiteDatabase db, State state,
+            MotherMentorMotherVisitDao.Context mother, LocalDate day) {
+        Map<String, String> child = MotherMentorChildEidDao.enrollment(db, state.childBaseEntityId);
+        if (child.isEmpty() || !mother.getEnrollmentId().equals(child.get(DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID))) return;
+        LocalDate closedOn = MotherMentorHeiSchedule.parseDate(child.get(DBConstants.KEY.MTOTO_TAREHE_YA_KUFUNGWA));
+        if (closedOn == null || !closedOn.isAfter(day)) {
+            state.tracingExcludedTests.addAll(MotherMentorChildEidRepository.suppressedTests(
+                    child.get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS)));
+            MotherMentorChildEidExit exit = MotherMentorChildEidExit.fromStatus(child.get(DBConstants.KEY.MTOTO_STATUS));
+            if ("1".equals(child.get(DBConstants.KEY.IS_CLOSED)) && exit != null && exit.isStrikeExit()) {
+                state.tracingClosedStatus = exit.getStatus();
+            }
+        }
+        String referral = child.get(DBConstants.KEY.MTOTO_RUFAA_STATE);
+        if (!"1".equals(child.get(DBConstants.KEY.IS_CLOSED))
+                && (MotherMentorChildEidReturnVisit.AWAITING_RESULT.equals(referral)
+                    || MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(referral))) {
+            Stage pending = Stage.fromCode(child.get(DBConstants.KEY.MTOTO_RUFAA_TEST));
+            if (pending != null) state.tracingExcludedTests.add(pending);
+        }
     }
 
     /** Register/card and form readers share one clinical history without creating a child. */
@@ -422,6 +448,8 @@ public final class MotherMentorMotherChildRepository {
 
     public static final class State {
         private LocalDate childDob;
+        private final Set<Stage> tracingExcludedTests = new HashSet<>();
+        private String tracingClosedStatus = "";
         private LocalDate enrollmentChildDob;
         private String originalStatus = "";
         private String childBaseEntityId = "";
@@ -436,6 +464,8 @@ public final class MotherMentorMotherChildRepository {
 
         public State(LocalDate childDob) { this.childDob = childDob; this.enrollmentChildDob = childDob; }
         public LocalDate getChildDob() { return childDob; }
+        public Set<Stage> getTracingExcludedTests() { return Collections.unmodifiableSet(tracingExcludedTests); }
+        public String getTracingClosedStatus() { return tracingClosedStatus; }
         public String getChildBaseEntityId() { return childBaseEntityId; }
         public String getChildStatus() { return childStatus; }
         public String getBreastfeedingStatus() { return breastfeedingStatus; }

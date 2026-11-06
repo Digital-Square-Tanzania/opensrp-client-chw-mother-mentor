@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
@@ -154,7 +155,13 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             if (delivery != null && delivery.optString("value").isEmpty()) {
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA, mother.getChildDob());
             }
-            MotherMentorMotherChildUtils.prepare(form, loadChildState(), childAssessmentDate(form));
+            MotherMentorMotherChildRepository.State child = loadChildState();
+            MotherMentorMotherChildUtils.prepare(form, child, childAssessmentDate(form));
+            String closed = child.getTracingClosedStatus();
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_CLOSED_FOLLOWUP_NOTE,
+                    closed == null || closed.isEmpty() ? "" : context.getString(
+                            R.string.mothermentor_eid_mama_followup_closed,
+                            org.smartregister.chw.mothermentor.util.MotherMentorChildEidLabels.closedReason(context, closed)));
         } catch (Exception unavailable) {
             Timber.w(unavailable, "Unable to prepare the routine mother child assessment");
         }

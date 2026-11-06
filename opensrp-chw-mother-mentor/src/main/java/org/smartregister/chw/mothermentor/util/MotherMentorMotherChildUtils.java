@@ -7,9 +7,11 @@ import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -48,8 +50,10 @@ public final class MotherMentorMotherChildUtils {
     public static List<Stage> due(Map<String, String> values, LocalDate assessment) {
         LocalDate stop = "not_breastfeeding".equals(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
                 ? MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)) : null;
-        return MotherMentorHeiSchedule.due(birth(values), stop,
-                parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY)), assessment);
+        List<Stage> due = new ArrayList<>(MotherMentorHeiSchedule.due(birth(values), stop,
+                parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY)), assessment));
+        due.removeAll(MotherMentorChildEidRepository.suppressedTests(values.get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS)));
+        return due;
     }
 
     public static boolean isComplete(Map<String, String> values, LocalDate assessment) {
@@ -138,6 +142,8 @@ public final class MotherMentorMotherChildUtils {
             LocalDate serviceDate) {
         put(form, DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE, serviceDate.toString());
         put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getSamplingHistory()));
+        put(form, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS,
+                MotherMentorChildEidRepository.encodeStages(state.getTracingExcludedTests()));
         put(form, DBConstants.KEY.MAMA_PREVIOUS_BREASTFEEDING_STATUS, state.getBreastfeedingStatus());
         put(form, DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, date(state.getWeaningDate()));
         fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE,
@@ -146,7 +152,7 @@ public final class MotherMentorMotherChildUtils {
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
         for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
-            if (!entry.getValue().requiresFollowUp()) continue;
+            if (!entry.getValue().requiresFollowUp() || state.getTracingExcludedTests().contains(entry.getKey())) continue;
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_DONE, "yes");
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE, entry.getKey().getCode());
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, entry.getKey().getCode());

@@ -2,9 +2,11 @@ package org.smartregister.chw.mothermentor.util;
 
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,9 @@ public final class MotherMentorChildEidHeiUtils {
 
     public static List<Stage> eligible(Map<String, String> values, LocalDate dob,
             Map<Stage, TestRecord> tests, LocalDate day) {
-        return MotherMentorHeiSchedule.eligibleForSampling(dob, cessation(values), tests, day);
+        List<Stage> stages = new ArrayList<>(MotherMentorHeiSchedule.eligibleForSampling(dob, cessation(values), tests, day));
+        stages.removeAll(MotherMentorChildEidRepository.suppressedTests(value(values, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS)));
+        return stages;
     }
 
     public static List<Stage> reviewable(Map<String, String> values, LocalDate dob,

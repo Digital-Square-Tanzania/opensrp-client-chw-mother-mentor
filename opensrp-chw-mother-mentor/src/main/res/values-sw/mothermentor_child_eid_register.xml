@@ -33,11 +33,11 @@
     <string name="mothermentor_eid_record_visit">Rekodi Mrejesho wa Ufuatiliaji</string>
     <string name="mothermentor_eid_child_deceased">Mtoto amefariki — rekodi imefungwa.</string>
     <string name="mothermentor_eid_moved_area">Amehama eneo — rekodi imefungwa.</string>
-    <string name="mothermentor_eid_moved_facility">Amehamia kituo kingine — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_moved_facility">Amehama kituo</string>
     <string name="mothermentor_eid_not_found_three">Hajapatikana — Nyingine mara 3+.</string>
     <string name="mothermentor_eid_refused_three">Mlezi amekataa mara 3+.</string>
-    <string name="mothermentor_eid_graduated">Amehitimu — mtoto ana majibu ya mwisho.</string>
-    <string name="mothermentor_eid_confirmed_positive">Mtoto amethibitika kuwa na VVU — rekodi imefungwa.</string>
+    <string name="mothermentor_eid_graduated">Amehitimu — majibu hasi ya miezi 18</string>
+    <string name="mothermentor_eid_confirmed_positive">Chanya — ameunganishwa CTC</string>
     <string name="mothermentor_eid_filter">Chuja</string>
     <string name="mothermentor_eid_closed_filter">Waliofungwa</string>
     <string name="mothermentor_eid_apply_filter">Tumia</string>

@@ -84,7 +84,9 @@ public class MotherMentorChildEidLabelsTest {
         assertEquals("", MotherMentorChildEidLabels.missed(context, "miezi9", "unknown"));
         assertEquals("", MotherMentorChildEidLabels.entryReason(context, "unknown", "2026-10-04"));
         assertFalse(MotherMentorChildEidLabels.isSuccessfulClose("confirmed_positive"));
-        assertTrue(MotherMentorChildEidLabels.isSuccessfulClose("graduated"));
+        assertFalse(MotherMentorChildEidLabels.isSuccessfulClose("graduated"));
+        assertTrue(MotherMentorChildEidLabels.isSuccessfulClose("tested_negative"));
+        assertTrue(MotherMentorChildEidLabels.isSuccessfulClose("confirmatory_negative"));
     }
 
     private String age(Context context, int days) {

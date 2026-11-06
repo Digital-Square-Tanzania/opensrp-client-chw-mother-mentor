@@ -188,6 +188,27 @@ public class MotherMentorMotherCascadeRepositoryTest {
     }
 
     @Test
+    public void motherTransferProjectsChildReasonAndFacilityAndCanBeReplayedAfterCorrection() {
+        data.execSQL("UPDATE " + MOTHERS + " SET child_dob='2026-05-01'");
+        enrollment("mother", "mother-episode", "breast_feeding", "2026-05-01");
+        child("child", "2026-05-01", true);
+        MotherMentorChildEidRepository.upgrade(db);
+        MotherMentorChildEidRepository.upgradeExitSchema(db);
+        MotherMentorMotherClosure transfer = MotherMentorMotherClosure.active()
+                .advance(VisitOutcome.MOVED_FACILITY, DAY, "", "Kibiti CTC");
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", transfer);
+        assertEquals("1", value(CHILD, "child", IS_CLOSED));
+        assertEquals("E7", value(CHILD, "child", MTOTO_EID_SABABU_YA_KUFUNGWA));
+        assertEquals(DAY, value(CHILD, "child", MTOTO_EID_TAREHE_YA_KUFUNGWA));
+        assertEquals("Kibiti CTC", value(CHILD, "child", MTOTO_KITUO_KIPYA));
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals("1", value(CHILD, "child", IS_CLOSED));
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", MotherMentorMotherClosure.active());
+        assertEquals("0", value(CHILD, "child", IS_CLOSED));
+        assertEquals("", value(CHILD, "child", MTOTO_EID_SABABU_YA_KUFUNGWA));
+    }
+
+    @Test
     public void missingRealIdentityAndAmbiguousTwinsNeverCreateOrCloseAnAssumedChild() {
         enrollment("mother", "mother-episode", "breast_feeding", "2026-05-01");
         child("missing-person", "2026-05-01", false); close(VisitOutcome.CHILD_DECEASED);
