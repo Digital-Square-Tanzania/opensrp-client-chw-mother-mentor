@@ -7,8 +7,8 @@ import org.joda.time.LocalDate;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorFollowUpCommentActionHelper;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitReturnActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitStatusActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorReturnToFacilityActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
@@ -39,7 +39,7 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
                 R.string.mothermentor_return_to_facility_section,
                 R.string.mothermentor_comments_section,
                 "mothermentor_iit_follow_up_status",
-                "mothermentor_return_to_facility",
+                "mothermentor_iit_return_to_facility",
                 "mothermentor_follow_up_comment"));
     }
 
@@ -78,7 +78,10 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
 
     @Override
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createArrivalActionHelper() {
-        return new MotherMentorReturnToFacilityActionHelper();
+        MotherMentorIitState current = getIitState();
+        return new MotherMentorIitReturnActionHelper(current.getReturnState(),
+                current.getMissedAppointmentDate(), current.getRefusedCount(),
+                current.getNotReturnedCount(), getIitServiceDate());
     }
 
     @Override
