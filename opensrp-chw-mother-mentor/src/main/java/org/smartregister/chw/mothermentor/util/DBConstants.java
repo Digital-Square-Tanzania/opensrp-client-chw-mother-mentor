@@ -310,6 +310,7 @@ public final class DBConstants {
         public static final String IIT_COUNTER_NYINGINE = "iit_counter_nyingine";
         public static final String IIT_COUNTER_HAJAPATIKANA = "iit_counter_hajapatikana";
         public static final String IIT_MAMA_KINARA_LINK = "iit_mama_kinara_link";
+        public static final String IIT_CASCADE_SOURCE_EPISODE = "iit_cascade_source_episode";
         public static final String IIT_TRACING_OUTCOME = "iit_tracing_outcome";
         public static final String IIT_TRACING_VISIT = "iit_tracing_visit";
         public static final String MOTHERMENTOR_REPORTING_VERSION =
