@@ -124,6 +124,7 @@ public final class DBConstants {
                 "child_eid_non_attendance_reason_other";
         public static final String CHILD_EID_TEST_RECOMMENDATION = "child_eid_test_recommendation";
         public static final String CHILD_EID_TEST_TYPE = "child_eid_test_type";
+        public static final String CHILD_EID_HEI_REVIEW_TESTS = "child_eid_hei_review_tests";
         public static final String CLIENT_CHALLENGE_TYPES = "client_challenge_types";
         public static final String COMMENTS = "comments";
         public static final String EXPECTED_FACILITY_VISIT_DATE = "expected_facility_visit_date";

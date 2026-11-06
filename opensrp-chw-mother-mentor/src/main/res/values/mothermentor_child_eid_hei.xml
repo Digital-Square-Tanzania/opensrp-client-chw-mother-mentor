@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_child_eid_hei_referral_agreed">Caregiver agreed to take the child to the facility</string>
+    <string name="mothermentor_child_eid_hei_referral_refused">Caregiver refused to take the child to the facility</string>
+    <string name="mothermentor_child_eid_hei_none">none</string>
+    <string name="mothermentor_child_eid_hei_next">Next test: %1$s — %2$s</string>
+    <string name="mothermentor_child_eid_hei_invalid_date">Enter a valid date within the child’s life and no later than this visit.</string>
+    <string name="mothermentor_child_eid_hei_stage_six_weeks">6 weeks</string>
+    <string name="mothermentor_child_eid_hei_stage_nine_months">9 months</string>
+    <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">15 months</string>
+    <string name="mothermentor_child_eid_hei_stage_eighteen_months">18 months (confirmatory)</string>
+</resources>

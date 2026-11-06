@@ -13,6 +13,8 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
@@ -304,8 +306,28 @@ public final class MotherMentorMotherChildRepository {
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
         LocalDate recordedDob = MotherMentorHeiSchedule.parseBirthDate(values.get(DBConstants.KEY.CHILD_DOB));
         if (recordedDob != null && !recordedDob.equals(state.childDob)) return;
+        if (MotherMentorChildEidStatusUtils.isSchema3(values)) {
+            if (!MotherMentorChildEidStatusUtils.isStatusComplete(values, state.childDob, date)) return;
+            if ("found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                    && "deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
+                state.childStatus = "deceased";
+                state.childDeathDate = MotherMentorChildEidStatusUtils.parseDate(
+                        values.get(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI));
+                state.terminal(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_DECEASED, date);
+                return;
+            }
+            if (!MotherMentorChildEidStatusUtils.isFoundAlive(values)
+                    || !MotherMentorChildEidHeiUtils.isBreastfeedingComplete(values, state.childDob, date)) return;
+            // Breastfeeding is shared clinical evidence even when an offline referral snapshot is stale.
+            state.childStatus = "alive";
+            state.childDeathDate = null;
+            state.breastfeedingStatus = values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
+            state.weaningDate = MotherMentorChildEidHeiUtils.cessation(values);
+            if (!MotherMentorChildEidHeiUtils.isComplete(values, state.childDob, date,
+                    state.getSamplingHistory(), values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return;
+        } else if (!org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils
+                .isComplete(values, true)) return;
         // Existing EID results-returned means availability, never positive confirmation.
-        if (!org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils.isComplete(values, true)) return;
         if ("eighteen_months".equals(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
                 && "yes".equals(values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DONE))) {
             LocalDate testDate = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE));

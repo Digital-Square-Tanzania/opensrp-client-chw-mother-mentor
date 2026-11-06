@@ -22,6 +22,8 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidHeiActionHelper;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
@@ -112,14 +114,15 @@ public class ChildEidTracingWorkflowTest {
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, first().getActionStatus());
         answer("mothermentor_child_eid_follow_up_status", MAMA_CHILD_STATUS, "alive");
         assertEquals(3, visible.size());
-        BaseMotherMentorVisitAction firstHei = action("mothermentor_child_eid_test_type");
+        BaseMotherMentorVisitAction firstHei = action("mothermentor_child_eid_hei");
         assertFalse(firstHei.isOptional());
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, firstHei.getActionStatus());
         List<String> order = new ArrayList<>();
         for (BaseMotherMentorVisitAction row : visible.values()) order.add(row.getFormName());
         assertEquals(java.util.Arrays.asList("mothermentor_child_eid_follow_up_status",
-                "mothermentor_child_eid_test_type", "mothermentor_child_eid_follow_up_comment"), order);
-        answer("mothermentor_child_eid_test_type", CHILD_EID_TEST_TYPE, "six_weeks");
+                "mothermentor_child_eid_hei", "mothermentor_child_eid_follow_up_comment"), order);
+        answer("mothermentor_child_eid_hei", MAMA_BREASTFEEDING_STATUS, "breastfeeding", MTOTO_REFERRAL_AGREEMENT, "agreed");
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, firstHei.getActionStatus());
         answer("mothermentor_child_eid_follow_up_status", FOLLOW_UP_STATUS, "not_found",
                 MTOTO_NOT_FOUND_REASON, "other", MTOTO_NOT_FOUND_REASON_OTHER, "Away today");
         assertEquals(2, visible.size());
@@ -128,7 +131,7 @@ public class ChildEidTracingWorkflowTest {
         assertEquals("Keep these comments", value(action("mothermentor_child_eid_follow_up_comment"), COMMENTS));
         answer("mothermentor_child_eid_follow_up_status", FOLLOW_UP_STATUS, "found", MAMA_CHILD_STATUS, "alive");
         assertEquals(3, visible.size());
-        BaseMotherMentorVisitAction nextHei = action("mothermentor_child_eid_test_type");
+        BaseMotherMentorVisitAction nextHei = action("mothermentor_child_eid_hei");
         assertNotSame(firstHei, nextHei);
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, nextHei.getActionStatus());
         assertEquals("", value(first(), MTOTO_NOT_FOUND_REASON_OTHER));
@@ -291,6 +294,14 @@ public class ChildEidTracingWorkflowTest {
             identityReads++;
             loadedBeforeVisit = editingVisitId;
             return stateFixture;
+        }
+        @Override protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createHeiActionHelper(Runnable changed) {
+            return new MotherMentorChildEidHeiActionHelper(null, changed) {
+                @Override protected String loadReferralState() { return "none"; }
+                @Override protected MotherMentorMotherChildRepository.State loadClinicalState() {
+                    return new MotherMentorMotherChildRepository.State(LocalDate.now().minusMonths(10));
+                }
+            };
         }
         @Override protected Visit loadEditingVisit(String id) { return edited; }
         @Override protected Map<String, List<VisitDetail>> loadVisitDetails(Visit visit) { return Collections.emptyMap(); }

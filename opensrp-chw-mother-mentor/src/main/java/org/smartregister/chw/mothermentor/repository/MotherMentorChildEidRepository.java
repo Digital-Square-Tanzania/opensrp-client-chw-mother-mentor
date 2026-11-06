@@ -15,6 +15,8 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
@@ -130,7 +132,39 @@ public final class MotherMentorChildEidRepository {
         if (before != null) history.removeIf(item -> MotherMentorChildEidDao.compareChronology(item, before) >= 0);
         state.visits = Collections.unmodifiableList(history);
         state.visitCount = history.size();
+        replayFirstReferrals(db, state);
         return state;
+    }
+
+    private static void replayFirstReferrals(SQLiteDatabase db, State state) {
+        // A projected legacy row is not an immutable enrollment baseline. Replaying over it
+        // would count the same refusal again on every rebuild.
+        if (state.episode.id.isEmpty()) return;
+        for (Visit visit : state.visits) {
+            Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
+                    MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
+            if (!"none".equals(state.getReferralState())
+                    || !"none".equals(value(answers, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
+                    || !MotherMentorChildEidStatusUtils.isFoundAlive(answers)) continue;
+            LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
+            MotherMentorMotherChildRepository.State clinical = MotherMentorMotherChildRepository
+                    .getStateForChildBeforeEvidence(db, state.childId, visit);
+            if (!MotherMentorChildEidStatusUtils.isStatusComplete(answers, clinical.getChildDob(), day)
+                    || !MotherMentorChildEidHeiUtils.isComplete(answers, clinical.getChildDob(), day,
+                            clinical.getSamplingHistory(), "none")) continue;
+            String agreement = value(answers, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT);
+            if ("refused".equals(agreement)) {
+                state.enrollment.put(DBConstants.KEY.MTOTO_COUNTER_AMEKATAA,
+                        String.valueOf(state.getRefusedCount() + 1));
+            } else if ("agreed".equals(agreement)) {
+                state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_STATE, "referred");
+                state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_TEST,
+                        Stage.fromCode(value(answers, DBConstants.KEY.MTOTO_RUFAA_TEST)).getMetadataCode());
+                state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_DUE,
+                        value(answers, DBConstants.KEY.MTOTO_RUFAA_DUE));
+                state.enrollment.put(DBConstants.KEY.MTOTO_COUNTER_AMEKATAA, "0");
+            }
+        }
     }
 
     public static MotherMentorMotherChildRepository.State getClinicalState(
@@ -158,9 +192,15 @@ public final class MotherMentorChildEidRepository {
         ContentValues values = new ContentValues();
         values.put(DBConstants.KEY.MTOTO_ENROLLMENT_ID, state.getEnrollmentId());
         values.put(DBConstants.KEY.MTOTO_VISIT_COUNT, state.getVisitCount());
-        // Unknown future/legacy states are preserved; only an absent value gets the initial state.
+        // Known episodes replay from their original enrollment, including after a correction.
+        // Unknown future/legacy projections have no safe baseline and remain untouched.
         Map<String, String> existing = MotherMentorChildEidDao.enrollment(db, childId);
-        if (StringUtils.isBlank(existing.get(DBConstants.KEY.MTOTO_RUFAA_STATE))) {
+        if (!state.episode.id.isEmpty()) {
+            for (String key : Arrays.asList(DBConstants.KEY.MTOTO_RUFAA_STATE,
+                    DBConstants.KEY.MTOTO_RUFAA_TEST, DBConstants.KEY.MTOTO_RUFAA_DUE,
+                    DBConstants.KEY.MTOTO_COUNTER_AMEKATAA)) values.put(key, value(state.enrollment, key));
+            values.put(DBConstants.KEY.MTOTO_RUFAA_STATE, state.getReferralState());
+        } else if (StringUtils.isBlank(existing.get(DBConstants.KEY.MTOTO_RUFAA_STATE))) {
             values.put(DBConstants.KEY.MTOTO_RUFAA_STATE, state.getReferralState());
         }
         if (StringUtils.isBlank(existing.get(DBConstants.KEY.MTOTO_STATUS))) {

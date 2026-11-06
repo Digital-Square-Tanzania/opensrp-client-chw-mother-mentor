@@ -6,6 +6,18 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.21-SNAPSHOT — 2026-11-06
+
+### Added
+
+- Add one bilingual Child EID HEI action for shared breastfeeding, calendar-based
+  sampling eligibility and first-referral agreement/refusal (#1147). Keep pending
+  result review separate from taking a new sample and retain existing return questions.
+- Replay first-referral stage, due date and refusal counts from canonical visits in
+  the current enrollment, preserving unknown legacy projections and edit history.
+- Validate manual/daily Child EID completion with the registered child and clinical
+  history before the visit; share valid child breastfeeding updates with Mama visits.
+
 ### Changed
 
 - Replace new Child EID tracing visits with nested found/alive and not-found reason
@@ -13,6 +25,8 @@ Android version code.
   inactive-answer clearing (CHW #1146).
 - Keep Comments available throughout and reveal one HEI section only after a saved,
   valid found-and-alive status; preserve schema1/2 draft forms and requirements.
+
+- Increment the library to `0.1.21-SNAPSHOT` / Android code 22.
 
 ## 0.1.20-SNAPSHOT — 2026-11-05
 

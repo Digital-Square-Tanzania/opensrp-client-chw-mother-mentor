@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_child_eid_hei_referral_agreed">Mlezi amekubali kumpeleka mtoto kituoni</string>
+    <string name="mothermentor_child_eid_hei_referral_refused">Mlezi amekataa kumpeleka mtoto kituoni</string>
+    <string name="mothermentor_child_eid_hei_none">hakuna</string>
+    <string name="mothermentor_child_eid_hei_next">Kipimo kinachofuata: %1$s — %2$s</string>
+    <string name="mothermentor_child_eid_hei_invalid_date">Weka tarehe sahihi isiyo kabla ya kuzaliwa kwa mtoto au baada ya ziara hii.</string>
+    <string name="mothermentor_child_eid_hei_stage_six_weeks">Wiki 6</string>
+    <string name="mothermentor_child_eid_hei_stage_nine_months">Miezi 9</string>
+    <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">Miezi 15</string>
+    <string name="mothermentor_child_eid_hei_stage_eighteen_months">Miezi 18 (Uthibitisho)</string>
+</resources>

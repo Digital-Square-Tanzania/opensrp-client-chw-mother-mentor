@@ -11,9 +11,13 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdVisitUtils;
@@ -138,7 +142,34 @@ public class MotherMentorDao extends AbstractDao {
                                 baseEntityId, MotherMentorFollowUpType.CHILD_EID.getEventType()));
         visits.addAll(
                 repository.getVisits(baseEntityId, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES));
-        return MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(visits, now);
+        boolean currentSchema = false;
+        for (Visit visit : visits) {
+            if (visit != null && Boolean.TRUE.equals(visit.getProcessed()) && isCurrentChildEidVisit(visit)) {
+                currentSchema = true;
+                break;
+            }
+        }
+        if (!currentSchema) return MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(visits, now);
+        SQLiteDatabase db = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        // Current workflow history is canonical and enrollment-scoped; keep legacy daily semantics.
+        visits.removeIf(MotherMentorDao::isCurrentChildEidVisit);
+        for (Visit visit : MotherMentorChildEidRepository.getState(db, baseEntityId, null,
+                new org.joda.time.LocalDate(now)).getVisits()) {
+            if (isCurrentChildEidVisit(visit)) visits.add(visit);
+        }
+        return MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(visits, now,
+                visit -> MotherMentorMotherChildRepository.getStateForChildBeforeEvidence(
+                        db, baseEntityId, visit));
+    }
+
+    private static boolean isCurrentChildEidVisit(Visit visit) {
+        if (visit == null || StringUtils.isBlank(visit.getJson())) return false;
+        try {
+            return MotherMentorChildEidStatusUtils.isSchema3(MotherMentorVisitCompletion.observationValues(
+                    new org.json.JSONObject(visit.getJson()).optJSONArray("obs")));
+        } catch (Exception invalid) {
+            return false;
+        }
     }
 
     /** Loads a household profile using the host app's configured family table. */

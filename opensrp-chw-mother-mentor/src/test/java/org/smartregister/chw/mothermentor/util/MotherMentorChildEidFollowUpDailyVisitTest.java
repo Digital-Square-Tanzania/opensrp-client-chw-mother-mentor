@@ -9,6 +9,10 @@ import static org.mockito.Mockito.when;
 
 import android.app.Application;
 
+import org.joda.time.LocalDate;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -269,6 +273,81 @@ public class MotherMentorChildEidFollowUpDailyVisitTest {
         } finally {
             ReflectionHelpers.setStaticField(MotherMentorLibrary.class, "instance", previous);
         }
+    }
+
+    @Test
+    public void currentCompletedFirstReferralNeedsTheRealClinicalContext() throws Exception {
+        Visit visit = currentFirstVisit();
+        Date now = date("2026-10-25 12:00:00");
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), now));
+        assertTrue(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), now,
+                saved -> new MotherMentorMotherChildRepository.State(new LocalDate(2025, 12, 25))));
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), now,
+                saved -> new MotherMentorMotherChildRepository.State(new LocalDate(2026, 8, 25))));
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), now, saved -> null));
+    }
+
+    @Test
+    public void aKnownPendingSampleCannotCompleteAnotherFirstSamplingReferral() throws Exception {
+        MotherMentorMotherChildRepository.State clinical = mock(MotherMentorMotherChildRepository.State.class);
+        when(clinical.getChildDob()).thenReturn(new LocalDate(2025, 12, 25));
+        when(clinical.getSamplingHistory()).thenReturn(Collections.singletonMap(Stage.NINE_MONTHS,
+                new TestRecord("pending", new LocalDate(2026, 9, 26), false, new LocalDate(2026, 9, 26))));
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(currentFirstVisit()), date("2026-10-25 12:00:00"), saved -> clinical));
+        Visit returning = childVisit("found", DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA, "3",
+                DBConstants.KEY.MAMA_CHILD_STATUS, "alive", DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, "breastfeeding",
+                DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, "referred", DBConstants.KEY.CHILD_EID_TEST_TYPE, "nine_months",
+                DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY, "no",
+                DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "2026-10-25");
+        assertTrue(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(returning), date("2026-10-25 12:00:00"), saved -> clinical));
+    }
+
+    @Test
+    public void voidedOrClinicallyInvalidCurrentVisitsDoNotLockTheDay() throws Exception {
+        Visit visit = currentFirstVisit();
+        JSONObject event = new JSONObject(visit.getJson()); event.put("voided", true); visit.setJson(event.toString());
+        MotherMentorChildEidFollowUpVisitUtils.ClinicalContext context = saved ->
+                new MotherMentorMotherChildRepository.State(new LocalDate(2025, 12, 25));
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), date("2026-10-25 12:00:00"), context));
+        visit = childVisit("found", DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA, "3",
+                DBConstants.KEY.MAMA_CHILD_STATUS, "alive", DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, "not_breastfeeding",
+                DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, "2026-10-26",
+                DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, "none", DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "2026-10-25");
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), date("2026-10-25 12:00:00"), context));
+    }
+
+    @Test
+    public void currentNotFoundRequiresItsReasonAndLegacyNeverRequestsClinicalContext() throws Exception {
+        Visit visit = childVisit("not_found", DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA, "3",
+                DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "2026-10-25");
+        MotherMentorChildEidFollowUpVisitUtils.ClinicalContext context = saved ->
+                new MotherMentorMotherChildRepository.State(new LocalDate(2025, 12, 25));
+        assertFalse(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), date("2026-10-25 12:00:00"), context));
+        JSONObject event = new JSONObject(visit.getJson());
+        event.getJSONArray("obs").put(observation(DBConstants.KEY.MTOTO_NOT_FOUND_REASON, "moved_area"));
+        visit.setJson(event.toString());
+        assertTrue(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(visit), date("2026-10-25 12:00:00"), context));
+        assertTrue(MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(
+                Collections.singletonList(childVisit("not_found")), date("2026-10-25 12:00:00"),
+                saved -> { throw new AssertionError("Legacy completion must keep its own schema"); }));
+    }
+
+    private Visit currentFirstVisit() throws Exception {
+        return childVisit("found", DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA, "3",
+                DBConstants.KEY.MAMA_CHILD_STATUS, "alive", DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, "breastfeeding",
+                DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, "none", DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT, "agreed",
+                DBConstants.KEY.MTOTO_RUFAA_TEST, "miezi9", DBConstants.KEY.MTOTO_RUFAA_DUE, "2026-09-25",
+                DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "2026-10-25");
     }
 
     private boolean locked(Visit visit, String now) throws Exception {
