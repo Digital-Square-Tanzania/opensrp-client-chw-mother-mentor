@@ -6,6 +6,11 @@ Android version code.
 
 ## Unreleased
 
+### Added
+
+- Resume Child EID follow-up at attendance, result receipt, or confirmation.
+  Store dated results in shared HEI history and show the same flow in English and Swahili (CHW #1155).
+
 ## 0.1.21-SNAPSHOT — 2026-11-06
 
 ### Added

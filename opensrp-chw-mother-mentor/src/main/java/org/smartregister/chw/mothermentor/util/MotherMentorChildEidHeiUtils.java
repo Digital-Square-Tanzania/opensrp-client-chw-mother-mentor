@@ -67,6 +67,9 @@ public final class MotherMentorChildEidHeiUtils {
         if (!Arrays.asList("referred", "awaiting_result", "awaiting_confirm")
                 .contains(previousReferralState)
                 || !value(values, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT).isEmpty()) return false;
+        if (MotherMentorChildEidReturnVisit.applies(values)) {
+            return MotherMentorChildEidReturnVisit.evaluate(values, dob, day, tests, previousReferralState) != null;
+        }
         List<Stage> reviewable = reviewable(values, dob, tests, day);
         if (reviewable.isEmpty()) return !hasAny(values, RETURN_FIELDS);
         Stage selected = Stage.fromCode(value(values, DBConstants.KEY.CHILD_EID_TEST_TYPE));
@@ -101,9 +104,14 @@ public final class MotherMentorChildEidHeiUtils {
         }
         if ("none".equals(value(values, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) {
             for (String key : RETURN_FIELDS) MotherMentorMotherChildUtils.put(form, key, "");
+            MotherMentorChildEidReturnVisit.clearInactive(form, values);
             return;
         }
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT, "");
+        if (MotherMentorChildEidReturnVisit.applies(values)) {
+            MotherMentorChildEidReturnVisit.clearInactive(form, values);
+            return;
+        }
         if (!"yes".equals(value(values, DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY))) {
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE, "");
         }

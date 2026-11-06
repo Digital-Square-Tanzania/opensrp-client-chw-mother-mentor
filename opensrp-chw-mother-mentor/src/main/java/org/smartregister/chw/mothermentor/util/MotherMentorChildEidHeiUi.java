@@ -43,14 +43,16 @@ public final class MotherMentorChildEidHeiUi {
         if (controls(root, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS).isEmpty()) return;
         refreshing = true;
         try {
+            boolean newReturn = MotherMentorChildEidReturnVisit.applies(values);
             if (previous != null && changed(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS)) {
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, "");
-                clearReferralAndReturn(form);
-            } else if (previous != null && changed(values,
+                if (!newReturn) clearReferralAndReturn(form);
+            } else if (!newReturn && previous != null && changed(values,
                     DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)) {
                 clearReferralAndReturn(form);
             } else if (previous != null && changed(values, DBConstants.KEY.CHILD_EID_TEST_TYPE)) {
-                for (String key : MotherMentorChildEidHeiUtils.RETURN_FIELDS.subList(
+                if (newReturn) MotherMentorChildEidReturnVisit.clearSample(form);
+                else for (String key : MotherMentorChildEidHeiUtils.RETURN_FIELDS.subList(
                         1, MotherMentorChildEidHeiUtils.RETURN_FIELDS.size())) {
                     MotherMentorMotherChildUtils.put(form, key, "");
                 }
@@ -122,6 +124,8 @@ public final class MotherMentorChildEidHeiUi {
                     date == null ? "" : date.toString());
             if (sampling.isEmpty()) MotherMentorMotherChildUtils.put(form,
                     DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT, "");
+        } else if (MotherMentorChildEidReturnVisit.applies(values)) {
+            prepareReturn(form, context, values, dob, day, tests, sampling);
         } else {
             Stage selected = Stage.fromCode(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE));
             if (!review.contains(selected)) {
@@ -138,7 +142,11 @@ public final class MotherMentorChildEidHeiUi {
         String banner;
         if (dob == null) banner = context == null ? "" : context.getString(
                 R.string.mothermentor_child_eid_dob_required);
-        else if (!sampling.isEmpty()) banner = TextUtils.join(" / ", labels(context, sampling));
+        else if (MotherMentorChildEidReturnVisit.applies(values)
+                && !MotherMentorChildEidReturnVisit.REFERRED.equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
+                && Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MTOTO_PENDING_TEST)) != null) {
+            banner = label(context, Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MTOTO_PENDING_TEST)));
+        } else if (!sampling.isEmpty()) banner = TextUtils.join(" / ", labels(context, sampling));
         else {
             Stage next = MotherMentorHeiSchedule.next(dob,
                     MotherMentorChildEidHeiUtils.cessation(values), tests, day);
@@ -154,14 +162,85 @@ public final class MotherMentorChildEidHeiUi {
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_HEI_NEXT_TEST_NOTE, banner);
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE,
-                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE)) {
+                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE)) {
             JSONObject field = MotherMentorMotherChildUtils.field(form, key);
             if (field == null) continue;
             try {
-                if (dob != null) field.put("min_date", (DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE.equals(key)
-                        ? dob.plusMonths(18) : dob).toString("dd-MM-yyyy"));
+                LocalDate minimum = minimumDate(key, dob, values);
+                if (minimum != null) field.put("min_date", minimum.toString("dd-MM-yyyy"));
                 field.put("max_date", day.toString("dd-MM-yyyy"));
             } catch (Exception ignored) { }
+        }
+    }
+
+    private static LocalDate minimumDate(String key, LocalDate dob, Map<String, String> values) {
+        if (DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE.equals(key)) {
+            return dob == null ? null : dob.plusMonths(18);
+        }
+        if (DBConstants.KEY.MAMA_HEI_TEST_DATE.equals(key)) {
+            return MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE));
+        }
+        return dob;
+    }
+
+    private static void prepareReturn(JSONObject form, Context context, Map<String, String> values,
+            LocalDate dob, LocalDate day, Map<Stage, TestRecord> tests, List<Stage> sampling) {
+        String state = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+        if (MotherMentorChildEidReturnVisit.REFERRED.equals(state)) {
+            Stage selected = Stage.fromCode(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE));
+            if ("yes".equals(values.get(DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY))
+                    && "yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE)) && !sampling.contains(selected)) {
+                MotherMentorChildEidReturnVisit.clearSample(form);
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.CHILD_EID_TEST_TYPE,
+                        sampling.size() == 1 ? sampling.get(0).getCode() : "");
+            }
+        } else {
+            Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_PENDING_TEST));
+            if (stage == null) stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_RUFAA_TEST));
+            if (!MotherMentorChildEidReturnVisit.matchesPending(tests.get(stage), state)) {
+                stage = null;
+                for (Map.Entry<Stage, TestRecord> entry : tests.entrySet()) {
+                    if (!MotherMentorChildEidReturnVisit.matchesPending(entry.getValue(), state)) continue;
+                    if (stage != null) { stage = null; break; }
+                    stage = entry.getKey();
+                }
+            }
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_PENDING_TEST,
+                    stage == null ? "" : stage.getMetadataCode());
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_PENDING_TEST_DATE,
+                    stage == null ? "" : tests.get(stage).getDate().toString());
+            JSONObject question = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MTOTO_RESULT_RECEIVED);
+            if (context != null && stage != null && question != null) {
+                try {
+                    question.put("label", context.getString(R.string.mothermentor_eid_return_named_result,
+                            label(context, stage)));
+                } catch (org.json.JSONException ignored) { }
+            }
+        }
+        MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_RESULT_NOTE,
+                returnNote(context, MotherMentorMotherChildUtils.values(form), dob, day, tests));
+    }
+
+    public static String returnNote(Context context, Map<String, String> values, LocalDate dob,
+            LocalDate day, Map<Stage, TestRecord> tests) {
+        if (context == null) return "";
+        MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
+                values, dob, day, tests, values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE));
+        if (result == null) return "";
+        switch (result.outcome) {
+            case TESTED_NEGATIVE: return context.getString(R.string.mothermentor_eid_return_negative);
+            case CONFIRMATORY_NEGATIVE: return context.getString(R.string.mothermentor_eid_return_confirm_negative);
+            case GRADUATED: return context.getString(R.string.mothermentor_eid_return_graduation);
+            case CONFIRMED_POSITIVE: return context.getString(R.string.mothermentor_eid_return_confirm_positive);
+            default:
+                if (MotherMentorChildEidReturnVisit.AWAITING_RESULT.equals(result.nextState)) {
+                    return context.getString(R.string.mothermentor_eid_return_wait_result);
+                }
+                if (MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(result.nextState)) {
+                    return context.getString(R.string.mothermentor_eid_return_wait_confirm);
+                }
+                return context.getString("no".equals(values.get(DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY))
+                        ? R.string.mothermentor_eid_return_nonattendance : R.string.mothermentor_eid_return_attendance);
         }
     }
 
@@ -169,7 +248,9 @@ public final class MotherMentorChildEidHeiUi {
         Map<String, String> values = MotherMentorMotherChildUtils.values(form);
         List<Stage> result = new ArrayList<>();
         try {
-            JSONArray stages = new JSONArray(values.get(DBConstants.KEY.CHILD_EID_HEI_REVIEW_TESTS));
+            String key = MotherMentorChildEidReturnVisit.applies(values)
+                    ? DBConstants.KEY.MAMA_HEI_DUE_TESTS : DBConstants.KEY.CHILD_EID_HEI_REVIEW_TESTS;
+            JSONArray stages = new JSONArray(values.get(key));
             for (int i = 0; i < stages.length(); i++) {
                 Stage stage = Stage.fromCode(stages.optString(i));
                 if (stage != null) result.add(stage);
@@ -184,12 +265,11 @@ public final class MotherMentorChildEidHeiUi {
         LocalDate day = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE));
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE,
-                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE)) {
+                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE)) {
             String value = values.get(key);
             LocalDate date = MotherMentorHeiSchedule.parseDate(value);
-            if (value == null || value.isEmpty() || MotherMentorHeiSchedule.validDate(date, dob, day)
-                    && (!DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE.equals(key)
-                            || !date.isBefore(dob.plusMonths(18)))) continue;
+            if (value == null || value.isEmpty() || MotherMentorHeiSchedule.validDate(
+                    date, minimumDate(key, dob, values), day)) continue;
             MotherMentorMotherChildUtils.put(form, key, "");
             syncWidget(root, key, "");
             for (View view : controls(root, key)) if (view instanceof EditText) {
