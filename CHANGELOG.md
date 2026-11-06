@@ -6,6 +6,17 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.23-SNAPSHOT — 2026-11-06
+
+### Fixed
+
+- Include the cursor ID in Child EID register results so opening the follow-up
+  register and enrolling a Mama IIT client no longer crashes (#62).
+
+### Changed
+
+- Increment the library to `0.1.23-SNAPSHOT` / Android code 24.
+
 ## 0.1.22-SNAPSHOT — 2026-11-06
 
 ### Added
