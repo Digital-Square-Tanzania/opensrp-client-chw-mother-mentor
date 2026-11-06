@@ -68,6 +68,13 @@ public final class MotherMentorIitState {
                 travelledCount, otherCount, notFoundCount);
     }
 
+    public MotherMentorIitState agreeToReturn() {
+        if (isClosed() || REFERRED.equals(returnState)) return this;
+        return new MotherMentorIitState(enrollmentId, missedAppointmentDate, linkedMotherId,
+                status, closedDate, newFacility, REFERRED, visitCount, 0, notReturnedCount,
+                travelledCount, otherCount, notFoundCount);
+    }
+
     public String getEnrollmentId() { return enrollmentId; }
     public String getMissedAppointmentDate() { return missedAppointmentDate; }
     public String getLinkedMotherId() { return linkedMotherId; }

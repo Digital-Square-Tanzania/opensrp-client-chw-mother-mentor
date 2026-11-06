@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.JsonParseException;
+
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
@@ -7,8 +9,8 @@ import org.joda.time.LocalDate;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorFollowUpCommentActionHelper;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitReturnActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitStatusActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorReturnToFacilityActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
@@ -16,6 +18,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorIitRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
 import org.smartregister.clientandeventmodel.Event;
@@ -23,8 +26,11 @@ import org.smartregister.clientandeventmodel.Obs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+
+import timber.log.Timber;
 
 public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisitInteractor {
     private MotherMentorIitState state = MotherMentorIitState.active();
@@ -39,7 +45,7 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
                 R.string.mothermentor_return_to_facility_section,
                 R.string.mothermentor_comments_section,
                 "mothermentor_iit_follow_up_status",
-                "mothermentor_return_to_facility",
+                "mothermentor_iit_return_to_facility",
                 "mothermentor_follow_up_comment"));
     }
 
@@ -78,7 +84,10 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
 
     @Override
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createArrivalActionHelper() {
-        return new MotherMentorReturnToFacilityActionHelper();
+        MotherMentorIitState current = getIitState();
+        return new MotherMentorIitReturnActionHelper(current.getReturnState(),
+                current.getMissedAppointmentDate(), current.getRefusedCount(),
+                current.getNotReturnedCount(), getIitServiceDate());
     }
 
     @Override
@@ -87,13 +96,41 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
     }
 
     @Override
+    protected boolean shouldSubmitOnSave() {
+        return true;
+    }
+
+    @Override
     protected void prepareEvent(Event event) {
         super.prepareEvent(event);
         if (event == null) return;
-        event.setEventDate(serviceDate.toDate());
+        // Replay compares the actual event time with enrollment, even on the same clinical day.
+        event.setEventDate(new Date());
         putObservation(event, DBConstants.KEY.IIT_FOLLOW_UP_SCHEMA, "2");
         putObservation(event, DBConstants.KEY.IIT_ENROLLMENT_ID, state.getEnrollmentId());
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, serviceDate.toString("dd-MM-yyyy"));
+    }
+
+    @Override
+    protected void assignVisitSource(Event event, Visit editedVisit) {
+        if (editedVisit == null || StringUtils.isBlank(editedVisit.getFormSubmissionId())) {
+            super.assignVisitSource(event, editedVisit);
+            return;
+        }
+        event.setFormSubmissionId(editedVisit.getFormSubmissionId());
+        event.setEventId(editedVisit.getEventId());
+        try {
+            Event previous = JsonFormUtils.gson.fromJson(StringUtils.defaultIfBlank(
+                    editedVisit.getJson(), editedVisit.getPreProcessedJson()), Event.class);
+            if (previous == null) return;
+            if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
+            if (StringUtils.isBlank(event.getEventId())) event.setEventId(previous.getEventId());
+            if (event.getVersion() <= previous.getVersion()) {
+                event.setVersion(previous.getVersion() + 1);
+            }
+        } catch (JsonParseException invalid) {
+            Timber.w(invalid, "Unable to restore the original Mother IIT event metadata");
+        }
     }
 
     private MotherMentorIitState preview(Map<String, String> answers) {

@@ -34,6 +34,7 @@ import timber.log.Timber;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -232,22 +233,21 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
 
         // persist to database
         Visit visit = saveVisit(editMode, memberID, type, combinedJsons, parentEventType);
-        if (visit != null) {
-            saveVisitDetails(visit, payloadType, payloadDetails);
-            processExternalVisits(visit, externalVisits, memberID);
-        }
+        if (visit == null) return null;
+        saveVisitDetails(visit, payloadType, payloadDetails);
+        processExternalVisits(visit, externalVisits, memberID);
 
-        if (MotherMentorLibrary.isSubmitOnSave()) {
-            List<Visit> visits = new ArrayList<>(1);
-            visits.add(visit);
+        if (shouldSubmitOnSave()) {
             VisitUtils.processVisits(
-                    visits,
+                    Collections.singletonList(visit),
                     MotherMentorLibrary.getInstance().visitRepository(),
                     MotherMentorLibrary.getInstance().visitDetailsRepository());
-
-            Context context = MotherMentorLibrary.getInstance().context().applicationContext();
         }
         return visit.getJson();
+    }
+
+    protected boolean shouldSubmitOnSave() {
+        return MotherMentorLibrary.isSubmitOnSave();
     }
 
     /**
@@ -302,15 +302,14 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         }
 
         if (baseEvent != null) {
-            baseEvent.setFormSubmissionId(MotherMentorJsonFormUtils.generateRandomUUIDString());
+            Visit editedVisit = editMode
+                    ? visitRepository().getLatestVisit(memberID, getEncounterType()) : null;
+            if (editMode && editedVisit == null) return null;
+            assignVisitSource(baseEvent, editedVisit);
             MotherMentorJsonFormUtils.tagEvent(allSharedPreferences, baseEvent);
 
-            String visitID =
-                    (editMode)
-                            ? visitRepository()
-                                    .getLatestVisit(memberID, getEncounterType())
-                                    .getVisitId()
-                            : MotherMentorJsonFormUtils.generateRandomUUIDString();
+            String visitID = editedVisit == null ? MotherMentorJsonFormUtils.generateRandomUUIDString()
+                    : editedVisit.getVisitId();
 
             // reset database
             if (editMode) {
@@ -326,6 +325,10 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             return visit;
         }
         return null;
+    }
+
+    protected void assignVisitSource(Event event, @Nullable Visit editedVisit) {
+        event.setFormSubmissionId(MotherMentorJsonFormUtils.generateRandomUUIDString());
     }
 
     protected String getParentVisitEventID(Visit visit, String parentEventType) {
