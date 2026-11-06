@@ -104,6 +104,11 @@ public class MotherMentorIitExitRepositoryTest {
         MotherMentorIitRepository.rebuild(db, CLIENT);
         assertEquals("active", field(IIT, IIT_STATUS));
         assertEquals("2", field(IIT, IIT_COUNTER_HAJAPATIKANA));
+
+        iitVisit("death", "death", "2020-04-13", 1, true, notFound("deceased"));
+        MotherMentorIitRepository.rebuild(db, CLIENT);
+        assertEquals("I2", field(IIT, IIT_STATUS));
+        assertEquals("2", field(IIT, IIT_COUNTER_HAJAPATIKANA));
     }
 
     @Test

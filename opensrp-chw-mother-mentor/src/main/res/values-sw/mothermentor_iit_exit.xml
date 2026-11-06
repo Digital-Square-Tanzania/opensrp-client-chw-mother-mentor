@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mothermentor_iit_confirm_close_title">Thibitisha kufunga rekodi</string>
-    <string name="mothermentor_iit_confirm_close_confirm">Ndiyo, funga</string>
+    <string name="mothermentor_iit_confirm_close_confirm">Ndiyo, Funga</string>
     <string name="mothermentor_iit_confirm_close_cancel">Ghairi</string>
     <string name="mothermentor_iit_closure_reason">Sababu ya kufungwa</string>
     <string name="mothermentor_iit_closure_date">Tarehe ya kufungwa</string>

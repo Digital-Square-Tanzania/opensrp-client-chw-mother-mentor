@@ -88,7 +88,10 @@ public final class MotherMentorIitState {
         int notReturned = outcome == Outcome.NOT_RETURNED ? notReturnedCount + 1 : 0;
         int travelled = outcome == Outcome.TRAVELLED ? travelledCount + 1 : 0;
         int other = outcome == Outcome.OTHER ? otherCount + 1 : 0;
-        int notFound = outcome == Outcome.TRAVELLED || outcome == Outcome.OTHER ? notFoundCount + 1 : 0;
+        boolean immediateNotFound = outcome == Outcome.DECEASED || outcome == Outcome.MOVED_AREA
+                || outcome == Outcome.MOVED_FACILITY;
+        int notFound = outcome == Outcome.TRAVELLED || outcome == Outcome.OTHER ? notFoundCount + 1
+                : immediateNotFound ? notFoundCount : 0;
         String next = exit(outcome, refused, notReturned, travelled, other, notFound);
         boolean closed = !ACTIVE.equals(next);
         return new MotherMentorIitState(enrollmentId, missedAppointmentDate, linkedMotherId,
