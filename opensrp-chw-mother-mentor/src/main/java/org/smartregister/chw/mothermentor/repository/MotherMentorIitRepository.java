@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.repository;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.apache.commons.lang3.StringUtils;
@@ -9,16 +10,20 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorIitReturnUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +31,12 @@ import java.util.Map;
 public final class MotherMentorIitRepository {
     private static final String TABLE = Constants.TABLES.MOTHERMENTOR_ENROLL_IIT;
     private static final String VISIT_EVENT = MotherMentorFollowUpType.MOTHER_IIT.getEventType();
+    private static final List<String> COUNTERS = Arrays.asList(IIT_COUNTER_AMEKATAA,
+            IIT_COUNTER_HAJARUDI, IIT_COUNTER_AMESAFIRI, IIT_COUNTER_NYINGINE, IIT_COUNTER_HAJAPATIKANA);
+    public static final List<String> COLUMNS = Collections.unmodifiableList(Arrays.asList(
+            IIT_STATUS, IIT_TAREHE_YA_KUFUNGWA, IIT_SABABU_YA_KUFUNGWA, IIT_RETURN_STATE,
+            IIT_KITUO_KIPYA, IIT_MAMA_KINARA_LINK, IIT_COUNTER_AMEKATAA, IIT_COUNTER_HAJARUDI,
+            IIT_COUNTER_AMESAFIRI, IIT_COUNTER_NYINGINE, IIT_COUNTER_HAJAPATIKANA));
 
     private MotherMentorIitRepository() {}
 
@@ -33,19 +44,22 @@ public final class MotherMentorIitRepository {
             String excludedVisitId) {
         Episode episode = episode(db, clientId);
         if (episode == null) return MotherMentorIitState.active();
-        List<Evidence> visits = history(db, clientId, episode, excludedVisitId);
-        return state(episode, visits.size());
+        return replay(episode, history(db, clientId, episode, excludedVisitId));
     }
 
     /** A form can show its proposed exit without writing any visit or projection. */
     public static MotherMentorIitState preview(SQLiteDatabase db, String clientId,
             String excludedVisitId, Map<String, String> answers, LocalDate serviceDate) {
-        MotherMentorIitState state = getState(db, clientId, excludedVisitId);
+        Episode episode = episode(db, clientId);
+        if (episode == null) return MotherMentorIitState.active();
+        List<Evidence> history = history(db, clientId, episode, excludedVisitId);
+        MotherMentorIitState state = replay(episode, history);
         if (!isStatusComplete(answers) || serviceDate == null || serviceDate.isAfter(LocalDate.now())) {
             return state;
         }
         String exit = immediateExit(answers);
-        return exit.isEmpty() ? state : state.close(exit, serviceDate, value(answers, IIT_KITUO_KIPYA));
+        return exit.isEmpty() ? advance(state, answers, serviceDate)
+                : state.close(exit, serviceDate, value(answers, IIT_KITUO_KIPYA));
     }
 
     public static boolean isStatusComplete(Map<String, String> answers) {
@@ -67,7 +81,100 @@ public final class MotherMentorIitRepository {
     }
 
     public static boolean isComplete(Map<String, String> answers, MotherMentorIitState state) {
-        return isStatusComplete(answers);
+        if (!isStatusComplete(answers)) return false;
+        String rawDate = value(answers, MOTHERMENTOR_VISIT_DATE);
+        LocalDate serviceDate = rawDate.isEmpty() ? LocalDate.now()
+                : MotherMentorHeiSchedule.parseDate(rawDate);
+        return serviceDate != null && !serviceDate.isAfter(LocalDate.now())
+                && isComplete(answers, state, serviceDate);
+    }
+
+    private static boolean isComplete(Map<String, String> answers, MotherMentorIitState state,
+            LocalDate serviceDate) {
+        return isStatusComplete(answers) && (!"found".equals(value(answers, FOLLOW_UP_STATUS))
+                || MotherMentorIitReturnUtils.isComplete(answers, state.getReturnState(),
+                        state.getMissedAppointmentDate(), serviceDate));
+    }
+
+    /** Called by the explicit app migration, using the same database as the rest of the upgrade. */
+    public static void upgrade(SQLiteDatabase db) {
+        List<String> columns = MotherMentorMotherCascadeRepository.columns(db, TABLE);
+        if (columns.isEmpty()) return;
+        for (String column : COLUMNS) {
+            if (!columns.contains(column)) db.execSQL("ALTER TABLE " + TABLE + " ADD COLUMN " + column
+                    + (COUNTERS.contains(column) ? " INTEGER NOT NULL DEFAULT 0" : " TEXT"));
+        }
+        List<String> clients = new ArrayList<>();
+        try (Cursor rows = db.rawQuery("SELECT DISTINCT " + BASE_ENTITY_ID + " FROM " + TABLE, new String[0])) {
+            while (rows.moveToNext()) clients.add(rows.getString(0));
+        }
+        for (String clientId : clients) rebuild(db, clientId);
+    }
+
+    public static void rebuild(SQLiteDatabase db, String clientId) {
+        if (!hasProjection(db)) return;
+        Episode episode = episode(db, clientId);
+        if (episode == null) return;
+        MotherMentorIitState state = replay(episode, history(db, clientId, episode, null));
+        ContentValues projection = new ContentValues();
+        for (Map.Entry<String, String> entry : observationValues(state).entrySet()) {
+            projection.put(entry.getKey(), entry.getValue());
+        }
+        projection.put(IS_CLOSED, state.isClosed() ? 1 : 0);
+        db.update(TABLE, projection, BASE_ENTITY_ID + " = ?", new String[] {clientId});
+    }
+
+    static boolean hasProjection(SQLiteDatabase db) {
+        return db != null && MotherMentorMotherCascadeRepository.columns(db, TABLE).containsAll(COLUMNS);
+    }
+
+    public static Map<String, String> observationValues(MotherMentorIitState state) {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(IIT_STATUS, state.getStatus());
+        values.put(IIT_TAREHE_YA_KUFUNGWA, state.getClosedDate());
+        values.put(IIT_SABABU_YA_KUFUNGWA, state.isClosed() ? state.getStatus() : "");
+        values.put(IIT_RETURN_STATE, state.getReturnState());
+        values.put(IIT_KITUO_KIPYA, state.getNewFacility());
+        values.put(IIT_MAMA_KINARA_LINK, state.getLinkedMotherId());
+        values.put(IIT_COUNTER_AMEKATAA, Integer.toString(state.getRefusedCount()));
+        values.put(IIT_COUNTER_HAJARUDI, Integer.toString(state.getNotReturnedCount()));
+        values.put(IIT_COUNTER_AMESAFIRI, Integer.toString(state.getTravelledCount()));
+        values.put(IIT_COUNTER_NYINGINE, Integer.toString(state.getOtherCount()));
+        values.put(IIT_COUNTER_HAJAPATIKANA, Integer.toString(state.getNotFoundCount()));
+        return values;
+    }
+
+    public static boolean isIitVisit(Visit visit) {
+        return visit != null && VISIT_EVENT.equals(visit.getVisitType());
+    }
+
+    static void rebuildForVisit(SQLiteDatabase db, Visit visit) {
+        if (isIitVisit(visit) && Boolean.TRUE.equals(visit.getProcessed())) {
+            rebuild(db, visit.getBaseEntityId());
+        }
+    }
+
+    private static MotherMentorIitState replay(Episode episode, List<Evidence> visits) {
+        MotherMentorIitState state = state(episode, visits.size());
+        for (Evidence evidence : visits) {
+            if ("2".equals(value(evidence.values, IIT_FOLLOW_UP_SCHEMA))) {
+                state = advance(state, evidence.values, evidence.date);
+            }
+        }
+        return state;
+    }
+
+    private static MotherMentorIitState advance(MotherMentorIitState state, Map<String, String> answers,
+            LocalDate serviceDate) {
+        if (state.isClosed() || !"found".equals(value(answers, FOLLOW_UP_STATUS))
+                || !isComplete(answers, state, serviceDate)) return state;
+        if (MotherMentorIitState.NONE.equals(state.getReturnState())) {
+            return "agreed".equals(value(answers, IIT_RETURN_AGREEMENT)) ? state.agreeToReturn() : state;
+        }
+        if ("yes".equals(value(answers, RETURNED_TO_FACILITY))) {
+            return state.close(MotherMentorIitState.RETURNED_TO_CARE, serviceDate, "");
+        }
+        return state;
     }
 
     private static String immediateExit(Map<String, String> answers) {
@@ -83,7 +190,9 @@ public final class MotherMentorIitRepository {
     private static MotherMentorIitState state(Episode episode, int visitCount) {
         MotherMentorIitState state = MotherMentorIitState.active(episode.id, episode.missedDate,
                 episode.linkedMother, visitCount);
+        String projected = value(episode.enrollment, IIT_STATUS);
         return "1".equals(value(episode.enrollment, IS_CLOSED))
+                && !MotherMentorIitState.RETURNED_TO_CARE.equals(projected)
                 ? state.close(MotherMentorIitState.LEGACY_CLOSED, null, "") : state;
     }
 

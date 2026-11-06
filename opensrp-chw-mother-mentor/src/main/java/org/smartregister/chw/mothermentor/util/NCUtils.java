@@ -27,6 +27,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorIitRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 import org.smartregister.domain.db.EventClient;
@@ -324,6 +325,10 @@ public class NCUtils {
                         MotherMentorLibrary.getInstance().visitDetailsRepository());
             } else if (MotherMentorHouseholdClosureRepository.isHouseholdVisit(visit)) {
                 MotherMentorLibrary.getInstance().visitRepository().refreshHouseholdVisit(
+                        visit, eventToVisit(baseEvent.getEvent()), database,
+                        MotherMentorLibrary.getInstance().visitDetailsRepository());
+            } else if (MotherMentorIitRepository.isIitVisit(visit)) {
+                MotherMentorLibrary.getInstance().visitRepository().refreshIitVisit(
                         visit, eventToVisit(baseEvent.getEvent()), database,
                         MotherMentorLibrary.getInstance().visitDetailsRepository());
             }
