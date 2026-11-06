@@ -54,7 +54,7 @@ public class MotherMentorIitStatusNativeRulesTest {
             JsonFormActivity activity = nativeActivity(form);
             assertOptions(form, FOLLOW_UP_STATUS, "found", "not_found");
             assertOptions(form, IIT_NOT_FOUND_REASON, REASONS);
-            assertNull(FormUtils.getFieldFromForm(form, EXPECTED_FACILITY_VISIT_DATE));
+            assertFalse(FormUtils.getFieldFromForm(form, EXPECTED_FACILITY_VISIT_DATE).has("key"));
 
             answer(form, FOLLOW_UP_STATUS, "found");
             assertFalse(relevant(activity, form, IIT_NOT_FOUND_REASON));
@@ -122,7 +122,7 @@ public class MotherMentorIitStatusNativeRulesTest {
             JSONObject form = form(language, "mothermentor_follow_up_comment");
             JSONObject comments = FormUtils.getFieldFromForm(form, "comments");
             assertEquals("100", comments.getJSONObject("v_max_length").getString("value"));
-            assertFalse(comments.optJSONObject("v_required") != null);
+            assertNull(comments.optJSONObject("v_required"));
         }
     }
 
