@@ -253,6 +253,18 @@ public class MotherMentorIitExitRepositoryTest {
         assertTrue(visit.getVisitDetails().isEmpty());
     }
 
+    @Test
+    public void aCorrectedLegacyAppointmentDateKeepsTheSavedTracingEpisode() throws Exception {
+        data.execSQL("DELETE FROM event");
+        Map<String, String> agreement = initial("agreed");
+        agreement.put(IIT_FOLLOW_UP_SCHEMA, "2");
+        agreement.put(IIT_ENROLLMENT_ID, "legacy:" + CLIENT + ":2020-04-08");
+        visit("agreement", "agreement", IIT_EVENT, "2020-04-10", 1, true, agreement);
+        data.execSQL("UPDATE " + IIT + " SET expected_return_date = '2020-04-09'");
+        assertEquals("2020-04-09", state().getMissedAppointmentDate());
+        assertEquals("referred", state().getReturnState());
+    }
+
     private void linkMama() throws Exception {
         data.execSQL("INSERT INTO " + MOTHERS + " (base_entity_id, pregnancy_status, is_closed, "
                 + "last_interacted_with) VALUES (?, 'pregnant', 0, 1)", new Object[] {CLIENT});

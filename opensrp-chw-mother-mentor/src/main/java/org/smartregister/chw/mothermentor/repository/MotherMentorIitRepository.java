@@ -311,7 +311,7 @@ public final class MotherMentorIitRepository {
                 .latestEnrollment(db, clientId, Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_IIT);
         LocalDate missed = MotherMentorHeiSchedule.parseBirthDate(value(enrollment, IIT_EXPECTED_RETURN_DATE));
         String missedDate = missed == null ? "" : missed.toString();
-        String episodeId = raw == null ? "legacy:" + clientId + ":" + missedDate : raw.id;
+        String episodeId = raw == null ? "legacy:" + clientId : raw.id;
         String linked = MotherMentorMotherCascadeRepository.row(db,
                 Constants.TABLES.MOTHERMENTOR_ENROLLMENT, clientId).isEmpty() ? "" : clientId;
         return new Episode(clientId, episodeId, raw == null ? 0 : raw.time, missedDate, linked, enrollment);
@@ -375,7 +375,9 @@ public final class MotherMentorIitRepository {
     }
 
     private static boolean belongs(Episode episode, String visitEpisode, long time) {
-        return visitEpisode.isEmpty() ? episode.time == 0 || time >= episode.time : episode.id.equals(visitEpisode);
+        if (visitEpisode.isEmpty()) return episode.time == 0 || time >= episode.time;
+        return episode.id.equals(visitEpisode)
+                || episode.time == 0 && visitEpisode.startsWith(episode.id + ":");
     }
 
     private static Comparator<Evidence> revisionOrder() {
