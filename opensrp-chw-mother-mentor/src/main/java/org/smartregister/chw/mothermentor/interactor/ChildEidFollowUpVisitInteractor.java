@@ -1,97 +1,258 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
+import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidArrivalActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidFollowUpCommentActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidFollowUpStatusActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidTestTypeActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidFinalTestActionHelper;
+import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
+import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
+import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.domain.Visit;
+import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
-import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
+import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-/** Child EID-specific follow-up action assembly. */
-public class ChildEidFollowUpVisitInteractor extends BaseMotherMentorFollowUpVisitInteractor {
-    private static final String FINAL_TEST = "final_test";
+import timber.log.Timber;
+
+/** Current Child EID tracing checklist, with an unchanged path for schema1/2 visits. */
+public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisitInteractor {
+    private static final String STATUS_FORM = "mothermentor_child_eid_follow_up_status";
+    private static final String COMMENT_FORM = "mothermentor_child_eid_follow_up_comment";
+    private final LinkedHashMap<String, BaseMotherMentorVisitAction> childActions =
+            new LinkedHashMap<>();
+    private BaseMotherMentorVisitContract.InteractorCallBack childCallback;
+    private boolean actionsReady;
+    private boolean statusSaved;
+    private boolean legacyVisit;
+    private String originalSchema;
+    private LocalDate serviceDate = LocalDate.now();
+    private MotherMentorChildEidRepository.State enrollmentState;
+    private Map<String, String> originalEpisode = Collections.emptyMap();
+
     public ChildEidFollowUpVisitInteractor(String eventType) {
-        super(
-                new FollowUpFormDefinition(
-                                eventType,
-                                MotherMentorFollowUpType.CHILD_EID.getValue(),
-                                R.string.mothermentor_follow_up_status_section,
-                                R.string.mothermentor_child_eid_arrival_section,
-                                R.string.mothermentor_comments_section,
-                                "mothermentor_child_eid_follow_up_status",
-                                "mothermentor_child_eid_arrival",
-                                "mothermentor_child_eid_follow_up_comment")
-                        .withTestType(
-                                R.string.mothermentor_child_eid_test_type_section,
-                                "mothermentor_child_eid_test_type"));
+        super(eventType);
     }
 
     @Override
-    protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createStatusActionHelper(
-            Runnable onStatusChanged) {
-        return new MotherMentorChildEidFollowUpStatusActionHelper(onStatusChanged);
+    protected void getDetailsOnEdit(BaseMotherMentorVisitContract.View view, MemberObject member) {
+        memberObject = member;
+        details = null;
+        legacyVisit = false;
+        originalSchema = null;
+        statusSaved = false;
+        serviceDate = LocalDate.now();
+        enrollmentState = null;
+        originalEpisode = new LinkedHashMap<>();
+        if (member == null) return;
+        Visit visit = Boolean.TRUE.equals(view.getEditMode())
+                ? loadEditingVisit(member.getBaseEntityId()) : null;
+        if (visit != null) {
+            details = loadVisitDetails(visit);
+            LocalDate recorded = MotherMentorMotherVisitDao.getServiceDate(visit);
+            if (recorded != null) serviceDate = recorded;
+            try {
+                Map<String, String> values = MotherMentorVisitCompletion.observationValues(
+                        new JSONObject(visit.getJson()).optJSONArray("obs"));
+                originalSchema = values.get(DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA);
+                legacyVisit = !MotherMentorChildEidStatusUtils.isSchema3(values);
+                for (String key : new String[] {DBConstants.KEY.MTOTO_ENROLLMENT_ID,
+                        DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID}) {
+                    if (StringUtils.isNotBlank(values.get(key))) originalEpisode.put(key, values.get(key));
+                }
+                statusSaved = !legacyVisit && MotherMentorChildEidStatusUtils.isStatusComplete(
+                        values, childDob(), serviceDate);
+            } catch (Exception e) {
+                legacyVisit = true;
+                Timber.e(e, "Unable to restore the Child EID visit schema");
+            }
+        }
+        if (!useLegacyWorkflow()) {
+            try {
+                enrollmentState = loadEnrollmentState(member.getBaseEntityId(),
+                        visit == null ? null : visit.getVisitId());
+            } catch (Exception e) {
+                Timber.e(e, "Unable to capture the Child EID enrollment episode");
+            }
+        }
+    }
+
+    protected MotherMentorChildEidRepository.State loadEnrollmentState(String memberId,
+            String editingVisitId) {
+        SQLiteDatabase db =
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        return StringUtils.isBlank(editingVisitId)
+                ? MotherMentorChildEidRepository.getState(db, memberId, null, serviceDate)
+                : MotherMentorChildEidRepository.getStateBeforeVisit(db, memberId, editingVisitId);
+    }
+
+    protected Visit loadEditingVisit(String memberId) {
+        return visitRepository().getLatestVisit(memberId, getCurrentVisitType());
+    }
+
+    protected Map<String, List<VisitDetail>> loadVisitDetails(Visit visit) {
+        return VisitUtils.getVisitGroups(MotherMentorLibrary.getInstance()
+                .visitDetailsRepository().getVisits(visit.getVisitId()));
+    }
+
+    protected boolean useLegacyWorkflow() {
+        return legacyVisit;
     }
 
     @Override
+    protected boolean usesFinalTestSection() {
+        return "2".equals(originalSchema);
+    }
+
+    protected LocalDate childDob() {
+        LocalDate dob = memberObject == null ? null
+                : MotherMentorHeiSchedule.parseBirthDate(memberObject.getDob());
+        if (dob != null || memberObject == null) return dob;
+        try {
+            return MotherMentorHeiSchedule.parseBirthDate(MotherMentorDao
+                    .getChildEidTestEnrollmentValues(memberObject.getBaseEntityId())
+                    .get(DBConstants.KEY.DOB));
+        } catch (Exception e) {
+            Timber.e(e, "Unable to load the Child EID birth date");
+            return null;
+        }
+    }
+
+    @Override
+    protected void populateActionList(BaseMotherMentorVisitContract.InteractorCallBack callback) {
+        if (useLegacyWorkflow()) {
+            super.populateActionList(callback);
+            return;
+        }
+        childCallback = callback;
+        appExecutors.diskIO().execute(() -> {
+            childActions.clear();
+            actionsReady = false;
+            try {
+                addChildAction(R.string.mothermentor_follow_up_status_section, STATUS_FORM,
+                        createChildStatusActionHelper(this::onStatusChanged), false, details);
+                addChildAction(R.string.mothermentor_child_eid_comments_optional, COMMENT_FORM,
+                        new MotherMentorChildEidFollowUpCommentActionHelper(), true, details);
+                syncHeiAction(true);
+            } catch (BaseMotherMentorVisitAction.ValidationException e) {
+                Timber.e(e);
+            }
+            actionsReady = true;
+            appExecutors.mainThread().execute(() -> callback.preloadActions(childActions));
+        });
+    }
+
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
-            createArrivalActionHelper() {
-        return new MotherMentorChildEidArrivalActionHelper(this::clearAdditionalActions);
+            createChildStatusActionHelper(Runnable changed) {
+        return new MotherMentorChildEidFollowUpStatusActionHelper(
+                memberObject, serviceDate, changed);
     }
 
-    @Override
+    /** Part3 supplies the referral section through this category-specific factory. */
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
-            createCommentsActionHelper() {
-        return new MotherMentorChildEidFollowUpCommentActionHelper();
+            createHeiActionHelper(Runnable changed) {
+        return new MotherMentorChildEidTestTypeActionHelper(memberObject, changed);
     }
 
-    @Override
-    protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
-            createTestTypeActionHelper() {
-        return new MotherMentorChildEidTestTypeActionHelper(
-                memberObject, this::clearAdditionalActions);
+    protected String getHeiFormName() {
+        return "mothermentor_child_eid_test_type";
     }
 
-    @Override
-    protected void addAdditionalActions() throws BaseMotherMentorVisitAction.ValidationException {
-        add(FINAL_TEST, R.string.mothermentor_child_final_test_section,
-                "mothermentor_child_eid_final_test", new MotherMentorChildEidFinalTestActionHelper(),
-                new BaseMotherMentorVisitAction.Validator() {
-                    @Override
-                    public boolean isValid(String key) { return finalTestRequired(); }
-
-                    @Override
-                    public boolean isEnabled(String key) { return finalTestRequired(); }
-
-                    @Override
-                    public void onChanged(String key) {}
-                }, false);
+    private void addChildAction(int title, String form,
+            BaseMotherMentorVisitAction.MotherMentorVisitActionHelper helper, boolean optional,
+            Map<String, List<VisitDetail>> restoredDetails)
+            throws BaseMotherMentorVisitAction.ValidationException {
+        String label = context.getString(title);
+        childActions.put(label, getBuilder(label).withOptional(optional)
+                .withDetails(restoredDetails).withHelper(helper).withFormName(form).build());
     }
 
-    private boolean finalTestRequired() {
-        return clientFound()
-                && "eighteen_months".equals(value(TEST_TYPE, DBConstants.KEY.CHILD_EID_TEST_TYPE))
-                && "yes".equals(value(ARRIVAL, DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY));
+    private Map<String, String> statusValues() {
+        BaseMotherMentorVisitAction action = childActions.get(
+                context.getString(R.string.mothermentor_follow_up_status_section));
+        if (action == null || StringUtils.isBlank(action.getJsonPayload())) return Collections.emptyMap();
+        try {
+            return MotherMentorChildEidStatusUtils.values(new JSONObject(action.getJsonPayload()));
+        } catch (Exception e) {
+            Timber.e(e);
+            return Collections.emptyMap();
+        }
     }
 
-    @Override
-    protected void clearAdditionalActions() {
-        if (!finalTestRequired()) clearAction(FINAL_TEST);
+    private void onStatusChanged() {
+        if (!actionsReady) return;
+        statusSaved = true;
+        try {
+            syncHeiAction(false);
+            // Saved form callbacks run on the main thread. The view copies this map, so
+            // replace its rows before the activity redraws the final action status.
+            childCallback.preloadActions(childActions);
+        } catch (BaseMotherMentorVisitAction.ValidationException e) {
+            Timber.e(e);
+        }
+    }
+
+    private void syncHeiAction(boolean restore)
+            throws BaseMotherMentorVisitAction.ValidationException {
+        String title = context.getString(R.string.mothermentor_child_eid_hei_section);
+        Map<String, String> values = statusValues();
+        if (!statusSaved || !MotherMentorChildEidStatusUtils.isFoundAlive(values)
+                || !MotherMentorChildEidStatusUtils.isStatusComplete(values, childDob(), serviceDate)) {
+            childActions.remove(title);
+            return;
+        }
+        if (childActions.containsKey(title)) return;
+        String commentsTitle = context.getString(R.string.mothermentor_child_eid_comments_optional);
+        BaseMotherMentorVisitAction comments = childActions.remove(commentsTitle);
+        addChildAction(R.string.mothermentor_child_eid_hei_section, getHeiFormName(),
+                createHeiActionHelper(() -> {}), false, restore ? details : null);
+        childActions.put(commentsTitle, comments);
     }
 
     @Override
     protected void prepareEvent(Event event) {
         super.prepareEvent(event);
-        if (event != null) event.addObs(new Obs("concept", "text",
-                DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA, "",
-                new ArrayList<>(Collections.singletonList("2")), new ArrayList<>(), null,
-                DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA));
+        if (event == null) return;
+        event.setEventDate(serviceDate.toDate());
+        putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
+                serviceDate.toString("dd-MM-yyyy"));
+        putObservation(event, DBConstants.KEY.CHILD_EID_FOLLOW_UP_SCHEMA,
+                useLegacyWorkflow() ? originalSchema : "3");
+        for (Map.Entry<String, String> episode : originalEpisode.entrySet()) {
+            putObservation(event, episode.getKey(), episode.getValue());
+        }
+        if (!useLegacyWorkflow()) MotherMentorChildEidRepository.tagEvent(event, enrollmentState);
+    }
+
+    private void putObservation(Event event, String key, String value) {
+        if (event.getObs() != null) {
+            Iterator<Obs> observations = event.getObs().iterator();
+            while (observations.hasNext()) {
+                if (key.equals(observations.next().getFieldCode())) observations.remove();
+            }
+        }
+        if (StringUtils.isBlank(value)) return;
+        event.addObs(new Obs("concept", "text", key, "",
+                new ArrayList<>(Collections.singletonList(value)), new ArrayList<>(), null, key));
     }
 }

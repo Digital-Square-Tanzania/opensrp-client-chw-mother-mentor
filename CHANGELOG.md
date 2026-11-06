@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+### Changed
+
+- Replace new Child EID tracing visits with nested found/alive and not-found reason
+  branches in English and Swahili, including birth/service-date validation and
+  inactive-answer clearing (CHW #1146).
+- Keep Comments available throughout and reveal one HEI section only after a saved,
+  valid found-and-alive status; preserve schema1/2 draft forms and requirements.
+
 ## 0.1.20-SNAPSHOT — 2026-11-05
 
 ### Added
