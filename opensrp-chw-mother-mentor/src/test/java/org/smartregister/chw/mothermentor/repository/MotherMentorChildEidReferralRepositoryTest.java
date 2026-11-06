@@ -176,6 +176,48 @@ public class MotherMentorChildEidReferralRepositoryTest {
         assertTrue(state().getClinicalState().getTests().isEmpty());
     }
 
+    @Test public void savedReturnResultsReplayAcrossVisitsAndKeepTheOriginalSampleDate() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        visit("agree", "agree", "child", first("agreed"), day, 1, true, false, 9);
+        LocalDate sampleDate = day.plusDays(1);
+        Map<String, String> sample = returning("referred");
+        sample.putAll(fields(CHILD_EID_ARRIVED_AT_FACILITY, "yes", CHILD_EID_FACILITY_ARRIVAL_DATE,
+                sampleDate.toString(), MAMA_HEI_TEST_DONE, "yes", CHILD_EID_TEST_TYPE, "nine_months",
+                MAMA_HEI_TEST_DATE, sampleDate.toString(), MAMA_HEI_TEST_RESULT, "pending"));
+        visit("draft", "draft", "child", sample, sampleDate, 1, false, false, 9);
+        assertEquals("referred", state().getReferralState());
+        visit("sample", "sample", "child", sample, sampleDate, 1, true, false, 9);
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals("awaiting_result", state().getReferralState());
+        assertEquals("awaiting_result", scalar("SELECT mtoto_rufaa_state FROM ec_mothermentor_enroll_child_eid"));
+        Map<String, String> received = returning("awaiting_result");
+        received.putAll(fields(MTOTO_PENDING_TEST, "miezi9", MTOTO_PENDING_TEST_DATE,
+                sampleDate.toString(), MTOTO_RESULT_RECEIVED, "yes", MTOTO_RECEIVED_RESULT,
+                "positive", MTOTO_CONFIRMATION_RECEIVED, "no"));
+        visit("result", "result", "child", received, sampleDate.plusDays(1), 1, true, false, 9);
+        assertEquals("awaiting_confirm", state().getReferralState());
+        assertFalse(state().getClinicalState().getTests().get(Stage.NINE_MONTHS).isConfirmed());
+        Map<String, String> confirm = returning("awaiting_confirm");
+        confirm.putAll(fields(MTOTO_PENDING_TEST, "miezi9", MTOTO_PENDING_TEST_DATE,
+                sampleDate.toString(), MTOTO_CONFIRMATION_RECEIVED, "yes", MTOTO_CONFIRMATORY_RESULT, "negative"));
+        visit("confirm", "confirm", "child", confirm, sampleDate.plusDays(2), 1, true, false, 9);
+        assertEquals("none", state().getReferralState());
+        assertEquals("negative", state().getClinicalState().getTests().get(Stage.NINE_MONTHS).getResult());
+        assertEquals(sampleDate, state().getClinicalState().getTests().get(Stage.NINE_MONTHS).getDate());
+        data.delete("visits", "visit_id = ?", new String[] {"confirm"});
+        assertEquals("awaiting_confirm", state().getReferralState());
+    }
+
+    private Map<String, String> returning(String before) {
+        Map<String, String> values = first("");
+        values.remove(MTOTO_RUFAA_TEST);
+        values.remove(MTOTO_RUFAA_DUE);
+        values.put(MTOTO_RETURN_FLOW, "1");
+        values.put(MTOTO_RUFAA_STATE_BEFORE, before);
+        return values;
+    }
+
     private MotherMentorChildEidRepository.State state() {
         return MotherMentorChildEidRepository.getState(db, "child", null);
     }

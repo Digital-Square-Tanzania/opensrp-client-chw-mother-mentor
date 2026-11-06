@@ -16,6 +16,7 @@ import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepo
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUi;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
@@ -34,6 +35,8 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
     private LocalDate serviceDate;
     private String referralState;
     private MotherMentorMotherChildRepository.State clinicalState;
+    private MotherMentorChildEidRepository.State episode;
+    private boolean savedReturnFlow;
 
     public MotherMentorChildEidHeiActionHelper(MemberObject member, Runnable onHeiChanged) {
         this(member, null, onHeiChanged);
@@ -55,7 +58,11 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
         serviceDate = suppliedServiceDate == null ? LocalDate.now() : suppliedServiceDate;
         referralState = null;
         clinicalState = null;
+        episode = null;
+        savedReturnFlow = false;
         if (details == null) return;
+        List<VisitDetail> flow = details.get(DBConstants.KEY.MTOTO_RETURN_FLOW);
+        savedReturnFlow = flow != null && !flow.isEmpty() && "1".equals(flow.get(0).getDetails());
         List<VisitDetail> previousStates = details.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
         if (previousStates != null && !previousStates.isEmpty()
                 && MotherMentorChildEidHeiUtils.isReferralState(previousStates.get(0).getDetails())) {
@@ -79,15 +86,22 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
     }
 
     protected String loadReferralState() {
-        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) return "none";
-        if (StringUtils.isNotBlank(currentVisitId)) {
-            return MotherMentorChildEidRepository.getStateBeforeVisit(MotherMentorLibrary.getInstance()
-                    .getRepository().getReadableDatabase(), member.getBaseEntityId(),
-                    currentVisitId).getReferralState();
+        MotherMentorChildEidRepository.State state = episode();
+        return state == null ? "none" : state.getReferralState();
+    }
+
+    private MotherMentorChildEidRepository.State episode() {
+        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) return null;
+        if (episode == null) {
+            net.zetetic.database.sqlcipher.SQLiteDatabase database =
+                    MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+            episode = StringUtils.isBlank(currentVisitId)
+                    ? MotherMentorChildEidRepository.getState(database, member.getBaseEntityId(),
+                            null, getServiceDate())
+                    : MotherMentorChildEidRepository.getStateBeforeVisit(database,
+                            member.getBaseEntityId(), currentVisitId);
         }
-        return MotherMentorChildEidRepository.getState(MotherMentorLibrary.getInstance()
-                .getRepository().getReadableDatabase(), member.getBaseEntityId(),
-                currentVisitId, getServiceDate()).getReferralState();
+        return episode;
     }
 
     protected MotherMentorMotherChildRepository.State loadClinicalState() {
@@ -140,8 +154,16 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
                     getServiceDate().toString());
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY,
                     MotherMentorMotherChildUtils.serializeTests(clinical.getSamplingHistory()));
-            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE,
-                    previousReferralState());
+            String referral = previousReferralState();
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, referral);
+            boolean returnFlow = !"none".equals(referral) && (currentVisitId == null || savedReturnFlow);
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_FLOW, returnFlow ? "1" : "");
+            if (returnFlow) {
+                MotherMentorChildEidRepository.State state = episode();
+                if (state != null && !savedReturnFlow) {
+                    MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_TEST, state.getReferralTest());
+                }
+            }
             if (prefill) {
                 putIfEmpty(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS,
                         clinical.getBreastfeedingStatus());
@@ -186,6 +208,10 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
         if ("refused".equals(agreement)) return context.getString(
                 R.string.mothermentor_child_eid_hei_referral_refused);
         Map<String, String> values = MotherMentorMotherChildUtils.values(payload);
+        if (MotherMentorChildEidReturnVisit.applies(values)) {
+            return MotherMentorChildEidHeiUi.returnNote(context, values, clinical().getChildDob(),
+                    getServiceDate(), clinical().getSamplingHistory());
+        }
         List<Stage> due = MotherMentorChildEidHeiUtils.reviewable(values,
                 clinical().getChildDob(), clinical().getSamplingHistory(), getServiceDate());
         return due.isEmpty() ? context.getString(R.string.mothermentor_child_eid_hei_none)

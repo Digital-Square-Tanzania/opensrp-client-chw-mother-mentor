@@ -14,6 +14,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
@@ -323,8 +324,18 @@ public final class MotherMentorMotherChildRepository {
             state.childDeathDate = null;
             state.breastfeedingStatus = values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
             state.weaningDate = MotherMentorChildEidHeiUtils.cessation(values);
+            String before = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+            if (MotherMentorChildEidReturnVisit.applies(values)) {
+                MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
+                        values, state.childDob, date, state.getSamplingHistory(), before);
+                if (result != null && result.stage != null) {
+                    state.tests.put(result.stage, new TestRecord(result.result, result.testDate,
+                            result.outcome == MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE, date));
+                }
+                return;
+            }
             if (!MotherMentorChildEidHeiUtils.isComplete(values, state.childDob, date,
-                    state.getSamplingHistory(), values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return;
+                    state.getSamplingHistory(), before)) return;
         } else if (!org.smartregister.chw.mothermentor.util.MotherMentorChildEidFollowUpVisitUtils
                 .isComplete(values, true)) return;
         // Existing EID results-returned means availability, never positive confirmation.

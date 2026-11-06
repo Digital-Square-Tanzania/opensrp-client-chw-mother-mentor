@@ -9,4 +9,13 @@
     <string name="mothermentor_child_eid_hei_stage_nine_months">9 months</string>
     <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">15 months</string>
     <string name="mothermentor_child_eid_hei_stage_eighteen_months">18 months (confirmatory)</string>
+    <string name="mothermentor_eid_return_named_result">Has the %1$s test result been received?</string>
+    <string name="mothermentor_eid_return_negative">Negative. The child returns to the HEI schedule through the mother’s visits.</string>
+    <string name="mothermentor_eid_return_confirm_negative">Confirmatory result is negative. Follow national guidelines for repeat testing.</string>
+    <string name="mothermentor_eid_return_graduation">Negative at 18 months. The child has graduated.</string>
+    <string name="mothermentor_eid_return_confirm_positive">Confirmed positive. Ensure the child is linked to ART and CTC.</string>
+    <string name="mothermentor_eid_return_wait_result">Save. The next visit asks whether the result has been received.</string>
+    <string name="mothermentor_eid_return_wait_confirm">Save. The child remains on the list awaiting confirmation.</string>
+    <string name="mothermentor_eid_return_nonattendance">Save. The referral stays open and the next visit asks about attendance again.</string>
+    <string name="mothermentor_eid_return_attendance">Save. The referral stays open. The next visit asks again whether the child attended.</string>
 </resources>

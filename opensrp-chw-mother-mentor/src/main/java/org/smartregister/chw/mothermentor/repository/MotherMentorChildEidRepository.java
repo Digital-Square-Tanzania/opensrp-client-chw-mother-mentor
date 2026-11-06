@@ -16,6 +16,7 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -132,26 +133,30 @@ public final class MotherMentorChildEidRepository {
         if (before != null) history.removeIf(item -> MotherMentorChildEidDao.compareChronology(item, before) >= 0);
         state.visits = Collections.unmodifiableList(history);
         state.visitCount = history.size();
-        replayFirstReferrals(db, state);
+        replayReferrals(db, state);
         return state;
     }
 
-    private static void replayFirstReferrals(SQLiteDatabase db, State state) {
+    private static void replayReferrals(SQLiteDatabase db, State state) {
         // A projected legacy row is not an immutable enrollment baseline. Replaying over it
         // would count the same refusal again on every rebuild.
         if (state.episode.id.isEmpty()) return;
         for (Visit visit : state.visits) {
             Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
                     MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
-            if (!"none".equals(state.getReferralState())
-                    || !"none".equals(value(answers, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
+            String before = state.getReferralState();
+            if (!before.equals(value(answers, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
                     || !MotherMentorChildEidStatusUtils.isFoundAlive(answers)) continue;
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
             MotherMentorMotherChildRepository.State clinical = MotherMentorMotherChildRepository
                     .getStateForChildBeforeEvidence(db, state.childId, visit);
-            if (!MotherMentorChildEidStatusUtils.isStatusComplete(answers, clinical.getChildDob(), day)
-                    || !MotherMentorChildEidHeiUtils.isComplete(answers, clinical.getChildDob(), day,
-                            clinical.getSamplingHistory(), "none")) continue;
+            if (!MotherMentorChildEidStatusUtils.isStatusComplete(answers, clinical.getChildDob(), day)) continue;
+            if (MotherMentorChildEidReturnVisit.applies(answers)) {
+                applyReturn(state, answers, clinical, day, before);
+                continue;
+            }
+            if (!"none".equals(before) || !MotherMentorChildEidHeiUtils.isComplete(answers,
+                    clinical.getChildDob(), day, clinical.getSamplingHistory(), before)) continue;
             String agreement = value(answers, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT);
             if ("refused".equals(agreement)) {
                 state.enrollment.put(DBConstants.KEY.MTOTO_COUNTER_AMEKATAA,
@@ -164,6 +169,24 @@ public final class MotherMentorChildEidRepository {
                         value(answers, DBConstants.KEY.MTOTO_RUFAA_DUE));
                 state.enrollment.put(DBConstants.KEY.MTOTO_COUNTER_AMEKATAA, "0");
             }
+        }
+    }
+
+    private static void applyReturn(State state, Map<String, String> answers,
+            MotherMentorMotherChildRepository.State clinical, LocalDate day, String before) {
+        if (!MotherMentorChildEidReturnVisit.REFERRED.equals(before)
+                && !state.getReferralTest().isEmpty()
+                && Stage.fromCode(state.getReferralTest())
+                        != Stage.fromCode(value(answers, DBConstants.KEY.MTOTO_PENDING_TEST))) return;
+        MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
+                answers, clinical.getChildDob(), day, clinical.getSamplingHistory(), before);
+        if (result == null) return;
+        state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_STATE, result.nextState);
+        if (result.stage != null) {
+            state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_TEST, result.stage.getMetadataCode());
+            LocalDate due = MotherMentorHeiSchedule.dueDate(result.stage, clinical.getChildDob(),
+                    MotherMentorChildEidHeiUtils.cessation(answers));
+            state.enrollment.put(DBConstants.KEY.MTOTO_RUFAA_DUE, due == null ? "" : due.toString());
         }
     }
 
