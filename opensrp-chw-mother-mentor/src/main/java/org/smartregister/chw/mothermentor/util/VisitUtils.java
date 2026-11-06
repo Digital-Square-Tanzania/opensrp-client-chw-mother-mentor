@@ -100,6 +100,12 @@ public class VisitUtils {
 
                 AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
                 NCUtils.addEvent(allSharedPreferences, baseEvent);
+                if (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(v.getVisitType())
+                        && org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao.storedEvent(
+                                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                                v.getBaseEntityId(), v.getVisitType(), baseEvent.getFormSubmissionId()) == null) {
+                    throw new IllegalStateException("Child EID visit was not persisted");
+                }
 
                 visitRepository.completeProcessing(v.getVisitId());
             }

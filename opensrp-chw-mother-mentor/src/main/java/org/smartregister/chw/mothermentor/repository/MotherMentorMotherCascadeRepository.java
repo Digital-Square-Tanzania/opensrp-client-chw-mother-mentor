@@ -16,6 +16,7 @@ import org.smartregister.chw.mothermentor.processor.HouseholdEnrolmentEventProce
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 
 import java.util.ArrayList;
@@ -74,9 +75,7 @@ public final class MotherMentorMotherCascadeRepository {
                     MotherMentorMotherClosure.MOVED_FACILITY).contains(state.getStatus())) {
                 want(db, desired, IIT, motherId, claim);
             }
-            if (Arrays.asList(MotherMentorMotherClosure.CHILD_DECEASED,
-                    MotherMentorMotherClosure.CHILD_CONFIRMED_POSITIVE,
-                    MotherMentorMotherClosure.GRADUATED).contains(state.getStatus())) {
+            if (MotherMentorChildEidExit.fromMotherStatus(state.getStatus()) != null) {
                 LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(context.getChildDob());
                 String childId = MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
                 if (!childId.isEmpty() && !row(db, MEMBERS, childId).isEmpty()) {
@@ -233,12 +232,21 @@ public final class MotherMentorMotherCascadeRepository {
             // the new target, even when both enrollments occurred on the same calendar day.
             return;
         }
-        if (!same(snapshot(current), owned.applied)) {
+        JSONObject currentValues = snapshot(current);
+        if ((!CHILD.equals(current.table) && currentValues.length() != owned.applied.length())
+                || !same(currentValues, owned.applied)) {
             // A later external change is not ours to roll back; preserve the historical proof.
             return;
         }
-        if (CHILD.equals(current.table)) owned.claims.removeIf(claim ->
-                !claim.mother.equals(current.values.get(MOTHER_BASE_ENTITY_ID)));
+        if (CHILD.equals(current.table)) {
+            owned.claims.removeIf(claim -> !claim.mother.equals(current.values.get(MOTHER_BASE_ENTITY_ID)));
+            for (String field : MotherMentorChildEidRepository.CLOSURE_PROJECTIONS) {
+                if (!owned.previous.has(field) && currentValues.has(field)) {
+                    try { owned.previous.put(field, currentValues.opt(field)); }
+                    catch (JSONException invalid) { throw new IllegalStateException(invalid); }
+                }
+            }
+        }
         if (owned.claims.isEmpty()) {
             Map<String, String> person = row(db, MEMBERS, current.id);
             if (!current.episode.isEmpty() && (HOUSEHOLD.equals(current.table)
@@ -258,7 +266,23 @@ public final class MotherMentorMotherCascadeRepository {
                 .thenComparing(claim -> claim.mother).thenComparing(claim -> claim.episode));
         JSONObject applied = snapshot(current);
         try { applied.put(IS_CLOSED, "1"); } catch (JSONException impossible) { throw new IllegalStateException(impossible); }
-        if (HOUSEHOLD.equals(current.table)) {
+        if (CHILD.equals(current.table)) {
+            Claim first = owned.claims.get(0);
+            MotherMentorChildEidExit exit = MotherMentorChildEidExit.fromMotherStatus(first.status);
+            if (exit != null && current.values.containsKey(MTOTO_EXIT_SOURCE)) {
+                LocalDate date = MotherMentorMotherPregnancyUtils.parseDate(first.date);
+                String deathDate = "";
+                if (exit == MotherMentorChildEidExit.E5) {
+                    LocalDate death = MotherMentorMotherChildRepository.getState(db, first.mother, null).getChildDeathDate();
+                    if (death != null) deathDate = death.toString();
+                }
+                for (Map.Entry<String, String> field : MotherMentorChildEidRepository.closureProjection(
+                        exit, date, first.facility, deathDate, MotherMentorChildEidExit.MOTHER_VISIT).entrySet()) {
+                    try { applied.put(field.getKey(), field.getValue()); }
+                    catch (JSONException invalid) { throw new IllegalStateException(invalid); }
+                }
+            }
+        } else if (HOUSEHOLD.equals(current.table)) {
             Claim first = owned.claims.get(0);
             String reason = MotherMentorMotherClosure.DECEASED.equals(first.status)
                     ? MotherMentorHouseholdClosure.MOTHER_DECEASED : MotherMentorHouseholdClosure.CHILD_DECEASED;
@@ -356,15 +380,17 @@ public final class MotherMentorMotherCascadeRepository {
         List<String> keys = new ArrayList<>(Arrays.asList(IS_CLOSED, LAST_INTERACTED_WITH));
         if (HOUSEHOLD.equals(target.table)) keys.add(CONSENT);
         if (HOUSEHOLD.equals(target.table)) keys.addAll(MotherMentorHouseholdClosureRepository.CLOSURE_COLUMNS);
+        if (CHILD.equals(target.table) && target.values.containsKey(MTOTO_EXIT_SOURCE)) {
+            keys.addAll(MotherMentorChildEidRepository.CLOSURE_PROJECTIONS);
+        }
         for (String key : keys) if (target.values.containsKey(key)) values.put(key, target.values.get(key));
         return new JSONObject(values);
     }
 
     private static boolean same(JSONObject first, JSONObject second) {
-        if (first.length() != second.length()) return false;
-        for (java.util.Iterator<String> keys = first.keys(); keys.hasNext();) {
+        for (java.util.Iterator<String> keys = second.keys(); keys.hasNext();) {
             String key = keys.next();
-            if (!second.has(key) || !StringUtils.equals(first.optString(key, null), second.optString(key, null))) return false;
+            if (!first.has(key) || !StringUtils.equals(first.optString(key, null), second.optString(key, null))) return false;
         }
         return true;
     }
@@ -374,7 +400,9 @@ public final class MotherMentorMotherCascadeRepository {
         for (java.util.Iterator<String> keys = fields.keys(); keys.hasNext();) {
             String key = keys.next();
             if (!IS_CLOSED.equals(key) && !(HOUSEHOLD.equals(target.table)
-                    && MotherMentorHouseholdClosureRepository.CLOSURE_COLUMNS.contains(key))) continue;
+                    && MotherMentorHouseholdClosureRepository.CLOSURE_COLUMNS.contains(key))
+                    && !(CHILD.equals(target.table)
+                        && MotherMentorChildEidRepository.CLOSURE_PROJECTIONS.contains(key))) continue;
             if (fields.isNull(key)) values.putNull(key); else values.put(key, fields.optString(key));
         }
         db.update(target.table, values, BASE_ENTITY_ID + " = ?", new String[] {target.id});

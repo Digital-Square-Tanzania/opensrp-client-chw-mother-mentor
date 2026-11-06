@@ -121,12 +121,16 @@ public final class MotherMentorChildEidLabels {
     }
 
     public static boolean isSuccessfulClose(String status) {
-        return "graduated".equals(status);
+        MotherMentorChildEidExit exit = MotherMentorChildEidExit.fromStatus(status);
+        return exit != null && exit.isSuccess();
     }
 
     public static String closedReason(Context context, String status) {
         int label = R.string.mothermentor_eid_closed_message;
-        if ("deceased".equals(status) || "child_deceased".equals(status)) label = R.string.mothermentor_eid_child_deceased;
+        if ("tested_negative".equals(status)) label = R.string.mothermentor_eid_exit_tested;
+        else if ("confirmatory_negative".equals(status)) label = R.string.mothermentor_eid_exit_confirm_negative;
+        else if ("nonattendance_3".equals(status)) label = R.string.mothermentor_eid_exit_nonattendance;
+        else if ("deceased".equals(status) || "child_deceased".equals(status)) label = R.string.mothermentor_eid_child_deceased;
         else if ("moved_area".equals(status)) label = R.string.mothermentor_eid_moved_area;
         else if ("moved_facility".equals(status)) label = R.string.mothermentor_eid_moved_facility;
         else if ("not_found_other_3".equals(status)) label = R.string.mothermentor_eid_not_found_three;

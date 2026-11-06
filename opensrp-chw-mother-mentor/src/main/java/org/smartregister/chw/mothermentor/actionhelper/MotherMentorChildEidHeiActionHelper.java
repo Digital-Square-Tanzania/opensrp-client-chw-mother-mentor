@@ -158,9 +158,11 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, referral);
             boolean returnFlow = !"none".equals(referral) && (currentVisitId == null || savedReturnFlow);
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_FLOW, returnFlow ? "1" : "");
-            if (returnFlow) {
-                MotherMentorChildEidRepository.State state = episode();
-                if (state != null && !savedReturnFlow) {
+            MotherMentorChildEidRepository.State state = episode();
+            if (state != null) {
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS,
+                        state.getEnrollmentValues().get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS));
+                if (returnFlow && !savedReturnFlow) {
                     MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_TEST, state.getReferralTest());
                 }
             }

@@ -109,6 +109,8 @@ public final class MotherMentorChildEidProfileUi {
         closedBanner.setVisibility(child.isClosed() ? View.VISIBLE : View.GONE);
         if (!child.isClosed()) return;
         String reason = MotherMentorChildEidLabels.closedReason(activity, child.getClosedStatus());
+        String facility = child.getExitFacility();
+        if (!android.text.TextUtils.isEmpty(facility)) reason += " · " + facility;
         LocalDate date = MotherMentorHeiSchedule.parseDate(child.getClosedDate());
         closedBanner.setText(date == null ? reason : activity.getString(R.string.mothermentor_eid_closed_on, reason, date.toString()));
         boolean success = MotherMentorChildEidLabels.isSuccessfulClose(child.getClosedStatus());

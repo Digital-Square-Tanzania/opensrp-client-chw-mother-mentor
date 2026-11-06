@@ -108,6 +108,14 @@
         "value": ""
       },
       {
+        "key": "mtoto_suppressed_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_suppressed_tests",
+        "value": ""
+      },
+      {
         "key": "mtoto_pending_test",
         "type": "hidden",
         "openmrs_entity_parent": "",
@@ -276,7 +284,7 @@
         "openmrs_entity": "ui_only",
         "openmrs_entity_id": "child_eid_referral_refused_note",
         "value": "",
-        "text": "Hifadhi; swali la rufaa litaulizwa tena ziara ijayo.",
+        "text": "Hifadhi. Ufuatiliaji utafungwa baada ya mlezi kukataa katika ziara tatu mfululizo.",
         "text_color": "#2D2E2D",
         "toaster_type": "info",
         "relevance": {

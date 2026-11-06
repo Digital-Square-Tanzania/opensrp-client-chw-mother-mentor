@@ -237,7 +237,7 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             processExternalVisits(visit, externalVisits, memberID);
         }
 
-        if (MotherMentorLibrary.isSubmitOnSave()) {
+        if (shouldProcessOnSave()) {
             List<Visit> visits = new ArrayList<>(1);
             visits.add(visit);
             VisitUtils.processVisits(
@@ -248,6 +248,10 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             Context context = MotherMentorLibrary.getInstance().context().applicationContext();
         }
         return visit.getJson();
+    }
+
+    protected boolean shouldProcessOnSave() {
+        return MotherMentorLibrary.isSubmitOnSave();
     }
 
     /**
