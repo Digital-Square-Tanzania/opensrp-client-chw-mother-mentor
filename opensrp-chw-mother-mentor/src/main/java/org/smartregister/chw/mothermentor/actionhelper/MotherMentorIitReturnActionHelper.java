@@ -22,9 +22,8 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorIitReturnUtils;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 
 import timber.log.Timber;
 
@@ -38,8 +37,8 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
 
     public MotherMentorIitReturnActionHelper(String returnState, String missedDate,
             int refusedCount, int notReturnedCount, LocalDate serviceDate) {
-        this.returnState = MotherMentorIitReturnUtils.REFERRED.equals(returnState)
-                ? MotherMentorIitReturnUtils.REFERRED : MotherMentorIitReturnUtils.NONE;
+        this.returnState = MotherMentorIitState.REFERRED.equals(returnState)
+                ? MotherMentorIitState.REFERRED : MotherMentorIitState.NONE;
         this.missedDate = missedDate;
         this.refusedCount = refusedCount;
         this.notReturnedCount = notReturnedCount;
@@ -77,19 +76,13 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
-        Map<String, String> values = new HashMap<>();
-        for (String key : new String[] {SERVICE_INTERRUPTION_REASON, SERVICE_INTERRUPTION_REASON_OTHER,
-                IIT_RETURN_AGREEMENT, RETURNED_TO_FACILITY, FACILITY_RETURN_DATE,
-                IIT_NOT_RETURNED_REASON, IIT_NOT_RETURNED_REASON_OTHER}) {
-            values.put(key, getValue(key));
-        }
         return completed(MotherMentorIitReturnUtils.isComplete(
-                values, returnState, missedDate, serviceDate));
+                MotherMentorMotherVisitUtils.formValues(payload), returnState, missedDate, serviceDate));
     }
 
     @Override
     public String evaluateSubTitle() {
-        if (MotherMentorIitReturnUtils.NONE.equals(returnState)) {
+        if (MotherMentorIitState.NONE.equals(returnState)) {
             return translate("mothermentor_iit_return_agreement_", getValue(IIT_RETURN_AGREEMENT));
         }
         String answer = getValue(RETURNED_TO_FACILITY);
@@ -104,7 +97,7 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
         try {
             JSONObject form = new JSONObject(source);
             setField(form, IIT_RETURN_STATE, JsonFormConstants.VALUE, returnState);
-            if (MotherMentorIitReturnUtils.NONE.equals(returnState)) {
+            if (MotherMentorIitState.NONE.equals(returnState)) {
                 clear(form, RETURNED_TO_FACILITY, FACILITY_RETURN_DATE, IIT_NOT_RETURNED_REASON,
                         IIT_NOT_RETURNED_REASON_OTHER);
                 if (!OTHER.equals(getValue(SERVICE_INTERRUPTION_REASON))) {

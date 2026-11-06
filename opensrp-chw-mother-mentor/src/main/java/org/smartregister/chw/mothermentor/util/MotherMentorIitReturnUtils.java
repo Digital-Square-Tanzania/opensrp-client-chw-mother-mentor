@@ -16,23 +16,18 @@ import java.util.Map;
 
 /** Validation shared by the staged form and replay of a finalized IIT visit. */
 public final class MotherMentorIitReturnUtils {
-    public static final String NONE = "none";
-    public static final String REFERRED = "referred";
-    public static final String AGREED = "agreed";
-    public static final String REFUSED = "refused";
-
     private MotherMentorIitReturnUtils() {}
 
     public static boolean isComplete(Map<String, String> values, String returnState,
             String missedDate, LocalDate serviceDate) {
         if (values == null || serviceDate == null) return false;
-        if (NONE.equals(returnState)) {
+        if (MotherMentorIitState.NONE.equals(returnState)) {
             String agreement = values.get(IIT_RETURN_AGREEMENT);
-            return (AGREED.equals(agreement) || REFUSED.equals(agreement))
+            return ("agreed".equals(agreement) || "refused".equals(agreement))
                     && validReason(values, SERVICE_INTERRUPTION_REASON,
                             SERVICE_INTERRUPTION_REASON_OTHER);
         }
-        if (!REFERRED.equals(returnState)) return false;
+        if (!MotherMentorIitState.REFERRED.equals(returnState)) return false;
         String returned = values.get(RETURNED_TO_FACILITY);
         if ("no".equals(returned)) {
             return validReason(values, IIT_NOT_RETURNED_REASON, IIT_NOT_RETURNED_REASON_OTHER);
