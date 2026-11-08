@@ -271,6 +271,29 @@ public class MotherMentorClientRegisterDaoTest {
     }
 
     @Test
+    public void completedDeliveryUsesProjectedStatusForTheRegisterAndBreastfeedingFilter() {
+        client("mother", "Asha", "pregnant", "123", "household");
+        visit("legacy", "mother", SERVICE, 1, 1);
+        status("legacy", "pregnant", "2026-01-01");
+        visit("delivery", "mother", SERVICE, 0, 2);
+        status("delivery", "not_pregnant", "2026-02-01");
+        database.execSQL("INSERT INTO visit_details VALUES (?, ?, ?, ?, 1)",
+                new Object[] {"enrollment-context", "delivery", DBConstants.KEY.MAMA_ENROLLMENT_ID,
+                        "current-enrollment"});
+
+        assertEquals("pregnant", currentStatus());
+        assertIdsAndCount("Asha", true, false, true, false);
+
+        database.execSQL("UPDATE visits SET processed = 1 WHERE visit_id = 'delivery'");
+        database.execSQL("UPDATE " + TABLE + " SET pregnancy_status = 'breast_feeding',"
+                + " child_dob = '2026-02-01' WHERE base_entity_id = 'mother'");
+
+        assertEquals("breast_feeding", currentStatus());
+        assertIdsAndCount("Asha", true, false, true, false, "mother");
+        assertIdsAndCount("Asha", true, true, false, false);
+    }
+
+    @Test
     public void unknownServiceAnswerDoesNotEraseLastKnownStatusOrInventAnEnrollmentStatus() {
         client("mother", "Asha", "pregnant", "123", "household");
         visit("known", "mother", SERVICE, 1, 1);
