@@ -6,6 +6,19 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.25-SNAPSHOT — 2026-11-08
+
+### Fixed
+
+- Use the exact 18-month anniversary for Kaya enrollment eligibility when
+  the enrolled mother is not pregnant (CHW #1129).
+- Show completed live deliveries with the saved breastfeeding status in the
+  Mama Kinara register and its breastfeeding filter (CHW #1137).
+
+### Changed
+
+- Increment the library to `0.1.25-SNAPSHOT` / Android code 26.
+
 ## 0.1.24-SNAPSHOT — 2026-11-08
 
 ### Added
