@@ -191,8 +191,9 @@ public final class MotherMentorChildEidRepository {
         if (state.episode.id.isEmpty()) return;
         for (Visit visit : state.visits) {
             if (state.exit != null) break;
+            JSONObject event = MotherMentorChildEidDao.json(visit);
             Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
-                    MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
+                    event.optJSONArray("obs"));
             if (!MotherMentorChildEidStatusUtils.isSchema3(answers)) continue;
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
             MotherMentorMotherChildRepository.State clinical = MotherMentorMotherChildRepository
@@ -200,6 +201,10 @@ public final class MotherMentorChildEidRepository {
             Map<String, String> validated = new LinkedHashMap<>(answers);
             validated.put(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS, value(state.enrollment, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS));
             applyVisit(state, validated, clinical, day);
+            if (state.exit != null) {
+                long eventTime = MotherMentorIitRepository.timestamp(event.opt(DBConstants.KEY.EVENT_DATE_TIMESTAMP));
+                state.exitTime = eventTime > 0 ? eventTime : day.toDate().getTime();
+            }
         }
     }
 
@@ -634,6 +639,7 @@ public final class MotherMentorChildEidRepository {
         private int visitCount;
         private MotherMentorChildEidExit exit;
         private LocalDate exitDate;
+        private long exitTime;
         private String facility;
         private String deathDate;
         private List<Visit> visits = Collections.emptyList();
@@ -663,6 +669,7 @@ public final class MotherMentorChildEidRepository {
         public int getNonAttendanceCount() { return number(DBConstants.KEY.MTOTO_COUNTER_HAJAFIKA); }
         public MotherMentorChildEidExit getVisitExit() { return exit; }
         public LocalDate getVisitExitDate() { return exitDate; }
+        long getVisitExitTime() { return exitTime; }
         public String getExitFacility() {
             return exit == null ? value(enrollment, DBConstants.KEY.MTOTO_KITUO_KIPYA) : StringUtils.defaultString(facility);
         }

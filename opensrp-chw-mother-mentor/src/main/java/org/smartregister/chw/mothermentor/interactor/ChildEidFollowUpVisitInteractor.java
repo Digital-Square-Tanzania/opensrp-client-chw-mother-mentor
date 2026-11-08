@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.JsonParseException;
+
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +21,7 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
@@ -28,6 +31,7 @@ import org.smartregister.clientandeventmodel.Obs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -247,6 +251,25 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
             putObservation(event, episode.getKey(), episode.getValue());
         }
         if (!useLegacyWorkflow()) MotherMentorChildEidRepository.tagEvent(event, enrollmentState);
+    }
+
+    @Override
+    protected void assignVisitSource(Event event, Visit editedVisit) {
+        super.assignVisitSource(event, editedVisit);
+        if (useLegacyWorkflow()) return;
+        if (editedVisit == null) {
+            event.setEventDate(new Date());
+            return;
+        }
+        try {
+            Event previous = JsonFormUtils.gson.fromJson(StringUtils.defaultIfBlank(
+                    editedVisit.getJson(), editedVisit.getPreProcessedJson()), Event.class);
+            if (previous != null && previous.getEventDate() != null) {
+                event.setEventDate(previous.getEventDate());
+            }
+        } catch (JsonParseException invalid) {
+            Timber.w(invalid, "Unable to restore the original Child EID event timestamp");
+        }
     }
 
     private void putObservation(Event event, String key, String value) {

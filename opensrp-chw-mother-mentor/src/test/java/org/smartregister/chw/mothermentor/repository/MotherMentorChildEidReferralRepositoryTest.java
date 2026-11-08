@@ -293,6 +293,33 @@ public class MotherMentorChildEidReferralRepositoryTest {
         assertEquals("Kibiti CTC", MotherMentorMotherClosureRepository.getState(db, "mother", null).getNewFacility());
     }
 
+    @Test public void childTransferDoesNotCloseAnIitEpisodeEnrolledLaterThatDay() throws Exception {
+        String iit = Constants.TABLES.MOTHERMENTOR_ENROLL_IIT;
+        data.execSQL("CREATE TABLE " + iit + " (base_entity_id TEXT, expected_return_date TEXT,"
+                + " is_closed INTEGER, last_interacted_with INTEGER)");
+        data.execSQL("INSERT INTO " + iit + " VALUES ('mother', '2025-11-01', 0, 1)");
+        MotherMentorMotherClosureRepository.upgrade(db);
+        MotherMentorIitRepository.upgrade(db);
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        rawEnrollment("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_IIT, "iit-one",
+                day, Collections.emptyMap());
+
+        Map<String, String> transfer = fields(CHILD_EID_FOLLOW_UP_SCHEMA, "3", FOLLOW_UP_STATUS, "not_found",
+                MTOTO_NOT_FOUND_REASON, "moved_facility", MTOTO_NEW_FACILITY, "Kibiti CTC");
+        visit("transfer", "transfer", "child", transfer, day, 1, true, false, 19);
+        MotherMentorIitRepository.rebuild(db, "mother");
+        assertEquals("I4", scalar("SELECT iit_status FROM " + iit));
+        assertEquals("Kibiti CTC", scalar("SELECT iit_kituo_kipya FROM " + iit));
+
+        JSONObject reenrollment = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, "iit-two")
+                .put(EVENT_DATE_TIMESTAMP, day + "T17:00:00.000+03:00");
+        rawEvent("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_IIT, "iit-two", day, reenrollment);
+        data.execSQL("UPDATE " + iit + " SET is_closed = 0");
+        MotherMentorIitRepository.rebuild(db, "mother");
+        assertEquals("0", scalar("SELECT is_closed FROM " + iit));
+    }
+
     @Test public void earlyNegativeClosesOnlyChildButFinalNegativeAndConfirmedPositiveCloseBoth() throws Exception {
         enroll("eid-one", dob.plusMonths(1));
         LocalDate day = dob.plusMonths(10);

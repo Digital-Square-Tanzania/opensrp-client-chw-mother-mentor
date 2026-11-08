@@ -128,7 +128,7 @@ public final class MotherMentorMotherClosureRepository {
                         && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
                                 new LocalDate(context.getEnrollmentTime()))))) {
             evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
-                    tracing.getVisitExitDate(), tracing.getExitFacility()));
+                    tracing.getVisitExitDate(), tracing.getVisitExitTime(), tracing.getExitFacility(), ""));
         } else {
             VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
             if (childExit != null && child.getTerminalServiceDate() != null) {
