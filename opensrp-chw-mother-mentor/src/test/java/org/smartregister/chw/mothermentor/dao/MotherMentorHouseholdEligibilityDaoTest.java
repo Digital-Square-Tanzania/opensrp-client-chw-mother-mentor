@@ -81,9 +81,10 @@ public class MotherMentorHouseholdEligibilityDaoTest {
         assertTrue(eligible());
         update("not_pregnant", null);
         assertFalse(eligible());
-        update("not_pregnant", LocalDate.now().minusMonths(18).toString());
+        LocalDate today = LocalDate.now();
+        update("not_pregnant", today.minusMonths(17).toString());
         assertTrue(eligible());
-        update("not_pregnant", LocalDate.now().minusMonths(19).toString());
+        update("not_pregnant", today.minusMonths(18).minusDays(1).toString());
         assertFalse(eligible());
         update("not_pregnant", "invalid");
         assertFalse(eligible());

@@ -17,10 +17,19 @@ public class MotherMentorEligibilityTest {
     }
 
     @Test
-    public void nonPregnantUsesCompletedMonthsIncludingEighteenAsTheExistingGateDoes() {
+    public void nonPregnantEligibilityEndsAfterTheEighteenMonthAnniversary() {
+        assertTrue(MotherMentorEligibility.isEligibleMother("none", "2025-05-05", today));
         assertTrue(MotherMentorEligibility.isEligibleMother("not_pregnant", "04-05-2025", today));
-        assertTrue(MotherMentorEligibility.isEligibleMother("none", "2025-04-05", today));
+        assertFalse(MotherMentorEligibility.isEligibleMother("none", "2025-05-03", today));
         assertFalse(MotherMentorEligibility.isEligibleMother("not_pregnant", "2025-04-04", today));
+    }
+
+    @Test
+    public void monthEndBirthUsesTheLastDayOfTheShorterAnniversaryMonth() {
+        assertTrue(MotherMentorEligibility.isEligibleMother("none", "2024-08-31",
+                new LocalDate(2026, 2, 28)));
+        assertFalse(MotherMentorEligibility.isEligibleMother("none", "2024-08-31",
+                new LocalDate(2026, 3, 1)));
     }
 
     @Test
