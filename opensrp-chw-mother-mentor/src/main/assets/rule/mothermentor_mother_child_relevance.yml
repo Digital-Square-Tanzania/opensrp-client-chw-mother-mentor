@@ -75,3 +75,10 @@ priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_result == 'positive' && step1_mama_hei_due_tests != '[]'"
 actions:
   - "isRelevant = true"
+---
+name: step1_mtoto_closed_followup_note
+description: Previous Child EID exit
+priority: 1
+condition: "step1_mama_child_status == 'alive' && step1_mtoto_closed_followup_note != ''"
+actions:
+  - "isRelevant = true"

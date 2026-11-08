@@ -153,11 +153,15 @@ public final class MotherMentorChildEidDao {
     }
 
     public static JSONObject storedEnrollmentEvent(SQLiteDatabase db, String childId, String formSubmissionId) {
+        return storedEvent(db, childId, Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID, formSubmissionId);
+    }
+
+    public static JSONObject storedEvent(SQLiteDatabase db, String childId, String eventType, String formSubmissionId) {
         if (StringUtils.isBlank(formSubmissionId) || !hasTable(db, "event")) return null;
         JSONObject latest = null;
         try (Cursor cursor = db.rawQuery("SELECT " + DBConstants.KEY.EVENT_JSON + " FROM event WHERE " + DBConstants.KEY.EVENT_BASE_ENTITY_ID
                 + " = ? AND " + DBConstants.KEY.EVENT_TYPE + " = ?",
-                new String[] {childId, Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID})) {
+                new String[] {childId, eventType})) {
             while (cursor.moveToNext()) {
                 try {
                     JSONObject candidate = new JSONObject(cursor.getString(0));

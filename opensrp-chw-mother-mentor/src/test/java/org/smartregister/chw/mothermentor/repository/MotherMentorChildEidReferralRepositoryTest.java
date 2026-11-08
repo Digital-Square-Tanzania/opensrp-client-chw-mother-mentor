@@ -22,6 +22,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -72,6 +73,7 @@ public class MotherMentorChildEidReferralRepositoryTest {
         when(db.update(anyString(), any(ContentValues.class), anyString(), any(String[].class))).thenAnswer(
                 call -> data.update(call.getArgument(0), call.getArgument(1), call.getArgument(2), call.getArgument(3)));
         MotherMentorChildEidRepository.upgrade(db);
+        MotherMentorChildEidRepository.upgradeExitSchema(db);
     }
 
     @After public void tearDown() { data.close(); }
@@ -176,6 +178,186 @@ public class MotherMentorChildEidReferralRepositoryTest {
         assertTrue(state().getClinicalState().getTests().isEmpty());
     }
 
+    @Test public void savedReturnResultsReplayAcrossVisitsAndKeepTheOriginalSampleDate() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        visit("agree", "agree", "child", first("agreed"), day, 1, true, false, 9);
+        LocalDate sampleDate = day.plusDays(1);
+        Map<String, String> sample = returning("referred");
+        sample.putAll(fields(CHILD_EID_ARRIVED_AT_FACILITY, "yes", CHILD_EID_FACILITY_ARRIVAL_DATE,
+                sampleDate.toString(), MAMA_HEI_TEST_DONE, "yes", CHILD_EID_TEST_TYPE, "nine_months",
+                MAMA_HEI_TEST_DATE, sampleDate.toString(), MAMA_HEI_TEST_RESULT, "pending"));
+        visit("draft", "draft", "child", sample, sampleDate, 1, false, false, 9);
+        assertEquals("referred", state().getReferralState());
+        visit("sample", "sample", "child", sample, sampleDate, 1, true, false, 9);
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals("awaiting_result", state().getReferralState());
+        assertEquals("awaiting_result", scalar("SELECT mtoto_rufaa_state FROM ec_mothermentor_enroll_child_eid"));
+        Map<String, String> received = returning("awaiting_result");
+        received.putAll(fields(MTOTO_PENDING_TEST, "miezi9", MTOTO_PENDING_TEST_DATE,
+                sampleDate.toString(), MTOTO_RESULT_RECEIVED, "yes", MTOTO_RECEIVED_RESULT,
+                "positive", MTOTO_CONFIRMATION_RECEIVED, "no"));
+        visit("result", "result", "child", received, sampleDate.plusDays(1), 1, true, false, 9);
+        assertEquals("awaiting_confirm", state().getReferralState());
+        assertFalse(state().getClinicalState().getTests().get(Stage.NINE_MONTHS).isConfirmed());
+        Map<String, String> confirm = returning("awaiting_confirm");
+        confirm.putAll(fields(MTOTO_PENDING_TEST, "miezi9", MTOTO_PENDING_TEST_DATE,
+                sampleDate.toString(), MTOTO_CONFIRMATION_RECEIVED, "yes", MTOTO_CONFIRMATORY_RESULT, "negative"));
+        visit("confirm", "confirm", "child", confirm, sampleDate.plusDays(2), 1, true, false, 9);
+        assertEquals("none", state().getReferralState());
+        assertEquals(MotherMentorChildEidExit.E2, state().getVisitExit());
+        assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+        assertEquals("negative", state().getClinicalState().getTests().get(Stage.NINE_MONTHS).getResult());
+        assertEquals(sampleDate, state().getClinicalState().getTests().get(Stage.NINE_MONTHS).getDate());
+        data.delete("visits", "visit_id = ?", new String[] {"confirm"});
+        assertEquals("awaiting_confirm", state().getReferralState());
+    }
+
+    @Test public void attendanceResetsStrikesAndThirdUniqueNonattendanceClosesOnlyTheChild() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        visit("agree", "agree", "child", first("agreed"), day, 1, true, false, 9);
+        Map<String, String> noAttendance = returning("referred");
+        noAttendance.putAll(fields(CHILD_EID_ARRIVED_AT_FACILITY, "no", MTOTO_SABABU_KUTOFIKA, "no_fare"));
+        visit("one", "one", "child", noAttendance, day.plusDays(1), 1, true, false, 9);
+        visit("duplicate", "one", "child", noAttendance, day.plusDays(1), 2, true, false, 9);
+        assertEquals(1, state().getNonAttendanceCount());
+        Map<String, String> notTested = returning("referred");
+        notTested.putAll(fields(CHILD_EID_ARRIVED_AT_FACILITY, "yes", CHILD_EID_FACILITY_ARRIVAL_DATE,
+                day.plusDays(2).toString(), MAMA_HEI_TEST_DONE, "no", MTOTO_SABABU_KUTOPIMWA, "stockout"));
+        visit("attended", "attended", "child", notTested, day.plusDays(2), 1, true, false, 9);
+        assertEquals(0, state().getNonAttendanceCount());
+        for (int index = 3; index <= 5; index++) {
+            String id = "strike-" + index;
+            visit(id, id, "child", noAttendance, day.plusDays(index), 1, true, false, 9);
+        }
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals(3, state().getNonAttendanceCount());
+        assertEquals(MotherMentorChildEidExit.E9, state().getVisitExit());
+        assertEquals("E9", scalar("SELECT mtoto_eid_sababu_ya_kufungwa FROM ec_mothermentor_enroll_child_eid"));
+        assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+        data.delete("visits", "visit_id = ?", new String[] {"strike-5"});
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertFalse(state().isClosed());
+        assertEquals("0", scalar("SELECT is_closed FROM ec_mothermentor_enroll_child_eid"));
+        assertEquals(2, state().getNonAttendanceCount());
+    }
+
+    @Test public void refusalAndNotFoundOtherCloseAtThreeAndSuppressTheOriginalMissedTest() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        for (int index = 0; index < 3; index++) {
+            String id = "refusal-" + index;
+            visit(id, id, "child", first("refused"), day.plusDays(index), 1, true, false, 9);
+        }
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals(MotherMentorChildEidExit.E8, state().getVisitExit());
+        assertEquals("miezi9", scalar("SELECT mtoto_suppressed_tests FROM ec_mothermentor_enroll_child_eid"));
+        MotherMentorMotherChildRepository.State mother = MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals("refused_3", mother.getTracingClosedStatus());
+        assertTrue(mother.getTracingExcludedTests().contains(Stage.NINE_MONTHS));
+        Map<String, String> nextAssessment = fields(MAMA_TAREHE_KUJIFUNGUA, dob.toString(), MAMA_BREASTFEEDING_STATUS,
+                "not_breastfeeding", MAMA_TAREHE_ACHA_KUNYONYESHA, dob.plusMonths(10).toString(),
+                MTOTO_SUPPRESSED_TESTS, "miezi9");
+        assertEquals(Collections.singletonList(Stage.AFTER_WEANING),
+                MotherMentorMotherChildUtils.due(nextAssessment, dob.plusMonths(14)));
+        data.delete("visits", null, null);
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        Map<String, String> absent = fields(CHILD_EID_FOLLOW_UP_SCHEMA, "3", FOLLOW_UP_STATUS, "not_found",
+                MTOTO_NOT_FOUND_REASON, "other", MTOTO_NOT_FOUND_REASON_OTHER, "Not home");
+        visit("other-one", "other-one", "child", absent, day, 1, true, false, 9);
+        visit("found", "found", "child", first("refused"), day.plusDays(1), 1, true, false, 9);
+        assertEquals(0, state().getOtherCount());
+        for (int index = 2; index <= 4; index++) {
+            String id = "other-" + index;
+            visit(id, id, "child", absent, day.plusDays(index), 1, true, false, 9);
+        }
+        assertEquals(MotherMentorChildEidExit.E10, state().getVisitExit());
+        assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+    }
+
+    @Test public void closurePreviewDoesNotSaveAndTransferUsesTheSameFacilityForBothCards() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        Map<String, String> transfer = fields(CHILD_EID_FOLLOW_UP_SCHEMA, "3", FOLLOW_UP_STATUS, "not_found",
+                MTOTO_NOT_FOUND_REASON, "moved_facility", MTOTO_NEW_FACILITY, "Kibiti CTC");
+        assertEquals(MotherMentorChildEidExit.E7,
+                MotherMentorChildEidRepository.previewExit(db, "child", null, transfer, day));
+        assertFalse(state().isClosed());
+        assertEquals(0, count("visits"));
+        visit("transfer", "transfer", "child", transfer, day, 1, true, false, 9);
+        MotherMentorChildEidRepository.rebuild(db, "child");
+        assertEquals("E7", scalar("SELECT mtoto_eid_status FROM ec_mothermentor_enroll_child_eid"));
+        assertEquals("Kibiti CTC", state().getExitFacility());
+        assertEquals("moved_facility", MotherMentorMotherClosureRepository.getState(db, "mother", null).getStatus());
+        assertEquals("Kibiti CTC", MotherMentorMotherClosureRepository.getState(db, "mother", null).getNewFacility());
+    }
+
+    @Test public void childTransferDoesNotCloseAnIitEpisodeEnrolledLaterThatDay() throws Exception {
+        String iit = Constants.TABLES.MOTHERMENTOR_ENROLL_IIT;
+        data.execSQL("CREATE TABLE " + iit + " (base_entity_id TEXT, expected_return_date TEXT,"
+                + " is_closed INTEGER, last_interacted_with INTEGER)");
+        data.execSQL("INSERT INTO " + iit + " VALUES ('mother', '2025-11-01', 0, 1)");
+        MotherMentorMotherClosureRepository.upgrade(db);
+        MotherMentorIitRepository.upgrade(db);
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        rawEnrollment("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_IIT, "iit-one",
+                day, Collections.emptyMap());
+
+        Map<String, String> transfer = fields(CHILD_EID_FOLLOW_UP_SCHEMA, "3", FOLLOW_UP_STATUS, "not_found",
+                MTOTO_NOT_FOUND_REASON, "moved_facility", MTOTO_NEW_FACILITY, "Kibiti CTC");
+        visit("transfer", "transfer", "child", transfer, day, 1, true, false, 19);
+        MotherMentorIitRepository.rebuild(db, "mother");
+        assertEquals("I4", scalar("SELECT iit_status FROM " + iit));
+        assertEquals("Kibiti CTC", scalar("SELECT iit_kituo_kipya FROM " + iit));
+
+        JSONObject reenrollment = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, "iit-two")
+                .put(EVENT_DATE_TIMESTAMP, day + "T17:00:00.000+03:00");
+        rawEvent("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_IIT, "iit-two", day, reenrollment);
+        data.execSQL("UPDATE " + iit + " SET is_closed = 0");
+        MotherMentorIitRepository.rebuild(db, "mother");
+        assertEquals("0", scalar("SELECT is_closed FROM " + iit));
+    }
+
+    @Test public void earlyNegativeClosesOnlyChildButFinalNegativeAndConfirmedPositiveCloseBoth() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        visit("agree", "agree", "child", first("agreed"), day, 1, true, false, 9);
+        LocalDate later = dob.plusMonths(18).plusDays(1);
+        Map<String, String> negative = sampled(day.plusDays(1), "nine_months", "negative", "");
+        visit("sample", "sample", "child", negative, day.plusDays(1), 1, true, false, 9);
+        assertEquals(MotherMentorChildEidExit.E1, state().getVisitExit());
+        assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+        data.delete("visits", "form_submission_id = ?", new String[] {"sample"});
+        visit("final", "final", "child", sampled(later, "eighteen_months", "negative", ""), later, 1, true, false, 9);
+        assertEquals(MotherMentorChildEidExit.E3, state().getVisitExit());
+        assertEquals("graduated", MotherMentorMotherClosureRepository.getState(db, "mother", null).getStatus());
+        data.delete("visits", "form_submission_id = ?", new String[] {"final"});
+        visit("positive", "positive", "child", sampled(day.plusDays(1), "nine_months", "positive", "yes"),
+                day.plusDays(1), 1, true, false, 9);
+        assertEquals(MotherMentorChildEidExit.E4, state().getVisitExit());
+        assertEquals("child_confirmed_positive", MotherMentorMotherClosureRepository.getState(db, "mother", null).getStatus());
+    }
+
+    private Map<String, String> sampled(LocalDate date, String stage, String result, String confirmation) {
+        Map<String, String> values = returning("referred");
+        values.putAll(fields(CHILD_EID_ARRIVED_AT_FACILITY, "yes", CHILD_EID_FACILITY_ARRIVAL_DATE,
+                date.toString(), MAMA_HEI_TEST_DONE, "yes", CHILD_EID_TEST_TYPE, stage,
+                MAMA_HEI_TEST_DATE, date.toString(), MAMA_HEI_TEST_RESULT, result,
+                MTOTO_CONFIRMATION_RECEIVED, confirmation));
+        return values;
+    }
+
+    private Map<String, String> returning(String before) {
+        Map<String, String> values = first("");
+        values.remove(MTOTO_RUFAA_TEST);
+        values.remove(MTOTO_RUFAA_DUE);
+        values.put(MTOTO_RETURN_FLOW, "1");
+        values.put(MTOTO_RUFAA_STATE_BEFORE, before);
+        return values;
+    }
+
     private MotherMentorChildEidRepository.State state() {
         return MotherMentorChildEidRepository.getState(db, "child", null);
     }
@@ -184,7 +366,8 @@ public class MotherMentorChildEidReferralRepositoryTest {
         if (count("ec_mothermentor_enroll_child_eid") == 0) eidRow("child", 0);
         rawEnrollment("child", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID, id, day,
                 fields(MOTHER_BASE_ENTITY_ID, "mother", CHILD_DOB, dob.toString(),
-                        MTOTO_RUFAA_STATE, "none", MTOTO_ENROLLMENT_ID, id));
+                        MTOTO_RUFAA_STATE, "none", MTOTO_ENROLLMENT_ID, id, MTOTO_MISSED_TEST, "miezi9",
+                        MTOTO_MOTHER_ENROLLMENT_ID, "mother-epoch"));
     }
 
     private Map<String,String> first(String agreement) {

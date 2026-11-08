@@ -6,6 +6,21 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.24-SNAPSHOT — 2026-11-08
+
+### Added
+
+- Resume Child EID follow-up at attendance, result receipt, or confirmation.
+  Store dated results in shared HEI history and show the same flow in English
+  and Swahili (CHW #1155).
+- Finalize Child EID exits and three-strike counters per enrollment. Keep history,
+  preserve the linked Mama and household outcomes, and allow later missed tests
+  to trigger a new episode after three strikes (CHW #1156).
+
+### Changed
+
+- Increment the library to `0.1.24-SNAPSHOT` / Android code 25.
+
 ## 0.1.23-SNAPSHOT — 2026-11-06
 
 ### Fixed

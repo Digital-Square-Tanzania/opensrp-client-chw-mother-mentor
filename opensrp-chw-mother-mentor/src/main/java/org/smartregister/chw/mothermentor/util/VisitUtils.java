@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
@@ -102,6 +103,12 @@ public class VisitUtils {
 
                 AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
                 NCUtils.addEvent(allSharedPreferences, baseEvent);
+                if (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(v.getVisitType())
+                        && MotherMentorChildEidDao.storedEvent(
+                                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                                v.getBaseEntityId(), v.getVisitType(), baseEvent.getFormSubmissionId()) == null) {
+                    throw new IllegalStateException("Child EID visit was not persisted");
+                }
                 verifyIitEventSaved(baseEvent);
 
                 visitRepository.completeProcessing(v.getVisitId());

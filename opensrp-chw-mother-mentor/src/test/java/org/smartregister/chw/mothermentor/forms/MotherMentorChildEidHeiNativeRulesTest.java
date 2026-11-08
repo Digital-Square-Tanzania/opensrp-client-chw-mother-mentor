@@ -106,6 +106,48 @@ public class MotherMentorChildEidHeiNativeRulesTest {
         }
     }
 
+    @Test
+    public void newReturnBranchesUseOnlyTheirOwnQuestionsInBothLanguages() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm form = new NativeForm(directory);
+            form.answer(MTOTO_RETURN_FLOW, "1");
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "referred");
+            assertTrue(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
+            assertFalse(form.relevant(CHILD_EID_TEST_TYPE));
+            assertFalse(form.relevant(MTOTO_RESULT_RECEIVED));
+            form.answer(CHILD_EID_ARRIVED_AT_FACILITY, "no");
+            assertTrue(form.relevant(MTOTO_SABABU_KUTOFIKA));
+            form.answer(MTOTO_SABABU_KUTOFIKA, "other");
+            assertTrue(form.relevant(MTOTO_SABABU_KUTOFIKA_OTHER));
+            form.answer(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            assertFalse(form.relevant(MTOTO_SABABU_KUTOFIKA_OTHER));
+            assertTrue(form.relevant(CHILD_EID_FACILITY_ARRIVAL_DATE));
+            assertTrue(form.relevant(MAMA_HEI_TEST_DONE));
+            form.answer(MAMA_HEI_TEST_DONE, "no");
+            assertTrue(form.relevant(MTOTO_SABABU_KUTOPIMWA));
+            form.answer(MAMA_HEI_TEST_DONE, "yes");
+            form.answer(MAMA_HEI_DUE_TESTS, "[\"nine_months\"]");
+            assertTrue(form.relevant(CHILD_EID_TEST_TYPE));
+            form.answer(CHILD_EID_TEST_TYPE, "nine_months");
+            assertTrue(form.relevant(MAMA_HEI_TEST_DATE));
+            assertTrue(form.relevant(MAMA_HEI_TEST_RESULT));
+            assertFalse(form.relevant(CHILD_EID_FINAL_HIV_TEST_DONE));
+            form.answer(MAMA_HEI_TEST_RESULT, "positive");
+            assertTrue(form.relevant(MTOTO_CONFIRMATION_RECEIVED));
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "awaiting_result");
+            assertFalse(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
+            assertTrue(form.relevant(MTOTO_RESULT_RECEIVED));
+            form.answer(MTOTO_RESULT_RECEIVED, "yes");
+            assertTrue(form.relevant(MTOTO_RECEIVED_RESULT));
+            assertFalse(form.relevant(MAMA_HEI_TEST_DATE));
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "awaiting_confirm");
+            assertFalse(form.relevant(MTOTO_RECEIVED_RESULT));
+            assertTrue(form.relevant(MTOTO_CONFIRMATION_RECEIVED));
+            form.answer(MTOTO_CONFIRMATION_RECEIVED, "yes");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+        }
+    }
+
     private static final class NativeForm {
         private final JSONObject form;
         private final JsonFormActivity activity;

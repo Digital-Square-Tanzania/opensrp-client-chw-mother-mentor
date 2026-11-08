@@ -519,6 +519,14 @@
         "value": "{}"
       },
       {
+        "key": "mtoto_suppressed_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_suppressed_tests",
+        "value": ""
+      },
+      {
         "key": "mama_hei_assessment_date",
         "type": "hidden",
         "openmrs_entity_parent": "",
@@ -582,6 +590,23 @@
         "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_hei_next_test_note",
         "hint": "Kipimo kinachofuata",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_closed_followup_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_closed_followup_note",
+        "hint": "",
         "read_only": true,
         "value": "",
         "relevance": {

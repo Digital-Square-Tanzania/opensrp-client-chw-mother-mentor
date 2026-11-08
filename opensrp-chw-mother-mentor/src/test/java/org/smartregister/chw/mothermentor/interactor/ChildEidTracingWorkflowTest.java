@@ -5,6 +5,7 @@ import android.database.MatrixCursor;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -196,8 +197,12 @@ public class ChildEidTracingWorkflowTest {
         calculate(false);
         stateFixture = episode("child-episode-two", "mother-episode-two");
         Event event = new Event(); interactor.enrich(event);
+        long beforeSave = System.currentTimeMillis();
+        interactor.assignVisitSource(event, null);
         assertEquals("child-episode-one", values(event).get(MTOTO_ENROLLMENT_ID));
         assertEquals("mother-episode-one", values(event).get(MTOTO_MOTHER_ENROLLMENT_ID));
+        assertTrue(event.getEventDate().getTime() >= beforeSave);
+        assertEquals(LocalDate.now().toString("dd-MM-yyyy"), values(event).get(MOTHERMENTOR_VISIT_DATE));
         assertEquals(1, interactor.identityReads);
         assertNull(interactor.loadedBeforeVisit);
     }
@@ -205,7 +210,8 @@ public class ChildEidTracingWorkflowTest {
     @Test
     public void editingRetainsItsOriginalEpisodeTagsInsteadOfCurrentEnrollmentTags() throws Exception {
         edited = visit("3", "20-10-2026");
-        JSONObject source = new JSONObject(edited.getJson());
+        String originalTime = "2026-10-20T09:15:00.000+03:00";
+        JSONObject source = new JSONObject(edited.getJson()).put(EVENT_DATE_TIMESTAMP, originalTime);
         source.getJSONArray("obs")
                 .put(observation(MTOTO_ENROLLMENT_ID, "old-child-episode"))
                 .put(observation(MTOTO_MOTHER_ENROLLMENT_ID, "old-mother-episode"));
@@ -213,8 +219,11 @@ public class ChildEidTracingWorkflowTest {
         stateFixture = episode("current-child-episode", "current-mother-episode");
         calculate(true);
         Event event = new Event(); interactor.enrich(event);
+        interactor.assignVisitSource(event, edited);
         assertEquals("old-child-episode", values(event).get(MTOTO_ENROLLMENT_ID));
         assertEquals("old-mother-episode", values(event).get(MTOTO_MOTHER_ENROLLMENT_ID));
+        assertEquals(DateTime.parse(originalTime).toDate(), event.getEventDate());
+        assertEquals("20-10-2026", values(event).get(MOTHERMENTOR_VISIT_DATE));
         assertEquals("editing", interactor.loadedBeforeVisit);
         assertEquals(1, interactor.identityReads);
     }

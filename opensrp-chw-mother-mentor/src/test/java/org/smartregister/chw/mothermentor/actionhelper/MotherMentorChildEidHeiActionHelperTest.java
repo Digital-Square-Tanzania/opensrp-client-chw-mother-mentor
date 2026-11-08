@@ -62,17 +62,21 @@ public class MotherMentorChildEidHeiActionHelperTest {
     }
 
     @Test
-    public void existingReturnVisitUsesTheSingleHeiActionWithoutAskingReferralAgain() throws Exception {
+    public void newReturnRequiresAReasonForNonAttendanceWithoutAskingReferralAgain() throws Exception {
         Helper helper = helper("json.form", "referred", "breastfeeding", null);
         JSONObject form = new JSONObject(helper.getPreProcessed());
         assertEquals("referred", value(form, MTOTO_RUFAA_STATE_BEFORE));
-        assertEquals("nine_months", value(form, CHILD_EID_TEST_TYPE));
+        assertEquals("1", value(form, MTOTO_RETURN_FLOW));
+        assertEquals("", value(form, CHILD_EID_TEST_TYPE));
         MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
         MotherMentorMotherChildUtils.put(form, CHILD_EID_ARRIVED_AT_FACILITY, "no");
         MotherMentorMotherChildUtils.put(form, CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-10-01");
         JSONObject prepared = new JSONObject(helper.postProcess(form.toString()));
         assertEquals("", value(prepared, MTOTO_REFERRAL_AGREEMENT));
         assertEquals("", value(prepared, CHILD_EID_FACILITY_ARRIVAL_DATE));
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+        MotherMentorMotherChildUtils.put(prepared, MTOTO_SABABU_KUTOFIKA, "stigma");
+        helper.postProcess(prepared.toString());
         assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
     }
 

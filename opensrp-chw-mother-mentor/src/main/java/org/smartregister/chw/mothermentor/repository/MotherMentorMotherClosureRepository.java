@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
@@ -118,9 +119,21 @@ public final class MotherMentorMotherClosureRepository {
         }
         MotherMentorMotherChildRepository.State child =
                 MotherMentorMotherChildRepository.getState(db, motherId, excludedVisitId);
-        VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
-        if (childExit != null && child.getTerminalServiceDate() != null) {
-            evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate()));
+        MotherMentorChildEidRepository.State tracing = child.getChildBaseEntityId().isEmpty() ? null
+                : MotherMentorChildEidRepository.getState(db, child.getChildBaseEntityId(), null);
+        MotherMentorChildEidExit tracingExit = tracing == null ? null : tracing.getVisitExit();
+        if (tracingExit != null && tracingExit.getMotherOutcome() != null && motherId.equals(tracing.getMotherId())
+                && (context.getEnrollmentId().equals(tracing.getMotherEnrollmentId())
+                    || tracing.getMotherEnrollmentId().isEmpty()
+                        && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
+                                new LocalDate(context.getEnrollmentTime()))))) {
+            evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
+                    tracing.getVisitExitDate(), tracing.getVisitExitTime(), tracing.getExitFacility(), ""));
+        } else {
+            VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
+            if (childExit != null && child.getTerminalServiceDate() != null) {
+                evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate(), ""));
+            }
         }
         if (includeIit && replayIit) {
             MotherMentorIitState iit = MotherMentorIitRepository.ownClosure(db, motherId);
@@ -415,8 +428,8 @@ public final class MotherMentorMotherClosureRepository {
             this.cascadeEpisode = "";
         }
 
-        Evidence(String id, VisitOutcome outcome, LocalDate date) {
-            this(id, outcome, date, 0, "", "");
+        Evidence(String id, VisitOutcome outcome, LocalDate date, String facility) {
+            this(id, outcome, date, 0, facility, "");
         }
 
         Evidence(String id, VisitOutcome outcome, LocalDate date, long sourceTime, String facility,
