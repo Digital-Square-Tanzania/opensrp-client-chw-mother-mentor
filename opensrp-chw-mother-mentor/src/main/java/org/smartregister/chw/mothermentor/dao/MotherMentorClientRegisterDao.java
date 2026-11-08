@@ -235,9 +235,23 @@ public final class MotherMentorClientRegisterDao {
         String answer = normalizedStatus("d." + DBConstants.KEY.DETAILS);
         String enrollmentStatus =
                 normalizedStatus(ENROLLMENT + "." + DBConstants.KEY.PREGNANCY_STATUS);
-        return "coalesce((SELECT "
+        // Structured visits use the enrollment projection, which accounts for the outcome and
+        // validates finalized evidence. Keep the raw answer fallback for older visits.
+        return "coalesce((SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM "
+                + VisitDetailsRepository.VISIT_DETAILS_TABLE
+                + " episode WHERE episode."
+                + DBConstants.KEY.VISIT_ID
+                + " = v."
+                + DBConstants.KEY.VISIT_ID
+                + " AND episode."
+                + DBConstants.KEY.VISIT_KEY
+                + " = '"
+                + DBConstants.KEY.MAMA_ENROLLMENT_ID
+                + "' AND trim(episode."
+                + DBConstants.KEY.DETAILS
+                + ") <> '') THEN "
                 + answer
-                + " FROM "
+                + " END FROM "
                 + VisitRepository.VISIT_TABLE
                 + " v INNER JOIN "
                 + VisitDetailsRepository.VISIT_DETAILS_TABLE
