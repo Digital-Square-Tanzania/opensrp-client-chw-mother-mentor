@@ -425,6 +425,16 @@ public final class DBConstants {
         public static final String MTOTO_RUFAA_DUE = "mtoto_rufaa_due";
         public static final String MTOTO_REFERRAL_AGREEMENT = "mtoto_referral_agreement";
         public static final String MTOTO_COUNTER_AMEKATAA = "mtoto_counter_amekataa";
+        public static final String MTOTO_COUNTER_HAJAFIKA = "mtoto_counter_hajafika";
+        public static final String MTOTO_EID_STATUS = "mtoto_eid_status";
+        public static final String MTOTO_EID_TAREHE_YA_KUFUNGWA = "mtoto_eid_tarehe_ya_kufungwa";
+        public static final String MTOTO_EID_SABABU_YA_KUFUNGWA = "mtoto_eid_sababu_ya_kufungwa";
+        public static final String MTOTO_EXIT_SOURCE = "mtoto_exit_source";
+        public static final String MTOTO_KITUO_KIPYA = "mtoto_kituo_kipya";
+        public static final String MTOTO_TAREHE_ALIFARIKI = "mtoto_tarehe_alifariki";
+        public static final String MTOTO_TAREHE_KUFIKA = "mtoto_tarehe_kufika";
+        public static final String MTOTO_SUPPRESSED_TESTS = "mtoto_suppressed_tests";
+        public static final String MTOTO_CLOSED_FOLLOWUP_NOTE = "mtoto_closed_followup_note";
         public static final String MTOTO_COUNTER_NYINGINE = "mtoto_counter_nyingine";
         public static final String MTOTO_STATUS = "mtoto_status";
         public static final String MTOTO_TAREHE_YA_KUFUNGWA = "mtoto_tarehe_ya_kufungwa";

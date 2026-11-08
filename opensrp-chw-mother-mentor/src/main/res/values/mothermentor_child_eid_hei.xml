@@ -16,6 +16,15 @@
     <string name="mothermentor_eid_return_confirm_positive">Confirmed positive. Ensure the child is linked to ART and CTC.</string>
     <string name="mothermentor_eid_return_wait_result">Save. The next visit asks whether the result has been received.</string>
     <string name="mothermentor_eid_return_wait_confirm">Save. The child remains on the list awaiting confirmation.</string>
-    <string name="mothermentor_eid_return_nonattendance">Save. The referral stays open and the next visit asks about attendance again.</string>
+    <string name="mothermentor_eid_return_nonattendance">Save. The referral closes after three consecutive visits without facility attendance.</string>
     <string name="mothermentor_eid_return_attendance">Save. The referral stays open. The next visit asks again whether the child attended.</string>
+    <string name="mothermentor_eid_exit_tested">Tested — back on the HEI schedule</string>
+    <string name="mothermentor_eid_exit_confirm_negative">Confirmatory negative — back on the HEI schedule</string>
+    <string name="mothermentor_eid_exit_nonattendance">Agreed but did not attend (3+)</string>
+    <string name="mothermentor_eid_exit_confirm_title">Confirm closing the record</string>
+    <string name="mothermentor_eid_exit_confirm_button">Yes, close</string>
+    <string name="mothermentor_eid_exit_cancel_button">Cancel</string>
+    <string name="mothermentor_eid_exit_mother_note">This also closes the linked mother’s card.</string>
+    <string name="mothermentor_eid_exit_success_toast">Tested. Follow-up record closed.</string>
+    <string name="mothermentor_eid_mama_followup_closed">Follow-up closed — %1$s</string>
 </resources>
