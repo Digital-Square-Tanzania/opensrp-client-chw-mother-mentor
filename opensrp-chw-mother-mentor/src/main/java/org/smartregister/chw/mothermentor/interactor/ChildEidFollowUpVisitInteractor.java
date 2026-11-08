@@ -230,8 +230,8 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     }
 
     @Override
-    protected boolean shouldProcessOnSave() {
-        return !useLegacyWorkflow() || super.shouldProcessOnSave();
+    protected boolean shouldSubmitOnSave() {
+        return !useLegacyWorkflow() || super.shouldSubmitOnSave();
     }
 
     @Override

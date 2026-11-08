@@ -1,0 +1,71 @@
+---
+name: step1_iit_sababu_kutopatikana
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_moved_area_facility
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'moved_area'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_kituo_kipya
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'moved_facility'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_sababu_nyingine
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'other'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_note_deceased
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'deceased'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_note_moved_area
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'moved_area'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_note_moved_facility
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'moved_facility'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_note_travelled
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'travelled'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_iit_note_other
+description: Show the applicable IIT tracing field
+priority: 1
+condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'other'"
+actions:
+  - "isRelevant = true"

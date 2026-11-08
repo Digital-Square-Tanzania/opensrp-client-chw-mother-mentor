@@ -147,6 +147,7 @@ public class VisitRepository extends BaseRepository {
         MotherMentorMotherDeliveryRepository.rebuildForVisit(database, visit);
         MotherMentorPartnerClosureRepository.rebuildForVisit(database, visit);
         MotherMentorHouseholdClosureRepository.rebuildForVisit(database, visit);
+        MotherMentorIitRepository.rebuildForVisit(database, visit);
         MotherMentorMotherChildRepository.rebuildForVisit(database, visit);
         MotherMentorChildEidRepository.rebuildForVisit(database, visit);
         MotherMentorMotherClosureRepository.rebuildForVisit(database, visit);
@@ -381,6 +382,47 @@ public class VisitRepository extends BaseRepository {
         catch (org.json.JSONException invalid) { return 0; }
     }
 
+    /** Replay a versioned IIT correction without overwriting a local unfinished visit. */
+    public void refreshIitVisit(Visit existing, Visit incoming, SQLiteDatabase database,
+            VisitDetailsRepository detailsRepository) {
+        if (!MotherMentorIitRepository.isIitVisit(existing)
+                || !MotherMentorIitRepository.isIitVisit(incoming)
+                || !StringUtils.equals(existing.getBaseEntityId(), incoming.getBaseEntityId())
+                || !StringUtils.equals(existing.getFormSubmissionId(), incoming.getFormSubmissionId())) return;
+        if (database == null) database = getWritableDatabase();
+        long version = motherSourceVersion(incoming);
+        boolean replace = Boolean.TRUE.equals(existing.getProcessed())
+                && !StringUtils.equals(existing.getJson(), incoming.getJson())
+                && version > 0 && version >= motherSourceVersion(existing);
+        boolean ownTransaction = !database.inTransaction();
+        if (ownTransaction) database.beginTransaction();
+        try {
+            if (replace) {
+                incoming.setVisitId(existing.getVisitId());
+                incoming.setCreatedAt(existing.getCreatedAt());
+                incoming.setParentVisitID(existing.getParentVisitID());
+                database.update(VISIT_TABLE, createValues(incoming), VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                database.delete(VisitDetailsRepository.VISIT_DETAILS_TABLE, VISIT_ID + " = ?",
+                        new String[] {existing.getVisitId()});
+                if (incoming.getVisitDetails() != null) {
+                    for (List<VisitDetail> details : incoming.getVisitDetails().values()) {
+                        if (details == null) continue;
+                        for (VisitDetail detail : details) {
+                            detail.setVisitId(existing.getVisitId());
+                            detailsRepository.addVisitDetails(detail, database);
+                        }
+                    }
+                }
+            }
+            MotherMentorIitRepository.rebuildForVisit(database, replace ? incoming : existing);
+            if (ownTransaction) database.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) database.endTransaction();
+        }
+        EventBus.getDefault().post(replace ? incoming : existing);
+    }
+
     public String getParentVisitEventID(
             String baseEntityID, String parentEventType, Date eventDate) {
         if (StringUtils.isBlank(baseEntityID)
@@ -452,6 +494,7 @@ public class VisitRepository extends BaseRepository {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
             MotherMentorChildEidRepository.rebuildForVisit(database, removed);
+            MotherMentorIitRepository.rebuildForVisit(database, removed);
             for (String motherId : affectedMothers) {
                 MotherMentorMotherClosureRepository.rebuild(database, motherId);
             }
@@ -478,6 +521,7 @@ public class VisitRepository extends BaseRepository {
                 MotherMentorPartnerClosureRepository.rebuild(database, partner);
             }
             MotherMentorChildEidRepository.rebuildForVisit(database, canonical);
+            MotherMentorIitRepository.rebuildForVisit(database, canonical);
             MotherMentorMotherClosureRepository.rebuildForVisit(database, canonical);
         } catch (Exception e) {
             Timber.e(e);

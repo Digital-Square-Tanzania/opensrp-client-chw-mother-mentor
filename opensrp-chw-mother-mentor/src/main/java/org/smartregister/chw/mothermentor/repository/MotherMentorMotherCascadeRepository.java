@@ -69,9 +69,10 @@ public final class MotherMentorMotherCascadeRepository {
     private static void rebuildTargets(SQLiteDatabase db, String motherId, MotherMentorMotherClosure state) {
         MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, motherId);
         Map<String, Desired> desired = new LinkedHashMap<>();
+        boolean replayIit = MotherMentorIitRepository.hasProjection(db);
         if (state != null && state.isClosed() && !context.getEnrollmentId().isEmpty()) {
             Claim claim = new Claim(motherId, context.getEnrollmentId(), state);
-            if (Arrays.asList(MotherMentorMotherClosure.DECEASED, MotherMentorMotherClosure.MOVED_AREA,
+            if (!replayIit && Arrays.asList(MotherMentorMotherClosure.DECEASED, MotherMentorMotherClosure.MOVED_AREA,
                     MotherMentorMotherClosure.MOVED_FACILITY).contains(state.getStatus())) {
                 want(db, desired, IIT, motherId, claim);
             }
@@ -92,6 +93,7 @@ public final class MotherMentorMotherCascadeRepository {
         }
         for (String family : families) householdClaims(db, family, motherId, state, desired);
         for (Owned item : owned) {
+            if (replayIit && IIT.equals(item.target.table)) continue;
             for (Claim previous : item.claims) {
                 if (motherId.equals(previous.mother) && !context.getEnrollmentId().equals(previous.episode)) {
                     // A fresh mother episode cannot reopen completed enrollments from her history.
@@ -115,6 +117,31 @@ public final class MotherMentorMotherCascadeRepository {
             if (closed(item.target.values)) continue; // No ownership of pre-existing closures.
             Owned itemOwned = new Owned(item.target, snapshot(item.target), snapshot(item.target), item.claims);
             reconcile(db, itemOwned);
+        }
+    }
+
+    /** Distinguish a pre-upgrade derived IIT flag from an externally closed enrollment. */
+    static boolean ownsIitClosure(SQLiteDatabase db, String clientId) {
+        if (!hasTable(db, LEDGER)) return false;
+        Target current = target(db, IIT, clientId);
+        if (current == null) return false;
+        try (Cursor rows = db.rawQuery("SELECT " + MAMA_CASCADE_APPLIED_VALUES + ", "
+                + MAMA_CASCADE_CLAIMS + " FROM " + LEDGER
+                + " WHERE " + MAMA_CASCADE_TARGET_TABLE + " = ? AND " + MAMA_CASCADE_TARGET_ID
+                + " = ? AND " + MAMA_CASCADE_TARGET_ENROLLMENT_ID + " = ?",
+                new String[] {IIT, clientId, current.episode})) {
+            if (!rows.moveToFirst() || !same(snapshot(current), new JSONObject(rows.getString(0)))) {
+                return false;
+            }
+            String currentMother = MotherMentorMotherVisitDao.getContext(db, clientId).getEnrollmentId();
+            JSONArray claims = new JSONArray(rows.getString(1));
+            for (int index = 0; index < claims.length(); index++) {
+                Claim claim = new Claim(claims.getJSONObject(index));
+                if (clientId.equals(claim.mother) && currentMother.equals(claim.episode)) return true;
+            }
+            return false;
+        } catch (JSONException ignored) {
+            return false;
         }
     }
 
@@ -324,7 +351,7 @@ public final class MotherMentorMotherCascadeRepository {
         return new Target(table, id, episode, started, row);
     }
 
-    private static Enrollment latestEnrollment(SQLiteDatabase db, String id, String type) {
+    static Enrollment latestEnrollment(SQLiteDatabase db, String id, String type) {
         if (!columns(db, "event").containsAll(Arrays.asList(EVENT_BASE_ENTITY_ID, EVENT_TYPE, EVENT_JSON))) return null;
         Map<String, Enrollment> sources = new HashMap<>();
         try (Cursor rows = db.rawQuery("SELECT * FROM event WHERE " + EVENT_BASE_ENTITY_ID
@@ -422,7 +449,7 @@ public final class MotherMentorMotherCascadeRepository {
                 + MAMA_CASCADE_TARGET_ENROLLMENT_ID + " = ?", new String[] {target.table, target.id, target.episode});
     }
 
-    private static Map<String, String> row(SQLiteDatabase db, String table, String id) {
+    static Map<String, String> row(SQLiteDatabase db, String table, String id) {
         if (!columns(db, table).contains(BASE_ENTITY_ID)) return Collections.emptyMap();
         try (Cursor rows = db.rawQuery("SELECT * FROM " + table + " WHERE " + BASE_ENTITY_ID + " = ? LIMIT 1", new String[] {id})) {
             return rows.moveToFirst() ? values(rows) : Collections.emptyMap();
@@ -443,14 +470,14 @@ public final class MotherMentorMotherCascadeRepository {
                 || dod != null && !dod.isAfter(LocalDate.now());
     }
     private static boolean hasTable(SQLiteDatabase db, String table) { return !columns(db, table).isEmpty(); }
-    private static List<String> columns(SQLiteDatabase db, String table) {
+    static List<String> columns(SQLiteDatabase db, String table) {
         List<String> result = new ArrayList<>();
         try (Cursor rows = db.rawQuery("PRAGMA table_info(" + table + ")", new String[0])) {
             while (rows.moveToNext()) result.add(rows.getString(rows.getColumnIndexOrThrow("name")));
         }
         return result;
     }
-    private static String text(Cursor rows, String column) {
+    static String text(Cursor rows, String column) {
         int index = rows.getColumnIndex(column); return index < 0 ? "" : StringUtils.defaultString(rows.getString(index));
     }
 
@@ -486,7 +513,7 @@ public final class MotherMentorMotherCascadeRepository {
             this.target = target; this.previous = previous; this.applied = applied; this.claims = claims;
         }
     }
-    private static final class Enrollment {
+    static final class Enrollment {
         final String id; final LocalDate date; final long time, version; final boolean valid;
         Enrollment(String id, LocalDate date, long time, long version, boolean valid) {
             this.id = id; this.date = date; this.time = time; this.version = version; this.valid = valid;

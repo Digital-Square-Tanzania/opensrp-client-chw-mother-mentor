@@ -8,16 +8,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.clientandeventmodel.Event;
+import org.smartregister.domain.db.EventClient;
 import org.smartregister.repository.AllSharedPreferences;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -101,11 +104,12 @@ public class VisitUtils {
                 AllSharedPreferences allSharedPreferences = MotherMentorLibrary.getInstance().context().allSharedPreferences();
                 NCUtils.addEvent(allSharedPreferences, baseEvent);
                 if (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(v.getVisitType())
-                        && org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao.storedEvent(
+                        && MotherMentorChildEidDao.storedEvent(
                                 MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
                                 v.getBaseEntityId(), v.getVisitType(), baseEvent.getFormSubmissionId()) == null) {
                     throw new IllegalStateException("Child EID visit was not persisted");
                 }
+                verifyIitEventSaved(baseEvent);
 
                 visitRepository.completeProcessing(v.getVisitId());
             }
@@ -117,6 +121,25 @@ public class VisitUtils {
         // process vaccines and services
         Context context = MotherMentorLibrary.getInstance().context().applicationContext();
 
+    }
+
+    private static void verifyIitEventSaved(Event source) {
+        if (!MotherMentorFollowUpType.MOTHER_IIT.getEventType().equals(source.getEventType())
+                || source.getObs() == null || source.getObs().stream().noneMatch(obs ->
+                        DBConstants.KEY.IIT_FOLLOW_UP_SCHEMA.equals(obs.getFieldCode())
+                                && obs.getValues() != null && obs.getValues().contains("2"))) return;
+
+        // ECSyncHelper logs write failures internally, so confirm this exact revision first.
+        List<EventClient> stored = NCUtils.getSyncHelper().getEvents(
+                Collections.singletonList(source.getFormSubmissionId()));
+        for (EventClient candidate : stored) {
+            org.smartregister.domain.Event event = candidate.getEvent();
+            if (event != null && source.getFormSubmissionId().equals(event.getFormSubmissionId())
+                    && StringUtils.equals(source.getBaseEntityId(), event.getBaseEntityId())
+                    && source.getEventType().equals(event.getEventType())
+                    && source.getVersion() == event.getVersion()) return;
+        }
+        throw new IllegalStateException("Mother IIT event revision could not be saved");
     }
 
 

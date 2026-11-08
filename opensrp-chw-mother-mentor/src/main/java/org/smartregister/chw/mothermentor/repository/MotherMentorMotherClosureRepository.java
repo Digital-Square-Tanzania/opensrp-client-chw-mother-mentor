@@ -21,6 +21,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOu
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 
 import java.util.ArrayList;
@@ -63,28 +64,39 @@ public final class MotherMentorMotherClosureRepository {
 
     public static MotherMentorMotherClosure getState(SQLiteDatabase db, String motherId,
             String excludedVisitId) {
-        return replay(db, motherId, excludedVisitId, null, null);
+        return replay(db, motherId, excludedVisitId, null, null, true).state;
+    }
+
+    static ClosureSource ownClosure(SQLiteDatabase db, String motherId) {
+        return replay(db, motherId, null, null, null, false);
     }
 
     /** Unsaved answers are inserted in service-date order; this method never writes anything. */
     public static MotherMentorMotherClosure preview(SQLiteDatabase db, String motherId,
             String excludedVisitId, Map<String, String> answers, LocalDate serviceDate) {
-        return replay(db, motherId, excludedVisitId, answers, serviceDate);
+        return replay(db, motherId, excludedVisitId, answers, serviceDate, true).state;
     }
 
-    private static MotherMentorMotherClosure replay(SQLiteDatabase db, String motherId,
-            String excludedVisitId, Map<String, String> answers, LocalDate date) {
+    private static ClosureSource replay(SQLiteDatabase db, String motherId,
+            String excludedVisitId, Map<String, String> answers, LocalDate date, boolean includeIit) {
         MotherMentorMotherClosure state = MotherMentorMotherClosure.active();
         MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, motherId);
-        if (context.getEnrollmentId().isEmpty()) return state;
+        if (context.getEnrollmentId().isEmpty()) return new ClosureSource(state, 0);
+        boolean replayIit = MotherMentorIitRepository.hasProjection(db);
+        if (includeIit && replayIit) {
+            ClosureSource earlier = preservedIitClosure(db, motherId, state);
+            if (earlier != null) return earlier;
+        }
         List<Evidence> evidence = new ArrayList<>();
         for (Visit visit : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, excludedVisitId)) {
             try {
+                JSONObject event = new JSONObject(visit.getJson());
                 Map<String, String> values = MotherMentorVisitCompletion.observationValues(
-                        new JSONObject(visit.getJson()).optJSONArray("obs"));
+                        event.optJSONArray("obs"));
                 evidence.add(new Evidence(visit.getVisitId(), values,
                         MotherMentorMotherVisitDao.getServiceDate(visit),
-                        visit.getDate() == null ? 0 : visit.getDate().getTime()));
+                        visit.getDate() == null ? 0 : visit.getDate().getTime(),
+                        MotherMentorIitRepository.timestamp(event.opt(EVENT_DATE_TIMESTAMP))));
             } catch (JSONException ignored) {
                 // Malformed source events cannot close a card or advance a counter.
             }
@@ -93,13 +105,13 @@ public final class MotherMentorMotherClosureRepository {
                 && (context.getEnrollmentTime() == 0
                         || !date.isBefore(new LocalDate(context.getEnrollmentTime())))) {
             Evidence preview = new Evidence("~preview", new HashMap<>(answers), date,
-                    System.currentTimeMillis());
+                    System.currentTimeMillis(), 0);
             for (Visit previous : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, null)) {
                 if (StringUtils.isNotBlank(excludedVisitId)
                         && (excludedVisitId.equals(previous.getVisitId())
                                 || excludedVisitId.equals(previous.getFormSubmissionId()))) {
                     preview = new Evidence(previous.getVisitId(), new HashMap<>(answers), date,
-                            previous.getDate() == null ? 0 : previous.getDate().getTime());
+                            previous.getDate() == null ? 0 : previous.getDate().getTime(), 0);
                     break;
                 }
             }
@@ -109,13 +121,13 @@ public final class MotherMentorMotherClosureRepository {
                 MotherMentorMotherChildRepository.getState(db, motherId, excludedVisitId);
         MotherMentorChildEidRepository.State tracing = child.getChildBaseEntityId().isEmpty() ? null
                 : MotherMentorChildEidRepository.getState(db, child.getChildBaseEntityId(), null);
-        MotherMentorChildEidExit exit = tracing == null ? null : tracing.getVisitExit();
-        if (exit != null && exit.getMotherOutcome() != null && motherId.equals(tracing.getMotherId())
+        MotherMentorChildEidExit tracingExit = tracing == null ? null : tracing.getVisitExit();
+        if (tracingExit != null && tracingExit.getMotherOutcome() != null && motherId.equals(tracing.getMotherId())
                 && (context.getEnrollmentId().equals(tracing.getMotherEnrollmentId())
                     || tracing.getMotherEnrollmentId().isEmpty()
                         && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
                                 new LocalDate(context.getEnrollmentTime()))))) {
-            evidence.add(new Evidence("~linked-child", exit.getMotherOutcome(),
+            evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
                     tracing.getVisitExitDate(), tracing.getExitFacility()));
         } else {
             VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
@@ -123,8 +135,21 @@ public final class MotherMentorMotherClosureRepository {
                 evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate(), ""));
             }
         }
+        if (includeIit && replayIit) {
+            MotherMentorIitState iit = MotherMentorIitRepository.ownClosure(db, motherId);
+            LocalDate iitDate = MotherMentorMotherPregnancyUtils.parseDate(iit.getClosedDate());
+            if (iit.requiresConfirmation() && MotherMentorIitRepository.duringEpisode(
+                    context.getEnrollmentTime(), iitDate, iit.getClosureTime())) {
+                VisitOutcome exit = MotherMentorIitState.DECEASED.equals(iit.getStatus())
+                        ? VisitOutcome.DECEASED : MotherMentorIitState.MOVED_AREA.equals(iit.getStatus())
+                                ? VisitOutcome.MOVED_AREA : VisitOutcome.MOVED_FACILITY;
+                evidence.add(new Evidence("~linked-iit", exit, iitDate,
+                        iit.getClosureTime(), iit.getNewFacility(), iit.getEnrollmentId()));
+            }
+        }
         evidence.sort(Comparator.comparing((Evidence item) -> item.date)
-                .thenComparingLong(item -> item.order).thenComparing(item -> item.id));
+                .thenComparingLong(item -> replayIit && item.sourceTime > 0 ? item.sourceTime : item.order)
+                .thenComparing(item -> item.id));
         for (Evidence item : evidence) {
             Map<String, String> values = new HashMap<>(item.values);
             values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
@@ -134,12 +159,34 @@ public final class MotherMentorMotherClosureRepository {
                     value(values, outcome == VisitOutcome.PREGNANCY_ENDED_OTHER
                             ? MAMA_PREGNANCY_OUTCOME_OTHER : MAMA_SABABU_NYINGINE_TEXT),
                     value(values, MAMA_KITUO_KIPYA));
+            if (state.isClosed()) return new ClosureSource(state, item.sourceTime, item.cascadeEpisode);
         }
         // A corrected module visit can never resurrect a client whose shared record is deceased.
         String death = sharedDeath(db, motherId);
         LocalDate died = MotherMentorMotherPregnancyUtils.parseDate(death);
-        return !state.isClosed() && !death.isEmpty()
-                ? state.advance(VisitOutcome.DECEASED, died == null ? "" : died.toString()) : state;
+        if (!death.isEmpty()) {
+            return new ClosureSource(state.advance(VisitOutcome.DECEASED,
+                    died == null ? "" : died.toString()), 0);
+        }
+        return new ClosureSource(state, 0);
+    }
+
+    private static ClosureSource preservedIitClosure(SQLiteDatabase db, String motherId,
+            MotherMentorMotherClosure active) {
+        Map<String, String> row = enrollment(db, motherId);
+        String previous = value(row, IIT_CASCADE_SOURCE_EPISODE);
+        if (!"1".equals(value(row, IS_CLOSED)) || previous.isEmpty()) return null;
+        String current = MotherMentorIitRepository.currentEpisodeId(db, motherId);
+        if (current.isEmpty() || previous.equals(current)) return null;
+        VisitOutcome exit;
+        switch (value(row, MAMA_STATUS)) {
+            case MotherMentorMotherClosure.DECEASED: exit = VisitOutcome.DECEASED; break;
+            case MotherMentorMotherClosure.MOVED_AREA: exit = VisitOutcome.MOVED_AREA; break;
+            case MotherMentorMotherClosure.MOVED_FACILITY: exit = VisitOutcome.MOVED_FACILITY; break;
+            default: return null;
+        }
+        return new ClosureSource(active.advance(exit, value(row, MAMA_TAREHE_YA_KUFUNGWA), "",
+                value(row, MAMA_KITUO_KIPYA)), 0, previous);
     }
 
     /** Checklist and draft completion use the same validated outcome as finalized replay. */
@@ -188,6 +235,11 @@ public final class MotherMentorMotherClosureRepository {
         }
     }
 
+    static boolean canRebuild(SQLiteDatabase db, String motherId) {
+        return StringUtils.isNotBlank(motherId) && columns(db, TABLE).containsAll(COLUMNS)
+                && !enrollment(db, motherId).isEmpty();
+    }
+
     public static void rebuild(SQLiteDatabase db, String motherId) {
         if (!columns(db, TABLE).containsAll(COLUMNS)) return;
         boolean ownTransaction = !db.inTransaction();
@@ -195,7 +247,8 @@ public final class MotherMentorMotherClosureRepository {
         try {
             Map<String, String> row = enrollment(db, motherId);
             if (row.isEmpty()) return;
-            MotherMentorMotherClosure state = getState(db, motherId, null);
+            ClosureSource closure = replay(db, motherId, null, null, null, true);
+            MotherMentorMotherClosure state = closure.state;
             boolean external = "1".equals(value(row, IS_CLOSED))
                     && !isManagedStatus(value(row, MAMA_STATUS));
             ContentValues values = new ContentValues();
@@ -203,9 +256,13 @@ public final class MotherMentorMotherClosureRepository {
                 values.put(entry.getKey(), entry.getValue());
             }
             if (external && !state.isClosed()) values.put(MAMA_STATUS, EXTERNALLY_CLOSED);
+            if (row.containsKey(IIT_CASCADE_SOURCE_EPISODE)) {
+                values.put(IIT_CASCADE_SOURCE_EPISODE, closure.cascadeEpisode);
+            }
             values.put(IS_CLOSED, state.isClosed() || external ? 1 : 0);
             db.update(TABLE, values, BASE_ENTITY_ID + " = ?", new String[] {motherId});
             MotherMentorMotherCascadeRepository.rebuild(db, motherId, state);
+            MotherMentorIitRepository.rebuildFromMother(db, motherId);
             if (ownTransaction) db.setTransactionSuccessful();
         } finally {
             if (ownTransaction) db.endTransaction();
@@ -358,21 +415,48 @@ public final class MotherMentorMotherClosureRepository {
         final VisitOutcome outcome;
         final LocalDate date;
         final long order;
+        final long sourceTime;
+        final String cascadeEpisode;
 
-        Evidence(String id, Map<String, String> values, LocalDate date, long order) {
+        Evidence(String id, Map<String, String> values, LocalDate date, long order, long sourceTime) {
             this.id = id;
             this.values = values;
             this.date = date;
             this.outcome = null;
             this.order = order;
+            this.sourceTime = sourceTime;
+            this.cascadeEpisode = "";
         }
 
         Evidence(String id, VisitOutcome outcome, LocalDate date, String facility) {
+            this(id, outcome, date, 0, facility, "");
+        }
+
+        Evidence(String id, VisitOutcome outcome, LocalDate date, long sourceTime, String facility,
+                String cascadeEpisode) {
             this.id = id;
             this.values = Collections.singletonMap(MAMA_KITUO_KIPYA, facility);
             this.date = date;
             this.outcome = outcome;
             this.order = Long.MAX_VALUE;
+            this.sourceTime = sourceTime;
+            this.cascadeEpisode = cascadeEpisode;
+        }
+    }
+
+    static final class ClosureSource {
+        final MotherMentorMotherClosure state;
+        final long time;
+        final String cascadeEpisode;
+
+        ClosureSource(MotherMentorMotherClosure state, long time) {
+            this(state, time, "");
+        }
+
+        ClosureSource(MotherMentorMotherClosure state, long time, String cascadeEpisode) {
+            this.state = state;
+            this.time = time;
+            this.cascadeEpisode = cascadeEpisode;
         }
     }
 }

@@ -1,0 +1,368 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Return to Facility",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Kurudi kituoni",
+    "fields": [
+      {
+        "key": "iit_return_state",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_return_state",
+        "type": "hidden",
+        "value": "none"
+      },
+      {
+        "key": "iit_missed_appointment_note",
+        "type": "toaster_notes",
+        "text": "Miadi aliyokosa",
+        "toaster_type": "info"
+      },
+      {
+        "key": "service_interruption_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "service_interruption_reason",
+        "type": "native_radio",
+        "label": "Sababu ya kukatisha huduma",
+        "options": [
+          {
+            "key": "medicine_side_effects",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medicine_side_effects",
+            "text": "Maudhi ya dawa"
+          },
+          {
+            "key": "forgot",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "forgot",
+            "text": "Kusahau"
+          },
+          {
+            "key": "travel_or_moved",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travel_or_moved",
+            "text": "Safari"
+          },
+          {
+            "key": "transport_cost",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transport_cost",
+            "text": "Hana pesa ya nauli"
+          },
+          {
+            "key": "facility_congestion",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "facility_congestion",
+            "text": "Msongamano kituoni"
+          },
+          {
+            "key": "stigma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stigma",
+            "text": "Unyanyapaa"
+          },
+          {
+            "key": "other",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other",
+            "text": "Nyingine (Taja)"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "service_interruption_reason_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "service_interruption_reason_other",
+        "type": "edit_text",
+        "hint": "Taja sababu",
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_return_agreement",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_return_agreement",
+        "type": "native_radio",
+        "label": "Hali ya kurudi kituoni",
+        "options": [
+          {
+            "key": "agreed",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "agreed",
+            "text": "Amekubali kurudi kituoni"
+          },
+          {
+            "key": "refused",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "refused",
+            "text": "Amekataa kurudi kituoni"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_agreed_note",
+        "type": "toaster_notes",
+        "text": "Hifadhi. Mama anabaki kwenye orodha. Ziara ijayo itaanza kwa kuuliza kama amerudi kituoni.",
+        "toaster_type": "positive",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_refused_note",
+        "type": "toaster_notes",
+        "text": "",
+        "toaster_type": "warning",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "returned_to_facility",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "returned_to_facility",
+        "type": "native_radio",
+        "label": "Mama amerudi kituoni?",
+        "options": [
+          {
+            "key": "yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "text": "Ndiyo"
+          },
+          {
+            "key": "no",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "text": "Hapana"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "facility_return_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "facility_return_date",
+        "type": "date_picker",
+        "hint": "Tarehe ya kurudi kituoni",
+        "display_format": "dd/MM/yyyy",
+        "max_date": "today",
+        "expanded": false,
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_returned_note",
+        "type": "toaster_notes",
+        "text": "Baada ya kuhifadhi, rekodi ya ufuatiliaji itafungwa kwa “Amerudi kwenye huduma”.",
+        "toaster_type": "positive",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_sababu_kutorudi",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_sababu_kutorudi",
+        "type": "native_radio",
+        "label": "Sababu ya kutorudi kituoni",
+        "options": [
+          {
+            "key": "medicine_side_effects",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "medicine_side_effects",
+            "text": "Maudhi ya dawa"
+          },
+          {
+            "key": "forgot",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "forgot",
+            "text": "Kusahau"
+          },
+          {
+            "key": "travel_or_moved",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travel_or_moved",
+            "text": "Safari"
+          },
+          {
+            "key": "transport_cost",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transport_cost",
+            "text": "Hana pesa ya nauli"
+          },
+          {
+            "key": "facility_congestion",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "facility_congestion",
+            "text": "Msongamano kituoni"
+          },
+          {
+            "key": "stigma",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stigma",
+            "text": "Unyanyapaa"
+          },
+          {
+            "key": "other",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other",
+            "text": "Nyingine (Taja)"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_sababu_kutorudi_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "iit_sababu_kutorudi_other",
+        "type": "edit_text",
+        "hint": "Taja sababu",
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "iit_not_returned_note",
+        "type": "toaster_notes",
+        "text": "",
+        "toaster_type": "warning",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -46,8 +47,9 @@ public class MotherMentorChildEidEntryRepositoryTest {
         data = SQLiteDatabase.create(null);
         data.execSQL("CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, pregnancy_status TEXT, child_dob TEXT,"
                 + " event_date TEXT, enrollment_date TEXT, last_interacted_with INTEGER, is_closed INTEGER)");
-        data.execSQL("CREATE TABLE ec_family_member (base_entity_id TEXT, first_name TEXT, middle_name TEXT, last_name TEXT,"
-                + " dob TEXT, gender TEXT, relational_id TEXT, dod TEXT, date_died TEXT, is_closed INTEGER, unique_id TEXT)");
+        data.execSQL("CREATE TABLE ec_family_member (id VARCHAR PRIMARY KEY, base_entity_id TEXT,"
+                + " first_name TEXT, middle_name TEXT, last_name TEXT, dob TEXT, gender TEXT,"
+                + " relational_id TEXT, dod TEXT, date_died TEXT, is_closed INTEGER, unique_id TEXT)");
         data.execSQL("CREATE TABLE ec_family (base_entity_id TEXT, village_town TEXT, is_closed INTEGER)");
         data.execSQL("CREATE TABLE ec_child (base_entity_id TEXT, mother_entity_id TEXT)");
         data.execSQL("CREATE TABLE event (baseEntityId TEXT, eventType TEXT, eventDate TEXT, formSubmissionId TEXT, json TEXT)");
@@ -58,7 +60,8 @@ public class MotherMentorChildEidEntryRepositoryTest {
                 + " hei_number TEXT, breastfeeding_status TEXT, weaning_date TEXT, last_test TEXT, last_test_result TEXT,"
                 + " last_test_results_returned TEXT)");
         data.execSQL("INSERT INTO ec_family VALUES ('family','Kibiti',0)");
-        data.execSQL("INSERT INTO ec_family_member VALUES ('mother','Neema','','John','1990-01-01','Female','family','','',0,'M1')");
+        data.execSQL("INSERT INTO ec_family_member VALUES ('mother','mother','Neema','','John',"
+                + "'1990-01-01','Female','family','','',0,'M1')");
         person("child", dob.toString(), "Baraka");
         data.execSQL("INSERT INTO ec_child VALUES ('child','mother')");
         data.execSQL("INSERT INTO ec_mothermentor_enrollment VALUES ('mother','breast_feeding','2025-01-31',"
@@ -307,6 +310,19 @@ public class MotherMentorChildEidEntryRepositoryTest {
         }
     }
 
+    @Test public void registerPageProvidesMemberIdForTheCursorAdapter() {
+        try (Cursor cursor = data.rawQuery(MotherMentorChildEidDao.pageQuery("", false, 10, 0), null)) {
+            assertEquals(0, cursor.getCount());
+            assertTrue(cursor.getColumnIndex(BaseColumns._ID) >= 0);
+        }
+
+        eidRow("child", 0);
+        try (Cursor cursor = data.rawQuery(MotherMentorChildEidDao.pageQuery("", false, 10, 0), null)) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("child", cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)));
+        }
+    }
+
     private MotherMentorChildEidRepository.EnrollmentPlan plan() {
         MotherMentorChildEidRepository.EnrollmentPlan plan = MotherMentorChildEidRepository.getPendingEnrollmentPlan(db, "mother");
         assertNotNull("A valid overdue test on a real linked child must produce an enrollment plan", plan);
@@ -332,8 +348,8 @@ public class MotherMentorChildEidEntryRepositoryTest {
     }
 
     private void person(String id, String birth, String first) {
-        data.execSQL("INSERT INTO ec_family_member VALUES (?,?,'','Mwakyusa',?,'Male','family','','',0,?)",
-                new Object[] {id, first, birth, id});
+        data.execSQL("INSERT INTO ec_family_member VALUES (?,?,?,'','Mwakyusa',?,'Male','family','','',0,?)",
+                new Object[] {id, id, first, birth, id});
     }
 
     private void eidRow(String id, int closed) {
