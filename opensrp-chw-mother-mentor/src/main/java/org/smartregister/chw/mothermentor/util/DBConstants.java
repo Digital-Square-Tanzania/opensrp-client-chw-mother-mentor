@@ -349,6 +349,8 @@ public final class DBConstants {
         public static final String MAMA_PRETERM_DELIVERY_DATE_INPUT = "mama_preterm_delivery_date_input";
         public static final String MAMA_STILLBIRTH_DATE_INPUT = "mama_stillbirth_date_input";
         public static final String MAMA_ENROLLMENT_DELIVERY_DATE = "mama_enrollment_delivery_date";
+        public static final String MAMA_CARRIED_DELIVERY = "mama_carried_delivery";
+        public static final String MAMA_CARRIED_WEANING_DATE = "mama_carried_weaning_date";
 
         // Shared visit and event columns.
         public static final String AGE = "age";

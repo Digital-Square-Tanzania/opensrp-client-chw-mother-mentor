@@ -112,6 +112,15 @@ public class MotherMentorMotherDeliveryRepositoryTest {
     public void sourceCorrectionAndEditingExclusionDoNotReuseEarlierVersion() throws Exception {
         visit("old", "birth-source", "episode-one", "20-10-2026", 1, true, "not_pregnant",
                 "delivered", "19-10-2026");
+        visit("follow-up", "follow-up-source", "episode-one", "21-10-2026", 1, true,
+                "not_pregnant", "delivered", "19-10-2026");
+        try (Cursor rows = data.rawQuery("SELECT visit_json FROM visits WHERE visit_id='follow-up'", null)) {
+            assertTrue(rows.moveToFirst());
+            JSONObject event = new JSONObject(rows.getString(0));
+            event.getJSONArray("obs").put(obs(MAMA_CARRIED_DELIVERY, "true").getJSONObject(0));
+            data.execSQL("UPDATE visits SET visit_json=? WHERE visit_id='follow-up'",
+                    new Object[] {event.toString()});
+        }
         visit("corrected", "birth-source", "episode-one", "20-10-2026", 2, true, "not_pregnant",
                 "preterm", "18-10-2026");
         assertEquals(new LocalDate(2026, 10, 18),
