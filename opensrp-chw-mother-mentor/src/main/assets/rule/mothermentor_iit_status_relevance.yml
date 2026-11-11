@@ -47,14 +47,6 @@ actions:
   - "isRelevant = true"
 
 ---
-name: step1_iit_note_moved_facility
-description: Show the applicable IIT tracing field
-priority: 1
-condition: "step1_follow_up_status == 'not_found' && step1_iit_sababu_kutopatikana == 'moved_facility'"
-actions:
-  - "isRelevant = true"
-
----
 name: step1_iit_note_travelled
 description: Show the applicable IIT tracing field
 priority: 1

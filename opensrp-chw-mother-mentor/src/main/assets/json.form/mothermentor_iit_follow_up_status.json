@@ -195,21 +195,6 @@
         }
       },
       {
-        "key": "iit_note_moved_facility",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "iit_note_moved_facility",
-        "text": "",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_iit_status_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "iit_note_travelled",
         "type": "toaster_notes",
         "openmrs_entity_parent": "",
