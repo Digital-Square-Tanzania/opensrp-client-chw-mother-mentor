@@ -26,7 +26,12 @@ public class MotherMentorHouseholdPurposeTest {
     public void onlyTheThreePurposesAreSelectableInBothLanguages() throws Exception {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             JSONObject form = form(directory);
-            JSONArray options = field(form, "purpose_of_visit").getJSONArray("options");
+            JSONObject purpose = field(form, "purpose_of_visit");
+            if (directory.endsWith("-sw")) {
+                assertEquals("Dhumuni la Hudhurio", form.getJSONObject("step1").getString("title"));
+                assertEquals("Dhumuni la Hudhurio", purpose.getString("label"));
+            }
+            JSONArray options = purpose.getJSONArray("options");
             assertEquals(3, options.length());
             assertEquals("routine_follow_up", options.getJSONObject(0).getString("key"));
             assertEquals(directory.endsWith("-sw") ? "Kufuatilia maendeleo ya kaya"

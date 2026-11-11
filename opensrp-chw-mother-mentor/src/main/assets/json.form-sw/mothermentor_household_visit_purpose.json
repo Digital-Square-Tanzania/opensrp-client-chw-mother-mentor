@@ -53,14 +53,14 @@
   },
   "global": {},
   "step1": {
-    "title": "Kusudi la Ziara",
+    "title": "Dhumuni la Hudhurio",
     "fields": [
       {
         "key": "purpose_of_visit",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "purpose_of_visit",
-        "label": "Kusudi la Ziara",
+        "label": "Dhumuni la Hudhurio",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
