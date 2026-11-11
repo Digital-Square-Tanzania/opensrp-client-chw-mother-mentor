@@ -235,6 +235,84 @@ public class MotherMentorMotherCascadeRepositoryTest {
     }
 
     @Test
+    public void graduationClosesKayaAfterTheLastActiveMemberExits() {
+        data.execSQL("ALTER TABLE " + CHILD + " ADD COLUMN " + MTOTO_TAREHE_YA_KUFUNGWA + " TEXT");
+        household("ndiyo");
+        mother("other", "pregnant", "", 0);
+        close(VisitOutcome.GRADUATED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+
+        data.execSQL("UPDATE " + MOTHERS + " SET is_closed=1 WHERE base_entity_id='other'");
+        child("active-child", "2026-05-01", true);
+        close(VisitOutcome.GRADUATED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+
+        String childExit = org.joda.time.LocalDate.now().toString();
+        data.execSQL("UPDATE " + CHILD + " SET is_closed=1, " + MTOTO_TAREHE_YA_KUFUNGWA + "=?",
+                new Object[] {childExit});
+        close(VisitOutcome.GRADUATED);
+        assertEquals("1", value(HOUSEHOLD, "family", IS_CLOSED));
+        assertEquals(MotherMentorHouseholdClosure.LAST_MEMBER_EXITED, value(HOUSEHOLD, "family", KAYA_STATUS));
+        assertEquals(ledger(MAMA_CASCADE_CLAIMS), childExit, value(HOUSEHOLD, "family", KAYA_TAREHE_YA_KUFUNGWA));
+    }
+
+    @Test
+    public void aMotherStillInTheActiveRegisterKeepsHerKayaOpen() {
+        data.execSQL("ALTER TABLE " + MOTHERS + " ADD COLUMN " + STATUS + " TEXT");
+        household("ndiyo");
+        data.execSQL("INSERT INTO " + MOTHERS + " (base_entity_id, pregnancy_status, child_dob, "
+                + "is_closed, event_date, last_interacted_with, " + STATUS + ") "
+                + "VALUES ('other','not_pregnant','2024-01-01',0,'2026-10-01',1,'client')");
+        data.execSQL("INSERT INTO ec_family_member VALUES ('other','family','1990-01-01',0,'','')");
+        close(VisitOutcome.GRADUATED);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
+    public void lastChildCanCloseAHouseholdWithoutAnEnrolledMother() {
+        data.execSQL("ALTER TABLE " + CHILD + " ADD COLUMN " + MTOTO_TAREHE_YA_KUFUNGWA + " TEXT");
+        data.delete(MOTHERS, null, null);
+        household("ndiyo");
+        child("active-child", "2026-05-01", true);
+        MotherMentorMotherClosureRepository.rebuildForChild(db, "active-child");
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+
+        String childExit = org.joda.time.LocalDate.now().toString();
+        data.execSQL("UPDATE " + CHILD + " SET is_closed=1, " + MTOTO_TAREHE_YA_KUFUNGWA + "=?",
+                new Object[] {childExit});
+        MotherMentorMotherClosureRepository.rebuildForChild(db, "active-child");
+        assertEquals("1", value(HOUSEHOLD, "family", IS_CLOSED));
+        assertEquals(childExit, value(HOUSEHOLD, "family", KAYA_TAREHE_YA_KUFUNGWA));
+    }
+
+    @Test
+    public void sameDayUndoSurvivesReplayAndDoesNotSuppressADifferentExit() throws Exception {
+        household("ndiyo");
+        org.joda.time.LocalDate today = org.joda.time.LocalDate.now();
+        MotherMentorMotherClosure graduated = MotherMentorMotherClosure.active()
+                .advance(VisitOutcome.GRADUATED, today.toString());
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", graduated);
+        String key = MotherMentorHouseholdClosureUndo.undoKey(db, "family", today);
+        assertFalse(key.isEmpty());
+        assertEquals("", MotherMentorHouseholdClosureUndo.undoKey(db, "family", today.plusDays(1)));
+
+        JSONObject undo = new JSONObject().put("eventDate", today.toString())
+                .put("obs", observations(HOUSEHOLD_ENROLLMENT_ID,
+                        MotherMentorMotherCascadeRepository.householdEpisode(db, "family"),
+                        "kaya_auto_closure_key", key));
+        data.execSQL("INSERT INTO event VALUES (?,?,?,?)", new Object[] {"family",
+                Constants.EVENT_TYPE.MAMA_KINARA_HOUSEHOLD_CLOSURE_UNDO, "undo", undo.toString()});
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", graduated);
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", graduated);
+        assertEquals("0", value(HOUSEHOLD, "family", IS_CLOSED));
+
+        MotherMentorMotherClosure moved = MotherMentorMotherClosure.active()
+                .advance(VisitOutcome.MOVED_AREA, today.toString());
+        MotherMentorMotherCascadeRepository.rebuild(db, "mother", moved);
+        assertEquals("1", value(HOUSEHOLD, "family", IS_CLOSED));
+    }
+
+    @Test
     public void stoppedBreastfeedingPastEighteenMonthsDoesNotBlockEitherDeathCascade() {
         mother("other", "breast_feeding", org.joda.time.LocalDate.now()
                 .minusMonths(18).minusDays(1).toString(), 0);
@@ -411,7 +489,9 @@ public class MotherMentorMotherCascadeRepositoryTest {
     }
     private void iit(String day, int closed) { data.execSQL("INSERT INTO " + IIT + " VALUES ('mother',?,?,1)", new Object[] {closed, day}); }
     private void child(String id, String dob, boolean real) {
-        data.execSQL("INSERT INTO " + CHILD + " VALUES (?, 'mother',?,0,'2026-10-01',1)", new Object[] {id, dob});
+        data.execSQL("INSERT INTO " + CHILD + " (base_entity_id, mother_base_entity_id, child_dob,"
+                + " is_closed, event_date, last_interacted_with) VALUES (?, 'mother',?,0,'2026-10-01',1)",
+                new Object[] {id, dob});
         if (real) data.execSQL("INSERT INTO ec_family_member VALUES (?, 'family',?,0,'','')", new Object[] {id, dob});
     }
     private void household(String consent) { data.execSQL("INSERT INTO " + HOUSEHOLD + " VALUES ('family',?,0,'2026-10-01',1,'active','','',0,0,0)", new Object[] {consent}); }

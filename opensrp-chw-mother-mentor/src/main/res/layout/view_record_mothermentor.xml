@@ -253,6 +253,12 @@
             android:padding="16dp"
             android:textColor="@android:color/darker_gray"
             android:visibility="gone" />
+        <Button
+            android:id="@+id/mothermentor_undo_household_closure"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mothermentor_undo_household_closure"
+            android:visibility="gone" />
         <org.smartregister.view.customcontrols.CustomFontTextView
             android:id="@+id/textview_record_mother_mentor_start_date"
             style="@style/CustomFontTextViewStyle.ListView.Normal.MultipleLines"

@@ -9,6 +9,7 @@ public final class MotherMentorHouseholdClosure {
     public static final String LOST_TO_FOLLOW_UP = "lost_to_follow_up";
     public static final String MOTHER_DECEASED = "mother_deceased";
     public static final String CHILD_DECEASED = "child_deceased";
+    public static final String LAST_MEMBER_EXITED = "last_member_exited";
 
     private final String status;
     private final String closedDate;
@@ -31,11 +32,16 @@ public final class MotherMentorHouseholdClosure {
 
     /** Member exit projections use the same closed state without fabricating household visits. */
     public MotherMentorHouseholdClosure withMemberClosure(String reason, String date) {
-        if (!MOTHER_DECEASED.equals(reason) && !CHILD_DECEASED.equals(reason)) {
+        if (!isMemberClosure(reason)) {
             throw new IllegalArgumentException("Unsupported member closure");
         }
         return new MotherMentorHouseholdClosure(reason, date,
                 houseClosedCount, otherCount, notFoundCount);
+    }
+
+    public static boolean isMemberClosure(String reason) {
+        return MOTHER_DECEASED.equals(reason) || CHILD_DECEASED.equals(reason)
+                || LAST_MEMBER_EXITED.equals(reason);
     }
 
     /** Apply valid finalized evidence; the caller orders and deduplicates this enrolment's visits. */

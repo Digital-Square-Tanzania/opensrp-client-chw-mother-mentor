@@ -17,4 +17,7 @@
     <string name="mothermentor_household_closure_lost_to_follow_up">Lost to Follow-up</string>
     <string name="mothermentor_household_closure_mother_deceased">Mother deceased; household no longer eligible</string>
     <string name="mothermentor_household_closure_child_deceased">Child deceased; no eligible mother remains</string>
+    <string name="mothermentor_household_closure_last_member_exited">No active mother or child remains</string>
+    <string name="mothermentor_undo_household_closure">Undo automatic closure</string>
+    <string name="mothermentor_undo_household_closure_failed">Could not reopen this household</string>
 </resources>

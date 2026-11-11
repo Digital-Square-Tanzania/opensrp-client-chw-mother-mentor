@@ -9,6 +9,9 @@ public final class MotherMentorHouseholdClosureLabels {
     private MotherMentorHouseholdClosureLabels() {}
 
     public static String reason(Context context, String status) {
+        if (MotherMentorHouseholdClosure.LAST_MEMBER_EXITED.equals(status)) {
+            return context.getString(R.string.mothermentor_household_closure_last_member_exited);
+        }
         if (MotherMentorHouseholdClosure.MOTHER_DECEASED.equals(status)) {
             return context.getString(R.string.mothermentor_household_closure_mother_deceased);
         }

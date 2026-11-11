@@ -12,6 +12,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
@@ -729,6 +730,7 @@ public class MotherMentorDao extends AbstractDao {
                             + DBConstants.KEY.IS_CLOSED + ", 0) <> 1",
                     new String[] {baseEntityId});
         }
+        MotherMentorHouseholdClosureRepository.rebuildForMemberDeath(database, baseEntityId);
     }
 
     private static ClientDeath findClientDeath(String baseEntityId) {

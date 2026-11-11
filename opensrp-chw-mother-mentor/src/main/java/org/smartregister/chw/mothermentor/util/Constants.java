@@ -33,6 +33,7 @@ public interface Constants {
         String MOTHERMENTOR_CONTACTS = "MotherMentor Contact Registration";
         String RECORD_LEPROSY_TREATMENT_START_DATE = "Record MotherMentor Treatment Start Date";
         String MAMA_KINARA_HOUSEHOLD_ENROLMENT = "mama_kinara_household_enrolment";
+        String MAMA_KINARA_HOUSEHOLD_CLOSURE_UNDO = "Mama Kinara Household Closure Undo";
         String MOTHER_MENTOR_ENROLL_IIT = "Mother Mentor Enroll IIT";
         String MOTHER_MENTOR_ENROLL_PARTNER = "Mother Mentor Enroll Partner";
         String MOTHER_MENTOR_ENROLL_CHILD_EID = "Mother Mentor Enroll Child Eid";

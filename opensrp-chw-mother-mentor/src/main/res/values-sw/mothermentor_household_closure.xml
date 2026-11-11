@@ -16,4 +16,7 @@
     <string name="mothermentor_household_closure_lost_to_follow_up">Lost to Follow-up (Kaya)</string>
     <string name="mothermentor_household_closure_mother_deceased">Mama amefariki; kaya haistahili kuendelea</string>
     <string name="mothermentor_household_closure_child_deceased">Mtoto amefariki; hakuna Mama mwingine anayestahili</string>
+    <string name="mothermentor_household_closure_last_member_exited">Hakuna mama au mtoto anayeendelea na huduma</string>
+    <string name="mothermentor_undo_household_closure">Tendua kufungwa kwa kaya</string>
+    <string name="mothermentor_undo_household_closure_failed">Imeshindikana kufungua kaya tena</string>
 </resources>

@@ -19,17 +19,20 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 /** Cross-module closure ownership. Never rewrite enrollment/visit source events or shared people. */
 public final class MotherMentorMotherCascadeRepository {
@@ -60,6 +63,26 @@ public final class MotherMentorMotherCascadeRepository {
         if (ownTransaction) db.beginTransaction();
         try {
             rebuildTargets(db, motherId, state);
+            if (ownTransaction) db.setTransactionSuccessful();
+        } finally {
+            if (ownTransaction) db.endTransaction();
+        }
+    }
+
+    static void rebuildHousehold(SQLiteDatabase db, String family) {
+        if (StringUtils.isBlank(family) || !hasTable(db, LEDGER)) return;
+        boolean ownTransaction = !db.inTransaction();
+        if (ownTransaction) db.beginTransaction();
+        try {
+            Map<String, Desired> desired = new LinkedHashMap<>();
+            householdClaims(db, family, "", null, desired);
+            for (Owned item : householdOwnership(db, family)) {
+                item.claims.clear();
+                Desired wanted = desired.remove(item.target.key());
+                if (wanted != null) item.claims.addAll(wanted.claims);
+                reconcile(db, item);
+            }
+            applyNewClosures(db, desired);
             if (ownTransaction) db.setTransactionSuccessful();
         } finally {
             if (ownTransaction) db.endTransaction();
@@ -113,10 +136,14 @@ public final class MotherMentorMotherCascadeRepository {
             if (wanted != null) item.claims.addAll(wanted.claims);
             reconcile(db, item);
         }
+        applyNewClosures(db, desired);
+    }
+
+    private static void applyNewClosures(SQLiteDatabase db, Map<String, Desired> desired) {
         for (Desired item : desired.values()) {
             if (closed(item.target.values)) continue; // No ownership of pre-existing closures.
-            Owned itemOwned = new Owned(item.target, snapshot(item.target), snapshot(item.target), item.claims);
-            reconcile(db, itemOwned);
+            JSONObject current = snapshot(item.target);
+            reconcile(db, new Owned(item.target, current, current, item.claims));
         }
     }
 
@@ -155,18 +182,99 @@ public final class MotherMentorMotherCascadeRepository {
         for (Map<String, String> mother : mothers) {
             Map<String, String> person = row(db, MEMBERS, mother.get(BASE_ENTITY_ID));
             if (!closed(mother) && !closed(person) && !deceased(person)
-                    && eligible(mother, today)) return;
+                    && ("client".equals(mother.get(STATUS)) || eligible(mother, today))) return;
         }
+        Map<String, MotherMentorMotherClosure> motherExits = new HashMap<>();
+        List<Claim> exits = new ArrayList<>();
         for (Map<String, String> mother : mothers) {
             String id = mother.get(BASE_ENTITY_ID);
             MotherMentorMotherClosure exit = currentMother.equals(id) ? currentState
                     : MotherMentorMotherClosureRepository.getState(db, id, null);
-            if (exit == null || !(MotherMentorMotherClosure.DECEASED.equals(exit.getStatus())
-                    || MotherMentorMotherClosure.CHILD_DECEASED.equals(exit.getStatus()))) continue;
-            if (MotherMentorMotherClosure.DECEASED.equals(exit.getStatus()) && liveChild(db, id, mother)) continue;
+            if (exit == null || !exit.isClosed()) continue;
+            motherExits.put(id, exit);
             String episode = MotherMentorMotherVisitDao.getContext(db, id).getEnrollmentId();
-            if (!episode.isEmpty()) want(db, desired, HOUSEHOLD, family, new Claim(id, episode, exit));
+            if (!episode.isEmpty()) exits.add(new Claim(id, episode, exit));
         }
+        Set<String> mothersWithLinkedChildren = new HashSet<>();
+        for (Map<String, String> child : familyChildren(db, family)) {
+            String childId = child.get(BASE_ENTITY_ID);
+            String motherId = child.get(MOTHER_BASE_ENTITY_ID);
+            mothersWithLinkedChildren.add(motherId);
+            Map<String, String> person = row(db, MEMBERS, childId);
+            MotherMentorMotherClosure motherExit = motherExits.get(motherId);
+            boolean closingWithMother = closesWithMother(db, childId, motherId, motherExit);
+            if (!closed(child) && !deceased(person) && !closingWithMother) return;
+            if (closingWithMother && (!closed(child)
+                    || MotherMentorChildEidExit.MOTHER_VISIT.equals(child.get(MTOTO_EXIT_SOURCE)))) continue;
+            Target childTarget = target(db, CHILD, childId);
+            if (childTarget == null || childTarget.episode.isEmpty()) continue;
+            LocalDate date = MotherMentorMotherPregnancyUtils.parseDate(StringUtils.defaultIfBlank(
+                    child.get(MTOTO_TAREHE_YA_KUFUNGWA), person.get(DATE_DIED)));
+            if (date != null && !date.isAfter(today)) {
+                exits.add(new Claim(childId, childTarget.episode,
+                        MotherMentorHouseholdClosure.LAST_MEMBER_EXITED, date.toString(), ""));
+            }
+        }
+        for (Map<String, String> mother : mothers) {
+            String id = mother.get(BASE_ENTITY_ID);
+            MotherMentorMotherClosure exit = motherExits.get(id);
+            if (exit != null && MotherMentorMotherClosure.DECEASED.equals(exit.getStatus())
+                    && !mothersWithLinkedChildren.contains(id) && hasUnlinkedLivingChild(db, id, mother)) return;
+        }
+        for (Claim exit : exits) want(db, desired, HOUSEHOLD, family, exit);
+        Desired pending = desired.get(household.key());
+        if (pending != null && MotherMentorHouseholdClosureUndo.wasUndone(db, household.id,
+                household.episode, closureKey(pending.claims), lastClaim(pending.claims).date)) {
+            desired.remove(household.key());
+        }
+    }
+
+    private static List<Map<String, String>> familyChildren(SQLiteDatabase db, String family) {
+        List<Map<String, String>> children = new ArrayList<>();
+        if (!columns(db, CHILD).containsAll(Arrays.asList(BASE_ENTITY_ID, MOTHER_BASE_ENTITY_ID))
+                || !columns(db, MEMBERS).containsAll(Arrays.asList(BASE_ENTITY_ID, RELATIONAL_ID))) return children;
+        try (Cursor rows = db.rawQuery("SELECT child.* FROM " + CHILD + " child INNER JOIN " + MEMBERS
+                + " member ON member." + BASE_ENTITY_ID + " = child." + BASE_ENTITY_ID
+                + " WHERE member." + RELATIONAL_ID + " = ?", new String[] {family})) {
+            while (rows.moveToNext()) children.add(values(rows));
+        }
+        return children;
+    }
+
+    private static boolean closesWithMother(SQLiteDatabase db, String childId, String motherId,
+            MotherMentorMotherClosure exit) {
+        if (exit == null || MotherMentorChildEidExit.fromMotherStatus(exit.getStatus()) == null) return false;
+        LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(
+                MotherMentorMotherVisitDao.getContext(db, motherId).getChildDob());
+        return dob != null && childId.equals(MotherMentorMotherChildRepository.resolveChild(db, motherId, dob));
+    }
+
+    static String currentHouseholdClosureKey(SQLiteDatabase db, String family) {
+        Target current = target(db, HOUSEHOLD, family);
+        if (current == null || !hasTable(db, LEDGER)) return "";
+        for (Owned owned : householdOwnership(db, family)) {
+            if (owned.target.key().equals(current.key()) && !owned.claims.isEmpty()
+                    && same(snapshot(current), owned.applied)) return closureKey(owned.claims);
+        }
+        return "";
+    }
+
+    static String householdEpisode(SQLiteDatabase db, String family) {
+        Target current = target(db, HOUSEHOLD, family);
+        return current == null ? "" : current.episode;
+    }
+
+    private static Claim lastClaim(List<Claim> claims) {
+        return Collections.max(claims, Comparator.comparing((Claim claim) -> claim.date)
+                .thenComparing(claim -> claim.mother).thenComparing(claim -> claim.episode));
+    }
+
+    private static String closureKey(List<Claim> claims) {
+        List<String> evidence = new ArrayList<>();
+        for (Claim claim : claims) evidence.add(claim.json().toString());
+        Collections.sort(evidence);
+        return UUID.nameUUIDFromBytes(new JSONArray(evidence).toString()
+                .getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     private static boolean eligible(Map<String, String> mother, LocalDate day) {
@@ -182,24 +290,10 @@ public final class MotherMentorMotherCascadeRepository {
                 || dob != null && !dob.isAfter(day) && !dob.plusMonths(18).isBefore(day);
     }
 
-    private static boolean liveChild(SQLiteDatabase db, String motherId, Map<String, String> mother) {
+    private static boolean hasUnlinkedLivingChild(SQLiteDatabase db, String motherId, Map<String, String> mother) {
         String rawDob = StringUtils.trimToEmpty(mother.get(CHILD_DOB));
         LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(rawDob);
         boolean childDeceased = "deceased".equals(mother.get(MAMA_CHILD_STATUS));
-        String currentChild = dob == null ? "" : MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
-        if (columns(db, CHILD).containsAll(Arrays.asList(MOTHER_BASE_ENTITY_ID, BASE_ENTITY_ID, CHILD_DOB))) {
-            try (Cursor children = db.rawQuery("SELECT " + BASE_ENTITY_ID + ", " + CHILD_DOB
-                    + " FROM " + CHILD + " WHERE " + MOTHER_BASE_ENTITY_ID + " = ?", new String[] {motherId})) {
-                while (children.moveToNext()) {
-                    String id = children.getString(0);
-                    if (childDeceased && id.equals(currentChild)) continue;
-                    LocalDate linkedDob = MotherMentorMotherPregnancyUtils.parseDate(children.getString(1));
-                    boolean youngOrUnknown = linkedDob == null || linkedDob.isAfter(LocalDate.now())
-                            || !linkedDob.plusMonths(18).isBefore(LocalDate.now());
-                    if (youngOrUnknown && !deceased(row(db, MEMBERS, id))) return true;
-                }
-            }
-        }
         if (rawDob.isEmpty() || childDeceased) return false;
         if (dob == null || dob.isAfter(LocalDate.now())) return true; // Unknown is not evidence of death.
         if (dob.plusMonths(18).isBefore(LocalDate.now())) return false;
@@ -310,12 +404,13 @@ public final class MotherMentorMotherCascadeRepository {
                 }
             }
         } else if (HOUSEHOLD.equals(current.table)) {
-            Claim first = owned.claims.get(0);
-            String reason = MotherMentorMotherClosure.DECEASED.equals(first.status)
-                    ? MotherMentorHouseholdClosure.MOTHER_DECEASED : MotherMentorHouseholdClosure.CHILD_DECEASED;
+            Claim last = lastClaim(owned.claims);
+            String reason = MotherMentorHouseholdClosure.LAST_MEMBER_EXITED;
+            if (MotherMentorMotherClosure.DECEASED.equals(last.status)) reason = MotherMentorHouseholdClosure.MOTHER_DECEASED;
+            if (MotherMentorMotherClosure.CHILD_DECEASED.equals(last.status)) reason = MotherMentorHouseholdClosure.CHILD_DECEASED;
             MotherMentorHouseholdClosure own = MotherMentorHouseholdClosureRepository.getVisitState(db, current.id, null);
-            MotherMentorHouseholdClosure state = own.isClosed() && own.getClosedDate().compareTo(first.date) <= 0
-                    ? own : own.withMemberClosure(reason, first.date);
+            MotherMentorHouseholdClosure state = own.isClosed() && own.getClosedDate().compareTo(last.date) <= 0
+                    ? own : own.withMemberClosure(reason, last.date);
             JSONObject closure = householdValues(state);
             for (java.util.Iterator<String> keys = closure.keys(); keys.hasNext();) {
                 String key = keys.next();
@@ -382,8 +477,17 @@ public final class MotherMentorMotherCascadeRepository {
     }
 
     private static List<Owned> ownership(SQLiteDatabase db) {
+        return ownership(db, "", new String[0]);
+    }
+
+    private static List<Owned> householdOwnership(SQLiteDatabase db, String family) {
+        return ownership(db, " WHERE " + MAMA_CASCADE_TARGET_TABLE + " = ? AND "
+                + MAMA_CASCADE_TARGET_ID + " = ?", new String[] {HOUSEHOLD, family});
+    }
+
+    private static List<Owned> ownership(SQLiteDatabase db, String selection, String[] arguments) {
         List<Owned> result = new ArrayList<>();
-        try (Cursor rows = db.rawQuery("SELECT * FROM " + LEDGER, new String[0])) {
+        try (Cursor rows = db.rawQuery("SELECT * FROM " + LEDGER + selection, arguments)) {
             while (rows.moveToNext()) {
                 try {
                     String table = text(rows, MAMA_CASCADE_TARGET_TABLE), id = text(rows, MAMA_CASCADE_TARGET_ID);
@@ -491,7 +595,11 @@ public final class MotherMentorMotherCascadeRepository {
     private static final class Claim {
         final String mother, episode, status, date, facility;
         Claim(String mother, String episode, MotherMentorMotherClosure state) {
-            this.mother = mother; this.episode = episode; status = state.getStatus(); date = state.getClosedDate(); facility = state.getNewFacility();
+            this(mother, episode, state.getStatus(), state.getClosedDate(), state.getNewFacility());
+        }
+        Claim(String mother, String episode, String status, String date, String facility) {
+            this.mother = mother; this.episode = episode; this.status = status; this.date = date;
+            this.facility = facility;
         }
         Claim(JSONObject values) {
             mother = values.optString(BASE_ENTITY_ID); episode = values.optString(MAMA_ENROLLMENT_ID);
