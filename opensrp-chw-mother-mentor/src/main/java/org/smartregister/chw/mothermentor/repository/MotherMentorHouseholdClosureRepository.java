@@ -83,8 +83,7 @@ public final class MotherMentorHouseholdClosureRepository {
         Map<String, String> enrollment = enrollment(database, householdId);
         String memberReason = value(enrollment, DBConstants.KEY.KAYA_STATUS);
         String memberDate = value(enrollment, DBConstants.KEY.KAYA_TAREHE_YA_KUFUNGWA);
-        boolean memberClosed = MotherMentorHouseholdClosure.MOTHER_DECEASED.equals(memberReason)
-                || MotherMentorHouseholdClosure.CHILD_DECEASED.equals(memberReason);
+        boolean memberClosed = MotherMentorHouseholdClosure.isMemberClosure(memberReason);
         if (memberClosed && memberDate.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")
                 && MotherMentorDeceasedVisitUtils.parseDate(memberDate) != null
                 && memberDate.compareTo(iso(new Date())) <= 0
@@ -93,6 +92,28 @@ public final class MotherMentorHouseholdClosureRepository {
             return state.withMemberClosure(memberReason, memberDate);
         }
         return state;
+    }
+
+    /** Replay existing household enrollments when member-exit closure is enabled. */
+    public static void rebuildMemberExits(SQLiteDatabase database) {
+        if (!columns(database, ENROLLMENTS).containsAll(CLOSURE_COLUMNS)) return;
+        Set<String> households = new LinkedHashSet<>();
+        try (Cursor rows = database.rawQuery("SELECT DISTINCT " + DBConstants.KEY.BASE_ENTITY_ID
+                + " FROM " + ENROLLMENTS + " WHERE " + DBConstants.KEY.CONSENT + " = ?",
+                new String[] {HouseholdEnrolmentEventProcessor.CONSENT_YES})) {
+            while (rows.moveToNext()) households.add(rows.getString(0));
+        }
+        for (String household : households) rebuildMemberExit(database, household);
+    }
+
+    public static void rebuildMemberExit(SQLiteDatabase database, String householdId) {
+        MotherMentorMotherCascadeRepository.rebuildHousehold(database, householdId);
+    }
+
+    public static void rebuildForMemberDeath(SQLiteDatabase database, String memberId) {
+        String householdId = MotherMentorMotherCascadeRepository.row(database, "ec_family_member", memberId)
+                .get(DBConstants.KEY.RELATIONAL_ID);
+        rebuildMemberExit(database, householdId);
     }
 
     /** Own visit evidence only, used when a member projection is corrected or removed. */
@@ -206,8 +227,7 @@ public final class MotherMentorHouseholdClosureRepository {
                 || MotherMentorHouseholdClosure.HOUSE_CLOSED_3.equals(status)
                 || MotherMentorHouseholdClosure.OTHER_3.equals(status)
                 || MotherMentorHouseholdClosure.LOST_TO_FOLLOW_UP.equals(status)
-                || MotherMentorHouseholdClosure.MOTHER_DECEASED.equals(status)
-                || MotherMentorHouseholdClosure.CHILD_DECEASED.equals(status);
+                || MotherMentorHouseholdClosure.isMemberClosure(status);
     }
 
     private static List<Evidence> evidence(SQLiteDatabase database, String householdId,

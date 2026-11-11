@@ -17,6 +17,7 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.repository.BaseRepository;
 
 import timber.log.Timber;
@@ -370,6 +371,7 @@ public class VisitRepository extends BaseRepository {
             }
             MotherMentorMotherChildRepository.rebuildForChild(database, existing.getBaseEntityId());
             MotherMentorChildEidRepository.rebuild(database, existing.getBaseEntityId());
+            MotherMentorMotherClosureRepository.rebuildForChild(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
@@ -495,8 +497,10 @@ public class VisitRepository extends BaseRepository {
             }
             MotherMentorChildEidRepository.rebuildForVisit(database, removed);
             MotherMentorIitRepository.rebuildForVisit(database, removed);
-            for (String motherId : affectedMothers) {
-                MotherMentorMotherClosureRepository.rebuild(database, motherId);
+            if (removed != null && MotherMentorFollowUpType.CHILD_EID.getEventType().equals(removed.getVisitType())) {
+                MotherMentorMotherClosureRepository.rebuildForChild(database, removed.getBaseEntityId());
+            } else {
+                for (String motherId : affectedMothers) MotherMentorMotherClosureRepository.rebuild(database, motherId);
             }
         } catch (Exception e) {
             Timber.e(e);

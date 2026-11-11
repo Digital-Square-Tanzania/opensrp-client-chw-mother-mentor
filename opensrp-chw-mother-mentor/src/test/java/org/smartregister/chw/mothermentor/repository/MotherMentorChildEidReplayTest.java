@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import android.app.Application;
 import android.content.ContentValues;
+import android.database.MatrixCursor;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -23,7 +24,7 @@ import java.util.Date;
 public class MotherMentorChildEidReplayTest {
     @Test
     public void newerDatedChildCorrectionReplacesCanonicalEvidenceAndRebuildsMotherState() throws Exception {
-        SQLiteDatabase db = mock(SQLiteDatabase.class);
+        SQLiteDatabase db = databaseWithoutEnrollmentTables();
         VisitDetailsRepository details = mock(VisitDetailsRepository.class);
         Visit previous = visit("local", 10), incoming = visit("generated", 11);
         Date original = previous.getCreatedAt();
@@ -38,7 +39,7 @@ public class MotherMentorChildEidReplayTest {
 
     @Test
     public void identicalSynchronizedEvidenceFinalizesTheExistingLocalDraft() throws Exception {
-        SQLiteDatabase db = mock(SQLiteDatabase.class);
+        SQLiteDatabase db = databaseWithoutEnrollmentTables();
         Visit previous = visit("local", 10), incoming = visit("generated", 10);
         previous.setProcessed(false);
         new VisitRepository().refreshChildEidVisit(previous, incoming, db, mock(VisitDetailsRepository.class));
@@ -53,7 +54,7 @@ public class MotherMentorChildEidReplayTest {
     @Test
     public void olderUnversionedOrUnrelatedEventsCannotReplaceChildEvidence() throws Exception {
         for (long version : new long[] {0, 9}) {
-            SQLiteDatabase db = mock(SQLiteDatabase.class);
+            SQLiteDatabase db = databaseWithoutEnrollmentTables();
             Visit previous = visit("local", 10), incoming = visit("generated", version);
             new VisitRepository().refreshChildEidVisit(previous, incoming, db, mock(VisitDetailsRepository.class));
             verify(db, never()).update(anyString(), any(), anyString(), any());
@@ -63,6 +64,13 @@ public class MotherMentorChildEidReplayTest {
         SQLiteDatabase db = mock(SQLiteDatabase.class);
         new VisitRepository().refreshChildEidVisit(unrelated, visit("generated", 11), db, mock(VisitDetailsRepository.class));
         verifyNoInteractions(db);
+    }
+
+    private SQLiteDatabase databaseWithoutEnrollmentTables() {
+        SQLiteDatabase db = mock(SQLiteDatabase.class);
+        when(db.rawQuery(startsWith("PRAGMA table_info("), any(String[].class)))
+                .thenAnswer(invocation -> new MatrixCursor(new String[] {"name"}));
+        return db;
     }
 
     private Visit visit(String id, long version) throws Exception {

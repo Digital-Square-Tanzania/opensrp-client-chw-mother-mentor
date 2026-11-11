@@ -328,7 +328,14 @@ public final class MotherMentorMotherClosureRepository {
     }
 
     public static void rebuildForChild(SQLiteDatabase db, String childId) {
-        for (String motherId : linkedMothers(db, childId)) rebuild(db, motherId);
+        Set<String> mothers = linkedMothers(db, childId);
+        for (String motherId : mothers) rebuild(db, motherId);
+        String family = MotherMentorMotherCascadeRepository.row(db, "ec_family_member", childId)
+                .get(RELATIONAL_ID);
+        if (StringUtils.isNotBlank(family) && mothers.stream().noneMatch(motherId ->
+                family.equals(MotherMentorMotherVisitDao.getContext(db, motherId).getFamilyId()))) {
+            MotherMentorHouseholdClosureRepository.rebuildMemberExit(db, family);
+        }
     }
 
     /** A replayed household enrollment must retain closure from its current enrolled mother. */
@@ -344,7 +351,8 @@ public final class MotherMentorMotherClosureRepository {
                 + RELATIONAL_ID + " = ?", new String[] {householdId})) {
             while (cursor.moveToNext()) mothers.add(cursor.getString(0));
         }
-        for (String motherId : mothers) rebuild(db, motherId);
+        if (mothers.isEmpty()) MotherMentorHouseholdClosureRepository.rebuildMemberExit(db, householdId);
+        else for (String motherId : mothers) rebuild(db, motherId);
     }
 
     private static Set<String> linkedMothers(SQLiteDatabase db, String childId) {
