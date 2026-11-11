@@ -57,7 +57,15 @@ public final class MotherMentorMotherChildUi {
             boolean path = MotherMentorMotherChildUtils.applies(values);
             set(form, root, DBConstants.KEY.MAMA_CHILD_PATH, Boolean.toString(path));
             LocalDate dob = MotherMentorMotherChildUtils.birth(values);
-            if (path) validateDates(activity, form, root, dob, assessment);
+            if (path) {
+                JSONObject weaning = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA);
+                if (weaning != null && weaning.optBoolean("read_only")
+                        && "not_breastfeeding".equals(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))) {
+                    set(form, root, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
+                            values.getOrDefault(DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, ""));
+                }
+                validateDates(activity, form, root, dob, assessment);
+            }
             values = MotherMentorMotherChildUtils.values(form);
             List<Stage> due = path && "alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))
                     ? MotherMentorMotherChildUtils.due(values, assessment) : new ArrayList<>();
