@@ -31,8 +31,8 @@ public class MotherMentorClientRegisterDaoTest {
     private static final String TABLE = "ec_mothermentor_enrollment";
     private static final String SERVICE = "MotherMentor Services";
     private static final String CONDITION =
-            TABLE
-                    + ".is_closed = 0 AND ("
+            MotherMentorDao.getActiveClientCondition(TABLE)
+                    + " AND ("
                     + TABLE
                     + ".status IS NULL OR "
                     + TABLE
@@ -51,11 +51,12 @@ public class MotherMentorClientRegisterDaoTest {
                 "CREATE TABLE ec_mothermentor_enrollment (id INTEGER PRIMARY KEY, base_entity_id"
                         + " TEXT, is_closed INTEGER DEFAULT 0, status TEXT, screening_status TEXT,"
                         + " ctc_number TEXT, pregnancy_status TEXT, child_dob TEXT,"
-                        + " last_interacted_with INTEGER DEFAULT 0)");
+                        + " last_interacted_with INTEGER DEFAULT 0, mama_status TEXT,"
+                        + " mama_tarehe_ya_kufungwa TEXT, mama_sababu_ya_kufungwa TEXT)");
         database.execSQL(
                 "CREATE TABLE ec_family_member (base_entity_id TEXT, relational_id TEXT, first_name"
                     + " TEXT, middle_name TEXT, last_name TEXT, dob TEXT, gender TEXT, unique_id"
-                    + " TEXT, phone_number TEXT, other_phone_number TEXT)");
+                    + " TEXT, phone_number TEXT, other_phone_number TEXT, dod TEXT)");
         database.execSQL(
                 "CREATE TABLE ec_family (base_entity_id TEXT, primary_caregiver TEXT, family_head"
                         + " TEXT, first_name TEXT, village_town TEXT)");
@@ -78,7 +79,6 @@ public class MotherMentorClientRegisterDaoTest {
 
     @Test
     public void closedFilterBypassesTheActiveConditionButPreservesPrimaryCohortAndCounts() {
-        addClosureColumns();
         client("active", "Asha", "pregnant", "1", "household");
         client("closed-a", "Neema", "pregnant", "2", null);
         client("closed-b", "Rehema", "not_pregnant", "3", "household");
@@ -106,7 +106,6 @@ public class MotherMentorClientRegisterDaoTest {
 
     @Test
     public void closedFilterSupportsSearchAndCategoryWhileTurningFiltersOffRestoresActiveRows() {
-        addClosureColumns();
         client("active", "Asha", "pregnant", "1", "household");
         client("closed-a", "Neema", "pregnant", "2", null);
         client("closed-b", "Rehema", "not_pregnant", "3", "household");
@@ -125,10 +124,35 @@ public class MotherMentorClientRegisterDaoTest {
         }
     }
 
-    private void addClosureColumns() {
-        for (String field : new String[] {DBConstants.KEY.MAMA_STATUS,
-                DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
-            database.execSQL("ALTER TABLE " + TABLE + " ADD COLUMN " + field + " TEXT");
+    @Test
+    public void sameDayExitsRemainSearchableAndMarkedClosedThroughTheLocalDay() {
+        client("active", "Asha", "pregnant", "1", "household");
+        client("deceased", "Neema", "pregnant", "2", null);
+        client("moved", "Rehema", "not_pregnant", "3", "household");
+        client("screened", "Screened", "pregnant", "4", "household");
+        database.execSQL("UPDATE " + TABLE + " SET is_closed = 1,"
+                + " mama_tarehe_ya_kufungwa = date('now', 'localtime') WHERE base_entity_id <> 'active'");
+        database.execSQL("UPDATE " + TABLE + " SET screening_status = '-' WHERE base_entity_id = 'screened'");
+        database.execSQL("UPDATE ec_family_member SET dod = date('now', 'localtime', '-3 days')"
+                + " WHERE base_entity_id = 'deceased'");
+
+        assertIdsAndCount("", false, false, false, false, "active", "deceased", "moved");
+        assertIdsAndCount("Neema", true, true, false, false, "deceased");
+        try (Cursor page = database.rawQuery(MotherMentorClientRegisterDao.selectClientsPage(
+                CONDITION, "", false, false, false, false, 1, 1), null)) {
+            assertEquals(1, page.getCount());
+            page.moveToFirst();
+            assertEquals("deceased", string(page, DBConstants.KEY.BASE_ENTITY_ID));
+            assertEquals("1", string(page, DBConstants.KEY.IS_CLOSED));
+        }
+
+        database.execSQL("UPDATE " + TABLE + " SET mama_tarehe_ya_kufungwa ="
+                + " date('now', 'localtime', '-1 day') WHERE is_closed = 1");
+
+        assertIdsAndCount("", false, false, false, false, "active");
+        try (Cursor rows = database.rawQuery(MotherMentorClientRegisterDao.selectClients(
+                CONDITION, "Neema", true, false, false, false, true), null)) {
+            assertEquals(1, rows.getCount());
         }
     }
 

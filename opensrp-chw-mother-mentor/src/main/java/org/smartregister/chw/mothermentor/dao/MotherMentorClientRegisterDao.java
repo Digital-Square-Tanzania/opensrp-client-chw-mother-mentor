@@ -50,8 +50,14 @@ public final class MotherMentorClientRegisterDao {
             if (underTwo) categories.add(underTwoCondition());
             conditions.add("(" + join(" OR ", categories) + ")");
         }
+        String condition = showClosed ? closedClientCondition() : mainCondition;
+        if (!showClosed && condition != null && !condition.trim().isEmpty()) {
+            String closedDate = normalizedDate(ENROLLMENT + "." + DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA);
+            condition = "((" + condition + ") OR (" + closedClientCondition()
+                    + " AND " + closedDate + " = " + TODAY + "))";
+        }
         return "SELECT * FROM ("
-                + clientProjection(showClosed ? closedClientCondition() : mainCondition, showClosed)
+                + clientProjection(condition)
                 + ") mothermentor_clients"
                 + (conditions.isEmpty() ? "" : " WHERE " + join(" AND ", conditions));
     }
@@ -121,7 +127,7 @@ public final class MotherMentorClientRegisterDao {
                 + ") mothermentor_client_count";
     }
 
-    private static String clientProjection(String mainCondition, boolean closed) {
+    private static String clientProjection(String mainCondition) {
         SmartRegisterQueryBuilder query = new SmartRegisterQueryBuilder();
         List<String> columns = new ArrayList<>();
         columns.add(ENROLLMENT + "." + DBConstants.KEY.BASE_ENTITY_ID);
@@ -162,11 +168,9 @@ public final class MotherMentorClientRegisterDao {
         columns.add(memberName("T2") + " AS " + DBConstants.KEY.FAMILY_HEAD);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CTC_NUMBER);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CHILD_DOB);
-        if (closed) {
-            for (String field : new String[] {DBConstants.KEY.IS_CLOSED, DBConstants.KEY.MAMA_STATUS,
-                    DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
-                columns.add(ENROLLMENT + "." + field);
-            }
+        for (String field : new String[] {DBConstants.KEY.IS_CLOSED, DBConstants.KEY.MAMA_STATUS,
+                DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
+            columns.add(ENROLLMENT + "." + field);
         }
         columns.add(currentStatus() + " AS " + CURRENT_STATUS);
         columns.add(completedVisits() + " AS " + COMPLETED_VISITS);
