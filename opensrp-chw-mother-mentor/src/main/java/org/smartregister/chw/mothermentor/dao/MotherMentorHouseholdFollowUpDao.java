@@ -3,6 +3,7 @@ package org.smartregister.chw.mothermentor.dao;
 import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 
 /** Household register conditions and closure projection columns, shared by list and count queries. */
 public final class MotherMentorHouseholdFollowUpDao {
@@ -15,7 +16,8 @@ public final class MotherMentorHouseholdFollowUpDao {
                 ? source + "." + DBConstants.KEY.IS_CLOSED + " = 1 AND " + source + "."
                         + DBConstants.KEY.KAYA_STATUS
                         + " IN ('moved', 'house_closed_3', 'other_3', 'lost_to_follow_up',"
-                        + " 'mother_deceased', 'child_deceased')"
+                        + " 'mother_deceased', 'child_deceased', '"
+                        + MotherMentorHouseholdClosure.LAST_MEMBER_EXITED + "')"
                 : source + "." + DBConstants.KEY.IS_CLOSED + " = 0 AND " + source + "."
                         + DBConstants.KEY.CONSENT + " = 'ndiyo' AND coalesce(nullif(" + source + "."
                         + DBConstants.KEY.KAYA_STATUS + ", ''), 'active') = 'active'";

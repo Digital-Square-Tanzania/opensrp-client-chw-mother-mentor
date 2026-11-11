@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +43,12 @@ public class MotherMentorHouseholdFollowUpDaoTest {
         household("archived-family", 1, 1, "ndiyo", "house_closed_3");
         household("declined-later", 0, 1, "hapana", "other_3");
         household("unrelated-archive", 0, 1, "ndiyo", "active");
+        household("auto-closed", 0, 1, "ndiyo", MotherMentorHouseholdClosure.LAST_MEMBER_EXITED);
         assertEquals(Arrays.asList("active", "legacy"), rows(false));
-        assertEquals(Arrays.asList("archived-family", "declined-later", "moved"), rows(true));
+        assertEquals(Arrays.asList("archived-family", "auto-closed", "declined-later", "moved"), rows(true));
         assertEquals("2", scalar("SELECT count(*) FROM ec_family WHERE "
                 + MotherMentorHouseholdFollowUpDao.enrollmentCondition("ec_family", false)));
-        assertEquals("3", scalar("SELECT count(*) FROM ec_family WHERE "
+        assertEquals("4", scalar("SELECT count(*) FROM ec_family WHERE "
                 + MotherMentorHouseholdFollowUpDao.enrollmentCondition("ec_family", true)));
     }
 
