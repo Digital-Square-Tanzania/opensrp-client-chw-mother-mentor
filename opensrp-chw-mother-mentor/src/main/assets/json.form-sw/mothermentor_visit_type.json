@@ -463,30 +463,6 @@
         }
       },
       {
-        "key": "mama_delivery_edit_note",
-        "type": "toaster_notes",
-        "text": "Inaweza kuhaririwa baadaye kama tarehe ilikosewa.",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "mama_delivery_schedule_note",
-        "type": "toaster_notes",
-        "text": "Kuhifadhi tarehe ya kujifungua kutaanzisha ratiba ya vipimo vya HEI vya mtoto. Uandikishaji wa mtoto kwenye ufuatiliaji wa EID unafanywa kando.",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "mama_child_path",
         "type": "hidden",
         "openmrs_entity_parent": "",

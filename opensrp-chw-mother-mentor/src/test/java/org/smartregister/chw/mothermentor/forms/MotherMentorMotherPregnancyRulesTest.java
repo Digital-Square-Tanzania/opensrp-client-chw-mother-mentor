@@ -29,13 +29,14 @@ public class MotherMentorMotherPregnancyRulesTest {
     private static final String[] LANGUAGES = {"json.form", "json.form-sw"};
     private static final String[] CONDITIONAL_FIELDS = {VISIT_PREGNANCY_STATUS, MAMA_PREGNANCY_OUTCOME,
             MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT, MAMA_STILLBIRTH_DATE_INPUT,
-            MAMA_PREGNANCY_LOSS_DATE, MAMA_PREGNANCY_OUTCOME_OTHER, MAMA_ENROLLMENT_DELIVERY_DATE,
-            MAMA_DELIVERY_EDIT_NOTE, MAMA_DELIVERY_SCHEDULE_NOTE};
+            MAMA_PREGNANCY_LOSS_DATE, MAMA_PREGNANCY_OUTCOME_OTHER, MAMA_ENROLLMENT_DELIVERY_DATE};
 
     @Test
     public void sdkExtractsNamedDependenciesForEveryPregnancyRuleInBothLanguages() throws Exception {
         for (String language : LANGUAGES) {
             JSONObject form = foundPregnant(language);
+            assertEquals(0, FormUtils.getFieldFromForm(form, "mama_delivery_edit_note").length());
+            assertEquals(0, FormUtils.getFieldFromForm(form, "mama_delivery_schedule_note").length());
             JsonFormActivity activity = nativeActivity(form);
             for (String key : CONDITIONAL_FIELDS) {
                 Facts facts = nativeFacts(activity, form, key, "relevance");

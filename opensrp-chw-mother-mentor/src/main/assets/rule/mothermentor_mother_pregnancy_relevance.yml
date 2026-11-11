@@ -54,17 +54,3 @@ priority: 1
 condition: "((step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services')) && (step1_mama_enrollment_pregnancy_status == 'breast_feeding' || step1_mama_enrollment_pregnancy_status == 'not_pregnant'))"
 actions:
   - "isRelevant = true"
----
-name: step1_mama_delivery_edit_note
-description: Mother pregnancy branch
-priority: 1
-condition: "((((step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services')) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm'))"
-actions:
-  - "isRelevant = true"
----
-name: step1_mama_delivery_schedule_note
-description: Mother pregnancy branch
-priority: 1
-condition: "((((step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services')) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm'))"
-actions:
-  - "isRelevant = true"

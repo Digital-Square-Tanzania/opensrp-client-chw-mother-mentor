@@ -463,30 +463,6 @@
         }
       },
       {
-        "key": "mama_delivery_edit_note",
-        "type": "toaster_notes",
-        "text": "Can be edited later if the date was entered wrongly.",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "mama_delivery_schedule_note",
-        "type": "toaster_notes",
-        "text": "Saving the delivery date starts the child's HEI test schedule. EID follow-up enrollment is handled separately.",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "mama_child_path",
         "type": "hidden",
         "openmrs_entity_parent": "",
