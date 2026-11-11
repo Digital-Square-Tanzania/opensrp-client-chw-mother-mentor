@@ -8,18 +8,6 @@
     <TextView android:id="@+id/mothermentor_eid_profile_metadata" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:gravity="center"
         android:textColor="@color/mama_kinara_secondary" android:textSize="13sp" />
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="12dp" android:background="@drawable/mothermentor_eid_info_background"
-        android:orientation="vertical" android:padding="12dp">
-        <TextView android:id="@+id/mothermentor_eid_profile_age" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:textColor="@color/mama_kinara_text" android:textSize="14sp" />
-        <TextView android:id="@+id/mothermentor_eid_profile_referral" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:layout_marginTop="6dp"
-            android:textColor="@color/mama_kinara_text" android:textSize="14sp" />
-        <TextView android:id="@+id/mothermentor_eid_profile_last_test" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:layout_marginTop="6dp"
-            android:textColor="@color/mama_kinara_text" android:textSize="14sp" android:visibility="gone" />
-    </LinearLayout>
     <TextView android:id="@+id/mothermentor_eid_profile_reason_title" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:layout_marginTop="12dp"
         android:text="@string/mothermentor_eid_reason" android:textStyle="bold"

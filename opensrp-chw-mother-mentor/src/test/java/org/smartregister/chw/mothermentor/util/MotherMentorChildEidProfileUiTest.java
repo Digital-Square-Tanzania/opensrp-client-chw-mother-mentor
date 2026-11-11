@@ -18,6 +18,7 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,16 +36,14 @@ public class MotherMentorChildEidProfileUiTest {
         assertEquals("Baraka John, 19 months", text(activity, R.id.textview_name).getText().toString());
         assertEquals("Mother: Neema John · Kibiti · HEI-0412-C01",
                 text(activity, R.id.mothermentor_eid_profile_metadata).getText().toString());
-        assertEquals("Referral status: To be referred",
-                text(activity, R.id.mothermentor_eid_profile_referral).getText().toString());
         assertTrue(text(activity, R.id.mothermentor_eid_profile_reason).getText().toString().contains("04-10-2026"));
-        assertEquals(View.GONE, text(activity, R.id.mothermentor_eid_profile_last_test).getVisibility());
+        assertAbsent(activity, "Child age:", "Referral status:", "Last test:");
         assertEquals(View.GONE, text(activity, R.id.textview_gender).getVisibility());
     }
 
     @Test
     @Config(qualifiers = "sw")
-    public void swahiliProfileAndPillUseTheSameReferralAndStageLabels() {
+    public void swahiliProfileKeepsThePillAndOmitsTheExtraSummaryRows() {
         Activity activity = screen();
         MotherMentorChildEidRepository.State child = state(false);
         when(child.getReferralState()).thenReturn("referred");
@@ -53,10 +52,18 @@ public class MotherMentorChildEidProfileUiTest {
         new MotherMentorChildEidProfileUi().bind(activity, child, identity(), day, pill);
         assertEquals("Baraka John, Miezi 19", text(activity, R.id.textview_name).getText().toString());
         assertEquals("Amepewa rufaa", pill.getText().toString());
-        assertEquals("Hali ya rufaa: Amepewa rufaa: Miezi 9",
-                text(activity, R.id.mothermentor_eid_profile_referral).getText().toString());
+        assertAbsent(activity, "Umri wa mtoto:", "Hali ya rufaa:", "Kipimo cha mwisho:");
         assertEquals("Rekodi Mrejesho wa Ufuatiliaji",
                 text(activity, R.id.textview_record_mothermentor).getText().toString());
+    }
+
+    private void assertAbsent(Activity activity, String... labels) {
+        for (String label : labels) {
+            ArrayList<View> matches = new ArrayList<>();
+            activity.findViewById(android.R.id.content).findViewsWithText(
+                    matches, label, View.FIND_VIEWS_WITH_TEXT);
+            assertTrue(label, matches.isEmpty());
+        }
     }
 
     @Test
