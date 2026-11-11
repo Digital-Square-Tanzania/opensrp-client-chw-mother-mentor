@@ -102,6 +102,7 @@ public final class MotherMentorMotherPregnancyUtils {
         restoreContext(form, originalStatus, enrollmentDob);
         String original = normalizeStatus(originalStatus);
         if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) return form;
+        if (restoreRecordedDelivery(form, previous, savedVisit)) return form;
         if (!savedVisit && previous != null) {
             for (String key : Arrays.asList(MAMA_PREGNANCY_OUTCOME, MAMA_PREGNANCY_OUTCOME_OTHER,
                     MAMA_TAREHE_KUJIFUNGUA, MAMA_PREGNANCY_LOSS_DATE)) {
@@ -123,16 +124,34 @@ public final class MotherMentorMotherPregnancyUtils {
         return form;
     }
 
+    public static boolean restoreRecordedDelivery(JSONObject form, Map<String, String> previous,
+            boolean savedVisit) throws JSONException {
+        if ((savedVisit && !"true".equals(value(form, MAMA_CARRIED_DELIVERY)))
+                || !"pregnant".equals(value(form, MAMA_ENROLLMENT_PREGNANCY_STATUS))
+                || previous == null || !isLiveBirth(previous)) return false;
+        LocalDate recorded = deliveryDate(previous);
+        if (!valid(recorded, LocalDate.now())) return false;
+        String date = displayDate(recorded);
+        put(form, VISIT_PREGNANCY_STATUS, "not_pregnant");
+        put(form, MAMA_PREGNANCY_OUTCOME, previous.get(MAMA_PREGNANCY_OUTCOME));
+        put(form, MAMA_TAREHE_KUJIFUNGUA, date);
+        put(form, MAMA_CARRIED_DELIVERY, "true");
+        hideQuestion(form, VISIT_PREGNANCY_STATUS);
+        hideQuestion(form, MAMA_PREGNANCY_OUTCOME);
+        String alias = dateAlias(previous);
+        put(form, alias, date);
+        JSONObject input = field(form, alias);
+        if (input != null) input.put("read_only", true);
+        return true;
+    }
+
     public static JSONObject restoreContext(JSONObject form, String originalStatus,
             String enrollmentDob) throws JSONException {
         String original = normalizeStatus(originalStatus);
         put(form, MAMA_ENROLLMENT_PREGNANCY_STATUS, original);
         put(form, MAMA_ENROLLMENT_CHILD_DOB, displayDate(parseDate(enrollmentDob)));
-        JSONObject pregnancy = field(form, VISIT_PREGNANCY_STATUS);
         if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) {
-            pregnancy.put("type", "hidden");
-            pregnancy.remove("v_required");
-            pregnancy.remove("relevance");
+            hideQuestion(form, VISIT_PREGNANCY_STATUS);
             put(form, VISIT_PREGNANCY_STATUS, original);
             put(form, MAMA_ENROLLMENT_DELIVERY_DATE, displayDate(parseDate(enrollmentDob)));
             put(form, MAMA_TAREHE_KUJIFUNGUA, displayDate(parseDate(enrollmentDob)));
@@ -144,12 +163,21 @@ public final class MotherMentorMotherPregnancyUtils {
         return form;
     }
 
+    private static void hideQuestion(JSONObject form, String key) throws JSONException {
+        JSONObject field = field(form, key);
+        if (field == null) return;
+        field.put("type", "hidden");
+        field.remove("v_required");
+        field.remove("relevance");
+    }
+
     /** UI aliases are not observations; publish just the canonical branch-specific answers. */
     public static JSONObject normalize(JSONObject form) throws JSONException {
         Map<String, String> values = values(form);
         if (!values.containsKey(MAMA_ENROLLMENT_PREGNANCY_STATUS)) return form;
         if (!isFound(values)) {
             for (String key : ANSWER_FIELDS) put(form, key, "");
+            put(form, MAMA_CARRIED_DELIVERY, "");
             return form;
         }
         String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));

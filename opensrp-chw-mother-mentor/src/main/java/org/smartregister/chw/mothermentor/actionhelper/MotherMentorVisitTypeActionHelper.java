@@ -157,6 +157,13 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             }
             MotherMentorMotherChildRepository.State child = loadChildState();
             MotherMentorMotherChildUtils.prepare(form, child, childAssessmentDate(form));
+            JSONObject cessation = MotherMentorMotherChildUtils.field(form,
+                    DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA);
+            if (canCarryWeaningDate(form) && cessation != null && child.getWeaningDate() != null) {
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
+                        MotherMentorMotherPregnancyUtils.displayDate(child.getWeaningDate()));
+                cessation.put(JsonFormConstants.READ_ONLY, true);
+            }
             String closed = child.getTracingClosedStatus();
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_CLOSED_FOLLOWUP_NOTE,
                     closed == null || closed.isEmpty() ? "" : context.getString(
@@ -238,12 +245,26 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             }
             if (FormUtils.getFieldFromForm(payload, DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB).length() != 0) {
                 MotherMentorMotherVisitDao.Context original = loadMotherContext();
+                Map<String, String> previous = loadDeliveryAnswers();
                 MotherMentorMotherPregnancyUtils.restoreContext(payload, original.getEnrollmentPregnancyStatus(),
-                        loadDeliveryAnswers().getOrDefault(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB,
+                        previous.getOrDefault(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB,
                                 original.getEnrollmentChildDob()));
+                MotherMentorMotherPregnancyUtils.restoreRecordedDelivery(payload, previous,
+                        StringUtils.isNotBlank(currentVisitId));
                 MotherMentorMotherPregnancyUtils.normalize(payload);
             }
             if (MotherMentorMotherChildUtils.field(payload, DBConstants.KEY.MAMA_CHILD_STATUS) != null) {
+                String carried = "";
+                if (member != null && canCarryWeaningDate(payload)
+                        && "not_breastfeeding".equals(getValue(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))) {
+                    LocalDate weaningDate = loadChildState().getWeaningDate();
+                    if (weaningDate != null) {
+                        setValue(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
+                                MotherMentorMotherPregnancyUtils.displayDate(weaningDate));
+                        carried = "true";
+                    }
+                }
+                setValue(DBConstants.KEY.MAMA_CARRIED_WEANING_DATE, carried);
                 MotherMentorMotherChildUtils.normalize(payload, childAssessmentDate(payload));
             }
         } catch (Exception e) {
@@ -259,6 +280,12 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     @Override
     public void onPayloadReceived(BaseMotherMentorVisitAction action) {
         if (onEntryChanged != null) onEntryChanged.run();
+    }
+
+    private boolean canCarryWeaningDate(JSONObject form) {
+        return StringUtils.isBlank(currentVisitId)
+                || "true".equals(MotherMentorMotherChildUtils.values(form)
+                        .get(DBConstants.KEY.MAMA_CARRIED_WEANING_DATE));
     }
 
     private void setValue(String key, String value) throws Exception {

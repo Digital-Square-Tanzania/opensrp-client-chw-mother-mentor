@@ -166,6 +166,9 @@ public final class MotherMentorMotherDeliveryRepository {
                 Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                         new JSONObject(visit.getJson()).optJSONArray("obs"));
 
+                // A confirmation in a later visit must not replace the recorded delivery.
+                if ("true".equals(values.get(MAMA_CARRIED_DELIVERY))) continue;
+
                 values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, original);
                 values.put(MAMA_ENROLLMENT_CHILD_DOB, enrollmentDob);
                 LocalDate serviceDate = MotherMentorMotherVisitDao.getServiceDate(visit);

@@ -101,18 +101,29 @@ public class MotherMentorMotherPregnancyUtilsTest {
     }
 
     @Test
-    public void originallyPregnantMotherKeepsAnEditableDeliveryDateAfterHerCurrentStatusBecomesBreastfeeding() throws Exception {
+    public void previouslyRecordedDeliveryIsReadOnlyDuringANewFollowUp() throws Exception {
         Map<String, String> previous = answers("pregnant", "not_pregnant", "preterm");
         previous.put(MAMA_TAREHE_KUJIFUNGUA, "2026-05-01");
         JSONObject source = form("json.form");
         field(source, VISIT_PREGNANCY_STATUS).put("value", "breast_feeding");
         JSONObject prepared = MotherMentorMotherPregnancyUtils.prepare(source, "pregnant", "", previous, false);
         assertEquals("pregnant", value(prepared, MAMA_ENROLLMENT_PREGNANCY_STATUS));
-        assertEquals("native_radio", field(prepared, VISIT_PREGNANCY_STATUS).getString("type"));
+        assertEquals("hidden", field(prepared, VISIT_PREGNANCY_STATUS).getString("type"));
+        assertEquals("hidden", field(prepared, MAMA_PREGNANCY_OUTCOME).getString("type"));
         assertEquals("not_pregnant", value(prepared, VISIT_PREGNANCY_STATUS));
         assertEquals("preterm", value(prepared, MAMA_PREGNANCY_OUTCOME));
         assertEquals("01-05-2026", value(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT));
-        assertFalse(field(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT).optBoolean("read_only"));
+        assertTrue(field(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT).getBoolean("read_only"));
+    }
+
+    @Test
+    public void editingTheSavedDeliveryKeepsTheOriginalQuestionsAvailable() throws Exception {
+        Map<String, String> previous = answers("pregnant", "not_pregnant", "delivered");
+        previous.put(MAMA_TAREHE_KUJIFUNGUA, "2026-05-01");
+        JSONObject prepared = MotherMentorMotherPregnancyUtils.prepare(
+                form("json.form-sw"), "pregnant", "", previous, true);
+        assertEquals("native_radio", field(prepared, VISIT_PREGNANCY_STATUS).getString("type"));
+        assertFalse(field(prepared, MAMA_DELIVERY_DATE_INPUT).optBoolean("read_only"));
     }
 
     @Test

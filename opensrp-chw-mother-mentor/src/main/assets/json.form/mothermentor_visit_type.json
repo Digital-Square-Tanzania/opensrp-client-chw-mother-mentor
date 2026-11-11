@@ -228,6 +228,13 @@
         "value": ""
       },
       {
+        "key": "mama_carried_delivery",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_carried_delivery",
+        "value": ""
+      },
+      {
         "key": "visit_pregnancy_status",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
@@ -469,6 +476,13 @@
         "openmrs_entity": "ui_only",
         "openmrs_entity_id": "mama_child_path",
         "value": "false"
+      },
+      {
+        "key": "mama_carried_weaning_date",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_carried_weaning_date",
+        "value": ""
       },
       {
         "key": "mama_previous_weaning_date",

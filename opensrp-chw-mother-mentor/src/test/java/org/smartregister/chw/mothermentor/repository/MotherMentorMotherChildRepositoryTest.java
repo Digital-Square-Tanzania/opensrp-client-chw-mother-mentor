@@ -181,6 +181,25 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void carriedWeaningDateFollowsTheCorrectedSource() throws Exception {
+        link("child", dob);
+        LocalDate day = dob.plusMonths(10);
+        LocalDate original = dob.plusMonths(6);
+        LocalDate corrected = original.plusDays(1);
+        visit("child-first", "child-first", "child", childBreastfeeding(corrected), day, 1, false);
+        Map<String, String> followUp = MotherMentorMotherChildUtilsTest.test(
+                "nine_months", "negative", dob.plusMonths(9));
+        followUp.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+        followUp.put(MAMA_TAREHE_ACHA_KUNYONYESHA, original.toString());
+        followUp.put(MAMA_CARRIED_WEANING_DATE, "true");
+        visit("mother-next", "mother-next", "mother", followUp, day.plusDays(1), 1, false);
+
+        assertEquals(corrected, MotherMentorMotherChildRepository.getState(db, "mother", null).getWeaningDate());
+        data.delete("visits", "visit_id = ?", new String[] {"child-first"});
+        assertNull(MotherMentorMotherChildRepository.getState(db, "mother", null).getWeaningDate());
+    }
+
+    @Test
     public void laterMotherAndChildAnswersShareChronologyAndBeforeEditContext() throws Exception {
         link("child", dob);
         LocalDate firstDay = dob.plusMonths(10);
