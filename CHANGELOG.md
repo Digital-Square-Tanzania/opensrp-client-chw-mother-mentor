@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.30-SNAPSHOT — 2026-11-11
+
+### Fixed
+
+- Keep closed Mama Kinara clients visible in the main register through the day they exit (Mother Mentor #81).
+
 ## 0.1.29-SNAPSHOT — 2026-11-11
 
 ### Fixed
