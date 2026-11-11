@@ -6,6 +6,8 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.27-SNAPSHOT — 2026-11-11
+
 ### Changed
 
 - Remove the separate age, referral status, and last test lines from the Child EID profile (CHW #1183).
