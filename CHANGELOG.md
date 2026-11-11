@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.28-SNAPSHOT — 2026-11-11
+
+### Fixed
+
+- Save Mama Kinara visit attendance once (CHW #1176).
+- Carry forward the recorded pregnancy outcome, breastfeeding status, and dates on follow-up visits (CHW #1177).
+- Close Kaya when the last active enrolled mother or child exits and allow undo on the same day (CHW #1179).
+
 ## 0.1.27-SNAPSHOT — 2026-11-11
 
 ### Changed
