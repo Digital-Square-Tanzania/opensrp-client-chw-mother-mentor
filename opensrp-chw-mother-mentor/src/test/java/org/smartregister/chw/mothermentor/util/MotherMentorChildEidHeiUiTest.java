@@ -90,7 +90,7 @@ public class MotherMentorChildEidHeiUiTest {
         assertEquals("", f.value(MTOTO_REFERRAL_AGREEMENT));
         assertEquals("", f.value(MTOTO_RUFAA_TEST));
         assertEquals("", f.value(MTOTO_RUFAA_DUE));
-        assertEquals("none\nNext test: 18 months (confirmatory) — 2027-07-01", f.value(MAMA_HEI_NEXT_TEST_NOTE));
+        assertEquals("none\nNext test: 18 months (confirmatory) — 01-07-2027", f.value(MAMA_HEI_NEXT_TEST_NOTE));
     }
 
     @Test

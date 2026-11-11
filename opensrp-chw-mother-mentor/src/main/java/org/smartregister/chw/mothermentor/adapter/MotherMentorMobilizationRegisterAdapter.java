@@ -1,5 +1,8 @@
 package org.smartregister.chw.mothermentor.adapter;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.parseDate;
+import static org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils.displayDate;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -66,7 +69,8 @@ public class MotherMentorMobilizationRegisterAdapter extends RecyclerView.Adapte
             mobilizationSessionParticipants = itemView.findViewById(R.id.mobilization_session_participants);
 //            mobilizationSessionCondomsIssued = itemView.findViewById(R.id.mobilization_session_condoms_issued);
 
-            mobilizationSessionDate.setText(context.getString(R.string.mobilziation_session_date, tbMotherMentorMobilizationModel.getSessionDate()));
+            mobilizationSessionDate.setText(context.getString(R.string.mobilziation_session_date,
+                    displayDate(parseDate(tbMotherMentorMobilizationModel.getSessionDate()))));
             mobilizationSessionParticipants.setText(context.getString(R.string.mobilization_session_participants, tbMotherMentorMobilizationModel.getSessionParticipants()));
 //            mobilizationSessionCondomsIssued.setText(context.getString(R.string.mobilization_condoms_issued, tbMotherMentorMobilizationModel.getCondomsIssued()));
             itemView.setOnClickListener(view -> MotherMentorMobilizationSessionDetailsActivity.startMe((Activity) context, tbMotherMentorMobilizationModel.getSessionId()));

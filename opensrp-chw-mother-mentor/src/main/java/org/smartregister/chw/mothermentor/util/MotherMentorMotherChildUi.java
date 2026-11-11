@@ -238,7 +238,8 @@ public final class MotherMentorMotherChildUi {
             if (stage == Stage.AFTER_WEANING && !day.isBefore(dob.plusMonths(18))) continue;
             LocalDate date = MotherMentorHeiSchedule.dueDate(stage, dob, stop);
             if (stage == Stage.AFTER_WEANING && date == null) return context.getString(R.string.mothermentor_mother_hei_wait_weaning);
-            if (date != null) return context.getString(R.string.mothermentor_mother_hei_next, label(context, stage), date.toString());
+            if (date != null) return context.getString(R.string.mothermentor_mother_hei_next,
+                    label(context, stage), MotherMentorMotherPregnancyUtils.displayDate(date));
         }
         return context.getString(R.string.mothermentor_mother_hei_none);
     }
