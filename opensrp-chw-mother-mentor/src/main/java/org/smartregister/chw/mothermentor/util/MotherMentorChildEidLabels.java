@@ -64,13 +64,15 @@ public final class MotherMentorChildEidLabels {
     public static String missed(Context context, String test, String due) {
         LocalDate date = MotherMentorHeiSchedule.parseDate(due);
         return date == null || MotherMentorHeiSchedule.Stage.fromCode(test) == null ? ""
-                : context.getString(R.string.mothermentor_eid_missed_due, test(context, test), date.toString());
+                : context.getString(R.string.mothermentor_eid_missed_due,
+                        test(context, test), MotherMentorMotherPregnancyUtils.displayDate(date));
     }
 
     public static String entryReason(Context context, String test, String due) {
         LocalDate date = MotherMentorHeiSchedule.parseDate(due);
         return date == null || MotherMentorHeiSchedule.Stage.fromCode(test) == null ? ""
-                : context.getString(R.string.mothermentor_eid_entry_reason, test(context, test), date.toString());
+                : context.getString(R.string.mothermentor_eid_entry_reason,
+                        test(context, test), MotherMentorMotherPregnancyUtils.displayDate(date));
     }
 
     public static String summary(Context context, String mother, String heiNumber, int visits) {

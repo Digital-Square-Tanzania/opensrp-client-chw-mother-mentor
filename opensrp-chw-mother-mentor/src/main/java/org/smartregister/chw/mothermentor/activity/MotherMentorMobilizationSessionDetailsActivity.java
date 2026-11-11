@@ -1,5 +1,8 @@
 package org.smartregister.chw.mothermentor.activity;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.parseDate;
+import static org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils.displayDate;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -72,7 +75,8 @@ public class MotherMentorMobilizationSessionDetailsActivity extends Activity {
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT));
         } else {
-            addDetail(content, R.string.mothermentor_activity_date, session.getSessionDate());
+            addDetail(content, R.string.mothermentor_activity_date,
+                    displayDate(parseDate(session.getSessionDate())));
             addDetail(
                     content,
                     R.string.mothermentor_activity_type,

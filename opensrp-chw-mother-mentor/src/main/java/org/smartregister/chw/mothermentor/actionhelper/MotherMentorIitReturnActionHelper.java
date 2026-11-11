@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.actionhelper;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils.displayDate;
+
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.FACILITY_RETURN_DATE;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.IIT_NOT_RETURNED_REASON;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.IIT_NOT_RETURNED_REASON_OTHER;
@@ -55,7 +57,7 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
             setField(form, "iit_missed_appointment_note", "text", missed == null
                     ? context.getString(R.string.mothermentor_iit_return_missed_appointment_unknown)
                     : context.getString(R.string.mothermentor_iit_missed_appointment_return_banner,
-                            missed.toString("dd/MM/yyyy"),
+                            displayDate(missed),
                             Math.max(0, Days.daysBetween(missed, serviceDate).getDays())));
             if (missed != null) {
                 setField(form, FACILITY_RETURN_DATE, "min_date", missed.toString("dd-MM-yyyy"));

@@ -39,6 +39,16 @@ public class MotherMentorMotherChildUiTest {
     }
 
     @Test
+    public void nextTestShowsTheDueDateInPickerFormat() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            LocalDate delivery = new LocalDate(2026, 11, 10);
+            Fixture fixture = new Fixture(directory, delivery, delivery);
+            fixture.refresh();
+            assertTrue(fixture.value(MAMA_HEI_NEXT_TEST_NOTE).endsWith("22-12-2026"));
+        }
+    }
+
+    @Test
     public void weaningAndBranchCorrectionsClearInvalidPreviousAnswers() throws Exception {
         Fixture fixture = new Fixture("json.form", new LocalDate(2026, 1, 1), new LocalDate(2026, 10, 1));
         fixture.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");

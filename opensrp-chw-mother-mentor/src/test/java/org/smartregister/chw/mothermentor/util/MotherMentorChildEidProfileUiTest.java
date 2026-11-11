@@ -37,7 +37,7 @@ public class MotherMentorChildEidProfileUiTest {
                 text(activity, R.id.mothermentor_eid_profile_metadata).getText().toString());
         assertEquals("Referral status: To be referred",
                 text(activity, R.id.mothermentor_eid_profile_referral).getText().toString());
-        assertTrue(text(activity, R.id.mothermentor_eid_profile_reason).getText().toString().contains("2026-10-04"));
+        assertTrue(text(activity, R.id.mothermentor_eid_profile_reason).getText().toString().contains("04-10-2026"));
         assertEquals(View.GONE, text(activity, R.id.mothermentor_eid_profile_last_test).getVisibility());
         assertEquals(View.GONE, text(activity, R.id.textview_gender).getVisibility());
     }
@@ -72,7 +72,7 @@ public class MotherMentorChildEidProfileUiTest {
         LinearLayout parent = (LinearLayout) cta.getParent();
         View banner = parent.getChildAt(parent.indexOfChild(cta) + 1);
         assertEquals(View.VISIBLE, banner.getVisibility());
-        assertTrue(((TextView) banner).getText().toString().contains("2026-11-03"));
+        assertTrue(((TextView) banner).getText().toString().contains("03-11-2026"));
         int count = parent.getChildCount();
         ui.bind(activity, child, identity(), day, null);
         assertEquals(count, parent.getChildCount());

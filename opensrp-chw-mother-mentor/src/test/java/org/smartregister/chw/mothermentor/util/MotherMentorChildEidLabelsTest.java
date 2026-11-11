@@ -57,7 +57,7 @@ public class MotherMentorChildEidLabelsTest {
     @Config(qualifiers = "en")
     public void englishMissedTestAndReferralStatesUseClinicalStageAliases() {
         Context context = RuntimeEnvironment.getApplication();
-        assertEquals("Missed 9 months — due 2026-10-04",
+        assertEquals("Missed 9 months — due 04-10-2026",
                 MotherMentorChildEidLabels.missed(context, "miezi9", "2026-10-04"));
         assertEquals("Referred: 9 months",
                 MotherMentorChildEidLabels.referral(context, "referred", "nine_months"));
@@ -75,8 +75,8 @@ public class MotherMentorChildEidLabelsTest {
         Context context = RuntimeEnvironment.getApplication();
         assertEquals("Amepewa rufaa: Miezi 9",
                 MotherMentorChildEidLabels.referral(context, "referred", "miezi9"));
-        assertEquals("Amekosa Miezi 9 — kilitakiwa 2026-10-04",
-                MotherMentorChildEidLabels.missed(context, "nine_months", "2026-10-04"));
+        assertEquals("Amekosa Miezi 9 — kilitakiwa 04-10-2026",
+                MotherMentorChildEidLabels.missed(context, "nine_months", "04/10/2026"));
         assertEquals("Mama: Neema · HEI-0412-C01 · Ziara 2",
                 MotherMentorChildEidLabels.summary(context, "Neema", "HEI-0412-C01", 2));
         assertEquals("Amepewa rufaa",

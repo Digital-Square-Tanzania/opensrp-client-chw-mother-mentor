@@ -155,9 +155,9 @@ public final class MotherMentorChildEidHeiUi {
             LocalDate nextDate = MotherMentorHeiSchedule.dueDate(next, dob,
                     MotherMentorChildEidHeiUtils.cessation(values));
             banner = next == null ? none : none + "\n" + (context == null
-                    ? next.getCode() + " — " + nextDate
+                    ? next.getCode() + " — " + MotherMentorMotherPregnancyUtils.displayDate(nextDate)
                     : context.getString(R.string.mothermentor_child_eid_hei_next,
-                            label(context, next), nextDate.toString()));
+                            label(context, next), MotherMentorMotherPregnancyUtils.displayDate(nextDate)));
         }
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_HEI_NEXT_TEST_NOTE, banner);
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,

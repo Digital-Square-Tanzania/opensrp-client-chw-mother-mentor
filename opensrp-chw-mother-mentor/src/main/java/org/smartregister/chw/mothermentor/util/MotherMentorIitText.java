@@ -25,7 +25,7 @@ public final class MotherMentorIitText {
     private static String missedAppointment(Context context, String date, LocalDate today, int label) {
         LocalDate missed = MotherMentorHeiSchedule.parseDate(date);
         return missed == null ? context.getString(R.string.mothermentor_iit_missing_appointment)
-                : context.getString(label, missed.toString(),
+                : context.getString(label, MotherMentorMotherPregnancyUtils.displayDate(missed),
                         Math.max(0, Days.daysBetween(missed, today).getDays()));
     }
 

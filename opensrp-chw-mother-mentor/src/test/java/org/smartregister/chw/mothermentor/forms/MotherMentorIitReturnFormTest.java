@@ -32,6 +32,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitReturnActionHelper;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.util.MotherMentorIitText;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -80,9 +81,13 @@ public class MotherMentorIitReturnFormTest {
             helper.onJsonFormLoaded(form(swahili).toString(), context(swahili), Collections.emptyMap());
             JSONObject prepared = new JSONObject(helper.getPreProcessed());
             assertEquals("referred", field(prepared, IIT_RETURN_STATE).getString("value"));
-            assertEquals(swahili ? "Miadi aliyokosa: 20/10/2024 · siku 16 zilizopita"
-                            : "Missed appointment: 20/10/2024 · 16 days ago",
+            assertEquals(swahili ? "Miadi aliyokosa: 20-10-2024 · siku 16 zilizopita"
+                            : "Missed appointment: 20-10-2024 · 16 days ago",
                     field(prepared, "iit_missed_appointment_note").getString("text"));
+            assertTrue(MotherMentorIitText.missedAppointment(
+                    context(swahili), "2024-10-20", VISIT).contains("20-10-2024"));
+            assertTrue(MotherMentorIitText.missedAppointmentDetails(
+                    context(swahili), "20/10/2024", VISIT).contains("20-10-2024"));
             assertEquals("20-10-2024", field(prepared, FACILITY_RETURN_DATE).getString("min_date"));
             assertEquals("05-11-2024", field(prepared, FACILITY_RETURN_DATE).getString("max_date"));
             assertTrue(field(prepared, "iit_refused_note").getString("text").contains("1/3"));

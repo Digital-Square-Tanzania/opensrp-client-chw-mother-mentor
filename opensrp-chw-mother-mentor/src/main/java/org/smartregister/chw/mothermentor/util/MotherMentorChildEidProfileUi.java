@@ -112,7 +112,8 @@ public final class MotherMentorChildEidProfileUi {
         String facility = child.getExitFacility();
         if (!android.text.TextUtils.isEmpty(facility)) reason += " · " + facility;
         LocalDate date = MotherMentorHeiSchedule.parseDate(child.getClosedDate());
-        closedBanner.setText(date == null ? reason : activity.getString(R.string.mothermentor_eid_closed_on, reason, date.toString()));
+        closedBanner.setText(date == null ? reason : activity.getString(R.string.mothermentor_eid_closed_on,
+                reason, MotherMentorMotherPregnancyUtils.displayDate(date)));
         boolean success = MotherMentorChildEidLabels.isSuccessfulClose(child.getClosedStatus());
         closedBanner.setTextColor(activity.getResources().getColor(success
                 ? R.color.mothermentor_eid_success : R.color.mothermentor_eid_alert));
