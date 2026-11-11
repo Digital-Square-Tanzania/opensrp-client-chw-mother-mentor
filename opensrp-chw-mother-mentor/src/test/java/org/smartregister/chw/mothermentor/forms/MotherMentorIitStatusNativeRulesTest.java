@@ -46,6 +46,7 @@ public class MotherMentorIitStatusNativeRulesTest {
     private static final String[] LANGUAGES = {"json.form", "json.form-sw"};
     private static final String[] REASONS = {"deceased", "moved_area", "moved_facility",
             "travelled", "other"};
+    private static final String[] NOTE_REASONS = {"deceased", "moved_area", "travelled", "other"};
 
     @Test
     public void nativeRelevanceExposesOnlyQuestionsForTheSelectedReason() throws Exception {
@@ -55,10 +56,11 @@ public class MotherMentorIitStatusNativeRulesTest {
             assertOptions(form, FOLLOW_UP_STATUS, "found", "not_found");
             assertOptions(form, IIT_NOT_FOUND_REASON, REASONS);
             assertFalse(FormUtils.getFieldFromForm(form, EXPECTED_FACILITY_VISIT_DATE).has("key"));
+            assertFalse(FormUtils.getFieldFromForm(form, "iit_note_moved_facility").has("key"));
 
             answer(form, FOLLOW_UP_STATUS, "found");
             assertFalse(relevant(activity, form, IIT_NOT_FOUND_REASON));
-            for (String reason : REASONS) {
+            for (String reason : NOTE_REASONS) {
                 assertFalse(relevant(activity, form, "iit_note_" + reason));
             }
             answer(form, FOLLOW_UP_STATUS, "not_found");
@@ -68,7 +70,7 @@ public class MotherMentorIitStatusNativeRulesTest {
                 assertEquals(reason.equals("moved_area"), relevant(activity, form, OPTIONAL_FACILITY));
                 assertEquals(reason.equals("moved_facility"), relevant(activity, form, IIT_KITUO_KIPYA));
                 assertEquals(reason.equals("other"), relevant(activity, form, IIT_NOT_FOUND_OTHER));
-                for (String note : REASONS) {
+                for (String note : NOTE_REASONS) {
                     assertEquals(reason.equals(note), relevant(activity, form, "iit_note_" + note));
                 }
             }

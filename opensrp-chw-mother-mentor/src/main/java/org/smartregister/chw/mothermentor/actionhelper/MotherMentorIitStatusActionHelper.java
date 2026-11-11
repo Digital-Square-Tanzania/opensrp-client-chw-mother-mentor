@@ -50,7 +50,6 @@ public class MotherMentorIitStatusActionHelper extends BaseMotherMentorActionHel
             }
             setNote(form, "deceased", "I2");
             setNote(form, "moved_area", "I3");
-            setNote(form, "moved_facility", "I4");
             setNote(form, "travelled", "");
             setNote(form, "other", "");
             return form.toString();
