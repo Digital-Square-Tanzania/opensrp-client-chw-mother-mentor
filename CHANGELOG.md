@@ -6,6 +6,18 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.26-SNAPSHOT — 2026-11-11
+
+### Changed
+
+- Use day-month-year dates in Mother Mentor screens (CHW #1175).
+- Use Dhumuni la Hudhurio for the Swahili Kaya visit purpose (CHW #1178).
+
+### Fixed
+
+- Remove the explanatory notes under the Mama Kinara delivery date (CHW #1174).
+- Remove the transfer closure note from the Mama IIT tracing form (CHW #1181).
+
 ## 0.1.25-SNAPSHOT — 2026-11-08
 
 ### Fixed
