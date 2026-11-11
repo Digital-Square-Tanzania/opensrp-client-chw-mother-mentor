@@ -185,16 +185,19 @@ public class MotherMentorJsonFormUtils extends org.smartregister.util.JsonFormUt
 
             // add all the fields to the event while injecting a new variable for grouping
             JSONArray local_fields = registrationFormParams.getRight();
-            int x = 0;
-            while (local_fields.length() > x) {
+            for (int x = 0; x < local_fields.length(); x++) {
                 try {
                     JSONObject obj = local_fields.getJSONObject(x);
+                    // Group linkage uses attendance for relevance. The visit type action records it.
+                    if (DBConstants.KEY.ATTENDANCE_TYPE.equals(obj.optString("key"))
+                            && "hidden".equals(obj.optString("type"))) {
+                        continue;
+                    }
                     obj.put(MOTHERMENTOR_VISIT_GROUP, map.getKey());
                     fields_obj.add(obj);
                 } catch (JSONException e) {
                     Timber.e(e);
                 }
-                x++;
             }
         }
 
