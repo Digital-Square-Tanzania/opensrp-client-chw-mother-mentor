@@ -160,9 +160,8 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             JSONObject cessation = MotherMentorMotherChildUtils.field(form,
                     DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA);
             if (canCarryWeaningDate(form) && cessation != null && child.getWeaningDate() != null) {
-                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
-                        MotherMentorMotherPregnancyUtils.displayDate(child.getWeaningDate()));
-                cessation.put(JsonFormConstants.READ_ONLY, true);
+                MotherMentorMotherPregnancyUtils.showRecordedDate(
+                        cessation, MotherMentorMotherPregnancyUtils.displayDate(child.getWeaningDate()));
             }
             String closed = child.getTracingClosedStatus();
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_CLOSED_FOLLOWUP_NOTE,

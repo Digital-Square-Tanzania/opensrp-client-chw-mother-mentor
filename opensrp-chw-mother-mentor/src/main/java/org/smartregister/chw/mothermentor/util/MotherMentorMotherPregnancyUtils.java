@@ -84,6 +84,9 @@ public final class MotherMentorMotherPregnancyUtils {
     }
 
     public static LocalDate deliveryDate(Map<String, String> values) {
+        if ("true".equals(values.get(MAMA_CARRIED_DELIVERY))) {
+            return parseDate(values.get(MAMA_TAREHE_KUJIFUNGUA));
+        }
         String alias = dateAlias(values);
         return parseDate(values.containsKey(alias) ? values.get(alias)
                 : values.get(MAMA_TAREHE_KUJIFUNGUA));
@@ -136,13 +139,23 @@ public final class MotherMentorMotherPregnancyUtils {
         put(form, MAMA_PREGNANCY_OUTCOME, previous.get(MAMA_PREGNANCY_OUTCOME));
         put(form, MAMA_TAREHE_KUJIFUNGUA, date);
         put(form, MAMA_CARRIED_DELIVERY, "true");
+        JSONObject canonical = field(form, MAMA_TAREHE_KUJIFUNGUA);
+        if (canonical != null) canonical.remove("calculation");
         hideQuestion(form, VISIT_PREGNANCY_STATUS);
         hideQuestion(form, MAMA_PREGNANCY_OUTCOME);
-        String alias = dateAlias(previous);
-        put(form, alias, date);
-        JSONObject input = field(form, alias);
-        if (input != null) input.put("read_only", true);
+        showRecordedDate(field(form, dateAlias(previous)), date);
         return true;
+    }
+
+    /** The wizard clears hidden input values. Show recorded dates as static, localized text. */
+    public static void showRecordedDate(JSONObject field, String date) throws JSONException {
+        if (field == null) return;
+        field.put("type", "toaster_notes");
+        field.put("toaster_type", "info");
+        field.put("text", field.optString("hint") + ": " + date);
+        field.put("value", date);
+        field.put("read_only", true);
+        field.remove("v_required");
     }
 
     public static JSONObject restoreContext(JSONObject form, String originalStatus,
@@ -198,9 +211,7 @@ public final class MotherMentorMotherPregnancyUtils {
         String alias = dateAlias(values);
         boolean delivery = "delivered".equals(outcome) || "preterm".equals(outcome)
                 || "stillbirth".equals(outcome);
-        put(form, MAMA_TAREHE_KUJIFUNGUA, delivery
-                ? displayDate(parseDate(values.containsKey(alias) ? values.get(alias)
-                        : values.get(MAMA_TAREHE_KUJIFUNGUA))) : "");
+        put(form, MAMA_TAREHE_KUJIFUNGUA, delivery ? displayDate(deliveryDate(values)) : "");
         if (!"pregnancy_loss".equals(outcome)) put(form, MAMA_PREGNANCY_LOSS_DATE, "");
         if (!"other".equals(outcome)) put(form, MAMA_PREGNANCY_OUTCOME_OTHER, "");
         for (String key : Arrays.asList(MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,

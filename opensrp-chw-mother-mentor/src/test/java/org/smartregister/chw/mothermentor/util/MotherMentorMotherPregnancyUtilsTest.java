@@ -104,16 +104,26 @@ public class MotherMentorMotherPregnancyUtilsTest {
     public void previouslyRecordedDeliveryIsReadOnlyDuringANewFollowUp() throws Exception {
         Map<String, String> previous = answers("pregnant", "not_pregnant", "preterm");
         previous.put(MAMA_TAREHE_KUJIFUNGUA, "2026-05-01");
-        JSONObject source = form("json.form");
-        field(source, VISIT_PREGNANCY_STATUS).put("value", "breast_feeding");
-        JSONObject prepared = MotherMentorMotherPregnancyUtils.prepare(source, "pregnant", "", previous, false);
-        assertEquals("pregnant", value(prepared, MAMA_ENROLLMENT_PREGNANCY_STATUS));
-        assertEquals("hidden", field(prepared, VISIT_PREGNANCY_STATUS).getString("type"));
-        assertEquals("hidden", field(prepared, MAMA_PREGNANCY_OUTCOME).getString("type"));
-        assertEquals("not_pregnant", value(prepared, VISIT_PREGNANCY_STATUS));
-        assertEquals("preterm", value(prepared, MAMA_PREGNANCY_OUTCOME));
-        assertEquals("01-05-2026", value(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT));
-        assertTrue(field(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT).getBoolean("read_only"));
+        for (String locale : Arrays.asList("json.form", "json.form-sw")) {
+            JSONObject source = form(locale);
+            field(source, VISIT_PREGNANCY_STATUS).put("value", "breast_feeding");
+            JSONObject prepared = MotherMentorMotherPregnancyUtils.prepare(source, "pregnant", "", previous, false);
+            assertEquals("pregnant", value(prepared, MAMA_ENROLLMENT_PREGNANCY_STATUS));
+            assertEquals("hidden", field(prepared, VISIT_PREGNANCY_STATUS).getString("type"));
+            assertEquals("hidden", field(prepared, MAMA_PREGNANCY_OUTCOME).getString("type"));
+            assertEquals("not_pregnant", value(prepared, VISIT_PREGNANCY_STATUS));
+            assertEquals("preterm", value(prepared, MAMA_PREGNANCY_OUTCOME));
+            JSONObject displayed = field(prepared, MAMA_PRETERM_DELIVERY_DATE_INPUT);
+            assertEquals("toaster_notes", displayed.getString("type"));
+            assertTrue(displayed.getString("text").contains("01-05-2026"));
+            assertFalse(field(prepared, MAMA_TAREHE_KUJIFUNGUA).has("calculation"));
+            displayed.put("value", "");
+            field(prepared, ATTENDANCE_TYPE).put("value", "repeat");
+            field(prepared, FOLLOW_UP_STATUS).put("value", "found");
+            assertTrue(complete(MotherMentorMotherPregnancyUtils.values(prepared)));
+            MotherMentorMotherPregnancyUtils.normalize(prepared);
+            assertEquals("01-05-2026", value(prepared, MAMA_TAREHE_KUJIFUNGUA));
+        }
     }
 
     @Test
