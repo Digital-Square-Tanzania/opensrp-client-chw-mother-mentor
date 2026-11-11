@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.29-SNAPSHOT — 2026-11-11
+
+### Fixed
+
+- Keep previously recorded delivery and breastfeeding dates visible in the native Mama Kinara follow-up form when the mother is found (CHW #1177).
+- Finalize terminal visits on save and list Kaya closures so their same-day undo is accessible (CHW #1179).
+
 ## 0.1.28-SNAPSHOT — 2026-11-11
 
 ### Fixed
