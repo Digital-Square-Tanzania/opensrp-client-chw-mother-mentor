@@ -52,15 +52,6 @@ public final class MotherMentorChildEidProfileUi {
         text(R.id.mothermentor_eid_profile_metadata).setText(MotherMentorChildEidLabels.cardSummary(
                 activity, value(identity, DBConstants.KEY.MOTHER_NAME),
                 value(identity, DBConstants.KEY.VILLAGE_TOWN), value(identity, DBConstants.KEY.HEI_NUMBER)));
-        text(R.id.mothermentor_eid_profile_age).setText(activity.getString(R.string.mothermentor_eid_child_age,
-                age.isEmpty() ? activity.getString(R.string.mothermentor_eid_not_recorded) : age));
-        String test = child.getReferralTest().isEmpty() ? child.getMissedTest() : child.getReferralTest();
-        text(R.id.mothermentor_eid_profile_referral).setText(activity.getString(R.string.mothermentor_eid_referral_status,
-                child.isClosed() ? MotherMentorChildEidLabels.closedReason(activity, child.getClosedStatus())
-                        : MotherMentorChildEidLabels.referral(activity, child.getReferralState(), test)));
-        String last = MotherMentorChildEidLabels.lastTest(activity, child.getClinicalState().getSamplingHistory());
-        text(R.id.mothermentor_eid_profile_last_test).setText(last);
-        text(R.id.mothermentor_eid_profile_last_test).setVisibility(last.isEmpty() ? View.GONE : View.VISIBLE);
         String reason = MotherMentorChildEidLabels.entryReason(activity, child.getMissedTest(), child.getMissedDue());
         text(R.id.mothermentor_eid_profile_reason).setText(reason);
         text(R.id.mothermentor_eid_profile_reason).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);
