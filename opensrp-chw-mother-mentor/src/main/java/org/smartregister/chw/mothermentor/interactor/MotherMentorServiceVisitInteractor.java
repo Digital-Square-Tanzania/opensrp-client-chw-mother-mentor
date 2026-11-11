@@ -108,6 +108,17 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     @Override
+    protected boolean shouldSubmitOnSave() {
+        if (super.shouldSubmitOnSave()) return true;
+        if (memberObject == null || serviceDate == null) return false;
+        // A confirmed terminal visit must close the card and its Kaya even while offline.
+        return MotherMentorMotherClosureRepository.preview(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                memberObject.getBaseEntityId(), null, entryValues(),
+                LocalDate.fromDateFields(serviceDate)).isClosed();
+    }
+
+    @Override
     protected void populateActionList(BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         final Runnable runnable = () -> {
             motherMentorVisitActions.clear();
