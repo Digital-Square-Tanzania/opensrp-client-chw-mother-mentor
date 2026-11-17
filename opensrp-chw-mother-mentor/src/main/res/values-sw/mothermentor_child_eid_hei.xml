@@ -14,7 +14,9 @@
     <string name="mothermentor_eid_return_confirm_negative">Uthibitisho ni hasi. Fuata mwongozo wa kitaifa kurudia kipimo.</string>
     <string name="mothermentor_eid_return_graduation">Majibu hasi ya miezi 18. Mtoto amehitimu.</string>
     <string name="mothermentor_eid_return_confirm_positive">Majibu chanya yamethibitishwa. Hakikisha mtoto ameunganishwa na ART na CTC.</string>
-    <string name="mothermentor_eid_return_wait_result">Hifadhi. Ziara ijayo itauliza kama majibu yamepatikana.</string>
+    <string name="mothermentor_eid_return_wait_result">Fuatilia majibu kituoni.</string>
+    <string name="mothermentor_eid_result_overdue">Majibu yamechelewa</string>
+    <string name="mothermentor_eid_overdue_sample">Majibu yamechelewa · Tarehe ya kipimo: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Hifadhi. Mtoto anabaki kwenye orodha akisubiri uthibitisho.</string>
     <string name="mothermentor_eid_return_nonattendance">Hifadhi. Rufaa itafungwa baada ya ziara tatu mfululizo za kutofika kituoni.</string>
     <string name="mothermentor_eid_return_attendance">Hifadhi. Rufaa inabaki wazi. Ziara ijayo itauliza tena kama mtoto alifika kituoni.</string>

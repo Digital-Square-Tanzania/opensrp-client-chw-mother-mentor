@@ -50,6 +50,9 @@ public final class MotherMentorChildEidLabels {
 
     public static String referral(Context context, String state, String test) {
         int label;
+        if (MotherMentorChildEidResultOverdue.DISPLAY_STATE.equals(state)) {
+            return context.getString(R.string.mothermentor_eid_result_overdue);
+        }
         if ("none".equals(state)) return context.getString(R.string.mothermentor_eid_to_refer);
         if ("referred".equals(state)) label = R.string.mothermentor_eid_referred;
         else if ("awaiting_result".equals(state)) label = R.string.mothermentor_eid_result_pending;

@@ -13,6 +13,7 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
@@ -236,7 +237,7 @@ public final class MotherMentorChildEidDao {
     }
 
     public static String pageQuery(String search, boolean closed, int limit, int offset) {
-        return selectColumns() + ", m." + DBConstants.KEY.ID + " AS " + BaseColumns._ID
+        return selectColumns(true) + ", m." + DBConstants.KEY.ID + " AS " + BaseColumns._ID
                 + from() + condition(search, closed) + " ORDER BY m."
                 + DBConstants.KEY.FIRST_NAME + " COLLATE NOCASE, m." + DBConstants.KEY.LAST_NAME
                 + " COLLATE NOCASE, m." + DBConstants.KEY.BASE_ENTITY_ID + " LIMIT "
@@ -245,15 +246,15 @@ public final class MotherMentorChildEidDao {
 
     public static Map<String, String> cardValues(SQLiteDatabase db, String childId) {
         if (StringUtils.isBlank(childId) || !hasTable(db, ENROLLMENTS)) return Collections.emptyMap();
-        try (Cursor cursor = db.rawQuery(selectColumns() + from() + " WHERE e."
+        try (Cursor cursor = db.rawQuery(selectColumns(false) + from() + " WHERE e."
                 + DBConstants.KEY.BASE_ENTITY_ID + " = ?", new String[] {childId})) {
             return cursor.moveToFirst() ? values(cursor) : Collections.emptyMap();
         }
     }
 
-    private static String selectColumns() {
+    private static String selectColumns(boolean register) {
         String[] metadata = {DBConstants.KEY.MTOTO_MISSED_TEST, DBConstants.KEY.MTOTO_MISSED_DUE,
-                DBConstants.KEY.MTOTO_RUFAA_STATE, DBConstants.KEY.MTOTO_RUFAA_TEST,
+                DBConstants.KEY.MTOTO_RUFAA_TEST,
                 DBConstants.KEY.MTOTO_RUFAA_DUE, DBConstants.KEY.MTOTO_STATUS,
                 DBConstants.KEY.MTOTO_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MOTHER_BASE_ENTITY_ID,
                 DBConstants.KEY.HEI_NUMBER, DBConstants.KEY.MTOTO_VISIT_COUNT};
@@ -261,6 +262,9 @@ public final class MotherMentorChildEidDao {
                 + DBConstants.KEY.MOTHER_NAME + ", f." + DBConstants.KEY.VILLAGE_TOWN
                 + " AS " + DBConstants.KEY.VILLAGE_TOWN + ", m.*");
         for (String column : metadata) select.append(", e.").append(column);
+        select.append(", ").append(register
+                ? MotherMentorChildEidResultOverdue.registerState("e")
+                : "e." + DBConstants.KEY.MTOTO_RUFAA_STATE);
         select.append(", e.").append(DBConstants.KEY.IS_CLOSED).append(" AS ")
                 .append(DBConstants.KEY.MTOTO_IS_CLOSED);
         return select + ", coalesce(nullif(m." + DBConstants.KEY.DOB + ", ''), e."

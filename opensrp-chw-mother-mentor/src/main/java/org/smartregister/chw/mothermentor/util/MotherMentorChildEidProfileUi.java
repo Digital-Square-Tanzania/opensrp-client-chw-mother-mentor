@@ -56,6 +56,12 @@ public final class MotherMentorChildEidProfileUi {
         text(R.id.mothermentor_eid_profile_reason).setText(reason);
         text(R.id.mothermentor_eid_profile_reason).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);
         text(R.id.mothermentor_eid_profile_reason_title).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);
+        LocalDate sample = child.isClosed() ? null
+                : MotherMentorChildEidResultOverdue.overdueDate(child.getEnrollmentValues(), day);
+        TextView overdue = text(R.id.mothermentor_eid_profile_overdue);
+        overdue.setVisibility(sample == null ? View.GONE : View.VISIBLE);
+        overdue.setText(sample == null ? "" : activity.getString(R.string.mothermentor_eid_overdue_sample,
+                MotherMentorMotherPregnancyUtils.displayDate(sample)));
         button.setText(R.string.mothermentor_eid_record_visit);
         if (child.isClosed()) {
             button.setVisibility(View.VISIBLE);

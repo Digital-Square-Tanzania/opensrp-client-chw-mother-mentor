@@ -14,7 +14,9 @@
     <string name="mothermentor_eid_return_confirm_negative">Confirmatory result is negative. Follow national guidelines for repeat testing.</string>
     <string name="mothermentor_eid_return_graduation">Negative at 18 months. The child has graduated.</string>
     <string name="mothermentor_eid_return_confirm_positive">Confirmed positive. Ensure the child is linked to ART and CTC.</string>
-    <string name="mothermentor_eid_return_wait_result">Save. The next visit asks whether the result has been received.</string>
+    <string name="mothermentor_eid_return_wait_result">Follow up the results at the facility.</string>
+    <string name="mothermentor_eid_result_overdue">Results overdue</string>
+    <string name="mothermentor_eid_overdue_sample">Results overdue · Test date: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Save. The child remains on the list awaiting confirmation.</string>
     <string name="mothermentor_eid_return_nonattendance">Save. The referral closes after three consecutive visits without facility attendance.</string>
     <string name="mothermentor_eid_return_attendance">Save. The referral stays open. The next visit asks again whether the child attended.</string>
