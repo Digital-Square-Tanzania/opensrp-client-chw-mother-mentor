@@ -87,6 +87,7 @@ public final class MotherMentorChildEidReturnVisit {
         if (!"yes".equals(tested)
                 || !MotherMentorChildEidHeiUtils.eligible(values, dob, history, day).contains(stage)
                 || !MotherMentorHeiSchedule.validDate(testDate, arrival, day)) return null;
+        if (!validSavedReceivedDate(values, testDate, day)) return null;
         return resolveResult(stage, testDate, value(values, MAMA_HEI_TEST_RESULT),
                 value(values, MTOTO_CONFIRMATION_RECEIVED), true);
     }
@@ -109,6 +110,7 @@ public final class MotherMentorChildEidReturnVisit {
             if ("positive".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
             return null;
         }
+        if (!validSavedReceivedDate(values, date, day)) return null;
         return resolveResult(stage, date, value(values, MTOTO_RECEIVED_RESULT),
                 value(values, MTOTO_CONFIRMATION_RECEIVED), false);
     }
@@ -117,6 +119,38 @@ public final class MotherMentorChildEidReturnVisit {
         if (record == null || record.getDate() == null) return false;
         if (AWAITING_RESULT.equals(priorState)) return "pending".equals(record.getResult());
         return AWAITING_CONFIRM.equals(priorState) && "positive".equals(record.getResult()) && !record.isConfirmed();
+    }
+
+    public static boolean requiresReceivedDate(Map<String, String> values) {
+        if (!applies(values)) return false;
+        String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
+        if (REFERRED.equals(state) && "yes".equals(value(values, CHILD_EID_ARRIVED_AT_FACILITY))
+                && "yes".equals(value(values, MAMA_HEI_TEST_DONE))) {
+            return availableResult(value(values, MAMA_HEI_TEST_RESULT));
+        }
+        return AWAITING_RESULT.equals(state) && "yes".equals(value(values, MTOTO_RESULT_RECEIVED))
+                && availableResult(value(values, MTOTO_RECEIVED_RESULT));
+    }
+
+    private static boolean availableResult(String result) {
+        return "negative".equals(result) || "positive".equals(result);
+    }
+
+    static LocalDate receivedDateMinimum(Map<String, String> values) {
+        return date(values, REFERRED.equals(value(values, MTOTO_RUFAA_STATE_BEFORE))
+                ? MAMA_HEI_TEST_DATE : MTOTO_PENDING_TEST_DATE);
+    }
+
+    public static boolean validReceivedDate(Map<String, String> values, LocalDate day) {
+        LocalDate received = date(values, MTOTO_RESULT_RECEIVED_DATE);
+        return MotherMentorHeiSchedule.validDate(received, receivedDateMinimum(values), day)
+                && !received.isAfter(LocalDate.now());
+    }
+
+    private static boolean validSavedReceivedDate(Map<String, String> values, LocalDate testDate, LocalDate day) {
+        // Earlier versions saved results without recording when the facility received them.
+        return value(values, MTOTO_RESULT_RECEIVED_DATE).isEmpty()
+                || MotherMentorHeiSchedule.validDate(date(values, MTOTO_RESULT_RECEIVED_DATE), testDate, day);
     }
 
     private static Result resolveResult(Stage stage, LocalDate date, String result,
@@ -161,6 +195,7 @@ public final class MotherMentorChildEidReturnVisit {
         }
         if (!tested) clear(form, MAMA_HEI_TEST_RESULT);
         if (!hasResult) clear(form, MTOTO_RECEIVED_RESULT);
+        if (!requiresReceivedDate(values)) clear(form, MTOTO_RESULT_RECEIVED_DATE);
         boolean positive = tested && "positive".equals(value(values, MAMA_HEI_TEST_RESULT))
                 || hasResult && "positive".equals(value(values, MTOTO_RECEIVED_RESULT));
         if (!awaitingConfirm && !positive) {
@@ -175,7 +210,8 @@ public final class MotherMentorChildEidReturnVisit {
     }
 
     public static void clearSample(JSONObject form) {
-        clear(form, MAMA_HEI_TEST_DATE, MAMA_HEI_TEST_RESULT, MTOTO_CONFIRMATION_RECEIVED);
+        clear(form, MAMA_HEI_TEST_DATE, MAMA_HEI_TEST_RESULT, MTOTO_RESULT_RECEIVED_DATE,
+                MTOTO_CONFIRMATION_RECEIVED);
     }
 
     private static void clear(JSONObject form, String... keys) {

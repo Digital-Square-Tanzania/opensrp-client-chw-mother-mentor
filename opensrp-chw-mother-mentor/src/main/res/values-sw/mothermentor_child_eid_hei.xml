@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mothermentor_eid_received_before_test">Tarehe ya kupokea majibu haiwezi kuwa kabla ya tarehe ya kipimo</string>
+    <string name="mothermentor_eid_received_invalid_date">Weka tarehe sahihi ya kupokea majibu ambayo haipo katika siku zijazo</string>
     <string name="mothermentor_child_eid_hei_referral_agreed">Mlezi amekubali kumpeleka mtoto kituoni</string>
     <string name="mothermentor_child_eid_hei_referral_refused">Mlezi amekataa kumpeleka mtoto kituoni</string>
     <string name="mothermentor_child_eid_hei_none">hakuna</string>

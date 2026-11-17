@@ -162,7 +162,8 @@ public final class MotherMentorChildEidHeiUi {
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_HEI_NEXT_TEST_NOTE, banner);
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE,
-                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE)) {
+                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
+                DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE)) {
             JSONObject field = MotherMentorMotherChildUtils.field(form, key);
             if (field == null) continue;
             try {
@@ -174,6 +175,9 @@ public final class MotherMentorChildEidHeiUi {
     }
 
     private static LocalDate minimumDate(String key, LocalDate dob, Map<String, String> values) {
+        if (DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE.equals(key)) {
+            return MotherMentorChildEidReturnVisit.receivedDateMinimum(values);
+        }
         if (DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE.equals(key)) {
             return dob == null ? null : dob.plusMonths(18);
         }
@@ -265,15 +269,25 @@ public final class MotherMentorChildEidHeiUi {
         LocalDate day = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE));
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE,
-                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE)) {
+                DBConstants.KEY.CHILD_EID_FINAL_HIV_TEST_DATE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
+                DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE)) {
             String value = values.get(key);
             LocalDate date = MotherMentorHeiSchedule.parseDate(value);
-            if (value == null || value.isEmpty() || MotherMentorHeiSchedule.validDate(
-                    date, minimumDate(key, dob, values), day)) continue;
+            boolean receivedDate = DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE.equals(key);
+            if (value == null || value.isEmpty()
+                    || receivedDate && !MotherMentorChildEidReturnVisit.requiresReceivedDate(values)) continue;
+            LocalDate minimum = minimumDate(key, dob, values);
+            if (MotherMentorHeiSchedule.validDate(date, minimum, day)) continue;
             MotherMentorMotherChildUtils.put(form, key, "");
             syncWidget(root, key, "");
+            int error = R.string.mothermentor_child_eid_hei_invalid_date;
+            if (receivedDate) {
+                error = date != null && minimum != null && date.isBefore(minimum)
+                        ? R.string.mothermentor_eid_received_before_test
+                        : R.string.mothermentor_eid_received_invalid_date;
+            }
             for (View view : controls(root, key)) if (view instanceof EditText) {
-                ((EditText) view).setError(context.getString(R.string.mothermentor_child_eid_hei_invalid_date));
+                ((EditText) view).setError(context.getString(error));
             }
         }
     }

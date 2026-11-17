@@ -192,8 +192,13 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
         if (payload == null) return BaseMotherMentorVisitAction.Status.PENDING;
         try {
+            Map<String, String> values = MotherMentorMotherChildUtils.values(payload);
+            if (MotherMentorChildEidReturnVisit.requiresReceivedDate(values)
+                    && !MotherMentorChildEidReturnVisit.validReceivedDate(values, getServiceDate())) {
+                return BaseMotherMentorVisitAction.Status.PENDING;
+            }
             return completed(MotherMentorChildEidHeiUtils.isComplete(
-                    MotherMentorMotherChildUtils.values(payload), clinical().getChildDob(),
+                    values, clinical().getChildDob(),
                     getServiceDate(), clinical().getSamplingHistory(), previousReferralState()));
         } catch (Exception e) {
             Timber.e(e, "Unable to validate the Child EID HEI assessment");

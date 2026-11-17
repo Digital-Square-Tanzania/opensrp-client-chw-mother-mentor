@@ -30,6 +30,31 @@ public class MotherMentorChildEidHeiNativeRulesTest {
     private static final String RULES = "mothermentor_child_eid_hei_relevance.yml";
 
     @Test
+    public void receivedDateIsRequiredOnlyWhenAResultIsAvailable() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm form = new NativeForm(directory);
+            form.answer(MTOTO_RETURN_FLOW, "1");
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "referred");
+            form.answer(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            form.answer(MAMA_HEI_TEST_DONE, "yes");
+            form.answer(MAMA_HEI_DUE_TESTS, "[\"six_weeks\"]");
+            form.answer(CHILD_EID_TEST_TYPE, "six_weeks");
+            for (String result : new String[] {"negative", "positive"}) {
+                form.answer(MAMA_HEI_TEST_RESULT, result);
+                assertTrue(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
+            }
+            form.answer(MAMA_HEI_TEST_RESULT, "pending");
+            assertFalse(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "awaiting_result");
+            form.answer(MTOTO_RESULT_RECEIVED, "yes");
+            form.answer(MTOTO_RECEIVED_RESULT, "negative");
+            assertTrue(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
+            form.answer(MTOTO_RESULT_RECEIVED, "no");
+            assertFalse(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
+        }
+    }
+
+    @Test
     public void firstReferralShowsNoTestingOrArrivalQuestionsInEitherLanguage() throws Exception {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             NativeForm form = new NativeForm(directory);

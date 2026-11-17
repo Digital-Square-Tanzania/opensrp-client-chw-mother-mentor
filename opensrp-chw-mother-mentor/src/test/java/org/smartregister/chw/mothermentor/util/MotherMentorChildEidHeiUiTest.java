@@ -30,6 +30,47 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidHeiUiTest {
     @Test
+    public void receivedDateUsesSampleDateAndClearsWhenTheResultBecomesPending() throws Exception {
+        Fixture f = new Fixture("sw", "referred");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+        f.put(CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-10-01");
+        f.put(MAMA_HEI_TEST_DONE, "yes");
+        f.put(CHILD_EID_TEST_TYPE, "nine_months");
+        f.put(MAMA_HEI_TEST_DATE, "2026-10-01");
+        f.put(MAMA_HEI_TEST_RESULT, "negative");
+        f.refresh();
+        assertTrue(MotherMentorChildEidReturnVisit.requiresReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form)));
+        for (String invalid : new String[] {"", "2026-09-30", "2026-10-02"}) {
+            f.put(MTOTO_RESULT_RECEIVED_DATE, invalid);
+            assertFalse(MotherMentorChildEidReturnVisit.validReceivedDate(
+                    MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+        }
+        f.put(MTOTO_RESULT_RECEIVED_DATE, "2026-10-01");
+        assertTrue(MotherMentorChildEidReturnVisit.validReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+        f.refresh();
+        f.put(MAMA_HEI_TEST_RESULT, "pending");
+        f.refresh();
+        assertEquals("", f.value(MTOTO_RESULT_RECEIVED_DATE));
+    }
+
+    @Test
+    public void aResultReceivedLaterUsesTheOriginalSampleDate() throws Exception {
+        Fixture f = new Fixture("en", "awaiting_result");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(MTOTO_PENDING_TEST_DATE, "2026-09-15");
+        f.put(MTOTO_RESULT_RECEIVED, "yes");
+        f.put(MTOTO_RECEIVED_RESULT, "positive");
+        f.put(MTOTO_RESULT_RECEIVED_DATE, "2026-09-15");
+        assertTrue(MotherMentorChildEidReturnVisit.requiresReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form)));
+        assertTrue(MotherMentorChildEidReturnVisit.validReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+    }
+
+    @Test
     public void bilingualBannerUsesDueStagesAndCanonicalReferralSnapshot() throws Exception {
         for (String language : new String[] {"en", "sw"}) {
             Fixture f = new Fixture(language, "none");

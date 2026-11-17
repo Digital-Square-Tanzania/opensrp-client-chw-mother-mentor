@@ -437,6 +437,7 @@ public final class DBConstants {
         public static final String MTOTO_SABABU_KUTOPIMWA_OTHER = "mtoto_sababu_kutopimwa_other";
         public static final String MTOTO_PENDING_TEST = "mtoto_pending_test";
         public static final String MTOTO_PENDING_TEST_DATE = "mtoto_pending_test_date";
+        public static final String MTOTO_RESULT_RECEIVED_DATE = "mtoto_result_received_date";
         public static final String MTOTO_RESULT_RECEIVED = "mtoto_result_received";
         public static final String MTOTO_CONFIRMATION_RECEIVED = "mtoto_confirmation_received";
         public static final String MTOTO_CONFIRMATORY_RESULT = "mtoto_confirmatory_result";

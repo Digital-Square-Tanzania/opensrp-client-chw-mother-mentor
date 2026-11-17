@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mothermentor_eid_received_before_test">The received date cannot be before the test date</string>
+    <string name="mothermentor_eid_received_invalid_date">Enter a valid received date that is not in the future</string>
     <string name="mothermentor_child_eid_hei_referral_agreed">Caregiver agreed to take the child to the facility</string>
     <string name="mothermentor_child_eid_hei_referral_refused">Caregiver refused to take the child to the facility</string>
     <string name="mothermentor_child_eid_hei_none">none</string>
