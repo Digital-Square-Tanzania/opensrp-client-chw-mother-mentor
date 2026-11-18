@@ -175,8 +175,7 @@ public final class MotherMentorChildEidResultEvent {
                 values.put(MTOTO_CONFIRMATORY_RESULT, value(answers, MTOTO_CONFIRMATORY_RESULT));
             }
             values.put(MTOTO_CONFIRMATION_RECEIVED,
-                    Arrays.asList("negative", "positive").contains(value(values, MTOTO_CONFIRMATORY_RESULT))
-                            ? "yes" : "no");
+                    MotherMentorChildEidReturnVisit.confirmationReceived(values));
         }
         return MotherMentorChildEidReturnVisit.evaluateStandalone(values, day) == null ? null : values;
     }
