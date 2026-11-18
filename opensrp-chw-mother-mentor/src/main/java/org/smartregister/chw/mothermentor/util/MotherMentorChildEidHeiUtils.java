@@ -14,6 +14,7 @@ import java.util.Map;
 
 /** Child EID HEI assessment; referral and testing are separate visits. */
 public final class MotherMentorChildEidHeiUtils {
+    public static final String NEVER_BREASTFED = "never_breastfed";
     public static final List<String> RETURN_FIELDS = Collections.unmodifiableList(Arrays.asList(
             DBConstants.KEY.CHILD_EID_TEST_TYPE,
             DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY,
@@ -26,13 +27,19 @@ public final class MotherMentorChildEidHeiUtils {
 
     public static boolean isBreastfeedingComplete(Map<String, String> values,
             LocalDate dob, LocalDate day) {
+        return isBreastfeedingComplete(values, dob, day, false);
+    }
+
+    public static boolean isBreastfeedingComplete(Map<String, String> values,
+            LocalDate dob, LocalDate day, boolean hasBreastfeedingHistory) {
         if (values == null || dob == null || day == null || dob.isAfter(day)
                 || day.isAfter(LocalDate.now())) return false;
         String status = value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-        return "breastfeeding".equals(status)
-                ? value(values, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA).isEmpty()
-                : "not_breastfeeding".equals(status)
-                    && MotherMentorHeiSchedule.validDate(cessation(values), dob, day);
+        if ("not_breastfeeding".equals(status)) {
+            return MotherMentorHeiSchedule.validDate(cessation(values), dob, day);
+        }
+        return ("breastfeeding".equals(status) || NEVER_BREASTFED.equals(status) && !hasBreastfeedingHistory)
+                && value(values, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA).isEmpty();
     }
 
     public static List<Stage> eligible(Map<String, String> values, LocalDate dob,

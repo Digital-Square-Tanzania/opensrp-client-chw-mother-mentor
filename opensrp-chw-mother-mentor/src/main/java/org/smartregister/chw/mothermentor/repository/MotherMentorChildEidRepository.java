@@ -298,6 +298,8 @@ public final class MotherMentorChildEidRepository {
             state.close(MotherMentorChildEidExit.E5, day, answers);
             return;
         }
+        if (!MotherMentorChildEidHeiUtils.isBreastfeedingComplete(answers, clinical.getChildDob(), day,
+                clinical.hasBreastfeedingHistory())) return;
         String before = state.getReferralState();
         if (!before.equals(value(answers, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return;
         if (MotherMentorChildEidReturnVisit.applies(answers)) {

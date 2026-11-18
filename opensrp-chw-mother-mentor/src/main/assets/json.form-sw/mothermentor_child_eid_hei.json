@@ -148,8 +148,15 @@
             "openmrs_entity_id": "breastfeeding"
           },
           {
+            "key": "never_breastfed",
+            "text": "Hajawahi kunyonyeshwa",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "never_breastfed"
+          },
+          {
             "key": "not_breastfeeding",
-            "text": "Hanyonyeshwi",
+            "text": "Ameacha kunyonyeshwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breastfeeding"

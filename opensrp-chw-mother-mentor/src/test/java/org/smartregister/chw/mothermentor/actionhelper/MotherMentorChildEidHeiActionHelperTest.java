@@ -2,18 +2,20 @@ package org.smartregister.chw.mothermentor.actionhelper;
 
 import android.app.Application;
 import org.joda.time.LocalDate;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
+import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -88,6 +90,54 @@ public class MotherMentorChildEidHeiActionHelperTest {
         MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
         helper.onPayloadReceived(helper.postProcess(form.toString()));
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+    }
+
+    @Test
+    public void bothFormsOfferThreeAnswersWithoutAffirmativeHistoryAndSaveNeverBreastfed() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            Helper helper = helper(directory, "none", "not_breastfeeding", null);
+            JSONObject form = new JSONObject(helper.getPreProcessed());
+            assertEquals("", value(form, MAMA_BREASTFEEDING_STATUS));
+            JSONArray options = MotherMentorMotherChildUtils.field(form, MAMA_BREASTFEEDING_STATUS)
+                    .getJSONArray("options");
+            assertEquals(3, options.length());
+            List<String> labels = "json.form".equals(directory)
+                    ? Arrays.asList("Breastfeeding", "Never breastfed", "Stopped breastfeeding")
+                    : Arrays.asList("Ananyonyeshwa", "Hajawahi kunyonyeshwa", "Ameacha kunyonyeshwa");
+            for (int i = 0; i < labels.size(); i++) {
+                assertEquals(labels.get(i), options.getJSONObject(i).getString("text"));
+            }
+            MotherMentorMotherChildUtils.put(form, MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+            MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, "2026-07-01");
+            MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
+            JSONObject saved = new JSONObject(helper.postProcess(form.toString()));
+            assertEquals("never_breastfed", value(saved, MAMA_BREASTFEEDING_STATUS));
+            assertEquals("", value(saved, MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertEquals("miezi9", value(saved, MTOTO_RUFAA_TEST));
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
+        }
+    }
+
+    @Test
+    public void bothFormsRemoveAndRejectNeverBreastfedAfterBreastfeedingWasRecorded() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            for (String recorded : new String[] {"breastfeeding", "not_breastfeeding"}) {
+                LocalDate weaning = "not_breastfeeding".equals(recorded) ? new LocalDate(2026, 7, 1) : null;
+                Helper helper = helper(directory, "none", recorded, weaning);
+                when(helper.clinical.hasBreastfeedingHistory()).thenReturn(true);
+                JSONObject form = new JSONObject(helper.getPreProcessed());
+                JSONArray options = MotherMentorMotherChildUtils.field(form, MAMA_BREASTFEEDING_STATUS)
+                        .getJSONArray("options");
+                assertEquals(2, options.length());
+                assertEquals("breastfeeding", options.getJSONObject(0).getString("key"));
+                assertEquals("not_breastfeeding", options.getJSONObject(1).getString("key"));
+                assertEquals(recorded, value(form, MAMA_BREASTFEEDING_STATUS));
+                MotherMentorMotherChildUtils.put(form, MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+                MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
+                helper.postProcess(form.toString());
+                assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+            }
+        }
     }
 
     @Test

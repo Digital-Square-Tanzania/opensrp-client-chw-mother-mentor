@@ -142,14 +142,21 @@
         "options": [
           {
             "key": "breastfeeding",
-            "text": "Breastfed",
+            "text": "Breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "breastfeeding"
           },
           {
+            "key": "never_breastfed",
+            "text": "Never breastfed",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "never_breastfed"
+          },
+          {
             "key": "not_breastfeeding",
-            "text": "Not breastfed",
+            "text": "Stopped breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breastfeeding"
