@@ -1,0 +1,206 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Child EID HEI",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Rekodi majibu ya kipimo",
+    "fields": [
+      {
+        "key": "mtoto_rufaa_state_before",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_rufaa_state_before",
+        "value": ""
+      },
+      {
+        "key": "mtoto_pending_test",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_pending_test",
+        "value": ""
+      },
+      {
+        "key": "mtoto_pending_test_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_pending_test_date",
+        "value": ""
+      },
+      {
+        "key": "child_eid_result_sample_label",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_result_sample_label",
+        "value": "",
+        "hint": "Aina ya kipimo",
+        "read_only": true,
+        "edit_type": "text"
+      },
+      {
+        "key": "child_eid_result_sample_date_label",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_result_sample_date_label",
+        "value": "",
+        "hint": "Tarehe ya kipimo",
+        "read_only": true,
+        "edit_type": "text"
+      },
+      {
+        "key": "mtoto_received_result",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_received_result",
+        "label": "Majibu ya kipimo",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative"
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_record_result_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_result_received_date",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_result_received_date",
+        "type": "date_picker",
+        "hint": "Tarehe majibu yalipopokelewa kituoni",
+        "v_required": {
+          "value": true,
+          "err": "Weka tarehe majibu yalipopokelewa kituoni"
+        },
+        "display_format": "dd/MM/yyyy",
+        "min_date": "today-5y",
+        "max_date": "today",
+        "expanded": false
+      },
+      {
+        "key": "mtoto_confirmatory_test_done",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_confirmatory_test_done",
+        "label": "Kipimo cha uthibitisho kimefanyika?",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_record_result_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_confirmatory_result",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_confirmatory_result",
+        "label": "Majibu ya kipimo cha uthibitisho",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative"
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
+          }
+        ],
+        "v_required": {
+          "value": "true",
+          "err": "Jibu linahitajika"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_record_result_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

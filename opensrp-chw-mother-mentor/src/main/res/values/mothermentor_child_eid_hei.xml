@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mothermentor_eid_record_result">Record test result</string>
+    <string name="mothermentor_eid_result_required">Complete the test result questions</string>
+    <string name="mothermentor_eid_result_unavailable">This test no longer has a result awaiting entry. Refresh the child’s record.</string>
+    <string name="mothermentor_eid_result_save_failed">Could not save the test result. Check the child’s record and try again.</string>
     <string name="mothermentor_eid_received_before_test">The received date cannot be before the test date</string>
     <string name="mothermentor_eid_received_invalid_date">Enter a valid received date that is not in the future</string>
     <string name="mothermentor_child_eid_hei_referral_agreed">Caregiver agreed to take the child to the facility</string>

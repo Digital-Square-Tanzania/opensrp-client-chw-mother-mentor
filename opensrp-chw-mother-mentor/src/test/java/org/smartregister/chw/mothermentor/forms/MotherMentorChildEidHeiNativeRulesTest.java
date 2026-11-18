@@ -15,6 +15,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.joda.time.LocalDate;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultForm;
 
 import java.util.Collections;
 import java.util.Map;
@@ -28,6 +30,39 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidHeiNativeRulesTest {
     private static final String RULES = "mothermentor_child_eid_hei_relevance.yml";
+
+    @Test
+    public void standaloneFormKeepsTheSampleReadOnlyAndShowsQuestionsForThePendingState() throws Exception {
+        String resultRules = "mothermentor_child_eid_record_result_relevance.yml";
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm form = new NativeForm(directory, MotherMentorChildEidResultForm.FORM_NAME, resultRules);
+            LocalDate sampleDate = new LocalDate(2026, 10, 20);
+            MotherMentorChildEidResultForm.prepare(form.form, RuntimeEnvironment.getApplication(),
+                    "eighteen_months", sampleDate, "awaiting_result");
+            assertTrue(form.field("child_eid_result_sample_label").getBoolean("read_only"));
+            assertTrue(form.field("child_eid_result_sample_date_label").getBoolean("read_only"));
+            assertTrue(form.field(MTOTO_RESULT_RECEIVED_DATE).getJSONObject("v_required").getBoolean("value"));
+            assertEquals("20-10-2026", form.field(MTOTO_RESULT_RECEIVED_DATE).getString("min_date"));
+            assertEquals(2, form.field(MTOTO_CONFIRMATORY_RESULT).getJSONArray("options").length());
+
+            assertTrue(form.relevant(MTOTO_RECEIVED_RESULT));
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
+            form.answer(MTOTO_RECEIVED_RESULT, "positive");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            form.answer(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            form.answer(MTOTO_RECEIVED_RESULT, "negative");
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            NativeForm confirmation = new NativeForm(directory, MotherMentorChildEidResultForm.FORM_NAME, resultRules);
+            MotherMentorChildEidResultForm.prepare(confirmation.form, RuntimeEnvironment.getApplication(),
+                    "six_weeks", sampleDate, "awaiting_confirm");
+            assertEquals("hidden", confirmation.field(MTOTO_CONFIRMATORY_TEST_DONE).getString("type"));
+            assertFalse(confirmation.relevant(MTOTO_RECEIVED_RESULT));
+            assertTrue(confirmation.relevant(MTOTO_CONFIRMATORY_RESULT));
+            assertEquals(2, confirmation.field(MTOTO_CONFIRMATORY_RESULT).getJSONArray("options").length());
+        }
+    }
 
     @Test
     public void receivedDateIsRequiredOnlyWhenAResultIsAvailable() throws Exception {
@@ -176,10 +211,16 @@ public class MotherMentorChildEidHeiNativeRulesTest {
     private static final class NativeForm {
         private final JSONObject form;
         private final JsonFormActivity activity;
+        private final String rules;
 
         NativeForm(String directory) throws Exception {
+            this(directory, "mothermentor_child_eid_hei", RULES);
+        }
+
+        NativeForm(String directory, String formName, String rules) throws Exception {
+            this.rules = rules;
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(directory + "/mothermentor_child_eid_hei.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(directory + "/" + formName + ".json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
             activity = Robolectric.buildActivity(JsonFormActivity.class).get();
@@ -195,14 +236,18 @@ public class MotherMentorChildEidHeiNativeRulesTest {
         }
 
         void answer(String key, String value) throws Exception {
-            FormUtils.getFieldFromForm(form, key).put("value", value);
+            field(key).put("value", value);
+        }
+
+        JSONObject field(String key) throws Exception {
+            return FormUtils.getFieldFromForm(form, key);
         }
 
         Facts facts(String key) throws Exception {
             JSONObject field = FormUtils.getFieldFromForm(form, key);
             String file = field.getJSONObject("relevance").getJSONObject("rules-engine")
                     .getJSONObject("ex-rules").getString("rules-file");
-            assertEquals(RULES, file);
+            assertEquals(rules, file);
             String[] address = {"rules-engine", file, "step1_" + key};
             JSONObject source = activity.getObjectUsingAddress(address, false);
             return ReflectionHelpers.callInstanceMethod(activity, "getEntries",
@@ -211,7 +256,7 @@ public class MotherMentorChildEidHeiNativeRulesTest {
         }
 
         boolean relevant(String key) throws Exception {
-            return activity.getRulesEngineFactory().getRelevance(facts(key), RULES);
+            return activity.getRulesEngineFactory().getRelevance(facts(key), rules);
         }
     }
 }
