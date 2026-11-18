@@ -20,11 +20,14 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidResultEvent;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorJsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -53,6 +56,7 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     private LocalDate serviceDate = LocalDate.now();
     private MotherMentorChildEidRepository.State enrollmentState;
     private Map<String, String> originalEpisode = Collections.emptyMap();
+    private Event linkedHei;
 
     public ChildEidFollowUpVisitInteractor(String eventType) {
         super(eventType);
@@ -234,6 +238,60 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     }
 
     @Override
+    protected String submitVisit(boolean editMode, String memberId,
+            Map<String, BaseMotherMentorVisitAction> actions, String parentEventType) throws Exception {
+        if (useLegacyWorkflow()) return super.submitVisit(editMode, memberId, actions, parentEventType);
+        Map<String, String> parentSections = new LinkedHashMap<>();
+        linkedHei = null;
+        String payloadType = null;
+        String payloadDetails = null;
+        for (Map.Entry<String, BaseMotherMentorVisitAction> section : actions.entrySet()) {
+            BaseMotherMentorVisitAction action = section.getValue();
+            String json = action.getJsonPayload();
+            if (StringUtils.isBlank(json)) continue;
+            if (getHeiFormName().equals(action.getFormName())) {
+                linkedHei = MotherMentorJsonFormUtils.processVisitJsonForm(
+                        MotherMentorLibrary.getInstance().context().allSharedPreferences(), memberId,
+                        MotherMentorChildEidResultEvent.EVENT_TYPE,
+                        Collections.singletonMap(section.getKey(), json), getTableName());
+                if (linkedHei == null) return null;
+            } else {
+                parentSections.put(section.getKey(), json);
+            }
+            payloadType = action.getPayloadType().name();
+            payloadDetails = action.getPayloadDetails();
+        }
+
+        SQLiteDatabase db = MotherMentorLibrary.getInstance().getRepository().getWritableDatabase();
+        Visit visit;
+        db.beginTransaction();
+        try {
+            visit = saveVisit(editMode, memberId, getEncounterType(), parentSections, parentEventType);
+            if (visit == null) return null;
+            saveVisitDetails(visit, payloadType, payloadDetails);
+            if (linkedHei != null) {
+                MotherMentorChildEidResultEvent.persist(db, linkedHei);
+                MotherMentorChildEidResultEvent.refreshInlineDetails(db, visit);
+            }
+            VisitUtils.persistVisitEvents(Collections.singletonList(visit), visitRepository());
+            Visit saved = visitRepository().getVisitByVisitId(visit.getVisitId());
+            if (saved == null || !Boolean.TRUE.equals(saved.getProcessed())) {
+                throw new IllegalStateException("The Child EID visit was not finalized");
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            linkedHei = null;
+            db.endTransaction();
+        }
+        try {
+            NCUtils.startClientProcessing();
+        } catch (Exception e) {
+            Timber.w(e, "The locally saved Child EID visit will be processed on the next sync");
+        }
+        return visit.getJson();
+    }
+
+    @Override
     protected boolean shouldSubmitOnSave() {
         return !useLegacyWorkflow() || super.shouldSubmitOnSave();
     }
@@ -257,18 +315,37 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     protected void assignVisitSource(Event event, Visit editedVisit) {
         super.assignVisitSource(event, editedVisit);
         if (useLegacyWorkflow()) return;
+        String originalSample = "";
         if (editedVisit == null) {
             event.setEventDate(new Date());
-            return;
-        }
-        try {
-            Event previous = JsonFormUtils.gson.fromJson(StringUtils.defaultIfBlank(
-                    editedVisit.getJson(), editedVisit.getPreProcessedJson()), Event.class);
-            if (previous != null && previous.getEventDate() != null) {
-                event.setEventDate(previous.getEventDate());
+        } else {
+            try {
+                Event previous = JsonFormUtils.gson.fromJson(StringUtils.defaultIfBlank(
+                        editedVisit.getJson(), editedVisit.getPreProcessedJson()), Event.class);
+                if (previous != null) {
+                    if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
+                    if (StringUtils.isNotBlank(editedVisit.getFormSubmissionId())) {
+                        event.setFormSubmissionId(editedVisit.getFormSubmissionId());
+                        event.setEventId(previous.getEventId());
+                        event.setVersion(Math.max(event.getVersion(), previous.getVersion() + 1));
+                        Map<String, String> original =
+                                MotherMentorChildEidResultEvent.visitAnswers(
+                                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                                        editedVisit);
+                        if (StringUtils.isNotBlank(original.get(DBConstants.KEY.MAMA_HEI_TEST_DATE))) {
+                            originalSample = StringUtils.defaultIfBlank(
+                                    original.get(DBConstants.KEY.CHILD_EID_SAMPLE_SUBMISSION_ID),
+                                    editedVisit.getFormSubmissionId());
+                        }
+                    }
+                }
+            } catch (JsonParseException invalid) {
+                Timber.w(invalid, "Unable to restore the original Child EID event metadata");
             }
-        } catch (JsonParseException invalid) {
-            Timber.w(invalid, "Unable to restore the original Child EID event timestamp");
+        }
+        if (linkedHei != null) {
+            MotherMentorChildEidResultEvent.linkInline(event, linkedHei,
+                    enrollmentState == null ? null : enrollmentState.getPendingSample(), originalSample);
         }
     }
 

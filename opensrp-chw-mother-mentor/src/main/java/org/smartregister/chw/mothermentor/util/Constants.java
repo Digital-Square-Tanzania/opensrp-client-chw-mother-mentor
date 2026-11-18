@@ -24,6 +24,7 @@ public interface Constants {
         String MOTHER_MENTOR_SERVICES = "MotherMentor Services";
         String MOTHER_MENTOR_FOLLOW_UP_VISIT = "MotherMentor Follow-up Visit";
         String VOID_EVENT = "Void Event";
+        String DELETE_EVENT = "Delete Event";
         String CLOSE_MOTHER_MENTOR_SERVICE = "Close MotherMentor Service";
         String MOTHER_MENTOR_MOBILIZATION = "MotherMentor Mobilization Session";
         String MOTHERMENTOR_CONTACT_VISIT = "MotherMentor Contact Visit";

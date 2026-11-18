@@ -358,6 +358,7 @@ public final class DBConstants {
         public static final String EVENT_JSON = "json";
         public static final String EVENT_VERSION = "version";
         public static final String EVENT_VOIDED = "voided";
+        public static final String DELETED_FORM_SUBMISSION_ID = "deleted_form_submission_id";
         public static final String EVENT_FORM_SUBMISSION_ID = "formSubmissionId";
         public static final String DOB_UNKNOWN = "dob_unknown";
         public static final String EVENT_DATE_TIMESTAMP = "eventDate";
@@ -426,6 +427,12 @@ public final class DBConstants {
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
+        public static final String CHILD_EID_INLINE_SUBMISSION_ID = "child_eid_inline_hei_submission_id";
+        public static final String CHILD_EID_INLINE_REVISION = "child_eid_inline_hei_revision";
+        public static final String CHILD_EID_PARENT_SUBMISSION_ID = "child_eid_parent_visit_submission_id";
+        public static final String CHILD_EID_SAMPLE_SUBMISSION_ID = "child_eid_sample_submission_id";
+        public static final String CHILD_EID_RESULT_ENTRY = "child_eid_result_entry";
+        public static final String MTOTO_CONFIRMATORY_TEST_DONE = "mtoto_confirmatory_test_done";
         public static final String MTOTO_MISSED_TEST = "mtoto_missed_test";
         public static final String MTOTO_MISSED_DUE = "mtoto_missed_due";
         public static final String MTOTO_RUFAA_STATE = "mtoto_rufaa_state";

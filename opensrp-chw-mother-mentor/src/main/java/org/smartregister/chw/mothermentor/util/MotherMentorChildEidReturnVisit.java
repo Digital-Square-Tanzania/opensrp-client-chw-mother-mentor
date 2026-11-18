@@ -121,6 +121,32 @@ public final class MotherMentorChildEidReturnVisit {
         return AWAITING_CONFIRM.equals(priorState) && "positive".equals(record.getResult()) && !record.isConfirmed();
     }
 
+    /** A linked result updates an existing sample without replaying the visit's tracing answers. */
+    public static Result evaluateStandalone(Map<String, String> values, LocalDate day) {
+        Stage stage = Stage.fromCode(value(values, MTOTO_PENDING_TEST));
+        LocalDate date = date(values, MTOTO_PENDING_TEST_DATE);
+        LocalDate received = date(values, MTOTO_RESULT_RECEIVED_DATE);
+        if (stage == null || date == null || !MotherMentorHeiSchedule.validDate(received, date, day)) return null;
+        String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
+        if (AWAITING_RESULT.equals(state) && "negative".equals(value(values, MTOTO_RECEIVED_RESULT))) {
+            return resolveResult(stage, date, "negative", "", false);
+        }
+        if (!AWAITING_CONFIRM.equals(state)
+                && !(AWAITING_RESULT.equals(state) && "positive".equals(value(values, MTOTO_RECEIVED_RESULT)))) {
+            return null;
+        }
+        String done = value(values, MTOTO_CONFIRMATORY_TEST_DONE);
+        String result = value(values, MTOTO_CONFIRMATORY_RESULT);
+        if (AWAITING_RESULT.equals(state) && ("no".equals(done) || "yes".equals(done)
+                && "pending".equals(result) && stage != Stage.EIGHTEEN_MONTHS)) {
+            return new Result(AWAITING_CONFIRM, stage, date, "positive", Outcome.CONTINUE);
+        }
+        if (!"yes".equals(done)) return null;
+        if ("negative".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMATORY_NEGATIVE);
+        if ("positive".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
+        return null;
+    }
+
     public static boolean requiresReceivedDate(Map<String, String> values) {
         if (!applies(values)) return false;
         String state = value(values, MTOTO_RUFAA_STATE_BEFORE);

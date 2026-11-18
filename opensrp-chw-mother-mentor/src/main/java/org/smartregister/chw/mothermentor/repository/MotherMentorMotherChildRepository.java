@@ -354,6 +354,16 @@ public final class MotherMentorMotherChildRepository {
     }
 
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
+        if (MotherMentorChildEidResultEvent.STANDALONE.equals(values.get(DBConstants.KEY.CHILD_EID_RESULT_ENTRY))) {
+            MotherMentorChildEidReturnVisit.Result result =
+                    MotherMentorChildEidReturnVisit.evaluateStandalone(values, date);
+            if (result != null && MotherMentorChildEidReturnVisit.matchesPending(state.tests.get(result.stage),
+                    values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) {
+                state.tests.put(result.stage, new TestRecord(result.result, result.testDate,
+                        result.outcome == MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE, date));
+            }
+            return;
+        }
         LocalDate recordedDob = MotherMentorHeiSchedule.parseBirthDate(values.get(DBConstants.KEY.CHILD_DOB));
         if (recordedDob != null && !recordedDob.equals(state.childDob)) return;
         if (MotherMentorChildEidStatusUtils.isSchema3(values)) {
@@ -442,6 +452,13 @@ public final class MotherMentorMotherChildRepository {
         List<Evidence> result = new ArrayList<>();
         for (Visit visit : MotherMentorChildEidDao.clinicalVisits(db, childId, excludedVisitId, assessmentDate)) {
             if (before == null || MotherMentorChildEidDao.compareChronology(visit, before) < 0) {
+                result.add(new Evidence(visit, true,
+                        MotherMentorChildEidResultEvent.visitAnswers(db, visit)));
+            }
+        }
+        for (Visit visit : MotherMentorChildEidResultEvent.projectedStandalone(db, childId,
+                excludedVisitId, assessmentDate)) {
+            if (before == null || MotherMentorChildEidDao.compareChronology(visit, before) < 0) {
                 result.add(new Evidence(visit, true));
             }
         }
@@ -527,12 +544,17 @@ public final class MotherMentorMotherChildRepository {
         final long version;
         boolean enrollmentSample;
         Evidence(Visit visit, boolean child) {
+            this(visit, child, null);
+        }
+
+        Evidence(Visit visit, boolean child, Map<String, String> merged) {
             this.visit = visit;
             this.child = child;
             this.date = MotherMentorMotherVisitDao.getServiceDate(visit);
             JSONObject event;
             try { event = new JSONObject(visit.getJson()); } catch (Exception e) { event = new JSONObject(); }
-            this.values = MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
+            this.values = merged == null
+                    ? MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs")) : merged;
             this.version = event.optLong("version", 0);
         }
     }

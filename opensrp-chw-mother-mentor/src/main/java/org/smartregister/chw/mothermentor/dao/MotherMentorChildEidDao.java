@@ -8,6 +8,7 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
@@ -198,11 +199,13 @@ public final class MotherMentorChildEidDao {
                         && visit.getVisitId().compareTo(previous.getVisitId()) > 0) latest.put(source, visit);
             }
         }
+        Set<String> deleted = deletedEventSources(db, childId);
         List<Visit> result = new ArrayList<>();
         for (Visit visit : latest.values()) {
             JSONObject event = json(visit);
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
-            if (day == null || day.isAfter(asOf) || event.optBoolean(DBConstants.KEY.EVENT_VOIDED)) continue;
+            if (day == null || day.isAfter(asOf) || event.optBoolean(DBConstants.KEY.EVENT_VOIDED)
+                    || deleted.contains(sourceIdentity(visit))) continue;
             Map<String, String> answers = MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
             String episode = answers.get(DBConstants.KEY.MTOTO_ENROLLMENT_ID);
             if (StringUtils.isNotBlank(episode) && !enrollment.id.isEmpty() && !episode.equals(enrollment.id)) continue;
@@ -211,6 +214,29 @@ public final class MotherMentorChildEidDao {
         }
         result.sort(MotherMentorChildEidDao::compareChronology);
         return result;
+    }
+
+    public static Set<String> deletedEventSources(SQLiteDatabase db, String childId) {
+        if (!hasTable(db, "event")) return Collections.emptySet();
+        Set<String> deleted = new HashSet<>();
+        try (Cursor rows = db.rawQuery("SELECT " + DBConstants.KEY.EVENT_JSON + " FROM event WHERE "
+                + DBConstants.KEY.EVENT_BASE_ENTITY_ID + " = ? AND " + DBConstants.KEY.EVENT_TYPE
+                + " IN (?, ?)", new String[] {childId, Constants.EVENT_TYPE.DELETE_EVENT, Constants.EVENT_TYPE.VOID_EVENT})) {
+            while (rows.moveToNext()) {
+                try {
+                    JSONObject event = new JSONObject(rows.getString(0));
+                    JSONObject details = event.optJSONObject("details");
+                    String submission = details == null
+                            ? "" : details.optString(DBConstants.KEY.DELETED_FORM_SUBMISSION_ID);
+                    submission = StringUtils.defaultIfBlank(submission,
+                            event.optString(DBConstants.KEY.EVENT_FORM_SUBMISSION_ID));
+                    if (StringUtils.isNotBlank(submission)) deleted.add(submission);
+                } catch (JSONException ignored) {
+                    // A malformed tombstone cannot identify a target.
+                }
+            }
+        }
+        return deleted;
     }
 
     public static List<Visit> clinicalVisits(SQLiteDatabase db, String childId,
@@ -231,8 +257,13 @@ public final class MotherMentorChildEidDao {
         int day = MotherMentorMotherVisitDao.getServiceDate(first).compareTo(
                 MotherMentorMotherVisitDao.getServiceDate(second));
         if (day != 0) return day;
-        int time = Long.compare(first.getDate() == null ? 0 : first.getDate().getTime(),
-                second.getDate() == null ? 0 : second.getDate().getTime());
+        long firstSource = eventTime(json(first));
+        long secondSource = eventTime(json(second));
+        int time = Long.compare(firstSource == 0 && first.getDate() != null ? first.getDate().getTime() : firstSource,
+                secondSource == 0 && second.getDate() != null ? second.getDate().getTime() : secondSource);
+        if (time == 0 && first.getDate() != null && second.getDate() != null) {
+            time = first.getDate().compareTo(second.getDate());
+        }
         return time != 0 ? time : first.getVisitId().compareTo(second.getVisitId());
     }
 
