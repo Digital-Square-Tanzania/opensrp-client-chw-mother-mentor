@@ -22,6 +22,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Scanner;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidStatusNativeRulesTest {
     private static final String RULES = "mothermentor_child_eid_status_relevance.yml";
+    private static final String DIRECT_RULES = "mothermentor_child_eid_direct_enrollment.yml";
     private static final String[] LANGUAGES = {"json.form", "json.form-sw"};
 
     @Test
@@ -54,6 +56,28 @@ public class MotherMentorChildEidStatusNativeRulesTest {
                             "found".equals(status) && "deceased".equals(child), relevant(activity, deathFacts));
                     Facts noteFacts = nativeFacts(activity, field(form, MTOTO_ALIVE_NOTE));
                     assertEquals("found".equals(status) && "alive".equals(child), relevant(activity, noteFacts));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void optionalHeiNumberAndGuidanceFollowTheLiveChildStatusInBothLanguages() throws Exception {
+        for (String language : LANGUAGES) {
+            JSONObject form = form(language, "mothermentor_child_eid_follow_up_status");
+            MotherMentorChildEidDirectEnrollment.addOptionalVisitNumber(RuntimeEnvironment.getApplication(), form);
+            JsonFormActivity activity = nativeActivity(form);
+            for (String status : new String[] {"", "found", "not_found"}) {
+                set(form, FOLLOW_UP_STATUS, status);
+                for (String child : new String[] {"", "alive", "deceased"}) {
+                    set(form, MAMA_CHILD_STATUS, child);
+                    boolean aliveNote = relevant(activity, nativeFacts(activity, field(form, MTOTO_ALIVE_NOTE)));
+                    for (String key : new String[] {HEI_NUMBER, "direct_hei_help"}) {
+                        Facts facts = nativeFacts(activity, field(form, key), DIRECT_RULES);
+                        assertFact(facts, FOLLOW_UP_STATUS, status);
+                        assertFact(facts, MAMA_CHILD_STATUS, child);
+                        assertEquals(aliveNote, activity.getRulesEngineFactory().getRelevance(facts, DIRECT_RULES));
+                    }
                 }
             }
         }
@@ -154,10 +178,14 @@ public class MotherMentorChildEidStatusNativeRulesTest {
     }
 
     private Facts nativeFacts(JsonFormActivity activity, JSONObject field) throws Exception {
+        return nativeFacts(activity, field, RULES);
+    }
+
+    private Facts nativeFacts(JsonFormActivity activity, JSONObject field, String rules) throws Exception {
         JSONObject configuration = field.getJSONObject("relevance")
                 .getJSONObject("rules-engine").getJSONObject("ex-rules");
-        assertEquals(RULES, configuration.getString("rules-file"));
-        String[] address = {"rules-engine", RULES, "step1_" + field.getString("key")};
+        assertEquals(rules, configuration.getString("rules-file"));
+        String[] address = {"rules-engine", rules, "step1_" + field.getString("key")};
         JSONObject source = activity.getObjectUsingAddress(address, false);
         Facts facts = ReflectionHelpers.callInstanceMethod(activity, "getEntries",
                 ClassParameter.from(String[].class, address), ClassParameter.from(JSONObject.class, source));

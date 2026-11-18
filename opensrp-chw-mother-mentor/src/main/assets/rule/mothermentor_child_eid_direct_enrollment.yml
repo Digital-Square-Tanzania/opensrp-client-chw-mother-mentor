@@ -9,13 +9,13 @@ actions:
 name: step1_hei_number
 description: Offer the missing HEI number when an independently enrolled child is found alive
 priority: 1
-condition: "'found'.equals(step1_follow_up_status) && 'alive'.equals(step1_mama_child_status)"
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_direct_hei_help
 description: Explain why the HEI number is offered
 priority: 1
-condition: "'found'.equals(step1_follow_up_status) && 'alive'.equals(step1_mama_child_status)"
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
 actions:
   - "isRelevant = true"
