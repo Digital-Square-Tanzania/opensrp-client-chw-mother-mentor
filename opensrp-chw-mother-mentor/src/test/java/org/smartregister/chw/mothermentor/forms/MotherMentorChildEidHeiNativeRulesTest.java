@@ -158,6 +158,9 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             NativeForm form = new NativeForm(directory);
             form.answer(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
             assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
+            form.answer(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+            assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertFalse(form.relevant("child_eid_weaning_hint"));
             form.answer(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
             assertEquals("not_breastfeeding", form.facts(MAMA_TAREHE_ACHA_KUNYONYESHA)
                     .get("step1_" + MAMA_BREASTFEEDING_STATUS));

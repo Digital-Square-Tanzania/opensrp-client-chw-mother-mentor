@@ -84,6 +84,19 @@ public class MotherMentorChildEidHeiUtilsTest {
     }
 
     @Test
+    public void neverBreastfedKeepsAgeBasedTestsAndCannotFollowKnownBreastfeeding() {
+        Map<String, String> values = first("agreed");
+        values.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        assertTrue(complete(values, "none"));
+        assertFalse(MotherMentorChildEidHeiUtils.isBreastfeedingComplete(values, birth, day, true));
+        values.put(MAMA_TAREHE_ACHA_KUNYONYESHA, birth.plusMonths(4).toString());
+        assertNull(MotherMentorChildEidHeiUtils.cessation(values));
+        assertFalse(complete(values, "none"));
+        assertFalse(MotherMentorChildEidHeiUtils.eligible(values, birth, Collections.emptyMap(), day)
+                .contains(Stage.AFTER_WEANING));
+    }
+
+    @Test
     public void missingDobOrFutureClinicalDayCannotBeNormalizedIntoEligibility() {
         assertFalse(MotherMentorChildEidHeiUtils.isComplete(first("agreed"), null, day,
                 Collections.emptyMap(), "none"));

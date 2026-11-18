@@ -181,6 +181,57 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void replayKeepsBreastfeedingHistoryWhenAnOfflineVisitClaimsNeverBreastfed() throws Exception {
+        data.execSQL("INSERT INTO ec_mothermentor_enroll_child_eid VALUES ('child', '', ?)",
+                new Object[] {dob.toString()});
+        LocalDate day = dob.plusMonths(10);
+        Map<String, String> never = childBreastfeeding(null);
+        never.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        visit("first", "first", "child", never, day, 1, false);
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository
+                .getStateForChild(db, "child", null);
+        assertEquals("never_breastfed", state.getBreastfeedingStatus());
+        assertFalse(state.hasBreastfeedingHistory());
+        assertNull(state.getWeaningDate());
+
+        visit("started", "started", "child", childBreastfeeding(null), day.plusDays(1), 1, false);
+        visit("offline", "offline", "child", never, day.plusDays(2), 1, false);
+        state = MotherMentorMotherChildRepository.getStateForChild(db, "child", null);
+        assertEquals("breastfeeding", state.getBreastfeedingStatus());
+        assertTrue(state.hasBreastfeedingHistory());
+        assertNull(state.getWeaningDate());
+        assertFalse(MotherMentorMotherChildRepository.getStateForChildBeforeVisit(db, "child", "started")
+                .hasBreastfeedingHistory());
+    }
+
+    @Test
+    public void earlierEnrollmentRemainsBreastfeedingEvidenceAfterAnAmbiguousLegacyEnrollment() throws Exception {
+        data.execSQL("INSERT INTO ec_mothermentor_enroll_child_eid VALUES ('child', '', ?)",
+                new Object[] {dob.toString()});
+        for (String status : new String[] {"breast_feeding", "not_breast_feeding"}) {
+            String day = dob.plusMonths("breast_feeding".equals(status) ? 2 : 4).toString();
+            Map<String, String> fields = new LinkedHashMap<>();
+            fields.put(BREASTFEEDING_STATUS, status);
+            fields.put(CHILD_DOB, dob.toString());
+            JSONObject event = new JSONObject().put("formSubmissionId", status).put("eventDate", day)
+                    .put("version", 1).put("obs", observations(fields));
+            ContentValues row = new ContentValues();
+            row.put("baseEntityId", "child");
+            row.put("eventType", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID);
+            row.put("eventDate", day);
+            row.put("formSubmissionId", status);
+            row.put("json", event.toString());
+            data.insertOrThrow("event", null, row);
+        }
+
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository
+                .getStateForChild(db, "child", null);
+        assertTrue(state.hasBreastfeedingHistory());
+        assertEquals("breastfeeding", state.getBreastfeedingStatus());
+        assertNull(state.getWeaningDate());
+    }
+
+    @Test
     public void carriedWeaningDateFollowsTheCorrectedSource() throws Exception {
         link("child", dob);
         LocalDate day = dob.plusMonths(10);
