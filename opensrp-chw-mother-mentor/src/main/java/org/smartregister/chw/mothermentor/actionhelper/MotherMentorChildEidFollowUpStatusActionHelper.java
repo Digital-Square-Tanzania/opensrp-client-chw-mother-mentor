@@ -53,7 +53,8 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
     public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> details) {
         super.onJsonFormLoaded(jsonPayload, context, details);
         List<VisitDetail> numbers = details == null ? null : details.get(DBConstants.KEY.HEI_NUMBER);
-        savedHeiNumber = numbers == null || numbers.isEmpty() ? "" : numbers.get(0).getDetails();
+        savedHeiNumber = numbers == null || numbers.isEmpty() ? ""
+                : MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(numbers.get(0).getDetails());
     }
 
     @Override
@@ -149,9 +150,12 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
         try {
             JSONObject form = MotherMentorChildEidStatusUtils.clearInactiveAnswers(
                     new JSONObject(source));
-            if (!MotherMentorChildEidStatusUtils.isFoundAlive(MotherMentorChildEidStatusUtils.values(form))) {
-                JSONObject hei = FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER);
-                if (hei != null) hei.put(JsonFormConstants.VALUE, "");
+            JSONObject hei = FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER);
+            if (hei != null) {
+                boolean foundAlive = MotherMentorChildEidStatusUtils.isFoundAlive(
+                        MotherMentorChildEidStatusUtils.values(form));
+                hei.put(JsonFormConstants.VALUE, foundAlive ? MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(
+                        JsonFormUtils.getValue(form, DBConstants.KEY.HEI_NUMBER)) : "");
             }
             String cleaned = form.toString();
             super.onPayloadReceived(cleaned);

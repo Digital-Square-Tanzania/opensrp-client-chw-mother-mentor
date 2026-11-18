@@ -3,17 +3,26 @@ package org.smartregister.chw.mothermentor.util;
 import android.app.Application;
 import android.content.Context;
 
+import com.vijay.jsonwizard.activities.JsonFormActivity;
+import com.vijay.jsonwizard.rules.RulesEngineFactory;
+
+import org.jeasy.rules.api.Facts;
 import org.joda.time.LocalDate;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,6 +32,7 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidDirectEnrollmentTest {
+    private static final String WEANED_LAST_TEST = "direct_enrollment_last_test_weaned";
     private final Context context = RuntimeEnvironment.getApplication();
     private final LocalDate day = LocalDate.now();
 
@@ -79,6 +89,72 @@ public class MotherMentorChildEidDirectEnrollmentTest {
         MotherMentorChildEidDirectEnrollment.prepareForEvent(context, null, positive, child, "Family");
         assertEquals("confirmation_needed", MotherMentorMotherChildUtils.values(positive).get(MTOTO_RUFAA_STATE));
         assertEquals("at_birth", MotherMentorMotherChildUtils.values(positive).get(MTOTO_RUFAA_TEST));
+    }
+
+    @Test
+    public void wizardUsesOneLastTestGroupAndChecksTheResultOfTheActiveGroup() throws Exception {
+        for (String locale : new String[] {"", "-sw"}) {
+            JSONObject form = prepare(child(day.minusMonths(15)), locale);
+            JsonFormActivity activity = nativeActivity(form);
+            assertTrue(relevant(activity, form, LAST_TEST));
+            assertFalse(relevant(activity, form, WEANED_LAST_TEST));
+            assertFalse(relevant(activity, form, LAST_TEST_RESULT));
+            MotherMentorMotherChildUtils.put(form, LAST_TEST, "no_test_has_been_done_yet");
+            assertFalse(relevant(activity, form, LAST_TEST_RESULT));
+            MotherMentorMotherChildUtils.put(form, LAST_TEST, "at_birth");
+            assertTrue(relevant(activity, form, LAST_TEST_RESULT));
+            MotherMentorMotherChildUtils.put(form, LAST_TEST_RESULT, "pending");
+            assertTrue(relevant(activity, form, MTOTO_ENTRY_TEST_DATE));
+
+            MotherMentorMotherChildUtils.put(form, BREASTFEEDING_STATUS, "stop_breast_feeding");
+            assertFalse(relevant(activity, form, LAST_TEST));
+            assertTrue(relevant(activity, form, WEANED_LAST_TEST));
+            assertFalse(relevant(activity, form, LAST_TEST_RESULT));
+            MotherMentorMotherChildUtils.put(form, WEANED_LAST_TEST, "three_months_after_weaning");
+            assertTrue(relevant(activity, form, LAST_TEST_RESULT));
+        }
+    }
+
+    @Test
+    public void nativeOptionalHeiPlaceholderRemainsBlankOnEnrollment() throws Exception {
+        Map<String, String> child = child(day.minusWeeks(10));
+        JSONObject form = prepare(child, "");
+        MotherMentorMotherChildUtils.put(form, LAST_TEST, "no_test_has_been_done_yet");
+        MotherMentorMotherChildUtils.put(form, HEI_NUMBER, "00-00-0000-000000-C00");
+        MotherMentorChildEidDirectEnrollment.prepareForEvent(context, null, form, child, "Family");
+        assertEquals("", MotherMentorMotherChildUtils.values(form).get(HEI_NUMBER));
+        assertEquals("01-00-0000-000000-C00",
+                MotherMentorChildEidDirectEnrollment.normalizeHeiNumber("01-00-0000-000000-C00"));
+    }
+
+    private JsonFormActivity nativeActivity(JSONObject form) throws Exception {
+        JsonFormActivity activity = Robolectric.buildActivity(JsonFormActivity.class).get();
+        ReflectionHelpers.setField(activity, "mJSONObject", form);
+        activity.setRulesEngineFactory(new RulesEngineFactory(context, Collections.emptyMap()));
+        ReflectionHelpers.callInstanceMethod(activity, "initComparisons");
+        Map<String, JSONObject> fields = ReflectionHelpers.getField(activity, "formFields");
+        for (int i = 1; i <= form.getInt("count"); i++) {
+            String step = "step" + i;
+            JSONArray definitions = form.getJSONObject(step).getJSONArray("fields");
+            for (int j = 0; j < definitions.length(); j++) {
+                JSONObject field = definitions.getJSONObject(j);
+                fields.put(step + "_" + field.getString("key"), field);
+            }
+        }
+        return activity;
+    }
+
+    private boolean relevant(JsonFormActivity activity, JSONObject form, String key) throws Exception {
+        JSONObject relevance = MotherMentorMotherChildUtils.field(form, key).getJSONObject("relevance");
+        String source = relevance.keys().next();
+        JSONObject comparison = relevance.getJSONObject(source);
+        String[] address = "rules-engine".equals(source)
+                ? new String[]{source, comparison.getJSONObject("ex-rules").getString("rules-file"), "step4_" + key}
+                : source.split(":");
+        Facts facts = ReflectionHelpers.callInstanceMethod(activity, "getValueFromAddress",
+                ClassParameter.from(String[].class, address), ClassParameter.from(boolean.class, false));
+        return ReflectionHelpers.callInstanceMethod(activity, "isRelevant",
+                ClassParameter.from(Facts.class, facts), ClassParameter.from(JSONObject.class, comparison));
     }
 
     private JSONObject prepare(Map<String, String> child, String locale) throws Exception {

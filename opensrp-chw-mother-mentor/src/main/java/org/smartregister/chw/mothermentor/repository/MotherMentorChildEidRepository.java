@@ -215,7 +215,8 @@ public final class MotherMentorChildEidRepository {
     private static void seedDirectEnrollment(State state, Map<String, String> original) {
         if (original.isEmpty()) return;
         for (String key : DIRECT_COLUMNS) state.enrollment.put(key, value(original, key));
-        state.enrollment.put(DBConstants.KEY.HEI_NUMBER, value(original, DBConstants.KEY.HEI_NUMBER));
+        state.enrollment.put(DBConstants.KEY.HEI_NUMBER, MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(
+                value(original, DBConstants.KEY.HEI_NUMBER)));
         if (!MotherMentorChildEidReturnVisit.AWAITING_RESULT.equals(state.getReferralState())) return;
         Stage stage = Stage.fromCode(value(original, DBConstants.KEY.MTOTO_ENTRY_TEST));
         LocalDate sampleDate = MotherMentorHeiSchedule.parseDate(value(original, DBConstants.KEY.MTOTO_ENTRY_TEST_DATE));
@@ -338,7 +339,7 @@ public final class MotherMentorChildEidRepository {
         String before = state.getReferralState();
         if (!before.equals(value(answers, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return;
         if (state.isDirectEnrollment() && value(state.enrollment, DBConstants.KEY.HEI_NUMBER).isEmpty()) {
-            String number = value(answers, DBConstants.KEY.HEI_NUMBER);
+            String number = MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(value(answers, DBConstants.KEY.HEI_NUMBER));
             if (number.matches(MotherMentorChildEidDirectEnrollment.HEI_PATTERN)) {
                 state.enrollment.put(DBConstants.KEY.HEI_NUMBER, number);
             }

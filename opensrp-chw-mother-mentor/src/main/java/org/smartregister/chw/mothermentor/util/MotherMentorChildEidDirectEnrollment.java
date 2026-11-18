@@ -31,6 +31,7 @@ public final class MotherMentorChildEidDirectEnrollment {
     public static final String CONFIRMATION_NEEDED = "confirmation_needed";
     public static final String CONFIRMATION_REFERRED = "confirmation_referred";
     public static final String HEI_PATTERN = "[0-9]{2}-[0-9]{2}-[0-9]{4}-[0-9]{6}-C[0-9]{2}";
+    private static final String EMPTY_HEI_NUMBER = "00-00-0000-000000-C00";
     private static final String NO_TEST = "no_test_has_been_done_yet";
     private static final String WEANED_LAST_TEST = "direct_enrollment_last_test_weaned";
     private static final String RULES = "mothermentor_child_eid_direct_enrollment.yml";
@@ -87,9 +88,11 @@ public final class MotherMentorChildEidDirectEnrollment {
         JSONArray stages = last.getJSONArray("options");
         if (today.isBefore(dob.plusMonths(9))) remove(stages, "dbs_9");
         if (today.isBefore(dob.plusWeeks(6))) remove(stages, "dbs_6");
-        last.put("relevance", rule());
+        String feedingAddress = "step3:" + BREASTFEEDING_STATUS;
+        last.put("relevance", answer(feedingAddress, "stop_breast_feeding", "notEqualTo"));
         JSONObject weaned = new JSONObject(last.toString());
-        weaned.put("key", WEANED_LAST_TEST).put("openmrs_entity_id", WEANED_LAST_TEST);
+        weaned.put("key", WEANED_LAST_TEST).put("openmrs_entity_id", WEANED_LAST_TEST)
+                .put("relevance", answer(feedingAddress, "stop_breast_feeding"));
         if (!today.isBefore(dob.plusMonths(4))) {
             weaned.getJSONArray("options").put(option(Stage.AFTER_WEANING.getCode(),
                     MotherMentorChildEidLabels.test(context, Stage.AFTER_WEANING.getCode())));
@@ -114,7 +117,7 @@ public final class MotherMentorChildEidDirectEnrollment {
         String childId = value(child, BASE_ENTITY_ID);
         Map<String, String> answers = MotherMentorMotherChildUtils.values(form);
         String registered = value(answers, HEI_REGISTERED);
-        String hei = "yes".equals(registered) ? value(answers, HEI_NUMBER) : "";
+        String hei = "yes".equals(registered) ? normalizeHeiNumber(value(answers, HEI_NUMBER)) : "";
         String caregiver = value(answers, MTOTO_CAREGIVER_NAME);
         String relationship = value(answers, MTOTO_CAREGIVER_RELATIONSHIP);
         String phone = value(answers, MTOTO_CAREGIVER_PHONE);
@@ -133,8 +136,7 @@ public final class MotherMentorChildEidDirectEnrollment {
         if ("stop_breast_feeding".equals(feeding) && !MotherMentorHeiSchedule.validDate(weaning, dob, day)) {
             throw error(context, R.string.mothermentor_eid_direct_weaning_invalid);
         }
-        String test = value(answers, WEANED_LAST_TEST);
-        if (weaning == null || test.isEmpty()) test = value(answers, LAST_TEST);
+        String test = value(answers, weaning == null ? LAST_TEST : WEANED_LAST_TEST);
         Stage last = enrollmentStage(test);
         if (!NO_TEST.equals(test) && !eligibleLast(last, dob, weaning, day)) {
             throw error(context, R.string.mothermentor_eid_direct_last_test_invalid);
@@ -209,11 +211,17 @@ public final class MotherMentorChildEidDirectEnrollment {
     }
 
     public static void validateHeiNumber(Context context, SQLiteDatabase db, String childId, String value) {
-        if (StringUtils.isBlank(value)) return;
+        value = normalizeHeiNumber(value);
+        if (value.isEmpty()) return;
         if (!value.matches(HEI_PATTERN)) throw error(context, R.string.mothermentor_eid_direct_hei_invalid);
         if (MotherMentorChildEidDao.isHeiNumberRegistered(db, childId, value)) {
             throw error(context, R.string.mothermentor_eid_direct_hei_duplicate);
         }
+    }
+
+    public static String normalizeHeiNumber(String value) {
+        String number = StringUtils.trimToEmpty(value);
+        return EMPTY_HEI_NUMBER.equals(number) ? "" : number;
     }
 
     public static JSONObject heiField(Context context) throws JSONException {
@@ -311,8 +319,12 @@ public final class MotherMentorChildEidDirectEnrollment {
     }
 
     private static JSONObject answer(String field, String code) throws JSONException {
+        return answer(field, code, "equalTo");
+    }
+
+    private static JSONObject answer(String field, String code, String comparison) throws JSONException {
         return new JSONObject().put(field,
-                new JSONObject().put("type", "string").put("ex", "equalTo(., \"" + code + "\")"));
+                new JSONObject().put("type", "string").put("ex", comparison + "(., \"" + code + "\")"));
     }
 
     private static JSONObject rule() throws JSONException {

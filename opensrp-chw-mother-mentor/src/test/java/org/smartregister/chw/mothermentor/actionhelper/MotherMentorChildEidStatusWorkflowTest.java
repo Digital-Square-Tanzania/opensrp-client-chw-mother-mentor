@@ -50,6 +50,20 @@ public class MotherMentorChildEidStatusWorkflowTest {
     }
 
     @Test
+    public void optionalHeiPlaceholderIsClearedButEnteredNumberIsRetainedForALiveChild() throws Exception {
+        MotherMentorChildEidFollowUpStatusActionHelper helper =
+                new MotherMentorChildEidFollowUpStatusActionHelper(null);
+        JSONObject form = MotherMentorActionHelpersTest.form("child_eid_follow_up_schema", "3",
+                "follow_up_status", "found", "mama_child_status", "alive",
+                DBConstants.KEY.HEI_NUMBER, "00-00-0000-000000-C00");
+        assertEquals("", JsonFormUtils.getValue(
+                new JSONObject(helper.postProcess(form.toString())), DBConstants.KEY.HEI_NUMBER));
+        FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER).put("value", "11-02-2026-000004-C02");
+        assertEquals("11-02-2026-000004-C02", JsonFormUtils.getValue(
+                new JSONObject(helper.postProcess(form.toString())), DBConstants.KEY.HEI_NUMBER));
+    }
+
+    @Test
     public void preprocessingUsesTheRealChildDobAndOriginalServiceDay() throws Exception {
         MemberObject member = new MemberObject(); member.setDob("2026-01-20");
         MotherMentorChildEidFollowUpStatusActionHelper helper =
