@@ -159,6 +159,26 @@ public class MotherMentorChildEidHeiUiTest {
         assertNotNull(f.date.getError());
     }
 
+    @Test
+    public void pendingResultPromptsImmediatelyInBothLanguagesAndClearsForTheFinalTest() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture f = new Fixture(language, "referred");
+            f.put(MTOTO_RETURN_FLOW, "1");
+            f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            f.put(MAMA_HEI_TEST_DONE, "yes");
+            f.put(CHILD_EID_TEST_TYPE, "nine_months");
+            f.put(MAMA_HEI_TEST_RESULT, "pending");
+            f.refresh();
+            assertEquals("sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", f.value(MTOTO_RETURN_RESULT_NOTE));
+            f.put(MAMA_HEI_ASSESSMENT_DATE, "2027-07-01");
+            f.put(CHILD_EID_TEST_TYPE, "eighteen_months");
+            f.put(MAMA_HEI_TEST_RESULT, "pending");
+            MotherMentorChildEidHeiUi.prepare(f.form, f.activity);
+            assertEquals("", f.value(MAMA_HEI_TEST_RESULT));
+        }
+    }
+
     private static final class Fixture {
         final JSONObject form;
         final JsonFormActivity activity;

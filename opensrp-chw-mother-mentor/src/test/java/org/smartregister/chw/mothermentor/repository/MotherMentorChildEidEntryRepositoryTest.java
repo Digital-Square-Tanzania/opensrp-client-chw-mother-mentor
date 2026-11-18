@@ -75,6 +75,7 @@ public class MotherMentorChildEidEntryRepositoryTest {
         when(db.update(anyString(), any(ContentValues.class), anyString(), any(String[].class))).thenAnswer(
                 call -> data.update(call.getArgument(0), call.getArgument(1), call.getArgument(2), call.getArgument(3)));
         MotherMentorChildEidRepository.upgrade(db);
+        MotherMentorChildEidRepository.upgradeExitSchema(db);
     }
 
     @After public void tearDown() { data.close(); }
@@ -320,6 +321,30 @@ public class MotherMentorChildEidEntryRepositoryTest {
         try (Cursor cursor = data.rawQuery(MotherMentorChildEidDao.pageQuery("", false, 10, 0), null)) {
             assertTrue(cursor.moveToFirst());
             assertEquals("child", cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)));
+        }
+    }
+
+    @Test public void registerFlagsPendingResultsOnlyAfterEachStagesLimit() {
+        eidRow("child", 0);
+        for (String[] test : new String[][] {
+                {"at_birth", "7"}, {"wiki6", "14"}, {"nine_months", "14"}, {"miezi15", "14"},
+                {"eighteen_months", "0"}, {"unknown", "0"}}) {
+            int limit = Integer.parseInt(test[1]);
+            assertEquals("awaiting_result", registerResultState(test[0], limit, "awaiting_result"));
+            assertEquals(limit == 0 ? "awaiting_result" : "results_overdue",
+                    registerResultState(test[0], limit == 0 ? 60 : limit + 1, "awaiting_result"));
+        }
+        assertEquals("none", registerResultState("wiki6", 20, "none"));
+        assertEquals("awaiting_confirm", registerResultState("wiki6", 20, "awaiting_confirm"));
+    }
+
+    private String registerResultState(String stage, int daysSinceTest, String state) {
+        data.execSQL("UPDATE ec_mothermentor_enroll_child_eid SET mtoto_pending_test=?, "
+                        + "mtoto_pending_test_date=?, mtoto_rufaa_state=? WHERE base_entity_id='child'",
+                new String[] {stage, LocalDate.now().minusDays(daysSinceTest).toString(), state});
+        try (Cursor cursor = data.rawQuery(MotherMentorChildEidDao.pageQuery("", false, 10, 0), null)) {
+            assertTrue(cursor.moveToFirst());
+            return cursor.getString(cursor.getColumnIndexOrThrow(MTOTO_RUFAA_STATE));
         }
     }
 

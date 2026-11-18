@@ -71,13 +71,18 @@ public final class MotherMentorChildEidHeiUi {
                 RadioButton button = (RadioButton) control;
                 Stage stage = Stage.fromCode(String.valueOf(button.getTag(
                         com.vijay.jsonwizard.R.id.childKey)));
-                View container = button;
-                while (container.getParent() instanceof View
-                        && !(container.getParent() instanceof RadioGroup)) {
-                    container = (View) container.getParent();
+                showOption(button, allowed.contains(stage));
+            }
+            boolean finalTest = Stage.fromCode(prepared.get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
+                    == Stage.EIGHTEEN_MONTHS;
+            for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
+                    DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
+                for (View view : controls(root, key)) {
+                    if (view instanceof RadioButton
+                            && "pending".equals(view.getTag(com.vijay.jsonwizard.R.id.childKey))) {
+                        showOption((RadioButton) view, !finalTest);
+                    }
                 }
-                container.setVisibility(allowed.contains(stage) ? View.VISIBLE : View.GONE);
-                button.setEnabled(allowed.contains(stage));
             }
             previous = new LinkedHashMap<>(prepared);
         } finally {
@@ -87,6 +92,16 @@ public final class MotherMentorChildEidHeiUi {
 
     private boolean changed(Map<String, String> values, String key) {
         return !Objects.equals(previous.get(key), values.get(key));
+    }
+
+    private static void showOption(RadioButton button, boolean visible) {
+        View container = button;
+        while (container.getParent() instanceof View
+                && !(container.getParent() instanceof RadioGroup)) {
+            container = (View) container.getParent();
+        }
+        container.setVisibility(visible ? View.VISIBLE : View.GONE);
+        button.setEnabled(visible);
     }
 
     private static void clearReferralAndReturn(JSONObject form) {
@@ -135,6 +150,16 @@ public final class MotherMentorChildEidHeiUi {
             } else if (selected != null) {
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.CHILD_EID_TEST_TYPE,
                         selected.getCode());
+            }
+        }
+        if (Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
+                == Stage.EIGHTEEN_MONTHS) {
+            for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
+                    DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
+                JSONObject field = MotherMentorMotherChildUtils.field(form, key);
+                if (field != null && "pending".equals(field.optString("value"))) {
+                    MotherMentorMotherChildUtils.put(form, key, "");
+                }
             }
         }
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_CHILD_AGE_NOTE,
@@ -228,6 +253,11 @@ public final class MotherMentorChildEidHeiUi {
     public static String returnNote(Context context, Map<String, String> values, LocalDate dob,
             LocalDate day, Map<Stage, TestRecord> tests) {
         if (context == null) return "";
+        if (MotherMentorChildEidReturnVisit.REFERRED.equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
+                && "pending".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
+            return Stage.fromCode(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE)) == Stage.EIGHTEEN_MONTHS
+                    ? "" : context.getString(R.string.mothermentor_eid_return_wait_result);
+        }
         MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
                 values, dob, day, tests, values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE));
         if (result == null) return "";
