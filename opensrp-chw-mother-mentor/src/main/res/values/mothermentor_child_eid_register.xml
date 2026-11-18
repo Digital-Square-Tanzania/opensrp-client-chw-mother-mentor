@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="mothermentor_eid_action_blue">#12668B</color>
     <item name="action_mothermentor_child_eid_filter" type="id" />
     <string name="mothermentor_eid_title">Child EID</string>
     <string name="mothermentor_eid_newborn">Newborn</string>

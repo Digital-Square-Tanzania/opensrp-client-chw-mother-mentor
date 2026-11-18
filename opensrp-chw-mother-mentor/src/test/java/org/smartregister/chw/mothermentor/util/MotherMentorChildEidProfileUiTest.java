@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import android.app.Activity;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.joda.time.LocalDate;
@@ -86,10 +87,11 @@ public class MotherMentorChildEidProfileUiTest {
     }
 
     @Test
-    public void portraitIsCenteredAndBadgeWrapsToItsLeft() {
+    public void portraitStaysCenteredWithLongBadgeToItsRight() {
         Activity activity = screen();
         TextView pill = text(activity, R.id.client_metadata);
         pill.setText("Inasubiri uthibitisho");
+        pill.setTextScaleX(1.4f);
         LinearLayout profile = (LinearLayout) pill.getParent();
         View portrait = new View(activity);
         portrait.setId(R.id.imageview_profile);
@@ -99,15 +101,16 @@ public class MotherMentorChildEidProfileUiTest {
         ui.positionHeader(activity, pill);
         ui.positionHeader(activity, pill);
         View header = (View) portrait.getParent();
-        header.measure(View.MeasureSpec.makeMeasureSpec(360, View.MeasureSpec.EXACTLY),
+        header.measure(View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        header.layout(0, 0, 360, header.getMeasuredHeight());
+        header.layout(0, 0, 320, header.getMeasuredHeight());
 
         assertSame(header, pill.getParent());
-        assertEquals(360, portrait.getLeft() + portrait.getRight());
-        assertTrue(pill.getRight() < portrait.getLeft());
-        assertTrue(pill.getLeft() >= 0 && pill.getWidth() > 0);
-        assertTrue(pill.getWidth() < header.getWidth() / 2);
+        assertEquals(header.getWidth(), portrait.getLeft() + portrait.getRight());
+        assertTrue(pill.getLeft() > portrait.getRight());
+        assertTrue(pill.getRight() < header.getWidth());
+        assertTrue(pill.getWidth() > 0);
+        assertTrue(pill.getMaxLines() > 1);
     }
 
     @Test
@@ -142,6 +145,27 @@ public class MotherMentorChildEidProfileUiTest {
         assertEquals(View.GONE, activity.findViewById(R.id.mothermentor_profile_demographics).getVisibility());
         assertEquals(View.VISIBLE, activity.findViewById(R.id.textview_name).getVisibility());
         assertEquals(View.VISIBLE, activity.findViewById(R.id.mothermentor_eid_profile_metadata).getVisibility());
+
+        View content = activity.findViewById(R.id.record_mothermentor_bar);
+        RelativeLayout history = activity.findViewById(R.id.rlLastVisit);
+        TextView label = history.findViewById(R.id.ivViewHistoryArrow);
+        assertEquals(content.getPaddingStart(), history.getPaddingStart());
+        assertEquals(content.getPaddingEnd(), history.getPaddingEnd());
+        RelativeLayout.LayoutParams labelParams = (RelativeLayout.LayoutParams) label.getLayoutParams();
+        assertEquals(0, labelParams.getMarginStart());
+        history.setVisibility(View.VISIBLE);
+        history.measure(View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        history.layout(0, 0, 320, history.getMeasuredHeight());
+        assertEquals(history.getPaddingStart(), label.getLeft());
+        assertTrue(label.getRight() < history.findViewById(R.id.iv_last_visit_arrow).getLeft());
+        for (int id : new int[]{R.id.textview_record_mothermentor, R.id.textview_record_child_eid_result}) {
+            TextView action = activity.findViewById(id);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) action.getLayoutParams();
+            assertEquals(0, params.getMarginStart());
+            assertEquals(0, params.getMarginEnd());
+            assertEquals(Math.round(48 * activity.getResources().getDisplayMetrics().density), action.getMinHeight());
+        }
     }
 
     private Activity screen() {

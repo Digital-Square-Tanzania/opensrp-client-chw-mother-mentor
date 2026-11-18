@@ -5,7 +5,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 /** Presentation of library-owned tracing data inside the host's existing client profile. */
 public final class MotherMentorChildEidProfileUi {
+    private static final int CONTENT_INSET_DP = 24;
     private View summary;
 
     public void positionHeader(Activity activity, TextView pill) {
@@ -28,6 +31,15 @@ public final class MotherMentorChildEidProfileUi {
         ViewGroup.LayoutParams portraitSize = portrait.getLayoutParams();
         profile.removeView(portrait);
         if (pill.getParent() instanceof ViewGroup) ((ViewGroup) pill.getParent()).removeView(pill);
+        profile.setPaddingRelative(profile.getPaddingStart(), profile.getPaddingTop(),
+                profile.getPaddingEnd(), dp(activity, 10));
+
+        TextView name = activity.findViewById(R.id.textview_name);
+        if (name != null) {
+            int inset = dp(activity, CONTENT_INSET_DP);
+            name.setPaddingRelative(inset, name.getPaddingTop(), inset, name.getPaddingBottom());
+            name.setGravity(Gravity.CENTER);
+        }
 
         ConstraintLayout header = new ConstraintLayout(activity);
         profile.addView(header, index, new LinearLayout.LayoutParams(
@@ -39,13 +51,13 @@ public final class MotherMentorChildEidProfileUi {
 
         ConstraintLayout.LayoutParams badge = new ConstraintLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        badge.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
-        badge.endToStart = portrait.getId();
-        badge.topToTop = badge.bottomToBottom = portrait.getId();
-        badge.horizontalBias = 1f;
+        badge.startToEnd = portrait.getId();
+        badge.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        badge.topToTop = badge.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        badge.horizontalBias = 0f;
         badge.constrainedWidth = true;
-        badge.setMarginStart(dp(activity, 8));
-        badge.setMarginEnd(dp(activity, 8));
+        badge.setMarginStart(dp(activity, 12));
+        badge.setMarginEnd(dp(activity, 16));
         pill.setGravity(Gravity.CENTER);
         pill.setTextSize(12);
         header.addView(pill, badge);
@@ -66,6 +78,7 @@ public final class MotherMentorChildEidProfileUi {
         if (summary == null) {
             summary = activity.getLayoutInflater().inflate(R.layout.view_mothermentor_child_eid_summary, parent, false);
             parent.addView(summary, parent.indexOfChild(button));
+            styleContent(activity, parent, button);
             View legacyActions = activity.findViewById(R.id.record_visits);
             if (legacyActions != null) legacyActions.setVisibility(View.GONE);
         }
@@ -99,6 +112,38 @@ public final class MotherMentorChildEidProfileUi {
         if (child.isClosed()) button.setVisibility(View.GONE);
         bindPill(activity, child, pill, !reason.isEmpty());
         bindClosedBanner(activity, child);
+    }
+
+    private void styleContent(Activity activity, LinearLayout parent, TextView visit) {
+        int inset = dp(activity, CONTENT_INSET_DP);
+        parent.setPaddingRelative(inset, parent.getPaddingTop(), inset, parent.getPaddingBottom());
+        TextView result = activity.findViewById(R.id.textview_record_child_eid_result);
+        for (TextView action : new TextView[]{visit, result}) {
+            if (action == null) continue;
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) action.getLayoutParams();
+            params.setMargins(0, params.topMargin, 0, params.bottomMargin);
+            params.setMarginStart(0);
+            params.setMarginEnd(0);
+            action.setLayoutParams(params);
+            action.setBackgroundResource(R.drawable.mothermentor_child_eid_action);
+            action.setMinHeight(dp(activity, 48));
+            action.setGravity(Gravity.CENTER);
+            int textInset = dp(activity, 16);
+            action.setPaddingRelative(textInset, action.getPaddingTop(), textInset, action.getPaddingBottom());
+        }
+
+        RelativeLayout history = activity.findViewById(R.id.rlLastVisit);
+        if (history == null) return;
+        history.setPaddingRelative(inset, history.getPaddingTop(), inset, history.getPaddingBottom());
+        TextView label = history.findViewById(R.id.ivViewHistoryArrow);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) label.getLayoutParams();
+        params.leftMargin = 0;
+        params.setMarginStart(0);
+        params.setMarginEnd(dp(activity, 12));
+        params.addRule(RelativeLayout.START_OF, R.id.iv_last_visit_arrow);
+        label.setLayoutParams(params);
+        ImageView arrow = history.findViewById(R.id.iv_last_visit_arrow);
+        arrow.setColorFilter(activity.getResources().getColor(R.color.mama_kinara_secondary));
     }
 
     private void bindPill(Activity activity, MotherMentorChildEidRepository.State child, TextView pill,
