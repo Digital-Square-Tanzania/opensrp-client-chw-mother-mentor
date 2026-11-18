@@ -171,6 +171,7 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
                         clinical.getBreastfeedingStatus());
                 putIfEmpty(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                         clinical.getWeaningDate() == null ? "" : clinical.getWeaningDate().toString());
+                if (currentVisitId != null) MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(form);
             }
             MotherMentorChildEidHeiUtils.clearInactiveAnswers(form);
             MotherMentorChildEidHeiUi.prepare(form, context);

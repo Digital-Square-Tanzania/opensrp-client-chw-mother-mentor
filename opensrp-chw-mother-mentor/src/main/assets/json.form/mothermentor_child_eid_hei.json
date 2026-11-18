@@ -749,11 +749,11 @@
         }
       },
       {
-        "key": "mtoto_confirmation_received",
+        "key": "mtoto_confirmatory_test_done",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "mtoto_confirmation_received",
-        "label": "Has the confirmatory test result been received?",
+        "openmrs_entity_id": "mtoto_confirmatory_test_done",
+        "label": "Was the confirmatory test done?",
         "type": "native_radio",
         "options": [
           {
@@ -804,6 +804,13 @@
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "pending",
+            "text": "Pending",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
           }
         ],
         "v_required": {
@@ -817,6 +824,14 @@
             }
           }
         }
+      },
+      {
+        "key": "mtoto_confirmation_received",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_confirmation_received",
+        "type": "hidden",
+        "value": ""
       },
       {
         "key": "mtoto_return_result_note",

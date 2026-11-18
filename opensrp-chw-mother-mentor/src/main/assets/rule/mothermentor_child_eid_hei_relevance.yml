@@ -125,17 +125,17 @@ condition: "step1_mtoto_return_flow == '1' && ((step1_mtoto_rufaa_state_before =
 actions:
   - "isRelevant = true"
 ---
-name: step1_mtoto_confirmation_received
-description: Child EID HEI relevance
+name: step1_mtoto_confirmatory_test_done
+description: Confirmatory test performed after a positive Child EID result
 priority: 1
 condition: "(step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type) && step1_mama_hei_test_result == 'positive') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_result' && step1_mtoto_result_received == 'yes' && step1_mtoto_received_result == 'positive')"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_confirmatory_result
-description: Child EID HEI relevance
+description: Result of the performed Child EID confirmatory test
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm' && step1_mtoto_confirmation_received == 'yes'"
+condition: "step1_mtoto_confirmatory_test_done == 'yes' && ((step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type) && step1_mama_hei_test_result == 'positive') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_result' && step1_mtoto_result_received == 'yes' && step1_mtoto_received_result == 'positive'))"
 actions:
   - "isRelevant = true"
 ---
