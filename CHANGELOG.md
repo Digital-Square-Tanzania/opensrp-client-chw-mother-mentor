@@ -6,6 +6,23 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.31-SNAPSHOT — 2026-11-18
+
+### Added
+
+- Record Child EID results from the profile and link them to the original sample and follow-up visit (CHW #1196).
+- Enroll eligible children directly in Child EID follow-up and record caregiver and test history (CHW #1199).
+
+### Changed
+
+- Ask separately about confirmatory testing and its result, with distinct closure outcomes (CHW #1197).
+- Offer Never breastfed where the child's feeding history allows it (CHW #1198).
+- Capture when results are received and flag overdue Child EID results (CHW #1194, #1195).
+
+### Fixed
+
+- Show one last-test question in direct Child EID enrollment, keep untouched HEI numbers blank, and offer the number during a later visit when the child is found alive (CHW #1199).
+
 ## 0.1.30-SNAPSHOT — 2026-11-11
 
 ### Fixed
