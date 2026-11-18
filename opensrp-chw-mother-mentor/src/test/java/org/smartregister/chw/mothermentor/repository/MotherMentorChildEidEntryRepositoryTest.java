@@ -76,9 +76,42 @@ public class MotherMentorChildEidEntryRepositoryTest {
                 call -> data.update(call.getArgument(0), call.getArgument(1), call.getArgument(2), call.getArgument(3)));
         MotherMentorChildEidRepository.upgrade(db);
         MotherMentorChildEidRepository.upgradeExitSchema(db);
+        MotherMentorChildEidRepository.upgradeDirectEnrollmentSchema(db);
     }
 
     @After public void tearDown() { data.close(); }
+
+    @Test public void directEnrollmentPendingBirthSampleClosesWithoutCreatingAVisitOrTouchingTheMother() throws Exception {
+        LocalDate enrollment = dob.plusDays(20);
+        String childType = Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID;
+        data.execSQL("INSERT INTO ec_mothermentor_enroll_child_eid (base_entity_id, mother_base_entity_id, "
+                + "child_dob, is_closed, hei_number) VALUES ('child', '', ?, 0, '')",
+                new Object[]{dob.toString()});
+        rawEnrollment("child", childType, "direct-episode", enrollment, fields(
+                MTOTO_ENTRY_SOURCE, "direct", MTOTO_ENTRY_TEST, "at_birth", MTOTO_ENTRY_RESULT, "pending",
+                MTOTO_ENTRY_TEST_DATE, dob.toString(), MTOTO_RUFAA_STATE, "awaiting_result",
+                MTOTO_RUFAA_TEST, "at_birth", LAST_TEST, "at_birth", LAST_TEST_RESULT, "pending",
+                CHILD_DOB, dob.toString(), MOTHER_BASE_ENTITY_ID, ""));
+        MotherMentorChildEidResultEvent.PendingSample pending = MotherMentorChildEidResultEvent.pending(db, "child");
+        assertEquals("direct-episode", pending.getSampleSubmissionId());
+        assertEquals(Stage.AT_BIRTH, pending.getStage());
+        assertEquals(dob, pending.getSampleDate());
+
+        LocalDate receipt = enrollment.plusDays(1);
+        rawEnrollment("child", MotherMentorChildEidResultEvent.EVENT_TYPE, "result", receipt, fields(
+                CHILD_EID_RESULT_ENTRY, MotherMentorChildEidResultEvent.STANDALONE,
+                CHILD_EID_PARENT_SUBMISSION_ID, "direct-episode", CHILD_EID_SAMPLE_SUBMISSION_ID, "direct-episode",
+                MTOTO_ENROLLMENT_ID, "direct-episode", MTOTO_PENDING_TEST, "at_birth",
+                MTOTO_PENDING_TEST_DATE, dob.toString(), MTOTO_RUFAA_STATE_BEFORE, "awaiting_result",
+                MTOTO_RECEIVED_RESULT, "negative", MTOTO_RESULT_RECEIVED_DATE, receipt.toString(),
+                MOTHERMENTOR_VISIT_DATE, receipt.toString()));
+        MotherMentorChildEidRepository.State state = MotherMentorChildEidRepository.getState(db, "child", null);
+        assertEquals("tested_negative", state.getClosedStatus());
+        assertEquals("", state.getMotherId());
+        assertEquals(0, state.getVisitCount());
+        assertNull(state.getPendingSample());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
 
     @Test public void graceBoundaryUsesTheOriginalServiceDayNotTodaysSyncDate() throws Exception {
         LocalDate due = dob.plusMonths(9);

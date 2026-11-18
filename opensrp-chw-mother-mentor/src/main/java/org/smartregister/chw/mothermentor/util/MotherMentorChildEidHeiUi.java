@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment.CONFIRMATION_NEEDED;
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED;
+
 /** Bounded adapter for the HEI banner and existing native return-test controls. */
 public final class MotherMentorChildEidHeiUi {
     private static final String[] RESULT_FIELDS = {DBConstants.KEY.MAMA_HEI_TEST_RESULT,
@@ -119,7 +122,8 @@ public final class MotherMentorChildEidHeiUi {
         if (day == null) day = LocalDate.now();
         Map<Stage, TestRecord> tests = MotherMentorMotherChildUtils.parseTests(
                 values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY));
-        boolean first = "none".equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE));
+        String priorState = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+        boolean first = "none".equals(priorState);
         List<Stage> sampling = MotherMentorChildEidHeiUtils.eligible(values, dob, tests, day);
         List<Stage> review = MotherMentorChildEidHeiUtils.reviewable(values, dob, tests, day);
         JSONArray codes = new JSONArray();
@@ -141,7 +145,7 @@ public final class MotherMentorChildEidHeiUi {
                     DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT, "");
         } else if (MotherMentorChildEidReturnVisit.applies(values)) {
             prepareReturn(form, context, values, dob, day, tests, sampling);
-        } else {
+        } else if (!CONFIRMATION_NEEDED.equals(priorState)) {
             Stage selected = Stage.fromCode(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE));
             if (!review.contains(selected)) {
                 clearReferralAndReturn(form);
@@ -174,7 +178,11 @@ public final class MotherMentorChildEidHeiUi {
         String banner;
         if (dob == null) banner = context == null ? "" : context.getString(
                 R.string.mothermentor_child_eid_dob_required);
-        else if (MotherMentorChildEidReturnVisit.applies(values)
+        else if (CONFIRMATION_NEEDED.equals(priorState) || CONFIRMATION_REFERRED.equals(priorState)) {
+            Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_RUFAA_TEST));
+            banner = context == null || stage == null ? label(context, stage)
+                    : context.getString(R.string.mothermentor_eid_confirmatory_sample_stage, label(context, stage));
+        } else if (MotherMentorChildEidReturnVisit.applies(values)
                 && !MotherMentorChildEidReturnVisit.REFERRED.equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
                 && Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MTOTO_PENDING_TEST)) != null) {
             banner = label(context, Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MTOTO_PENDING_TEST)));
@@ -239,6 +247,8 @@ public final class MotherMentorChildEidHeiUi {
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.CHILD_EID_TEST_TYPE,
                         sampling.size() == 1 ? sampling.get(0).getCode() : "");
             }
+        } else if (CONFIRMATION_REFERRED.equals(state)) {
+            setConfirmatorySampleLabels(form, context);
         } else {
             Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_PENDING_TEST));
             if (stage == null) stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_RUFAA_TEST));
@@ -264,14 +274,28 @@ public final class MotherMentorChildEidHeiUi {
         }
     }
 
+    private static void setConfirmatorySampleLabels(JSONObject form, Context context) {
+        if (context == null) return;
+        JSONObject date = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_HEI_TEST_DATE);
+        JSONObject result = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_HEI_TEST_RESULT);
+        try {
+            if (date != null) date.put("hint", context.getString(R.string.mothermentor_eid_confirmatory_sample_date));
+            if (result != null) result.put("label", context.getString(R.string.mothermentor_eid_confirmatory_sample_result));
+        } catch (org.json.JSONException ignored) { }
+    }
+
     public static String returnNote(Context context, Map<String, String> values, LocalDate dob,
             LocalDate day, Map<Stage, TestRecord> tests) {
         if (context == null) return "";
-        if (MotherMentorChildEidReturnVisit.REFERRED.equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
+        String priorState = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+        if ((MotherMentorChildEidReturnVisit.REFERRED.equals(priorState) || CONFIRMATION_REFERRED.equals(priorState))
                 && "pending".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
-            return Stage.fromCode(values.get(DBConstants.KEY.CHILD_EID_TEST_TYPE)) == Stage.EIGHTEEN_MONTHS
+            String stageKey = CONFIRMATION_REFERRED.equals(priorState)
+                    ? DBConstants.KEY.MTOTO_RUFAA_TEST : DBConstants.KEY.CHILD_EID_TEST_TYPE;
+            return Stage.fromCode(values.get(stageKey)) == Stage.EIGHTEEN_MONTHS
                     ? "" : context.getString(R.string.mothermentor_eid_return_wait_result);
         }
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(values.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) return "";
         MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
                 values, dob, day, tests, values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE));
         if (result == null) return "";
@@ -346,6 +370,7 @@ public final class MotherMentorChildEidHeiUi {
         if (stage == null) return "";
         if (context == null) return stage.getCode();
         switch (stage) {
+            case AT_BIRTH: return MotherMentorChildEidLabels.test(context, stage.getCode());
             case SIX_WEEKS: return context.getString(R.string.mothermentor_child_eid_hei_stage_six_weeks);
             case NINE_MONTHS: return context.getString(R.string.mothermentor_child_eid_hei_stage_nine_months);
             case AFTER_WEANING: return context.getString(R.string.mothermentor_child_eid_hei_stage_three_months_after_weaning);

@@ -21,6 +21,9 @@
     <string name="mothermentor_eid_return_graduation">Negative at 18 months. The child has graduated.</string>
     <string name="mothermentor_eid_return_confirm_positive">Confirmed positive. Ensure the child is linked to ART and CTC.</string>
     <string name="mothermentor_eid_return_wait_result">Follow up the results at the facility.</string>
+    <string name="mothermentor_eid_confirmatory_sample_stage">Confirmatory test (%1$s)</string>
+    <string name="mothermentor_eid_confirmatory_sample_date">Confirmatory test date</string>
+    <string name="mothermentor_eid_confirmatory_sample_result">Confirmatory test result</string>
     <string name="mothermentor_eid_result_overdue">Results overdue</string>
     <string name="mothermentor_eid_overdue_sample">Results overdue · Test date: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Save. The child remains on the list awaiting confirmation.</string>

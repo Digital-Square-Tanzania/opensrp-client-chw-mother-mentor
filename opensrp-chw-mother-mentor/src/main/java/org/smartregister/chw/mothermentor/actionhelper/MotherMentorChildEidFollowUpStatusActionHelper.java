@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.actionhelper;
 
+import android.content.Context;
+
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
 
@@ -8,13 +10,17 @@ import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -24,6 +30,8 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
     private final MemberObject member;
     private final LocalDate serviceDate;
     private final Runnable onStatusChanged;
+    private final boolean offerHeiNumber;
+    private String savedHeiNumber;
 
     public MotherMentorChildEidFollowUpStatusActionHelper(Runnable onStatusChanged) {
         this(null, null, onStatusChanged);
@@ -31,9 +39,23 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
 
     public MotherMentorChildEidFollowUpStatusActionHelper(MemberObject member,
             LocalDate serviceDate, Runnable onStatusChanged) {
+        this(member, serviceDate, onStatusChanged, false);
+    }
+
+    public MotherMentorChildEidFollowUpStatusActionHelper(MemberObject member,
+            LocalDate serviceDate, Runnable onStatusChanged, boolean offerHeiNumber) {
         this.member = member;
         this.serviceDate = serviceDate;
         this.onStatusChanged = onStatusChanged;
+        this.offerHeiNumber = offerHeiNumber;
+    }
+
+    @Override
+    public void onJsonFormLoaded(String jsonPayload, Context context, Map<String, List<VisitDetail>> details) {
+        super.onJsonFormLoaded(jsonPayload, context, details);
+        List<VisitDetail> numbers = details == null ? null : details.get(DBConstants.KEY.HEI_NUMBER);
+        savedHeiNumber = numbers == null || numbers.isEmpty() ? ""
+                : MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(numbers.get(0).getDetails());
     }
 
     @Override
@@ -80,6 +102,10 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
                 if (dob != null) death.put("min_date", dob.toString("dd-MM-yyyy"));
                 death.put("max_date", assessmentDate().toString("dd-MM-yyyy"));
             }
+            if (offerHeiNumber && MotherMentorMotherChildUtils.field(form, DBConstants.KEY.HEI_NUMBER) == null) {
+                MotherMentorChildEidDirectEnrollment.addOptionalVisitNumber(this.context, form);
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.HEI_NUMBER, savedHeiNumber);
+            }
             if ("moved_area".equals(JsonFormUtils.getValue(form, DBConstants.KEY.MTOTO_NOT_FOUND_REASON))) {
                 JSONObject optional = FormUtils.getFieldFromForm(form,
                         DBConstants.KEY.MTOTO_MOVED_AREA_FACILITY);
@@ -124,6 +150,13 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
         try {
             JSONObject form = MotherMentorChildEidStatusUtils.clearInactiveAnswers(
                     new JSONObject(source));
+            JSONObject hei = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.HEI_NUMBER);
+            if (hei != null) {
+                boolean foundAlive = MotherMentorChildEidStatusUtils.isFoundAlive(
+                        MotherMentorChildEidStatusUtils.values(form));
+                hei.put(JsonFormConstants.VALUE, foundAlive ? MotherMentorChildEidDirectEnrollment.normalizeHeiNumber(
+                        JsonFormUtils.getValue(form, DBConstants.KEY.HEI_NUMBER)) : "");
+            }
             String cleaned = form.toString();
             super.onPayloadReceived(cleaned);
             return cleaned;

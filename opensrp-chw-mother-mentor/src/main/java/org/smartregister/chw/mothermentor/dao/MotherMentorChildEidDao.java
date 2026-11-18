@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
@@ -43,6 +44,15 @@ public final class MotherMentorChildEidDao {
 
     public static Map<String, String> person(SQLiteDatabase db, String childId) {
         return row(db, MEMBERS, childId);
+    }
+
+    public static boolean isHeiNumberRegistered(SQLiteDatabase db, String childId, String number) {
+        if (!columns(db, ENROLLMENTS).contains(DBConstants.KEY.HEI_NUMBER)) return false;
+        try (Cursor cursor = db.rawQuery("SELECT 1 FROM " + ENROLLMENTS + " WHERE "
+                + DBConstants.KEY.HEI_NUMBER + " = ? COLLATE NOCASE AND "
+                + DBConstants.KEY.BASE_ENTITY_ID + " <> ? LIMIT 1", new String[] {number, childId})) {
+            return cursor.moveToFirst();
+        }
     }
 
     public static Map<String, String> motherEnrollment(SQLiteDatabase db, String motherId) {
@@ -102,7 +112,9 @@ public final class MotherMentorChildEidDao {
 
     /** Native PNC/child enrollment already stores the authoritative mother relationship. */
     public static String motherId(SQLiteDatabase db, String childId) {
-        String mother = enrollment(db, childId).get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
+        Map<String, String> enrolled = enrollment(db, childId);
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(enrolled.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) return "";
+        String mother = enrolled.get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
         if (StringUtils.isNotBlank(mother)) return mother;
         Map<String, String> child = row(db, DBConstants.KEY.CHILD, childId);
         return StringUtils.defaultString(child.get(DBConstants.KEY.MOTHER_ENTITY_ID));
@@ -288,7 +300,10 @@ public final class MotherMentorChildEidDao {
                 DBConstants.KEY.MTOTO_RUFAA_TEST,
                 DBConstants.KEY.MTOTO_RUFAA_DUE, DBConstants.KEY.MTOTO_STATUS,
                 DBConstants.KEY.MTOTO_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MOTHER_BASE_ENTITY_ID,
-                DBConstants.KEY.HEI_NUMBER, DBConstants.KEY.MTOTO_VISIT_COUNT};
+                DBConstants.KEY.HEI_NUMBER, DBConstants.KEY.MTOTO_VISIT_COUNT,
+                DBConstants.KEY.MTOTO_CAREGIVER_NAME, DBConstants.KEY.MTOTO_CAREGIVER_RELATIONSHIP,
+                DBConstants.KEY.MTOTO_ENTRY_SOURCE, DBConstants.KEY.MTOTO_ENTRY_TEST,
+                DBConstants.KEY.MTOTO_ENTRY_RESULT};
         StringBuilder select = new StringBuilder("SELECT " + motherName() + " AS "
                 + DBConstants.KEY.MOTHER_NAME + ", f." + DBConstants.KEY.VILLAGE_TOWN
                 + " AS " + DBConstants.KEY.VILLAGE_TOWN + ", m.*");
@@ -328,7 +343,9 @@ public final class MotherMentorChildEidDao {
             String pattern = "'%" + search.trim().replace("'", "''").replace("\\", "\\\\")
                     .replace("%", "\\%").replace("_", "\\_") + "%'";
             where += " AND (" + name("m") + " LIKE " + pattern + " ESCAPE '\\' OR coalesce(e." + DBConstants.KEY.HEI_NUMBER
-                    + ", '') LIKE " + pattern + " ESCAPE '\\' OR " + motherName() + " LIKE "
+                    + ", '') LIKE " + pattern + " ESCAPE '\\' OR coalesce(e."
+                    + DBConstants.KEY.MTOTO_CAREGIVER_NAME + ", '') LIKE " + pattern
+                    + " ESCAPE '\\' OR " + motherName() + " LIKE "
                     + pattern + " ESCAPE '\\' OR coalesce(m." + DBConstants.KEY.UNIQUE_ID
                     + ", '') LIKE " + pattern + " ESCAPE '\\')";
         }

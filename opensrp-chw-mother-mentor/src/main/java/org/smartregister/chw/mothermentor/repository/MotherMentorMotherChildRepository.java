@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -42,7 +43,7 @@ public final class MotherMentorMotherChildRepository {
                 DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
                 DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
-        for (Stage stage : Stage.values()) {
+        for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
             columns.add(stage.getResultKey());
             columns.add(stage.getDateKey());
         }
@@ -80,6 +81,7 @@ public final class MotherMentorMotherChildRepository {
         projection.put(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA,
                 state.hasConfirmedPositive() ? "yes" : "no");
         for (Map.Entry<Stage, TestRecord> entry : state.tests.entrySet()) {
+            if (entry.getKey() == Stage.AT_BIRTH) continue;
             projection.put(entry.getKey().getResultKey(), entry.getValue().getResult());
             projection.put(entry.getKey().getDateKey(), iso(entry.getValue().getDate()));
         }
@@ -251,7 +253,10 @@ public final class MotherMentorMotherChildRepository {
         LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(person.get(DBConstants.KEY.DOB));
         if (dob == null) dob = MotherMentorHeiSchedule.parseBirthDate(enrollment.get(DBConstants.KEY.CHILD_DOB));
         String motherId = value(enrollment, DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
-        if (motherId.isEmpty()) motherId = MotherMentorChildEidDao.motherId(db, childId);
+        if (motherId.isEmpty() && !MotherMentorChildEidDirectEnrollment.SOURCE.equals(
+                enrollment.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
+            motherId = MotherMentorChildEidDao.motherId(db, childId);
+        }
         if (!motherId.isEmpty()) {
             State shared = getState(db, motherId, excludedVisitId, assessmentDate, before);
             String motherEpisode = value(enrollment, DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID);
@@ -323,7 +328,15 @@ public final class MotherMentorMotherChildRepository {
         String result = value(enrollment, DBConstants.KEY.LAST_TEST_RESULT);
         if ("waiting".equals(result) || "no".equals(value(enrollment, DBConstants.KEY.LAST_TEST_RESULTS_RETURNED))) result = "pending";
         if (!Arrays.asList("negative", "positive", "pending").contains(result)) result = "unknown";
-        state.knownPerformed.put(stage, new TestRecord(result, null, false, enrollmentDay));
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(value(enrollment, DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
+            for (Stage completed : MotherMentorChildEidRepository.suppressedTests(
+                    value(enrollment, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS))) {
+                if (completed != stage) state.knownPerformed.putIfAbsent(completed,
+                        new TestRecord("negative", null, false, enrollmentDay));
+            }
+        }
+        LocalDate sample = MotherMentorHeiSchedule.parseDate(value(enrollment, DBConstants.KEY.MTOTO_ENTRY_TEST_DATE));
+        state.knownPerformed.put(stage, new TestRecord(result, sample, false, enrollmentDay));
     }
 
     /** Pure replay entry point used by migration/correction tests. */

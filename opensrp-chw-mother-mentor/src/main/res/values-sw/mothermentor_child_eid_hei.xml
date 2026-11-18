@@ -21,6 +21,9 @@
     <string name="mothermentor_eid_return_graduation">Majibu hasi ya miezi 18. Mtoto amehitimu.</string>
     <string name="mothermentor_eid_return_confirm_positive">Majibu chanya yamethibitishwa. Hakikisha mtoto ameunganishwa na ART na CTC.</string>
     <string name="mothermentor_eid_return_wait_result">Fuatilia majibu kituoni.</string>
+    <string name="mothermentor_eid_confirmatory_sample_stage">Kipimo cha uthibitisho (%1$s)</string>
+    <string name="mothermentor_eid_confirmatory_sample_date">Tarehe ya kipimo cha uthibitisho</string>
+    <string name="mothermentor_eid_confirmatory_sample_result">Majibu ya kipimo cha uthibitisho</string>
     <string name="mothermentor_eid_result_overdue">Majibu yamechelewa</string>
     <string name="mothermentor_eid_overdue_sample">Majibu yamechelewa · Tarehe ya kipimo: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Hifadhi. Mtoto anabaki kwenye orodha akisubiri uthibitisho.</string>

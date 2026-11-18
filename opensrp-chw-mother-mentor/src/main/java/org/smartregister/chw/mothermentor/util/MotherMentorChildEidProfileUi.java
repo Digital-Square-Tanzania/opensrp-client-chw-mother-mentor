@@ -95,10 +95,8 @@ public final class MotherMentorChildEidProfileUi {
             View view = activity.findViewById(id);
             if (view != null) view.setVisibility(View.GONE);
         }
-        text(R.id.mothermentor_eid_profile_metadata).setText(MotherMentorChildEidLabels.cardSummary(
-                activity, value(identity, DBConstants.KEY.MOTHER_NAME),
-                value(identity, DBConstants.KEY.VILLAGE_TOWN), value(identity, DBConstants.KEY.HEI_NUMBER)));
-        String reason = MotherMentorChildEidLabels.entryReason(activity, child.getMissedTest(), child.getMissedDue());
+        text(R.id.mothermentor_eid_profile_metadata).setText(MotherMentorChildEidLabels.cardSummary(activity, identity));
+        String reason = MotherMentorChildEidLabels.entryReason(activity, identity, child.getMissedTest(), child.getMissedDue());
         text(R.id.mothermentor_eid_profile_reason).setText(reason);
         text(R.id.mothermentor_eid_profile_reason).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);
         text(R.id.mothermentor_eid_profile_reason_title).setVisibility(reason.isEmpty() ? View.GONE : View.VISIBLE);

@@ -22,6 +22,7 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidResultEvent;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -172,8 +173,10 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
 
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
             createChildStatusActionHelper(Runnable changed) {
+        boolean needsHei = enrollmentState != null && enrollmentState.isDirectEnrollment()
+                && StringUtils.isBlank(enrollmentState.getEnrollmentValues().get(DBConstants.KEY.HEI_NUMBER));
         return new MotherMentorChildEidFollowUpStatusActionHelper(
-                memberObject, serviceDate, changed);
+                memberObject, serviceDate, changed, needsHei);
     }
 
     /** Child-specific HEI action; legacy visits retain their original section helpers. */
@@ -266,6 +269,10 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
         Visit visit;
         db.beginTransaction();
         try {
+            if (enrollmentState != null && enrollmentState.isDirectEnrollment()) {
+                MotherMentorChildEidDirectEnrollment.validateHeiNumber(context, db, memberId,
+                        statusValues().get(DBConstants.KEY.HEI_NUMBER));
+            }
             visit = saveVisit(editMode, memberId, getEncounterType(), parentSections, parentEventType);
             if (visit == null) return null;
             saveVisitDetails(visit, payloadType, payloadDetails);

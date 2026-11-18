@@ -32,6 +32,41 @@ public class MotherMentorChildEidHeiNativeRulesTest {
     private static final String RULES = "mothermentor_child_eid_hei_relevance.yml";
 
     @Test
+    public void directConfirmationReferralAndTestingUseOnlyTheirOwnQuestionsInBothLanguages() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm form = new NativeForm(directory);
+            form.answer(MTOTO_ENTRY_SOURCE, "direct");
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "confirmation_needed");
+            assertFalse(form.relevant(MTOTO_REFERRAL_AGREEMENT));
+            form.answer(MTOTO_RUFAA_TEST, "at_birth");
+            assertTrue(form.relevant(MTOTO_REFERRAL_AGREEMENT));
+            form.answer(MTOTO_REFERRAL_AGREEMENT, "agreed");
+            assertFalse(form.relevant("child_eid_referral_agreed_note"));
+            assertFalse(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
+
+            form.answer(MTOTO_RETURN_FLOW, "1");
+            form.answer(MTOTO_RUFAA_STATE_BEFORE, "confirmation_referred");
+            assertFalse(form.relevant(MTOTO_REFERRAL_AGREEMENT));
+            assertTrue(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
+            form.answer(CHILD_EID_ARRIVED_AT_FACILITY, "no");
+            assertTrue(form.relevant(MTOTO_SABABU_KUTOFIKA));
+            assertFalse(form.relevant(MAMA_HEI_TEST_DONE));
+            form.answer(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            assertTrue(form.relevant(CHILD_EID_FACILITY_ARRIVAL_DATE));
+            assertTrue(form.relevant(MAMA_HEI_TEST_DONE));
+            form.answer(MAMA_HEI_TEST_DONE, "no");
+            assertTrue(form.relevant(MTOTO_SABABU_KUTOPIMWA));
+            form.answer(MAMA_HEI_TEST_DONE, "yes");
+            assertFalse(form.relevant(CHILD_EID_TEST_TYPE));
+            assertTrue(form.relevant(MAMA_HEI_TEST_DATE));
+            assertTrue(form.relevant(MAMA_HEI_TEST_RESULT));
+            form.answer(MAMA_HEI_TEST_RESULT, "positive");
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            assertFalse(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
+        }
+    }
+
+    @Test
     public void standaloneFormKeepsTheSampleReadOnlyAndShowsQuestionsForThePendingState() throws Exception {
         String resultRules = "mothermentor_child_eid_record_result_relevance.yml";
         for (String directory : new String[] {"json.form", "json.form-sw"}) {

@@ -239,7 +239,7 @@ public final class MotherMentorMotherChildUi {
         if (dob == null) return "";
         Map<Stage, TestRecord> tests = MotherMentorMotherChildUtils.parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY));
         LocalDate stop = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
-        for (Stage stage : Stage.values()) {
+        for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
             if (tests.containsKey(stage)) continue;
             if (stage == Stage.SIX_WEEKS && !day.isBefore(dob.plusMonths(9))) continue;
             if (stage == Stage.NINE_MONTHS && !day.isBefore(dob.plusMonths(18))) continue;

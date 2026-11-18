@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUi;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidReturnVisit;
@@ -157,13 +158,17 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
                     MotherMentorMotherChildUtils.serializeTests(clinical.getSamplingHistory()));
             String referral = previousReferralState();
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE, referral);
-            boolean returnFlow = !"none".equals(referral) && (currentVisitId == null || savedReturnFlow);
+            boolean confirmationNeeded = MotherMentorChildEidDirectEnrollment.CONFIRMATION_NEEDED.equals(referral);
+            boolean returnFlow = !confirmationNeeded && !"none".equals(referral)
+                    && (currentVisitId == null || savedReturnFlow);
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_FLOW, returnFlow ? "1" : "");
             MotherMentorChildEidRepository.State state = episode();
             if (state != null) {
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_ENTRY_SOURCE, state.getEntrySource());
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS,
                         state.getEnrollmentValues().get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS));
-                if (returnFlow && !savedReturnFlow) {
+                if (confirmationNeeded || MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED.equals(referral)
+                        || returnFlow && !savedReturnFlow) {
                     MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_TEST, state.getReferralTest());
                 }
             }
