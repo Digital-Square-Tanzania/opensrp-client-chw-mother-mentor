@@ -76,7 +76,8 @@ public final class MotherMentorChildEidHeiUi {
                         com.vijay.jsonwizard.R.id.childKey)));
                 showOption(button, allowed.contains(stage));
             }
-            boolean finalTest = isFinalTest(prepared);
+            boolean finalTest = Stage.fromCode(prepared.get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
+                    == Stage.EIGHTEEN_MONTHS;
             for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
                     DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
                 for (View view : controls(root, key)) {
@@ -155,7 +156,8 @@ public final class MotherMentorChildEidHeiUi {
                         selected.getCode());
             }
         }
-        if (isFinalTest(MotherMentorMotherChildUtils.values(form))) {
+        if (Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
+                == Stage.EIGHTEEN_MONTHS) {
             for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
                     DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
                 JSONObject field = MotherMentorMotherChildUtils.field(form, key);
@@ -203,12 +205,6 @@ public final class MotherMentorChildEidHeiUi {
                 field.put("max_date", day.toString("dd-MM-yyyy"));
             } catch (Exception ignored) { }
         }
-    }
-
-    private static boolean isFinalTest(Map<String, String> values) {
-        String stageKey = CONFIRMATION_REFERRED.equals(values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))
-                ? DBConstants.KEY.MTOTO_RUFAA_TEST : DBConstants.KEY.CHILD_EID_TEST_TYPE;
-        return Stage.fromCode(values.get(stageKey)) == Stage.EIGHTEEN_MONTHS;
     }
 
     private static LocalDate minimumDate(String key, LocalDate dob, Map<String, String> values) {
@@ -280,7 +276,10 @@ public final class MotherMentorChildEidHeiUi {
         String priorState = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
         if ((MotherMentorChildEidReturnVisit.REFERRED.equals(priorState) || CONFIRMATION_REFERRED.equals(priorState))
                 && "pending".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
-            return isFinalTest(values) ? "" : context.getString(R.string.mothermentor_eid_return_wait_result);
+            String stageKey = CONFIRMATION_REFERRED.equals(priorState)
+                    ? DBConstants.KEY.MTOTO_RUFAA_TEST : DBConstants.KEY.CHILD_EID_TEST_TYPE;
+            return Stage.fromCode(values.get(stageKey)) == Stage.EIGHTEEN_MONTHS
+                    ? "" : context.getString(R.string.mothermentor_eid_return_wait_result);
         }
         if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(values.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) return "";
         MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
