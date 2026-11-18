@@ -67,25 +67,47 @@ public class MotherMentorChildEidProfileUiTest {
     }
 
     @Test
-    public void closedCardDisablesCtaAndHidingRemovesItsSummaryAndBanner() {
+    public void closedCardHidesTheVisitActionAndKeepsTheClosureSummary() {
         Activity activity = screen();
         MotherMentorChildEidProfileUi ui = new MotherMentorChildEidProfileUi();
         MotherMentorChildEidRepository.State child = state(true);
         TextView cta = text(activity, R.id.textview_record_mothermentor);
-        cta.setVisibility(View.GONE);
         ui.bind(activity, child, identity(), day, null);
-        assertEquals(View.VISIBLE, cta.getVisibility());
-        assertFalse(cta.isEnabled());
+        assertEquals(View.GONE, cta.getVisibility());
         LinearLayout parent = (LinearLayout) cta.getParent();
-        View banner = parent.getChildAt(parent.indexOfChild(cta) + 1);
+        TextView banner = text(activity, R.id.mothermentor_eid_profile_closure);
         assertEquals(View.VISIBLE, banner.getVisibility());
-        assertTrue(((TextView) banner).getText().toString().contains("03-11-2026"));
+        assertTrue(banner.getText().toString().contains("03-11-2026"));
         int count = parent.getChildCount();
         ui.bind(activity, child, identity(), day, null);
         assertEquals(count, parent.getChildCount());
         ui.hide();
-        assertEquals(View.GONE, banner.getVisibility());
-        assertEquals(View.GONE, parent.getChildAt(parent.indexOfChild(cta) - 1).getVisibility());
+        assertEquals(View.GONE, ((View) banner.getParent()).getVisibility());
+    }
+
+    @Test
+    public void portraitIsCenteredAndBadgeWrapsToItsLeft() {
+        Activity activity = screen();
+        TextView pill = text(activity, R.id.client_metadata);
+        pill.setText("Inasubiri uthibitisho");
+        LinearLayout profile = (LinearLayout) pill.getParent();
+        View portrait = new View(activity);
+        portrait.setId(R.id.imageview_profile);
+        profile.addView(portrait, 0, new LinearLayout.LayoutParams(80, 80));
+
+        MotherMentorChildEidProfileUi ui = new MotherMentorChildEidProfileUi();
+        ui.positionHeader(activity, pill);
+        ui.positionHeader(activity, pill);
+        View header = (View) portrait.getParent();
+        header.measure(View.MeasureSpec.makeMeasureSpec(360, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        header.layout(0, 0, 360, header.getMeasuredHeight());
+
+        assertSame(header, pill.getParent());
+        assertEquals(360, portrait.getLeft() + portrait.getRight());
+        assertTrue(pill.getRight() < portrait.getLeft());
+        assertTrue(pill.getLeft() >= 0 && pill.getWidth() > 0);
+        assertTrue(pill.getWidth() < header.getWidth() / 2);
     }
 
     @Test

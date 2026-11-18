@@ -1,12 +1,14 @@
 package org.smartregister.chw.mothermentor.util;
 
 import android.app.Activity;
-import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import org.joda.time.LocalDate;
 import org.smartregister.chw.mothermentor.R;
@@ -17,11 +19,40 @@ import java.util.Map;
 /** Presentation of library-owned tracing data inside the host's existing client profile. */
 public final class MotherMentorChildEidProfileUi {
     private View summary;
-    private TextView closedBanner;
+
+    public void positionHeader(Activity activity, TextView pill) {
+        View portrait = activity.findViewById(R.id.imageview_profile);
+        if (portrait == null || pill == null || !(portrait.getParent() instanceof LinearLayout)) return;
+        LinearLayout profile = (LinearLayout) portrait.getParent();
+        int index = profile.indexOfChild(portrait);
+        ViewGroup.LayoutParams portraitSize = portrait.getLayoutParams();
+        profile.removeView(portrait);
+        if (pill.getParent() instanceof ViewGroup) ((ViewGroup) pill.getParent()).removeView(pill);
+
+        ConstraintLayout header = new ConstraintLayout(activity);
+        profile.addView(header, index, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        ConstraintLayout.LayoutParams photo = new ConstraintLayout.LayoutParams(portraitSize.width, portraitSize.height);
+        photo.startToStart = photo.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        photo.topToTop = photo.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        header.addView(portrait, photo);
+
+        ConstraintLayout.LayoutParams badge = new ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        badge.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+        badge.endToStart = portrait.getId();
+        badge.topToTop = badge.bottomToBottom = portrait.getId();
+        badge.horizontalBias = 1f;
+        badge.constrainedWidth = true;
+        badge.setMarginStart(dp(activity, 8));
+        badge.setMarginEnd(dp(activity, 8));
+        pill.setGravity(Gravity.CENTER);
+        pill.setTextSize(12);
+        header.addView(pill, badge);
+    }
 
     public void hide() {
         if (summary != null) summary.setVisibility(View.GONE);
-        if (closedBanner != null) closedBanner.setVisibility(View.GONE);
     }
 
     public void bind(Activity activity, MotherMentorChildEidRepository.State child,
@@ -35,6 +66,8 @@ public final class MotherMentorChildEidProfileUi {
         if (summary == null) {
             summary = activity.getLayoutInflater().inflate(R.layout.view_mothermentor_child_eid_summary, parent, false);
             parent.addView(summary, parent.indexOfChild(button));
+            View legacyActions = activity.findViewById(R.id.record_visits);
+            if (legacyActions != null) legacyActions.setVisibility(View.GONE);
         }
         summary.setVisibility(View.VISIBLE);
         String age = MotherMentorChildEidLabels.age(activity,
@@ -63,13 +96,9 @@ public final class MotherMentorChildEidProfileUi {
         overdue.setText(sample == null ? "" : activity.getString(R.string.mothermentor_eid_overdue_sample,
                 MotherMentorMotherPregnancyUtils.displayDate(sample)));
         button.setText(R.string.mothermentor_eid_record_visit);
-        if (child.isClosed()) {
-            button.setVisibility(View.VISIBLE);
-            button.setEnabled(false);
-            button.setAlpha(0.5f);
-        }
+        if (child.isClosed()) button.setVisibility(View.GONE);
         bindPill(activity, child, pill, !reason.isEmpty());
-        bindClosedBanner(activity, parent, button, child);
+        bindClosedBanner(activity, child);
     }
 
     private void bindPill(Activity activity, MotherMentorChildEidRepository.State child, TextView pill,
@@ -91,18 +120,8 @@ public final class MotherMentorChildEidProfileUi {
         pill.setPadding(dp(activity, 10), dp(activity, 4), dp(activity, 10), dp(activity, 4));
     }
 
-    private void bindClosedBanner(Activity activity, LinearLayout parent, TextView button,
-            MotherMentorChildEidRepository.State child) {
-        if (closedBanner == null) {
-            closedBanner = new TextView(activity);
-            closedBanner.setTextSize(14);
-            closedBanner.setTypeface(Typeface.DEFAULT_BOLD);
-            closedBanner.setGravity(Gravity.CENTER);
-            closedBanner.setPadding(dp(activity, 12), dp(activity, 12), dp(activity, 12), dp(activity, 12));
-            parent.addView(closedBanner, parent.indexOfChild(button) + 1,
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT));
-        }
+    private void bindClosedBanner(Activity activity, MotherMentorChildEidRepository.State child) {
+        TextView closedBanner = text(R.id.mothermentor_eid_profile_closure);
         closedBanner.setVisibility(child.isClosed() ? View.VISIBLE : View.GONE);
         if (!child.isClosed()) return;
         String reason = MotherMentorChildEidLabels.closedReason(activity, child.getClosedStatus());

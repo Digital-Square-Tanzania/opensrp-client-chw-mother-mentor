@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:paddingTop="2dp"
+    android:paddingBottom="10dp">
     <TextView android:id="@+id/mothermentor_eid_profile_metadata" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:gravity="center"
+        android:layout_height="wrap_content"
         android:textColor="@color/mama_kinara_secondary" android:textSize="13sp" />
     <TextView android:id="@+id/mothermentor_eid_profile_reason_title" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:layout_marginTop="12dp"
+        android:layout_height="wrap_content" android:layout_marginTop="10dp"
         android:text="@string/mothermentor_eid_reason" android:textStyle="bold"
         android:textColor="@color/mama_kinara_secondary" android:textSize="12sp" />
     <TextView android:id="@+id/mothermentor_eid_profile_reason" android:layout_width="match_parent"
@@ -22,5 +22,13 @@
         android:gravity="center"
         android:textColor="@color/mothermentor_eid_alert"
         android:textSize="14sp"
+        android:visibility="gone" />
+    <TextView android:id="@+id/mothermentor_eid_profile_closure"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:textStyle="bold"
         android:visibility="gone" />
 </LinearLayout>
