@@ -19,6 +19,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -29,6 +30,66 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidHeiUiTest {
+    @Test
+    public void directPositiveEnrollmentKeepsTheOriginalStageAndRefersForConfirmation() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture form = new Fixture(language, "confirmation_needed");
+            form.put(MTOTO_ENTRY_SOURCE, "direct");
+            form.put(MTOTO_RUFAA_TEST, "at_birth");
+            form.put(MTOTO_REFERRAL_AGREEMENT, "agreed");
+            form.refresh();
+            assertEquals("at_birth", form.value(MTOTO_RUFAA_TEST));
+            assertEquals("agreed", form.value(MTOTO_REFERRAL_AGREEMENT));
+            assertTrue(form.value(MAMA_HEI_NEXT_TEST_NOTE).startsWith("sw".equals(language)
+                    ? "Kipimo cha uthibitisho (" : "Confirmatory test ("));
+            assertTrue(MotherMentorChildEidHeiUtils.isComplete(
+                    MotherMentorMotherChildUtils.values(form.form), new LocalDate(2026, 1, 1),
+                    new LocalDate(2026, 10, 1), Collections.emptyMap(), "confirmation_needed"));
+        }
+    }
+
+    @Test
+    public void directConfirmatorySampleUsesItsDateAndResolvesTheAlreadyPositiveTest() throws Exception {
+        LocalDate dob = new LocalDate(2026, 1, 1);
+        LocalDate day = new LocalDate(2026, 10, 1);
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture form = new Fixture(language, "confirmation_referred");
+            form.put(MTOTO_ENTRY_SOURCE, "direct");
+            form.put(MTOTO_RETURN_FLOW, "1");
+            form.put(MTOTO_RUFAA_TEST, "at_birth");
+            form.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            form.put(CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-09-30");
+            form.put(MAMA_HEI_TEST_DONE, "yes");
+            form.put(MAMA_HEI_TEST_DATE, day.toString());
+            form.put(MAMA_HEI_TEST_RESULT, "pending");
+            form.refresh();
+            assertEquals("sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals("sw".equals(language) ? "Majibu ya kipimo cha uthibitisho" : "Confirmatory test result",
+                    MotherMentorMotherChildUtils.field(form.form, MAMA_HEI_TEST_RESULT).getString("label"));
+            MotherMentorChildEidReturnVisit.Result pending = MotherMentorChildEidReturnVisit.evaluate(
+                    MotherMentorMotherChildUtils.values(form.form), dob, day, Collections.emptyMap(),
+                    "confirmation_referred");
+            assertNotNull(pending);
+            assertEquals(Stage.AT_BIRTH, pending.stage);
+            assertEquals(day, pending.testDate);
+            assertEquals("awaiting_confirm", pending.nextState);
+
+            form.put(MAMA_HEI_TEST_RESULT, "negative");
+            form.refresh();
+            assertEquals("", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals(MotherMentorChildEidReturnVisit.Outcome.CONFIRMATORY_NEGATIVE,
+                    MotherMentorChildEidReturnVisit.evaluate(MotherMentorMotherChildUtils.values(form.form),
+                            dob, day, Collections.emptyMap(), "confirmation_referred").outcome);
+            form.put(MAMA_HEI_TEST_RESULT, "positive");
+            form.refresh();
+            assertEquals("", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals(MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE,
+                    MotherMentorChildEidReturnVisit.evaluate(MotherMentorMotherChildUtils.values(form.form),
+                            dob, day, Collections.emptyMap(), "confirmation_referred").outcome);
+        }
+    }
+
     @Test
     public void receivedDateUsesSampleDateAndClearsWhenTheResultBecomesPending() throws Exception {
         Fixture f = new Fixture("sw", "referred");

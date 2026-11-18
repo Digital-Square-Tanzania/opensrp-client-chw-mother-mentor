@@ -13,6 +13,7 @@ import java.util.Map;
 /** Calendar-based HEI schedule. A result awaiting confirmation remains actionable. */
 public final class MotherMentorHeiSchedule {
     public enum Stage {
+        AT_BIRTH("at_birth", null, null),
         SIX_WEEKS("six_weeks", DBConstants.KEY.HEI_TEST_WIKI6_RESULT,
                 DBConstants.KEY.HEI_TEST_WIKI6_DATE),
         NINE_MONTHS("nine_months", DBConstants.KEY.HEI_TEST_MIEZI9_RESULT,
@@ -35,6 +36,7 @@ public final class MotherMentorHeiSchedule {
         public String getCode() { return code; }
         public String getMetadataCode() {
             switch (this) {
+                case AT_BIRTH: return "at_birth";
                 case SIX_WEEKS: return "wiki6";
                 case NINE_MONTHS: return "miezi9";
                 case AFTER_WEANING: return "miezi15";
@@ -78,6 +80,11 @@ public final class MotherMentorHeiSchedule {
 
     private MotherMentorHeiSchedule() {}
 
+    public static List<Stage> routineStages() { return ROUTINE_STAGES; }
+
+    private static final List<Stage> ROUTINE_STAGES = Collections.unmodifiableList(
+            java.util.Arrays.asList(Stage.SIX_WEEKS, Stage.NINE_MONTHS, Stage.AFTER_WEANING, Stage.EIGHTEEN_MONTHS));
+
     public static List<Stage> due(LocalDate dob, LocalDate cessation,
             Map<Stage, TestRecord> tests, LocalDate assessment) {
         if (dob == null || assessment == null || dob.isAfter(assessment)) {
@@ -86,7 +93,7 @@ public final class MotherMentorHeiSchedule {
         Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
         List<Stage> sampling = eligibleForSampling(dob, cessation, history, assessment);
         List<Stage> due = new ArrayList<>();
-        for (Stage stage : Stage.values()) {
+        for (Stage stage : routineStages()) {
             TestRecord result = history.get(stage);
             // Result review is different from taking another sample for the same stage.
             if (sampling.contains(stage) || result != null && result.requiresFollowUp()) due.add(stage);
@@ -101,7 +108,7 @@ public final class MotherMentorHeiSchedule {
         }
         Map<Stage, TestRecord> history = tests == null ? Collections.emptyMap() : tests;
         List<Stage> eligible = new ArrayList<>();
-        for (Stage stage : Stage.values()) {
+        for (Stage stage : routineStages()) {
             if (history.containsKey(stage) || !inAgeWindow(stage, dob, assessment)) continue;
             LocalDate date = dueDate(stage, dob, cessation);
             if (date != null && !date.isAfter(assessment)) eligible.add(stage);

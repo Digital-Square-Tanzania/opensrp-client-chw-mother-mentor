@@ -76,6 +76,14 @@
         "value": "[]"
       },
       {
+        "key": "mtoto_entry_source",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_entry_source",
+        "value": ""
+      },
+      {
         "key": "mtoto_rufaa_state_before",
         "type": "hidden",
         "openmrs_entity_parent": "",

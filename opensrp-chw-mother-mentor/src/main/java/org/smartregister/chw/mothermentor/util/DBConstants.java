@@ -470,6 +470,12 @@ public final class DBConstants {
         public static final String MTOTO_ENROLLMENT_ID = "mtoto_enrollment_id";
         public static final String MTOTO_MOTHER_ENROLLMENT_ID = "mtoto_mother_enrollment_id";
         public static final String MTOTO_ENTRY_SOURCE = "mtoto_entry_source";
+        public static final String MTOTO_ENTRY_TEST = "mtoto_entry_test";
+        public static final String MTOTO_ENTRY_RESULT = "mtoto_entry_result";
+        public static final String MTOTO_ENTRY_TEST_DATE = "mtoto_entry_test_date";
+        public static final String MTOTO_CAREGIVER_NAME = "mtoto_caregiver_name";
+        public static final String MTOTO_CAREGIVER_RELATIONSHIP = "mtoto_caregiver_relationship";
+        public static final String MTOTO_CAREGIVER_PHONE = "mtoto_caregiver_phone";
         public static final String MTOTO_IS_CLOSED = "mtoto_is_closed";
         public static final String MTOTO_VISIT_COUNT = "mtoto_visit_count";
         public static final String MOTHER_ENTITY_ID = "mother_entity_id";

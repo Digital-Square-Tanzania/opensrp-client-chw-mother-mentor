@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_eid_direct_age">Umri</string>
+    <string name="mothermentor_eid_direct_household">Kaya</string>
+    <string name="mothermentor_eid_direct_hei">Namba ya HEI (hiari)</string>
+    <string name="mothermentor_eid_direct_hei_invalid">Jaza namba ya HEI sahihi: 00-00-0000-000000-C00</string>
+    <string name="mothermentor_eid_direct_hei_duplicate">Namba hii ya HEI tayari imetumika.</string>
+    <string name="mothermentor_eid_direct_caregiver">Jina la mlezi</string>
+    <string name="mothermentor_eid_direct_relationship">Uhusiano wa mlezi na mtoto</string>
+    <string name="mothermentor_eid_direct_father">Baba</string>
+    <string name="mothermentor_eid_direct_grandparent">Bibi au babu</string>
+    <string name="mothermentor_eid_direct_relative">Ndugu mwingine</string>
+    <string name="mothermentor_eid_direct_other">Mlezi mwingine</string>
+    <string name="mothermentor_eid_direct_phone">Namba ya simu ya mlezi (hiari)</string>
+    <string name="mothermentor_eid_direct_phone_invalid">Jaza namba ya simu yenye tarakimu 10.</string>
+    <string name="mothermentor_eid_direct_never">Hajawahi kunyonyeshwa</string>
+    <string name="mothermentor_eid_direct_test_date">Tarehe ya kipimo</string>
+    <string name="mothermentor_eid_direct_test_date_invalid">Jaza tarehe ya kipimo kati ya tarehe ya kuzaliwa na leo.</string>
+    <string name="mothermentor_eid_direct_weaning_invalid">Jaza tarehe alipoacha kunyonyeshwa kati ya tarehe ya kuzaliwa na leo.</string>
+    <string name="mothermentor_eid_direct_required">Jaza maswali yote ya lazima ya usajili.</string>
+    <string name="mothermentor_eid_direct_last_test_invalid">Chagua kipimo ambacho mtoto alistahili kupimwa.</string>
+    <string name="mothermentor_eid_direct_child_unavailable">Chagua mtoto aliyesajiliwa mwenye umri chini ya miezi 24.</string>
+    <string name="mothermentor_eid_direct_not_due">Mtoto hajakosa kipimo, kwa hiyo hasajiliwi kwenye ufuatiliaji. Kipimo kinachofuata: %1$s — %2$s.</string>
+    <string name="mothermentor_eid_direct_no_missed">Mtoto hajakosa kipimo, kwa hiyo hasajiliwi kwenye ufuatiliaji.</string>
+    <string name="mothermentor_eid_direct_advise">Mshauri mlezi ampeleke mtoto kwenye kituo cha kutolea huduma za afya ili akaandikishwe kwenye huduma za HEI.</string>
+    <string name="mothermentor_eid_direct_at_birth">Wakati wa kuzaliwa</string>
+    <string name="mothermentor_eid_direct_confirmation_needed">Anahitaji uthibitisho</string>
+    <string name="mothermentor_eid_direct_confirmation_referred">Amepewa rufaa ya uthibitisho</string>
+    <string name="mothermentor_eid_direct_confirmation_test">Kipimo cha uthibitisho (%1$s)</string>
+    <string name="mothermentor_eid_direct_entry_positive">Ameingizwa kwenye ufuatiliaji kwa majibu chanya ya kipimo cha %1$s. Apewe rufaa ya kipimo cha uthibitisho.</string>
+    <string name="mothermentor_eid_direct_entry_pending">Ameingizwa kwenye ufuatiliaji kwa sababu majibu ya kipimo cha %1$s bado yanasubiriwa. Fuatilia majibu kituoni.</string>
+    <string name="mothermentor_eid_direct_caregiver_display">Mlezi: %1$s (%2$s)</string>
+    <string name="mothermentor_eid_direct_hei_help">Namba ya HEI haikujazwa wakati wa usajili. Ijaze kama mtoto ameshasajiliwa kwenye huduma za HEI.</string>
+    <string name="mothermentor_eid_direct_hei_format">Muundo: RR-CC-FFFF-PPPPPP-CXX</string>
+    <string name="mothermentor_eid_direct_close_graduated">Majibu hasi ya miezi 18. Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Amehitimu”.</string>
+    <string name="mothermentor_eid_direct_close_positive">Mtoto amethibitika kuwa na VVU. Baada ya kuhifadhi, rekodi itafungwa kwa “Chanya — ameunganishwa CTC”. Hakikisha mtoto ameanzishiwa ART.</string>
+    <string name="mothermentor_eid_direct_close_deceased">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Mtoto amefariki”.</string>
+    <string name="mothermentor_eid_direct_close_moved">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Amehama eneo”.</string>
+    <string name="mothermentor_eid_direct_close_transferred">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Amehama Kituo” na kuwekwa alama ya uhamisho. Kituo kipya kitaendelea na HEI.</string>
+</resources>

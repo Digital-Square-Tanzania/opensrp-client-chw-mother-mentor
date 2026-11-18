@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED;
 
 /** Validates and resolves one saved Child EID return visit against its preceding evidence. */
 public final class MotherMentorChildEidReturnVisit {
@@ -61,7 +62,8 @@ public final class MotherMentorChildEidReturnVisit {
         if (!applies(values) || !value(values, MTOTO_RUFAA_STATE_BEFORE).equals(priorState)
                 || !MotherMentorChildEidHeiUtils.isBreastfeedingComplete(values, dob, day)) return null;
         switch (priorState) {
-            case REFERRED: return evaluateAttendance(values, dob, day, history);
+            case REFERRED:
+            case CONFIRMATION_REFERRED: return evaluateAttendance(values, dob, day, history, priorState);
             case AWAITING_RESULT:
             case AWAITING_CONFIRM: return evaluateReview(values, dob, day, history, priorState);
             default: return null;
@@ -69,27 +71,42 @@ public final class MotherMentorChildEidReturnVisit {
     }
 
     private static Result evaluateAttendance(Map<String, String> values, LocalDate dob, LocalDate day,
-            Map<Stage, TestRecord> history) {
+            Map<Stage, TestRecord> history, String priorState) {
+        boolean confirmatorySample = CONFIRMATION_REFERRED.equals(priorState);
         String attendance = value(values, CHILD_EID_ARRIVED_AT_FACILITY);
         if ("no".equals(attendance)) {
             return validReason(values, MTOTO_SABABU_KUTOFIKA, MTOTO_SABABU_KUTOFIKA_OTHER, NON_ATTENDANCE)
-                    ? keep(REFERRED) : null;
+                    ? keep(priorState) : null;
         }
         LocalDate arrival = date(values, CHILD_EID_FACILITY_ARRIVAL_DATE);
         if (!"yes".equals(attendance) || !MotherMentorHeiSchedule.validDate(arrival, dob, day)) return null;
         String tested = value(values, MAMA_HEI_TEST_DONE);
         if ("no".equals(tested)) {
             return validReason(values, MTOTO_SABABU_KUTOPIMWA, MTOTO_SABABU_KUTOPIMWA_OTHER, NOT_TESTED)
-                    ? keep(REFERRED) : null;
+                    ? keep(priorState) : null;
         }
-        Stage stage = Stage.fromCode(value(values, CHILD_EID_TEST_TYPE));
+        Stage stage = Stage.fromCode(value(values, confirmatorySample ? MTOTO_RUFAA_TEST : CHILD_EID_TEST_TYPE));
         LocalDate testDate = date(values, MAMA_HEI_TEST_DATE);
         if (!"yes".equals(tested)
-                || !MotherMentorChildEidHeiUtils.eligible(values, dob, history, day).contains(stage)
+                || stage == null
+                || !confirmatorySample && !MotherMentorChildEidHeiUtils.eligible(values, dob, history, day).contains(stage)
                 || !MotherMentorHeiSchedule.validDate(testDate, arrival, day)) return null;
+        if (confirmatorySample) {
+            return resolveConfirmatorySample(stage, testDate, value(values, MAMA_HEI_TEST_RESULT));
+        }
         if (!validSavedReceivedDate(values, testDate, day)) return null;
         return resolveResult(stage, testDate, value(values, MAMA_HEI_TEST_RESULT),
                 value(values, MTOTO_CONFIRMATION_RECEIVED), true);
+    }
+
+    private static Result resolveConfirmatorySample(Stage stage, LocalDate date, String result) {
+        switch (result) {
+            case "negative": return new Result("none", stage, date, result, Outcome.CONFIRMATORY_NEGATIVE);
+            case "positive": return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
+            case "pending": return stage == Stage.EIGHTEEN_MONTHS ? null
+                    : new Result(AWAITING_CONFIRM, stage, date, "positive", Outcome.CONTINUE);
+            default: return null;
+        }
     }
 
     private static Result evaluateReview(Map<String, String> values, LocalDate dob, LocalDate day,
@@ -205,7 +222,8 @@ public final class MotherMentorChildEidReturnVisit {
 
     public static void clearInactive(JSONObject form, Map<String, String> values) {
         String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
-        boolean referred = REFERRED.equals(state);
+        boolean confirmatorySample = CONFIRMATION_REFERRED.equals(state);
+        boolean referred = REFERRED.equals(state) || confirmatorySample;
         boolean awaitingResult = AWAITING_RESULT.equals(state);
         boolean awaitingConfirm = AWAITING_CONFIRM.equals(state);
         boolean attended = referred && "yes".equals(value(values, CHILD_EID_ARRIVED_AT_FACILITY));
@@ -214,6 +232,7 @@ public final class MotherMentorChildEidReturnVisit {
         clear(form, LEGACY_FIELDS);
         if (!referred) clear(form, ATTENDANCE_FIELDS);
         if (!tested) clear(form, SAMPLE_FIELDS);
+        if (confirmatorySample) clear(form, CHILD_EID_TEST_TYPE);
         if (!awaitingResult && !awaitingConfirm) clear(form, REVIEW_FIELDS);
         if (!awaitingResult) clear(form, MTOTO_RESULT_RECEIVED);
         if (!awaitingConfirm || !"yes".equals(value(values, MTOTO_CONFIRMATION_RECEIVED))) {
@@ -222,7 +241,7 @@ public final class MotherMentorChildEidReturnVisit {
         if (!tested) clear(form, MAMA_HEI_TEST_RESULT);
         if (!hasResult) clear(form, MTOTO_RECEIVED_RESULT);
         if (!requiresReceivedDate(values)) clear(form, MTOTO_RESULT_RECEIVED_DATE);
-        boolean positive = tested && "positive".equals(value(values, MAMA_HEI_TEST_RESULT))
+        boolean positive = tested && !confirmatorySample && "positive".equals(value(values, MAMA_HEI_TEST_RESULT))
                 || hasResult && "positive".equals(value(values, MTOTO_RECEIVED_RESULT));
         if (!awaitingConfirm && !positive) {
             clear(form, MTOTO_CONFIRMATION_RECEIVED);

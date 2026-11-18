@@ -31,7 +31,7 @@ public final class MotherMentorChildEidResultOverdue {
         String sample = alias + "." + MTOTO_PENDING_TEST_DATE;
         StringBuilder limitDays = new StringBuilder("CASE ").append(test)
                 .append(" WHEN '").append(BIRTH_TEST).append("' THEN ").append(BIRTH_LIMIT_DAYS);
-        for (Stage stage : Stage.values()) {
+        for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
             if (limit(stage) == 0) continue;
             limitDays.append(" WHEN '").append(stage.getCode()).append("' THEN ").append(limit(stage))
                     .append(" WHEN '").append(stage.getMetadataCode()).append("' THEN ").append(limit(stage));

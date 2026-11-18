@@ -1,0 +1,35 @@
+---
+name: step4_last_test
+description: Show the routine last test choices unless cessation can add an eligible test
+priority: 1
+condition: "!('stop_breast_feeding'.equals(step3_breastfeeding_status))"
+actions:
+  - "isRelevant = true"
+---
+name: step4_direct_enrollment_last_test_weaned
+description: Offer the after-weaning last test for a child who stopped breastfeeding
+priority: 1
+condition: "'stop_breast_feeding'.equals(step3_breastfeeding_status)"
+actions:
+  - "isRelevant = true"
+---
+name: step4_last_test_result
+description: Ask for the result only after a real test was selected
+priority: 1
+condition: "((!'stop_breast_feeding'.equals(step3_breastfeeding_status)) && step4_last_test != null && step4_last_test != '' && !'no_test_has_been_done_yet'.equals(step4_last_test)) || ('stop_breast_feeding'.equals(step3_breastfeeding_status) && step4_direct_enrollment_last_test_weaned != null && step4_direct_enrollment_last_test_weaned != '' && !'no_test_has_been_done_yet'.equals(step4_direct_enrollment_last_test_weaned))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_hei_number
+description: Offer the missing HEI number when an independently enrolled child is found alive
+priority: 1
+condition: "'found'.equals(step1_follow_up_status) && 'alive'.equals(step1_mama_child_status)"
+actions:
+  - "isRelevant = true"
+---
+name: step1_direct_hei_help
+description: Explain why the HEI number is offered
+priority: 1
+condition: "'found'.equals(step1_follow_up_status) && 'alive'.equals(step1_mama_child_status)"
+actions:
+  - "isRelevant = true"
