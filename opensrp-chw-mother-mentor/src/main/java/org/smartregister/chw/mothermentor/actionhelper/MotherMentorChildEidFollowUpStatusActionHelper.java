@@ -17,6 +17,7 @@ import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -101,10 +102,9 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
                 if (dob != null) death.put("min_date", dob.toString("dd-MM-yyyy"));
                 death.put("max_date", assessmentDate().toString("dd-MM-yyyy"));
             }
-            if (offerHeiNumber && FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER) == null) {
+            if (offerHeiNumber && MotherMentorMotherChildUtils.field(form, DBConstants.KEY.HEI_NUMBER) == null) {
                 MotherMentorChildEidDirectEnrollment.addOptionalVisitNumber(this.context, form);
-                JSONObject hei = FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER);
-                if (hei != null) hei.put(JsonFormConstants.VALUE, savedHeiNumber);
+                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.HEI_NUMBER, savedHeiNumber);
             }
             if ("moved_area".equals(JsonFormUtils.getValue(form, DBConstants.KEY.MTOTO_NOT_FOUND_REASON))) {
                 JSONObject optional = FormUtils.getFieldFromForm(form,
@@ -150,7 +150,7 @@ public class MotherMentorChildEidFollowUpStatusActionHelper extends BaseMotherMe
         try {
             JSONObject form = MotherMentorChildEidStatusUtils.clearInactiveAnswers(
                     new JSONObject(source));
-            JSONObject hei = FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER);
+            JSONObject hei = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.HEI_NUMBER);
             if (hei != null) {
                 boolean foundAlive = MotherMentorChildEidStatusUtils.isFoundAlive(
                         MotherMentorChildEidStatusUtils.values(form));
