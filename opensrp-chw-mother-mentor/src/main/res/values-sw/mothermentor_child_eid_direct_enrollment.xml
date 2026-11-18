@@ -37,4 +37,5 @@
     <string name="mothermentor_eid_direct_close_deceased">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Mtoto amefariki”.</string>
     <string name="mothermentor_eid_direct_close_moved">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Amehama eneo”.</string>
     <string name="mothermentor_eid_direct_close_transferred">Baada ya kuhifadhi, rekodi ya mtoto itafungwa kwa “Amehama Kituo” na kuwekwa alama ya uhamisho. Kituo kipya kitaendelea na HEI.</string>
+    <string name="mothermentor_eid_direct_breastfeeding">Hali ya unyonyeshaji</string>
 </resources>

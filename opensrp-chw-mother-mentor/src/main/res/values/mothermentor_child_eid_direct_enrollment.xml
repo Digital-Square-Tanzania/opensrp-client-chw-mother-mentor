@@ -37,4 +37,5 @@
     <string name="mothermentor_eid_direct_close_deceased">The child’s record will close as deceased after saving.</string>
     <string name="mothermentor_eid_direct_close_moved">The child’s record will close as moved from the area after saving.</string>
     <string name="mothermentor_eid_direct_close_transferred">The child’s record will close as transferred after saving. HEI services continue at the new facility.</string>
+    <string name="mothermentor_eid_direct_breastfeeding">Breastfeeding status</string>
 </resources>

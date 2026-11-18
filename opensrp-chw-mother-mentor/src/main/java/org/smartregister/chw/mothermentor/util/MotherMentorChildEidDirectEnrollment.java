@@ -69,6 +69,7 @@ public final class MotherMentorChildEidDirectEnrollment {
         breastfeeding.put("next", "step4");
         JSONArray feeding = breastfeeding.getJSONArray("fields");
         JSONObject feedingStatus = find(feeding, BREASTFEEDING_STATUS);
+        feedingStatus.put("label", context.getString(R.string.mothermentor_eid_direct_breastfeeding));
         JSONArray choices = feedingStatus.getJSONArray("options");
         choices.put(indexOf(choices, "not_breast_feeding"), option("never_breastfed",
                 context.getString(R.string.mothermentor_eid_direct_never)));
