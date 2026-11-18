@@ -498,6 +498,7 @@ public class VisitRepository extends BaseRepository {
             MotherMentorChildEidRepository.rebuildForVisit(database, removed);
             MotherMentorIitRepository.rebuildForVisit(database, removed);
             if (removed != null && MotherMentorFollowUpType.CHILD_EID.getEventType().equals(removed.getVisitType())) {
+                MotherMentorMotherChildRepository.rebuildForChild(database, removed.getBaseEntityId());
                 MotherMentorMotherClosureRepository.rebuildForChild(database, removed.getBaseEntityId());
             } else {
                 for (String motherId : affectedMothers) MotherMentorMotherClosureRepository.rebuild(database, motherId);

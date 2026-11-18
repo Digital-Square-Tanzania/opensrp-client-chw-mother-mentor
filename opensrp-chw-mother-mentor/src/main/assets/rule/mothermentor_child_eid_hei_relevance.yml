@@ -16,91 +16,91 @@ actions:
 name: step1_mtoto_referral_agreement
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]'"
+condition: "(step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]') || (step1_mtoto_rufaa_state_before == 'confirmation_needed' && step1_mtoto_rufaa_test != '')"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_referral_agreed_note
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'agreed'"
+condition: "step1_mtoto_entry_source != 'direct' && step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'agreed'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_referral_refused_note
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'refused'"
+condition: "step1_mtoto_entry_source != 'direct' && step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'refused'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_arrived_at_facility
 description: Child EID HEI relevance
 priority: 1
-condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests != '[]' && step1_child_eid_test_type != '' && step1_child_eid_hei_review_tests.contains(step1_child_eid_test_type)) || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred')"
+condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests != '[]' && step1_child_eid_test_type != '' && step1_child_eid_hei_review_tests.contains(step1_child_eid_test_type)) || (step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred'))"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_sababu_kutofika
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'no'"
+condition: "step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'no'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_sababu_kutofika_other
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'no' && step1_mtoto_sababu_kutofika == 'other'"
+condition: "step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'no' && step1_mtoto_sababu_kutofika == 'other'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_facility_arrival_date
 description: Child EID HEI relevance
 priority: 1
-condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests != '[]' && step1_child_eid_test_type != '' && step1_child_eid_hei_review_tests.contains(step1_child_eid_test_type) && step1_child_eid_arrived_at_facility == 'yes') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes')"
+condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests != '[]' && step1_child_eid_test_type != '' && step1_child_eid_hei_review_tests.contains(step1_child_eid_test_type) && step1_child_eid_arrived_at_facility == 'yes') || (step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'yes')"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mama_hei_test_done
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes'"
+condition: "step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'yes'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_sababu_kutopimwa
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'no'"
+condition: "step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'no'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_sababu_kutopimwa_other
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'no' && step1_mtoto_sababu_kutopimwa == 'other'"
+condition: "step1_mtoto_return_flow == '1' && (step1_mtoto_rufaa_state_before == 'referred' || step1_mtoto_rufaa_state_before == 'confirmation_referred') && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'no' && step1_mtoto_sababu_kutopimwa == 'other'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_test_type
 description: Child EID HEI relevance
 priority: 1
-condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests != '[]') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]')"
+condition: "(step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests != '[]') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]')"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mama_hei_test_date
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type)"
+condition: "step1_mtoto_return_flow == '1' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && ((step1_mtoto_rufaa_state_before == 'referred' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type)) || (step1_mtoto_rufaa_state_before == 'confirmation_referred' && step1_mtoto_rufaa_test != ''))"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mama_hei_test_result
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type)"
+condition: "step1_mtoto_return_flow == '1' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && ((step1_mtoto_rufaa_state_before == 'referred' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type)) || (step1_mtoto_rufaa_state_before == 'confirmation_referred' && step1_mtoto_rufaa_test != ''))"
 actions:
   - "isRelevant = true"
 ---
@@ -118,17 +118,24 @@ condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 
 actions:
   - "isRelevant = true"
 ---
-name: step1_mtoto_confirmation_received
-description: Child EID HEI relevance
+name: step1_mtoto_result_received_date
+description: Date recorded when a Child EID result is available
+priority: 1
+condition: "step1_mtoto_return_flow == '1' && ((step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type) && (step1_mama_hei_test_result == 'negative' || step1_mama_hei_test_result == 'positive')) || (step1_mtoto_rufaa_state_before == 'awaiting_result' && step1_mtoto_result_received == 'yes' && (step1_mtoto_received_result == 'negative' || step1_mtoto_received_result == 'positive')))"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mtoto_confirmatory_test_done
+description: Confirmatory test performed after a positive Child EID result
 priority: 1
 condition: "(step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type) && step1_mama_hei_test_result == 'positive') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_result' && step1_mtoto_result_received == 'yes' && step1_mtoto_received_result == 'positive')"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mtoto_confirmatory_result
-description: Child EID HEI relevance
+description: Result of the performed Child EID confirmatory test
 priority: 1
-condition: "step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm' && step1_mtoto_confirmation_received == 'yes'"
+condition: "step1_mtoto_confirmatory_test_done == 'yes' && ((step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_confirm') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'referred' && step1_child_eid_arrived_at_facility == 'yes' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_child_eid_test_type != '' && step1_mama_hei_due_tests.contains(step1_child_eid_test_type) && step1_mama_hei_test_result == 'positive') || (step1_mtoto_return_flow == '1' && step1_mtoto_rufaa_state_before == 'awaiting_result' && step1_mtoto_result_received == 'yes' && step1_mtoto_received_result == 'positive'))"
 actions:
   - "isRelevant = true"
 ---
@@ -142,20 +149,20 @@ actions:
 name: step1_child_eid_final_hiv_test_done
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes'"
+condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_final_hiv_test_date
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes' && step1_child_eid_final_hiv_test_done == 'yes'"
+condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes' && step1_child_eid_final_hiv_test_done == 'yes'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_child_eid_final_hiv_result
 description: Child EID HEI relevance
 priority: 1
-condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes' && step1_child_eid_final_hiv_test_done == 'yes'"
+condition: "step1_mtoto_return_flow != '1' && step1_mtoto_rufaa_state_before != 'none' && step1_mtoto_rufaa_state_before != 'confirmation_needed' && step1_child_eid_hei_review_tests.contains('eighteen_months') && step1_child_eid_test_type == 'eighteen_months' && step1_child_eid_arrived_at_facility == 'yes' && step1_child_eid_final_hiv_test_done == 'yes'"
 actions:
   - "isRelevant = true"

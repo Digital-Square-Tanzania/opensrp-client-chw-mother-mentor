@@ -8,11 +8,14 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
@@ -41,6 +44,15 @@ public final class MotherMentorChildEidDao {
 
     public static Map<String, String> person(SQLiteDatabase db, String childId) {
         return row(db, MEMBERS, childId);
+    }
+
+    public static boolean isHeiNumberRegistered(SQLiteDatabase db, String childId, String number) {
+        if (!columns(db, ENROLLMENTS).contains(DBConstants.KEY.HEI_NUMBER)) return false;
+        try (Cursor cursor = db.rawQuery("SELECT 1 FROM " + ENROLLMENTS + " WHERE "
+                + DBConstants.KEY.HEI_NUMBER + " = ? COLLATE NOCASE AND "
+                + DBConstants.KEY.BASE_ENTITY_ID + " <> ? LIMIT 1", new String[] {number, childId})) {
+            return cursor.moveToFirst();
+        }
     }
 
     public static Map<String, String> motherEnrollment(SQLiteDatabase db, String motherId) {
@@ -100,7 +112,9 @@ public final class MotherMentorChildEidDao {
 
     /** Native PNC/child enrollment already stores the authoritative mother relationship. */
     public static String motherId(SQLiteDatabase db, String childId) {
-        String mother = enrollment(db, childId).get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
+        Map<String, String> enrolled = enrollment(db, childId);
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(enrolled.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) return "";
+        String mother = enrolled.get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
         if (StringUtils.isNotBlank(mother)) return mother;
         Map<String, String> child = row(db, DBConstants.KEY.CHILD, childId);
         return StringUtils.defaultString(child.get(DBConstants.KEY.MOTHER_ENTITY_ID));
@@ -197,11 +211,13 @@ public final class MotherMentorChildEidDao {
                         && visit.getVisitId().compareTo(previous.getVisitId()) > 0) latest.put(source, visit);
             }
         }
+        Set<String> deleted = deletedEventSources(db, childId);
         List<Visit> result = new ArrayList<>();
         for (Visit visit : latest.values()) {
             JSONObject event = json(visit);
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
-            if (day == null || day.isAfter(asOf) || event.optBoolean(DBConstants.KEY.EVENT_VOIDED)) continue;
+            if (day == null || day.isAfter(asOf) || event.optBoolean(DBConstants.KEY.EVENT_VOIDED)
+                    || deleted.contains(sourceIdentity(visit))) continue;
             Map<String, String> answers = MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
             String episode = answers.get(DBConstants.KEY.MTOTO_ENROLLMENT_ID);
             if (StringUtils.isNotBlank(episode) && !enrollment.id.isEmpty() && !episode.equals(enrollment.id)) continue;
@@ -210,6 +226,29 @@ public final class MotherMentorChildEidDao {
         }
         result.sort(MotherMentorChildEidDao::compareChronology);
         return result;
+    }
+
+    public static Set<String> deletedEventSources(SQLiteDatabase db, String childId) {
+        if (!hasTable(db, "event")) return Collections.emptySet();
+        Set<String> deleted = new HashSet<>();
+        try (Cursor rows = db.rawQuery("SELECT " + DBConstants.KEY.EVENT_JSON + " FROM event WHERE "
+                + DBConstants.KEY.EVENT_BASE_ENTITY_ID + " = ? AND " + DBConstants.KEY.EVENT_TYPE
+                + " IN (?, ?)", new String[] {childId, Constants.EVENT_TYPE.DELETE_EVENT, Constants.EVENT_TYPE.VOID_EVENT})) {
+            while (rows.moveToNext()) {
+                try {
+                    JSONObject event = new JSONObject(rows.getString(0));
+                    JSONObject details = event.optJSONObject("details");
+                    String submission = details == null
+                            ? "" : details.optString(DBConstants.KEY.DELETED_FORM_SUBMISSION_ID);
+                    submission = StringUtils.defaultIfBlank(submission,
+                            event.optString(DBConstants.KEY.EVENT_FORM_SUBMISSION_ID));
+                    if (StringUtils.isNotBlank(submission)) deleted.add(submission);
+                } catch (JSONException ignored) {
+                    // A malformed tombstone cannot identify a target.
+                }
+            }
+        }
+        return deleted;
     }
 
     public static List<Visit> clinicalVisits(SQLiteDatabase db, String childId,
@@ -230,13 +269,18 @@ public final class MotherMentorChildEidDao {
         int day = MotherMentorMotherVisitDao.getServiceDate(first).compareTo(
                 MotherMentorMotherVisitDao.getServiceDate(second));
         if (day != 0) return day;
-        int time = Long.compare(first.getDate() == null ? 0 : first.getDate().getTime(),
-                second.getDate() == null ? 0 : second.getDate().getTime());
+        long firstSource = eventTime(json(first));
+        long secondSource = eventTime(json(second));
+        int time = Long.compare(firstSource == 0 && first.getDate() != null ? first.getDate().getTime() : firstSource,
+                secondSource == 0 && second.getDate() != null ? second.getDate().getTime() : secondSource);
+        if (time == 0 && first.getDate() != null && second.getDate() != null) {
+            time = first.getDate().compareTo(second.getDate());
+        }
         return time != 0 ? time : first.getVisitId().compareTo(second.getVisitId());
     }
 
     public static String pageQuery(String search, boolean closed, int limit, int offset) {
-        return selectColumns() + ", m." + DBConstants.KEY.ID + " AS " + BaseColumns._ID
+        return selectColumns(true) + ", m." + DBConstants.KEY.ID + " AS " + BaseColumns._ID
                 + from() + condition(search, closed) + " ORDER BY m."
                 + DBConstants.KEY.FIRST_NAME + " COLLATE NOCASE, m." + DBConstants.KEY.LAST_NAME
                 + " COLLATE NOCASE, m." + DBConstants.KEY.BASE_ENTITY_ID + " LIMIT "
@@ -245,22 +289,28 @@ public final class MotherMentorChildEidDao {
 
     public static Map<String, String> cardValues(SQLiteDatabase db, String childId) {
         if (StringUtils.isBlank(childId) || !hasTable(db, ENROLLMENTS)) return Collections.emptyMap();
-        try (Cursor cursor = db.rawQuery(selectColumns() + from() + " WHERE e."
+        try (Cursor cursor = db.rawQuery(selectColumns(false) + from() + " WHERE e."
                 + DBConstants.KEY.BASE_ENTITY_ID + " = ?", new String[] {childId})) {
             return cursor.moveToFirst() ? values(cursor) : Collections.emptyMap();
         }
     }
 
-    private static String selectColumns() {
+    private static String selectColumns(boolean register) {
         String[] metadata = {DBConstants.KEY.MTOTO_MISSED_TEST, DBConstants.KEY.MTOTO_MISSED_DUE,
-                DBConstants.KEY.MTOTO_RUFAA_STATE, DBConstants.KEY.MTOTO_RUFAA_TEST,
+                DBConstants.KEY.MTOTO_RUFAA_TEST,
                 DBConstants.KEY.MTOTO_RUFAA_DUE, DBConstants.KEY.MTOTO_STATUS,
                 DBConstants.KEY.MTOTO_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MOTHER_BASE_ENTITY_ID,
-                DBConstants.KEY.HEI_NUMBER, DBConstants.KEY.MTOTO_VISIT_COUNT};
+                DBConstants.KEY.HEI_NUMBER, DBConstants.KEY.MTOTO_VISIT_COUNT,
+                DBConstants.KEY.MTOTO_CAREGIVER_NAME, DBConstants.KEY.MTOTO_CAREGIVER_RELATIONSHIP,
+                DBConstants.KEY.MTOTO_ENTRY_SOURCE, DBConstants.KEY.MTOTO_ENTRY_TEST,
+                DBConstants.KEY.MTOTO_ENTRY_RESULT};
         StringBuilder select = new StringBuilder("SELECT " + motherName() + " AS "
                 + DBConstants.KEY.MOTHER_NAME + ", f." + DBConstants.KEY.VILLAGE_TOWN
                 + " AS " + DBConstants.KEY.VILLAGE_TOWN + ", m.*");
         for (String column : metadata) select.append(", e.").append(column);
+        select.append(", ").append(register
+                ? MotherMentorChildEidResultOverdue.registerState("e")
+                : "e." + DBConstants.KEY.MTOTO_RUFAA_STATE);
         select.append(", e.").append(DBConstants.KEY.IS_CLOSED).append(" AS ")
                 .append(DBConstants.KEY.MTOTO_IS_CLOSED);
         return select + ", coalesce(nullif(m." + DBConstants.KEY.DOB + ", ''), e."
@@ -293,7 +343,9 @@ public final class MotherMentorChildEidDao {
             String pattern = "'%" + search.trim().replace("'", "''").replace("\\", "\\\\")
                     .replace("%", "\\%").replace("_", "\\_") + "%'";
             where += " AND (" + name("m") + " LIKE " + pattern + " ESCAPE '\\' OR coalesce(e." + DBConstants.KEY.HEI_NUMBER
-                    + ", '') LIKE " + pattern + " ESCAPE '\\' OR " + motherName() + " LIKE "
+                    + ", '') LIKE " + pattern + " ESCAPE '\\' OR coalesce(e."
+                    + DBConstants.KEY.MTOTO_CAREGIVER_NAME + ", '') LIKE " + pattern
+                    + " ESCAPE '\\' OR " + motherName() + " LIKE "
                     + pattern + " ESCAPE '\\' OR coalesce(m." + DBConstants.KEY.UNIQUE_ID
                     + ", '') LIKE " + pattern + " ESCAPE '\\')";
         }

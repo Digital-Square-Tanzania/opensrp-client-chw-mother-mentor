@@ -1,0 +1,21 @@
+---
+name: step1_mtoto_received_result
+description: Record the initial HEI result
+priority: 1
+condition: "step1_mtoto_rufaa_state_before == 'awaiting_result'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mtoto_confirmatory_test_done
+description: Record whether confirmation was performed for a positive initial result
+priority: 1
+condition: "step1_mtoto_rufaa_state_before == 'awaiting_confirm' || step1_mtoto_received_result == 'positive'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mtoto_confirmatory_result
+description: Record the result of a performed confirmatory test
+priority: 1
+condition: "(step1_mtoto_rufaa_state_before == 'awaiting_confirm' || step1_mtoto_received_result == 'positive') && step1_mtoto_confirmatory_test_done == 'yes'"
+actions:
+  - "isRelevant = true"

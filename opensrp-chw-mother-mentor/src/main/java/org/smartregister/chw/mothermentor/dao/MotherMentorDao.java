@@ -160,7 +160,7 @@ public class MotherMentorDao extends AbstractDao {
         }
         return MotherMentorChildEidFollowUpVisitUtils.hasCompletedVisitToday(visits, now,
                 visit -> MotherMentorMotherChildRepository.getStateForChildBeforeEvidence(
-                        db, baseEntityId, visit));
+                        db, baseEntityId, visit), db);
     }
 
     private static boolean isCurrentChildEidVisit(Visit visit) {

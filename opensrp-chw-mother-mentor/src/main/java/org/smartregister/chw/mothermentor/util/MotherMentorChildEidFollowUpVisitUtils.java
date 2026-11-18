@@ -1,11 +1,14 @@
 package org.smartregister.chw.mothermentor.util;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidResultEvent;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 
@@ -31,6 +34,11 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
 
     public static boolean hasCompletedVisitToday(List<Visit> visits, Date now,
             ClinicalContext clinicalContext) {
+        return hasCompletedVisitToday(visits, now, clinicalContext, null);
+    }
+
+    public static boolean hasCompletedVisitToday(List<Visit> visits, Date now,
+            ClinicalContext clinicalContext, SQLiteDatabase db) {
         if (visits == null || now == null) return false;
         for (Visit visit : visits) {
             if (visit == null || !Boolean.TRUE.equals(visit.getProcessed())) continue;
@@ -42,8 +50,9 @@ public final class MotherMentorChildEidFollowUpVisitUtils {
             }
             try {
                 JSONObject event = new JSONObject(visit.getJson());
-                Map<String, String> values =
-                        MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
+                Map<String, String> values = db != null && MotherMentorChildEidResultEvent.isSplitVisit(visit)
+                        ? MotherMentorChildEidResultEvent.visitAnswers(db, visit)
+                        : MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
                 String category = values.get(DBConstants.KEY.FOLLOW_UP_CATEGORY);
                 if (answered(category)
                         && !MotherMentorFollowUpType.CHILD_EID.getValue().equals(category)) {

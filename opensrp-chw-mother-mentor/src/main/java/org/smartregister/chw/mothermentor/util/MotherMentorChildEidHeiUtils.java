@@ -12,8 +12,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment.CONFIRMATION_NEEDED;
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED;
+
 /** Child EID HEI assessment; referral and testing are separate visits. */
 public final class MotherMentorChildEidHeiUtils {
+    public static final String NEVER_BREASTFED = "never_breastfed";
     public static final List<String> RETURN_FIELDS = Collections.unmodifiableList(Arrays.asList(
             DBConstants.KEY.CHILD_EID_TEST_TYPE,
             DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY,
@@ -26,13 +30,19 @@ public final class MotherMentorChildEidHeiUtils {
 
     public static boolean isBreastfeedingComplete(Map<String, String> values,
             LocalDate dob, LocalDate day) {
+        return isBreastfeedingComplete(values, dob, day, false);
+    }
+
+    public static boolean isBreastfeedingComplete(Map<String, String> values,
+            LocalDate dob, LocalDate day, boolean hasBreastfeedingHistory) {
         if (values == null || dob == null || day == null || dob.isAfter(day)
                 || day.isAfter(LocalDate.now())) return false;
         String status = value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-        return "breastfeeding".equals(status)
-                ? value(values, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA).isEmpty()
-                : "not_breastfeeding".equals(status)
-                    && MotherMentorHeiSchedule.validDate(cessation(values), dob, day);
+        if ("not_breastfeeding".equals(status)) {
+            return MotherMentorHeiSchedule.validDate(cessation(values), dob, day);
+        }
+        return ("breastfeeding".equals(status) || NEVER_BREASTFED.equals(status) && !hasBreastfeedingHistory)
+                && value(values, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA).isEmpty();
     }
 
     public static List<Stage> eligible(Map<String, String> values, LocalDate dob,
@@ -53,6 +63,13 @@ public final class MotherMentorChildEidHeiUtils {
                 || !isReferralState(previousReferralState)
                 || !previousReferralState.equals(value(values,
                         DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return false;
+        if (CONFIRMATION_NEEDED.equals(previousReferralState)) {
+            String agreement = value(values, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT);
+            return !MotherMentorChildEidReturnVisit.applies(values)
+                    && !hasAny(values, RETURN_FIELDS)
+                    && ("agreed".equals(agreement) || "refused".equals(agreement))
+                    && Stage.fromCode(value(values, DBConstants.KEY.MTOTO_RUFAA_TEST)) != null;
+        }
         if ("none".equals(previousReferralState)) {
             if (hasAny(values, RETURN_FIELDS)) return false;
             List<Stage> eligible = eligible(values, dob, tests, day);
@@ -68,12 +85,13 @@ public final class MotherMentorChildEidHeiUtils {
                     && first == Stage.fromCode(value(values, DBConstants.KEY.MTOTO_RUFAA_TEST))
                     && due != null && due.toString().equals(value(values, DBConstants.KEY.MTOTO_RUFAA_DUE));
         }
-        if (!Arrays.asList("referred", "awaiting_result", "awaiting_confirm")
+        if (!Arrays.asList("referred", "awaiting_result", "awaiting_confirm", CONFIRMATION_REFERRED)
                 .contains(previousReferralState)
                 || !value(values, DBConstants.KEY.MTOTO_REFERRAL_AGREEMENT).isEmpty()) return false;
         if (MotherMentorChildEidReturnVisit.applies(values)) {
             return MotherMentorChildEidReturnVisit.evaluate(values, dob, day, tests, previousReferralState) != null;
         }
+        if (CONFIRMATION_REFERRED.equals(previousReferralState)) return false;
         List<Stage> reviewable = reviewable(values, dob, tests, day);
         if (reviewable.isEmpty()) return !hasAny(values, RETURN_FIELDS);
         Stage selected = Stage.fromCode(value(values, DBConstants.KEY.CHILD_EID_TEST_TYPE));
@@ -106,7 +124,8 @@ public final class MotherMentorChildEidHeiUtils {
         if (!"not_breastfeeding".equals(value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))) {
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, "");
         }
-        if ("none".equals(value(values, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) {
+        String state = value(values, DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+        if ("none".equals(state) || CONFIRMATION_NEEDED.equals(state)) {
             for (String key : RETURN_FIELDS) MotherMentorMotherChildUtils.put(form, key, "");
             MotherMentorChildEidReturnVisit.clearInactive(form, values);
             return;
@@ -139,7 +158,8 @@ public final class MotherMentorChildEidHeiUtils {
     }
 
     public static boolean isReferralState(String state) {
-        return Arrays.asList("none", "referred", "awaiting_result", "awaiting_confirm").contains(state);
+        return Arrays.asList("none", "referred", "awaiting_result", "awaiting_confirm",
+                CONFIRMATION_NEEDED, CONFIRMATION_REFERRED).contains(state);
     }
 
     private static boolean noFinalAnswers(Map<String, String> values) {

@@ -358,6 +358,7 @@ public final class DBConstants {
         public static final String EVENT_JSON = "json";
         public static final String EVENT_VERSION = "version";
         public static final String EVENT_VOIDED = "voided";
+        public static final String DELETED_FORM_SUBMISSION_ID = "deleted_form_submission_id";
         public static final String EVENT_FORM_SUBMISSION_ID = "formSubmissionId";
         public static final String DOB_UNKNOWN = "dob_unknown";
         public static final String EVENT_DATE_TIMESTAMP = "eventDate";
@@ -426,6 +427,12 @@ public final class DBConstants {
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
+        public static final String CHILD_EID_INLINE_SUBMISSION_ID = "child_eid_inline_hei_submission_id";
+        public static final String CHILD_EID_INLINE_REVISION = "child_eid_inline_hei_revision";
+        public static final String CHILD_EID_PARENT_SUBMISSION_ID = "child_eid_parent_visit_submission_id";
+        public static final String CHILD_EID_SAMPLE_SUBMISSION_ID = "child_eid_sample_submission_id";
+        public static final String CHILD_EID_RESULT_ENTRY = "child_eid_result_entry";
+        public static final String MTOTO_CONFIRMATORY_TEST_DONE = "mtoto_confirmatory_test_done";
         public static final String MTOTO_MISSED_TEST = "mtoto_missed_test";
         public static final String MTOTO_MISSED_DUE = "mtoto_missed_due";
         public static final String MTOTO_RUFAA_STATE = "mtoto_rufaa_state";
@@ -437,6 +444,7 @@ public final class DBConstants {
         public static final String MTOTO_SABABU_KUTOPIMWA_OTHER = "mtoto_sababu_kutopimwa_other";
         public static final String MTOTO_PENDING_TEST = "mtoto_pending_test";
         public static final String MTOTO_PENDING_TEST_DATE = "mtoto_pending_test_date";
+        public static final String MTOTO_RESULT_RECEIVED_DATE = "mtoto_result_received_date";
         public static final String MTOTO_RESULT_RECEIVED = "mtoto_result_received";
         public static final String MTOTO_CONFIRMATION_RECEIVED = "mtoto_confirmation_received";
         public static final String MTOTO_CONFIRMATORY_RESULT = "mtoto_confirmatory_result";
@@ -462,6 +470,12 @@ public final class DBConstants {
         public static final String MTOTO_ENROLLMENT_ID = "mtoto_enrollment_id";
         public static final String MTOTO_MOTHER_ENROLLMENT_ID = "mtoto_mother_enrollment_id";
         public static final String MTOTO_ENTRY_SOURCE = "mtoto_entry_source";
+        public static final String MTOTO_ENTRY_TEST = "mtoto_entry_test";
+        public static final String MTOTO_ENTRY_RESULT = "mtoto_entry_result";
+        public static final String MTOTO_ENTRY_TEST_DATE = "mtoto_entry_test_date";
+        public static final String MTOTO_CAREGIVER_NAME = "mtoto_caregiver_name";
+        public static final String MTOTO_CAREGIVER_RELATIONSHIP = "mtoto_caregiver_relationship";
+        public static final String MTOTO_CAREGIVER_PHONE = "mtoto_caregiver_phone";
         public static final String MTOTO_IS_CLOSED = "mtoto_is_closed";
         public static final String MTOTO_VISIT_COUNT = "mtoto_visit_count";
         public static final String MOTHER_ENTITY_ID = "mother_entity_id";

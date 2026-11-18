@@ -1,0 +1,21 @@
+---
+name: step4_last_test_result
+description: Ask for the result only after a real test was selected
+priority: 1
+condition: "(step3_breastfeeding_status != 'stop_breast_feeding' && step4_last_test != '' && step4_last_test != 'no_test_has_been_done_yet') || (step3_breastfeeding_status == 'stop_breast_feeding' && step4_direct_enrollment_last_test_weaned != '' && step4_direct_enrollment_last_test_weaned != 'no_test_has_been_done_yet')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_hei_number
+description: Offer the missing HEI number when an independently enrolled child is found alive
+priority: 1
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_direct_hei_help
+description: Explain why the HEI number is offered
+priority: 1
+condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
+actions:
+  - "isRelevant = true"

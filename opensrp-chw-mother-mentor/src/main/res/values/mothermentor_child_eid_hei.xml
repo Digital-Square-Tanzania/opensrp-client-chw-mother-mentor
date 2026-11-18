@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mothermentor_eid_record_result">Record test result</string>
+    <string name="mothermentor_eid_result_required">Complete the test result questions</string>
+    <string name="mothermentor_eid_result_unavailable">This test no longer has a result awaiting entry. Refresh the child’s record.</string>
+    <string name="mothermentor_eid_result_save_failed">Could not save the test result. Check the child’s record and try again.</string>
+    <string name="mothermentor_eid_received_before_test">The received date cannot be before the test date</string>
+    <string name="mothermentor_eid_received_invalid_date">Enter a valid received date that is not in the future</string>
     <string name="mothermentor_child_eid_hei_referral_agreed">Caregiver agreed to take the child to the facility</string>
     <string name="mothermentor_child_eid_hei_referral_refused">Caregiver refused to take the child to the facility</string>
     <string name="mothermentor_child_eid_hei_none">none</string>
@@ -14,7 +20,12 @@
     <string name="mothermentor_eid_return_confirm_negative">Confirmatory result is negative. Follow national guidelines for repeat testing.</string>
     <string name="mothermentor_eid_return_graduation">Negative at 18 months. The child has graduated.</string>
     <string name="mothermentor_eid_return_confirm_positive">Confirmed positive. Ensure the child is linked to ART and CTC.</string>
-    <string name="mothermentor_eid_return_wait_result">Save. The next visit asks whether the result has been received.</string>
+    <string name="mothermentor_eid_return_wait_result">Follow up the results at the facility.</string>
+    <string name="mothermentor_eid_confirmatory_sample_stage">Confirmatory test (%1$s)</string>
+    <string name="mothermentor_eid_confirmatory_sample_date">Confirmatory test date</string>
+    <string name="mothermentor_eid_confirmatory_sample_result">Confirmatory test result</string>
+    <string name="mothermentor_eid_result_overdue">Results overdue</string>
+    <string name="mothermentor_eid_overdue_sample">Results overdue · Test date: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Save. The child remains on the list awaiting confirmation.</string>
     <string name="mothermentor_eid_return_nonattendance">Save. The referral closes after three consecutive visits without facility attendance.</string>
     <string name="mothermentor_eid_return_attendance">Save. The referral stays open. The next visit asks again whether the child attended.</string>

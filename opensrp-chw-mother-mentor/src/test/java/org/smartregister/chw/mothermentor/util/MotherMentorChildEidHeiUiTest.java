@@ -19,6 +19,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -29,6 +30,107 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidHeiUiTest {
+    @Test
+    public void directPositiveEnrollmentKeepsTheOriginalStageAndRefersForConfirmation() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture form = new Fixture(language, "confirmation_needed");
+            form.put(MTOTO_ENTRY_SOURCE, "direct");
+            form.put(MTOTO_RUFAA_TEST, "at_birth");
+            form.put(MTOTO_REFERRAL_AGREEMENT, "agreed");
+            form.refresh();
+            assertEquals("at_birth", form.value(MTOTO_RUFAA_TEST));
+            assertEquals("agreed", form.value(MTOTO_REFERRAL_AGREEMENT));
+            assertTrue(form.value(MAMA_HEI_NEXT_TEST_NOTE).startsWith("sw".equals(language)
+                    ? "Kipimo cha uthibitisho (" : "Confirmatory test ("));
+            assertTrue(MotherMentorChildEidHeiUtils.isComplete(
+                    MotherMentorMotherChildUtils.values(form.form), new LocalDate(2026, 1, 1),
+                    new LocalDate(2026, 10, 1), Collections.emptyMap(), "confirmation_needed"));
+        }
+    }
+
+    @Test
+    public void directConfirmatorySampleUsesItsDateAndResolvesTheAlreadyPositiveTest() throws Exception {
+        LocalDate dob = new LocalDate(2026, 1, 1);
+        LocalDate day = new LocalDate(2026, 10, 1);
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture form = new Fixture(language, "confirmation_referred");
+            form.put(MTOTO_ENTRY_SOURCE, "direct");
+            form.put(MTOTO_RETURN_FLOW, "1");
+            form.put(MTOTO_RUFAA_TEST, "at_birth");
+            form.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            form.put(CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-09-30");
+            form.put(MAMA_HEI_TEST_DONE, "yes");
+            form.put(MAMA_HEI_TEST_DATE, day.toString());
+            form.put(MAMA_HEI_TEST_RESULT, "pending");
+            form.refresh();
+            assertEquals("sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals("sw".equals(language) ? "Majibu ya kipimo cha uthibitisho" : "Confirmatory test result",
+                    MotherMentorMotherChildUtils.field(form.form, MAMA_HEI_TEST_RESULT).getString("label"));
+            MotherMentorChildEidReturnVisit.Result pending = MotherMentorChildEidReturnVisit.evaluate(
+                    MotherMentorMotherChildUtils.values(form.form), dob, day, Collections.emptyMap(),
+                    "confirmation_referred");
+            assertNotNull(pending);
+            assertEquals(Stage.AT_BIRTH, pending.stage);
+            assertEquals(day, pending.testDate);
+            assertEquals("awaiting_confirm", pending.nextState);
+
+            form.put(MAMA_HEI_TEST_RESULT, "negative");
+            form.refresh();
+            assertEquals("", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals(MotherMentorChildEidReturnVisit.Outcome.CONFIRMATORY_NEGATIVE,
+                    MotherMentorChildEidReturnVisit.evaluate(MotherMentorMotherChildUtils.values(form.form),
+                            dob, day, Collections.emptyMap(), "confirmation_referred").outcome);
+            form.put(MAMA_HEI_TEST_RESULT, "positive");
+            form.refresh();
+            assertEquals("", form.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals(MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE,
+                    MotherMentorChildEidReturnVisit.evaluate(MotherMentorMotherChildUtils.values(form.form),
+                            dob, day, Collections.emptyMap(), "confirmation_referred").outcome);
+        }
+    }
+
+    @Test
+    public void receivedDateUsesSampleDateAndClearsWhenTheResultBecomesPending() throws Exception {
+        Fixture f = new Fixture("sw", "referred");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+        f.put(CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-10-01");
+        f.put(MAMA_HEI_TEST_DONE, "yes");
+        f.put(CHILD_EID_TEST_TYPE, "nine_months");
+        f.put(MAMA_HEI_TEST_DATE, "2026-10-01");
+        f.put(MAMA_HEI_TEST_RESULT, "negative");
+        f.refresh();
+        assertTrue(MotherMentorChildEidReturnVisit.requiresReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form)));
+        for (String invalid : new String[] {"", "2026-09-30", "2026-10-02"}) {
+            f.put(MTOTO_RESULT_RECEIVED_DATE, invalid);
+            assertFalse(MotherMentorChildEidReturnVisit.validReceivedDate(
+                    MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+        }
+        f.put(MTOTO_RESULT_RECEIVED_DATE, "2026-10-01");
+        assertTrue(MotherMentorChildEidReturnVisit.validReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+        f.refresh();
+        f.put(MAMA_HEI_TEST_RESULT, "pending");
+        f.refresh();
+        assertEquals("", f.value(MTOTO_RESULT_RECEIVED_DATE));
+    }
+
+    @Test
+    public void aResultReceivedLaterUsesTheOriginalSampleDate() throws Exception {
+        Fixture f = new Fixture("en", "awaiting_result");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(MTOTO_PENDING_TEST_DATE, "2026-09-15");
+        f.put(MTOTO_RESULT_RECEIVED, "yes");
+        f.put(MTOTO_RECEIVED_RESULT, "positive");
+        f.put(MTOTO_RESULT_RECEIVED_DATE, "2026-09-15");
+        assertTrue(MotherMentorChildEidReturnVisit.requiresReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form)));
+        assertTrue(MotherMentorChildEidReturnVisit.validReceivedDate(
+                MotherMentorMotherChildUtils.values(f.form), new LocalDate(2026, 10, 1)));
+    }
+
     @Test
     public void bilingualBannerUsesDueStagesAndCanonicalReferralSnapshot() throws Exception {
         for (String language : new String[] {"en", "sw"}) {
@@ -118,10 +220,115 @@ public class MotherMentorChildEidHeiUiTest {
         assertNotNull(f.date.getError());
     }
 
+    @Test
+    public void pendingResultPromptsImmediatelyInBothLanguagesAndClearsForTheFinalTest() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture f = new Fixture(language, "referred");
+            f.put(MTOTO_RETURN_FLOW, "1");
+            f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            f.put(MAMA_HEI_TEST_DONE, "yes");
+            f.put(CHILD_EID_TEST_TYPE, "nine_months");
+            f.put(MAMA_HEI_TEST_RESULT, "pending");
+            f.refresh();
+            assertEquals("sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", f.value(MTOTO_RETURN_RESULT_NOTE));
+            f.put(MAMA_HEI_ASSESSMENT_DATE, "2027-07-01");
+            f.put(CHILD_EID_TEST_TYPE, "eighteen_months");
+            f.put(MAMA_HEI_TEST_RESULT, "pending");
+            MotherMentorChildEidHeiUi.prepare(f.form, f.activity);
+            assertEquals("", f.value(MAMA_HEI_TEST_RESULT));
+        }
+    }
+
+    @Test
+    public void finalSampleAndFinalConfirmationBothHidePendingAndClearAStoredSelection() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture f = new Fixture(language, "referred");
+            f.put(CHILD_DOB, "2025-01-01");
+            f.put(MTOTO_RETURN_FLOW, "1");
+            f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            f.put(CHILD_EID_TEST_TYPE, "eighteen_months");
+            f.put(MAMA_HEI_TEST_DONE, "yes");
+            f.put(MAMA_HEI_TEST_RESULT, "pending");
+            f.refresh();
+            assertEquals(View.GONE, f.initialPending.getVisibility());
+            assertEquals(View.GONE, f.confirmationPending.getVisibility());
+            assertEquals("", f.value(MAMA_HEI_TEST_RESULT));
+
+            f.put(MAMA_HEI_TEST_RESULT, "positive");
+            f.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+            f.put(MTOTO_CONFIRMATORY_RESULT, "pending");
+            f.refresh();
+            assertEquals("", f.value(MTOTO_CONFIRMATORY_RESULT));
+            assertEquals("no", f.value(MTOTO_CONFIRMATION_RECEIVED));
+        }
+    }
+
+    @Test
+    public void earlierStageKeepsPendingAndOnlyAnExplicitResultSetsTheReportValue() throws Exception {
+        Fixture f = new Fixture("en", "referred");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+        f.put(CHILD_EID_TEST_TYPE, "nine_months");
+        f.put(MAMA_HEI_TEST_DONE, "yes");
+        f.put(MAMA_HEI_TEST_RESULT, "positive");
+        f.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        f.put(MTOTO_CONFIRMATORY_RESULT, "pending");
+        f.refresh();
+        assertEquals("pending", f.value(MTOTO_CONFIRMATORY_RESULT));
+        assertEquals(View.VISIBLE, f.confirmationPending.getVisibility());
+        assertEquals("no", f.value(MTOTO_CONFIRMATION_RECEIVED));
+        f.put(MTOTO_CONFIRMATORY_RESULT, "negative");
+        f.refresh();
+        assertEquals("yes", f.value(MTOTO_CONFIRMATION_RECEIVED));
+        f.put(MTOTO_CONFIRMATORY_TEST_DONE, "no");
+        f.refresh();
+        assertEquals("", f.value(MTOTO_CONFIRMATORY_RESULT));
+        assertEquals("no", f.value(MTOTO_CONFIRMATION_RECEIVED));
+        f.put(MAMA_HEI_TEST_RESULT, "negative");
+        f.refresh();
+        assertEquals("", f.value(MTOTO_CONFIRMATORY_TEST_DONE));
+        assertEquals("", f.value(MTOTO_CONFIRMATION_RECEIVED));
+    }
+
+    @Test
+    public void existingFinalSampleAppliesTheSameRestrictionWhenItsResultArrivesLater() throws Exception {
+        Fixture f = new Fixture("sw", "awaiting_result");
+        f.put(CHILD_DOB, "2025-01-01");
+        f.put(MTOTO_RETURN_FLOW, "1");
+        f.put(MTOTO_PENDING_TEST, "miezi18");
+        f.put(MAMA_HEI_TEST_HISTORY, "{\"eighteen_months\":{\"result\":\"pending\","
+                + "\"date\":\"2026-09-29\",\"confirmed\":false,\"service_date\":\"2026-09-29\"}}");
+        f.put(MTOTO_RESULT_RECEIVED, "yes");
+        f.put(MTOTO_RECEIVED_RESULT, "positive");
+        f.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        f.put(MTOTO_CONFIRMATORY_RESULT, "pending");
+        f.refresh();
+        assertEquals("miezi18", f.value(MTOTO_PENDING_TEST));
+        assertEquals(View.GONE, f.confirmationPending.getVisibility());
+        assertEquals("", f.value(MTOTO_CONFIRMATORY_RESULT));
+    }
+
+    @Test
+    public void restoringOldAnswersOnlyPrefillsTestDoneWhenThereIsAnExplicitConfirmationOutcome() throws Exception {
+        Fixture f = new Fixture("en", "awaiting_confirm");
+        f.put(MTOTO_CONFIRMATION_RECEIVED, "no");
+        MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(f.form);
+        assertEquals("", f.value(MTOTO_CONFIRMATORY_TEST_DONE));
+        f.put(MTOTO_CONFIRMATION_RECEIVED, "yes");
+        MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(f.form);
+        assertEquals("", f.value(MTOTO_CONFIRMATORY_TEST_DONE));
+        f.put(MTOTO_CONFIRMATORY_RESULT, "negative");
+        MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(f.form);
+        assertEquals("yes", f.value(MTOTO_CONFIRMATORY_TEST_DONE));
+    }
+
     private static final class Fixture {
         final JSONObject form;
         final JsonFormActivity activity;
         final RadioGroup options;
+        final RadioButton initialPending;
+        final RadioButton confirmationPending;
         final EditText date;
         final MotherMentorChildEidHeiUi ui = new MotherMentorChildEidHeiUi();
 
@@ -153,6 +360,8 @@ public class MotherMentorChildEidHeiUiTest {
                 options.addView(button);
             }
             root.addView(options);
+            initialPending = pending(root, context, MAMA_HEI_TEST_RESULT);
+            confirmationPending = pending(root, context, MTOTO_CONFIRMATORY_RESULT);
             date = new EditText(context);
             date.setTag(com.vijay.jsonwizard.R.id.key, MAMA_TAREHE_ACHA_KUNYONYESHA);
             root.addView(date);
@@ -174,6 +383,16 @@ public class MotherMentorChildEidHeiUiTest {
         void put(String key, String value) { MotherMentorMotherChildUtils.put(form, key, value); }
         String value(String key) { return MotherMentorMotherChildUtils.values(form).get(key); }
         void refresh() { ui.refresh(activity); }
+
+        private static RadioButton pending(LinearLayout root, Context context, String key) {
+            RadioGroup group = new RadioGroup(context);
+            RadioButton option = new RadioButton(context);
+            option.setTag(com.vijay.jsonwizard.R.id.key, key);
+            option.setTag(com.vijay.jsonwizard.R.id.childKey, "pending");
+            group.addView(option);
+            root.addView(group);
+            return option;
+        }
         RadioButton option(Stage stage) {
             for (int i = 0; i < options.getChildCount(); i++) {
                 RadioButton button = (RadioButton) options.getChildAt(i);

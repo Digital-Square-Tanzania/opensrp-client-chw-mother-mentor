@@ -15,6 +15,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,6 +48,40 @@ public class MotherMentorChildEidStatusWorkflowTest {
             helper.onPayloadReceived(MotherMentorActionHelpersTest.form("follow_up_status", status).toString());
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
         }
+    }
+
+    @Test
+    public void optionalHeiPlaceholderIsClearedButEnteredNumberIsRetainedForALiveChild() throws Exception {
+        MotherMentorChildEidFollowUpStatusActionHelper helper =
+                new MotherMentorChildEidFollowUpStatusActionHelper(null);
+        JSONObject form = MotherMentorActionHelpersTest.form("child_eid_follow_up_schema", "3",
+                "follow_up_status", "found", "mama_child_status", "alive",
+                DBConstants.KEY.HEI_NUMBER, "00-00-0000-000000-C00");
+        assertEquals("", JsonFormUtils.getValue(
+                new JSONObject(helper.postProcess(form.toString())), DBConstants.KEY.HEI_NUMBER));
+        FormUtils.getFieldFromForm(form, DBConstants.KEY.HEI_NUMBER).put("value", "11-02-2026-000004-C02");
+        assertEquals("11-02-2026-000004-C02", JsonFormUtils.getValue(
+                new JSONObject(helper.postProcess(form.toString())), DBConstants.KEY.HEI_NUMBER));
+    }
+
+    @Test
+    public void incompleteDirectHeiRegistrationAddsNumberAndGuidanceToTheTracingAction() throws Exception {
+        JSONObject source = MotherMentorActionHelpersTest.form("child_eid_follow_up_schema", "3",
+                "follow_up_status", "found", "mama_child_status", "alive");
+        MotherMentorChildEidFollowUpStatusActionHelper helper =
+                new MotherMentorChildEidFollowUpStatusActionHelper(null, LocalDate.now(), null, true);
+        helper.onJsonFormLoaded(source.toString(), RuntimeEnvironment.getApplication(), Collections.emptyMap());
+        JSONObject prepared = new JSONObject(helper.getPreProcessed());
+        JSONObject number = MotherMentorMotherChildUtils.field(prepared, DBConstants.KEY.HEI_NUMBER);
+        assertNotNull(number);
+        assertEquals("mask_edit_text", number.getString("type"));
+        assertEquals("", number.getString("value"));
+        assertNotNull(MotherMentorMotherChildUtils.field(prepared, "direct_hei_help"));
+
+        helper.onJsonFormLoaded(prepared.toString(), RuntimeEnvironment.getApplication(), Collections.emptyMap());
+        JSONObject reopened = new JSONObject(helper.getPreProcessed());
+        assertEquals(prepared.getJSONObject("step1").getJSONArray("fields").length(),
+                reopened.getJSONObject("step1").getJSONArray("fields").length());
     }
 
     @Test

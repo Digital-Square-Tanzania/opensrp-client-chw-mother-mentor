@@ -1,6 +1,5 @@
 package org.smartregister.chw.mothermentor.util;
 
-import android.content.Context;
 
 import com.google.gson.Gson;
 
@@ -90,6 +89,11 @@ public class VisitUtils {
     }
 
     public static void processVisits(List<Visit> visits, VisitRepository visitRepository, VisitDetailsRepository visitDetailsRepository) throws Exception {
+        persistVisitEvents(visits, visitRepository);
+        NCUtils.startClientProcessing();
+    }
+
+    public static void persistVisitEvents(List<Visit> visits, VisitRepository visitRepository) throws Exception {
         String visitGroupId = UUID.randomUUID().toString();
         for (Visit v : visits) {
             if (!v.getProcessed()) {
@@ -114,12 +118,6 @@ public class VisitUtils {
                 visitRepository.completeProcessing(v.getVisitId());
             }
         }
-
-        // process after all events are saved
-        NCUtils.startClientProcessing();
-
-        // process vaccines and services
-        Context context = MotherMentorLibrary.getInstance().context().applicationContext();
 
     }
 

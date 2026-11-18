@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mothermentor_eid_direct_age">Age</string>
+    <string name="mothermentor_eid_direct_household">Household</string>
+    <string name="mothermentor_eid_direct_hei">HEI number (optional)</string>
+    <string name="mothermentor_eid_direct_hei_invalid">Enter a valid HEI number: 00-00-0000-000000-C00</string>
+    <string name="mothermentor_eid_direct_hei_duplicate">This HEI number is already in use.</string>
+    <string name="mothermentor_eid_direct_caregiver">Caregiver name</string>
+    <string name="mothermentor_eid_direct_relationship">Caregiver relationship to the child</string>
+    <string name="mothermentor_eid_direct_father">Father</string>
+    <string name="mothermentor_eid_direct_grandparent">Grandparent</string>
+    <string name="mothermentor_eid_direct_relative">Other relative</string>
+    <string name="mothermentor_eid_direct_other">Other caregiver</string>
+    <string name="mothermentor_eid_direct_phone">Caregiver phone number (optional)</string>
+    <string name="mothermentor_eid_direct_phone_invalid">Enter a 10-digit phone number.</string>
+    <string name="mothermentor_eid_direct_never">Never breastfed</string>
+    <string name="mothermentor_eid_direct_test_date">Test date</string>
+    <string name="mothermentor_eid_direct_test_date_invalid">Enter a test date between the date of birth and today.</string>
+    <string name="mothermentor_eid_direct_weaning_invalid">Enter a date breastfeeding stopped between the date of birth and today.</string>
+    <string name="mothermentor_eid_direct_required">Complete all required enrollment questions.</string>
+    <string name="mothermentor_eid_direct_last_test_invalid">Choose a test the child was eligible to receive.</string>
+    <string name="mothermentor_eid_direct_child_unavailable">Select a registered child under 24 months for this follow-up.</string>
+    <string name="mothermentor_eid_direct_not_due">The child has not missed a test and cannot be enrolled for follow-up. Next test: %1$s — %2$s.</string>
+    <string name="mothermentor_eid_direct_no_missed">The child has not missed a test and cannot be enrolled for follow-up.</string>
+    <string name="mothermentor_eid_direct_advise">Advise the caregiver to take the child to a healthcare facility to enroll in HEI services.</string>
+    <string name="mothermentor_eid_direct_at_birth">At birth</string>
+    <string name="mothermentor_eid_direct_confirmation_needed">Needs confirmation</string>
+    <string name="mothermentor_eid_direct_confirmation_referred">Referred for confirmation</string>
+    <string name="mothermentor_eid_direct_confirmation_test">Confirmatory test (%1$s)</string>
+    <string name="mothermentor_eid_direct_entry_positive">Enrolled for follow-up after a positive %1$s test. Refer for confirmatory testing.</string>
+    <string name="mothermentor_eid_direct_entry_pending">Enrolled for follow-up while awaiting the %1$s test result. Follow up at the facility.</string>
+    <string name="mothermentor_eid_direct_caregiver_display">Caregiver: %1$s (%2$s)</string>
+    <string name="mothermentor_eid_direct_hei_help">Enter the HEI number if the child is registered for HEI services and it was left blank at enrollment.</string>
+    <string name="mothermentor_eid_direct_hei_format">Format: RR-CC-FFFF-PPPPPP-CXX</string>
+    <string name="mothermentor_eid_direct_close_graduated">Negative 18-month result. The child’s follow-up record will close as graduated.</string>
+    <string name="mothermentor_eid_direct_close_positive">HIV has been confirmed. The child’s record will close as positive and linked to CTC. Make sure the child starts ART.</string>
+    <string name="mothermentor_eid_direct_close_deceased">The child’s record will close as deceased after saving.</string>
+    <string name="mothermentor_eid_direct_close_moved">The child’s record will close as moved from the area after saving.</string>
+    <string name="mothermentor_eid_direct_close_transferred">The child’s record will close as transferred after saving. HEI services continue at the new facility.</string>
+    <string name="mothermentor_eid_direct_breastfeeding">Breastfeeding status</string>
+</resources>

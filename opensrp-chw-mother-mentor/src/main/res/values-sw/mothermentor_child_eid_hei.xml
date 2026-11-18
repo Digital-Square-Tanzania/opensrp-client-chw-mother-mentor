@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="mothermentor_eid_record_result">Rekodi majibu ya kipimo</string>
+    <string name="mothermentor_eid_result_required">Jibu maswali yote kuhusu majibu ya kipimo</string>
+    <string name="mothermentor_eid_result_unavailable">Kipimo hiki hakina majibu yanayosubiri kurekodiwa. Pakia upya rekodi ya mtoto.</string>
+    <string name="mothermentor_eid_result_save_failed">Majibu ya kipimo hayajahifadhiwa. Kagua rekodi ya mtoto kisha jaribu tena.</string>
+    <string name="mothermentor_eid_received_before_test">Tarehe ya kupokea majibu haiwezi kuwa kabla ya tarehe ya kipimo</string>
+    <string name="mothermentor_eid_received_invalid_date">Weka tarehe sahihi ya kupokea majibu ambayo haipo katika siku zijazo</string>
     <string name="mothermentor_child_eid_hei_referral_agreed">Mlezi amekubali kumpeleka mtoto kituoni</string>
     <string name="mothermentor_child_eid_hei_referral_refused">Mlezi amekataa kumpeleka mtoto kituoni</string>
     <string name="mothermentor_child_eid_hei_none">hakuna</string>
@@ -14,7 +20,12 @@
     <string name="mothermentor_eid_return_confirm_negative">Uthibitisho ni hasi. Fuata mwongozo wa kitaifa kurudia kipimo.</string>
     <string name="mothermentor_eid_return_graduation">Majibu hasi ya miezi 18. Mtoto amehitimu.</string>
     <string name="mothermentor_eid_return_confirm_positive">Majibu chanya yamethibitishwa. Hakikisha mtoto ameunganishwa na ART na CTC.</string>
-    <string name="mothermentor_eid_return_wait_result">Hifadhi. Ziara ijayo itauliza kama majibu yamepatikana.</string>
+    <string name="mothermentor_eid_return_wait_result">Fuatilia majibu kituoni.</string>
+    <string name="mothermentor_eid_confirmatory_sample_stage">Kipimo cha uthibitisho (%1$s)</string>
+    <string name="mothermentor_eid_confirmatory_sample_date">Tarehe ya kipimo cha uthibitisho</string>
+    <string name="mothermentor_eid_confirmatory_sample_result">Majibu ya kipimo cha uthibitisho</string>
+    <string name="mothermentor_eid_result_overdue">Majibu yamechelewa</string>
+    <string name="mothermentor_eid_overdue_sample">Majibu yamechelewa · Tarehe ya kipimo: %1$s</string>
     <string name="mothermentor_eid_return_wait_confirm">Hifadhi. Mtoto anabaki kwenye orodha akisubiri uthibitisho.</string>
     <string name="mothermentor_eid_return_nonattendance">Hifadhi. Rufaa itafungwa baada ya ziara tatu mfululizo za kutofika kituoni.</string>
     <string name="mothermentor_eid_return_attendance">Hifadhi. Rufaa inabaki wazi. Ziara ijayo itauliza tena kama mtoto alifika kituoni.</string>

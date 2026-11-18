@@ -32,6 +32,7 @@ public final class MotherMentorChildEidLabels {
         MotherMentorHeiSchedule.Stage stage = MotherMentorHeiSchedule.Stage.fromCode(code);
         if (stage == null) return context.getString(R.string.mothermentor_eid_not_recorded);
         switch (stage) {
+            case AT_BIRTH: return context.getString(R.string.mothermentor_eid_direct_at_birth);
             case SIX_WEEKS: return context.getString(R.string.mothermentor_eid_test_six_weeks);
             case NINE_MONTHS: return context.getString(R.string.mothermentor_eid_test_nine_months);
             case AFTER_WEANING: return context.getString(R.string.mothermentor_eid_test_after_weaning);
@@ -41,6 +42,12 @@ public final class MotherMentorChildEidLabels {
     }
 
     public static String pill(Context context, String state, boolean hasMissedTest) {
+        if (MotherMentorChildEidDirectEnrollment.CONFIRMATION_NEEDED.equals(state)) {
+            return context.getString(R.string.mothermentor_eid_direct_confirmation_needed);
+        }
+        if (MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED.equals(state)) {
+            return context.getString(R.string.mothermentor_eid_direct_confirmation_referred);
+        }
         if ("referred".equals(state)) return context.getString(R.string.mothermentor_eid_referred);
         if ("awaiting_result".equals(state)) return context.getString(R.string.mothermentor_eid_result_pending);
         if ("awaiting_confirm".equals(state)) return context.getString(R.string.mothermentor_eid_awaiting_confirmation);
@@ -50,7 +57,14 @@ public final class MotherMentorChildEidLabels {
 
     public static String referral(Context context, String state, String test) {
         int label;
+        if (MotherMentorChildEidResultOverdue.DISPLAY_STATE.equals(state)) {
+            return context.getString(R.string.mothermentor_eid_result_overdue);
+        }
         if ("none".equals(state)) return context.getString(R.string.mothermentor_eid_to_refer);
+        if (MotherMentorChildEidDirectEnrollment.CONFIRMATION_NEEDED.equals(state)
+                || MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED.equals(state)) {
+            return pill(context, state, false);
+        }
         if ("referred".equals(state)) label = R.string.mothermentor_eid_referred;
         else if ("awaiting_result".equals(state)) label = R.string.mothermentor_eid_result_pending;
         else if ("awaiting_confirm".equals(state)) return context.getString(R.string.mothermentor_eid_awaiting_confirmation);
@@ -75,6 +89,16 @@ public final class MotherMentorChildEidLabels {
                         test(context, test), MotherMentorMotherPregnancyUtils.displayDate(date));
     }
 
+    public static String entryReason(Context context, Map<String, String> values, String missed, String due) {
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(values.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
+            String test = test(context, values.get(DBConstants.KEY.MTOTO_ENTRY_TEST));
+            String result = values.get(DBConstants.KEY.MTOTO_ENTRY_RESULT);
+            if ("positive".equals(result)) return context.getString(R.string.mothermentor_eid_direct_entry_positive, test);
+            if ("pending".equals(result)) return context.getString(R.string.mothermentor_eid_direct_entry_pending, test);
+        }
+        return entryReason(context, missed, due);
+    }
+
     public static String summary(Context context, String mother, String heiNumber, int visits) {
         StringBuilder text = new StringBuilder();
         if (mother != null && !mother.trim().isEmpty()) append(text,
@@ -91,6 +115,42 @@ public final class MotherMentorChildEidLabels {
         if (village != null && !village.trim().isEmpty()) append(text, village.trim());
         if (heiNumber != null && !heiNumber.trim().isEmpty()) append(text, heiNumber.trim());
         return text.toString();
+    }
+
+    public static String registerSummary(Context context, Map<String, String> values, int visits) {
+        StringBuilder summary = new StringBuilder();
+        appendContact(context, values, summary);
+        String hei = values.get(DBConstants.KEY.HEI_NUMBER);
+        if (hei != null && !hei.trim().isEmpty()) append(summary, hei.trim());
+        if (visits >= 0) append(summary, context.getString(R.string.mothermentor_eid_visit_number, visits));
+        return summary.toString();
+    }
+
+    public static String cardSummary(Context context, Map<String, String> values) {
+        StringBuilder summary = new StringBuilder();
+        appendContact(context, values, summary);
+        for (String key : new String[] {DBConstants.KEY.VILLAGE_TOWN, DBConstants.KEY.HEI_NUMBER}) {
+            String text = values.get(key);
+            if (text != null && !text.trim().isEmpty()) append(summary, text.trim());
+        }
+        return summary.toString();
+    }
+
+    private static void appendContact(Context context, Map<String, String> values, StringBuilder summary) {
+        if (MotherMentorChildEidDirectEnrollment.SOURCE.equals(values.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
+            String caregiver = values.get(DBConstants.KEY.MTOTO_CAREGIVER_NAME);
+            int relationship = MotherMentorChildEidDirectEnrollment.relationshipLabel(
+                    values.get(DBConstants.KEY.MTOTO_CAREGIVER_RELATIONSHIP));
+            if (caregiver != null && !caregiver.trim().isEmpty() && relationship != 0) {
+                append(summary, context.getString(R.string.mothermentor_eid_direct_caregiver_display,
+                        caregiver.trim(), context.getString(relationship)));
+            }
+        } else {
+            String mother = values.get(DBConstants.KEY.MOTHER_NAME);
+            if (mother != null && !mother.trim().isEmpty()) {
+                append(summary, context.getString(R.string.mothermentor_eid_mother_name, mother.trim()));
+            }
+        }
     }
 
     public static String lastTest(Context context,
