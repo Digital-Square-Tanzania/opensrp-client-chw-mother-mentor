@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
@@ -183,6 +184,67 @@ public class MotherMentorChildEidReferralRepositoryTest {
         assertEquals(2, state().getVisitCount());
         assertEquals(MotherMentorChildEidExit.E4, state().getVisitExit());
         assertTrue(state().getClinicalState().getTests().get(Stage.NINE_MONTHS).isConfirmed());
+    }
+
+    @Test public void inlinePositiveNeedsAnExplicitConfirmationAnswerAndOnlyPositiveConfirmationPromptsClosure()
+            throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(10);
+        visit("agree", "agree", "child", first("agreed"), day, 1, true, false, 9);
+        LocalDate sampleDate = day.plusDays(1);
+        Map<String, String> sample = sampled(sampleDate, "nine_months", "positive", "");
+        assertFalse(MotherMentorChildEidHeiUtils.isComplete(sample, dob, sampleDate,
+                state().getClinicalState().getSamplingHistory(), "referred"));
+        sample.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        assertFalse(MotherMentorChildEidHeiUtils.isComplete(sample, dob, sampleDate,
+                state().getClinicalState().getSamplingHistory(), "referred"));
+
+        sample.put(MTOTO_CONFIRMATORY_RESULT, "positive");
+        MotherMentorChildEidExit positive =
+                MotherMentorChildEidRepository.previewExit(db, "child", null, sample, sampleDate);
+        assertEquals(MotherMentorChildEidExit.E4, positive);
+        assertTrue(positive.needsConfirmation());
+        sample.put(MTOTO_CONFIRMATORY_RESULT, "negative");
+        MotherMentorChildEidExit negative =
+                MotherMentorChildEidRepository.previewExit(db, "child", null, sample, sampleDate);
+        assertEquals(MotherMentorChildEidExit.E2, negative);
+        assertFalse(negative.needsConfirmation());
+
+        sample.put(MTOTO_CONFIRMATORY_RESULT, "pending");
+        assertNull(MotherMentorChildEidRepository.previewExit(db, "child", null, sample, sampleDate));
+        visit("sample", "sample", "child", sample, sampleDate, 1, true, false, 9);
+        assertEquals("awaiting_confirm", state().getReferralState());
+        assertFalse(state().isClosed());
+        assertFalse(state().getClinicalState().getTests().get(Stage.NINE_MONTHS).isConfirmed());
+    }
+
+    @Test public void positivePendingSampleAndFinalConfirmationUseTheOriginalSampleStage() throws Exception {
+        enroll("eid-one", dob.plusMonths(1));
+        LocalDate day = dob.plusMonths(18).plusDays(1);
+        Map<String, String> referral = first("agreed");
+        referral.put(MTOTO_RUFAA_TEST, "miezi18");
+        referral.put(MTOTO_RUFAA_DUE, dob.plusMonths(18).toString());
+        visit("agree", "agree", "child", referral, day, 1, true, false, 9);
+        LocalDate sampleDate = day.plusDays(1);
+        Map<String, String> sample = sampled(sampleDate, "eighteen_months", "positive", "");
+        sample.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        sample.put(MTOTO_CONFIRMATORY_RESULT, "pending");
+        assertFalse(MotherMentorChildEidHeiUtils.isComplete(sample, dob, sampleDate,
+                state().getClinicalState().getSamplingHistory(), "referred"));
+        sample.put(MTOTO_CONFIRMATORY_TEST_DONE, "no");
+        sample.remove(MTOTO_CONFIRMATORY_RESULT);
+        visit("sample", "sample", "child", sample, sampleDate, 1, true, false, 9);
+        assertEquals("awaiting_confirm", state().getReferralState());
+        assertFalse(state().isClosed());
+
+        Map<String, String> confirmation = returning("awaiting_confirm");
+        confirmation.putAll(fields(MTOTO_PENDING_TEST, "miezi18", MTOTO_PENDING_TEST_DATE,
+                sampleDate.toString(), MTOTO_CONFIRMATORY_TEST_DONE, "yes", MTOTO_CONFIRMATORY_RESULT, "pending"));
+        assertFalse(MotherMentorChildEidHeiUtils.isComplete(confirmation, dob, sampleDate.plusDays(1),
+                state().getClinicalState().getSamplingHistory(), "awaiting_confirm"));
+        confirmation.put(MTOTO_CONFIRMATORY_RESULT, "negative");
+        assertEquals(MotherMentorChildEidExit.E2,
+                MotherMentorChildEidRepository.previewExit(db, "child", null, confirmation, sampleDate.plusDays(1)));
     }
 
     @Test public void firstAgreementBecomesReferredWithTheActualStageAndDueSnapshot() throws Exception {

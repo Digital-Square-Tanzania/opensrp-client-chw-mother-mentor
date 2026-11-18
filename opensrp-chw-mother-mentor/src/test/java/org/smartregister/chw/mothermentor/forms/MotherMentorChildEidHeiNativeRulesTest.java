@@ -193,6 +193,9 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             NativeForm form = new NativeForm(directory);
             form.answer(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
             assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
+            form.answer(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+            assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertFalse(form.relevant("child_eid_weaning_hint"));
             form.answer(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
             assertEquals("not_breastfeeding", form.facts(MAMA_TAREHE_ACHA_KUNYONYESHA)
                     .get("step1_" + MAMA_BREASTFEEDING_STATUS));
@@ -228,18 +231,33 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             assertTrue(form.relevant(MAMA_HEI_TEST_RESULT));
             assertFalse(form.relevant(CHILD_EID_FINAL_HIV_TEST_DONE));
             form.answer(MAMA_HEI_TEST_RESULT, "positive");
-            assertTrue(form.relevant(MTOTO_CONFIRMATION_RECEIVED));
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             form.answer(MTOTO_RUFAA_STATE_BEFORE, "awaiting_result");
             assertFalse(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
             assertTrue(form.relevant(MTOTO_RESULT_RECEIVED));
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
             form.answer(MTOTO_RESULT_RECEIVED, "yes");
             assertTrue(form.relevant(MTOTO_RECEIVED_RESULT));
             assertFalse(form.relevant(MAMA_HEI_TEST_DATE));
+            form.answer(MTOTO_RECEIVED_RESULT, "positive");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
+            form.answer(MTOTO_CONFIRMATORY_TEST_DONE, "no");
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            form.answer(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            form.answer(MTOTO_RECEIVED_RESULT, "negative");
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
+            assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             form.answer(MTOTO_RUFAA_STATE_BEFORE, "awaiting_confirm");
             assertFalse(form.relevant(MTOTO_RECEIVED_RESULT));
-            assertTrue(form.relevant(MTOTO_CONFIRMATION_RECEIVED));
-            form.answer(MTOTO_CONFIRMATION_RECEIVED, "yes");
+            assertTrue(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
             assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
+            assertEquals("hidden", form.field(MTOTO_CONFIRMATION_RECEIVED).getString("type"));
+            assertEquals("true", form.field(MTOTO_CONFIRMATORY_TEST_DONE)
+                    .getJSONObject("v_required").getString("value"));
+            assertEquals("true", form.field(MTOTO_CONFIRMATORY_RESULT)
+                    .getJSONObject("v_required").getString("value"));
         }
     }
 

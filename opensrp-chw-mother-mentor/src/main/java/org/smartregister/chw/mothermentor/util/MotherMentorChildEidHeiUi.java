@@ -31,6 +31,8 @@ import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidDirect
 
 /** Bounded adapter for the HEI banner and existing native return-test controls. */
 public final class MotherMentorChildEidHeiUi {
+    private static final String[] RESULT_FIELDS = {DBConstants.KEY.MAMA_HEI_TEST_RESULT,
+        DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT, DBConstants.KEY.MTOTO_CONFIRMATORY_RESULT};
     private Map<String, String> previous;
     private boolean refreshing;
 
@@ -76,10 +78,8 @@ public final class MotherMentorChildEidHeiUi {
                         com.vijay.jsonwizard.R.id.childKey)));
                 showOption(button, allowed.contains(stage));
             }
-            boolean finalTest = Stage.fromCode(prepared.get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
-                    == Stage.EIGHTEEN_MONTHS;
-            for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
-                    DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
+            boolean finalTest = isFinalTest(prepared);
+            for (String key : RESULT_FIELDS) {
                 for (View view : controls(root, key)) {
                     if (view instanceof RadioButton
                             && "pending".equals(view.getTag(com.vijay.jsonwizard.R.id.childKey))) {
@@ -156,15 +156,22 @@ public final class MotherMentorChildEidHeiUi {
                         selected.getCode());
             }
         }
-        if (Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.CHILD_EID_TEST_TYPE))
-                == Stage.EIGHTEEN_MONTHS) {
-            for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_RESULT,
-                    DBConstants.KEY.CHILD_EID_FINAL_HIV_RESULT)) {
+        if (isFinalTest(MotherMentorMotherChildUtils.values(form))) {
+            for (String key : RESULT_FIELDS) {
                 JSONObject field = MotherMentorMotherChildUtils.field(form, key);
                 if (field != null && "pending".equals(field.optString("value"))) {
                     MotherMentorMotherChildUtils.put(form, key, "");
                 }
             }
+        }
+        if (!first && MotherMentorChildEidReturnVisit.applies(values)) {
+            // A disallowed final-stage result can also make the confirmation answers inactive.
+            MotherMentorChildEidHeiUtils.clearInactiveAnswers(form);
+            Map<String, String> prepared = MotherMentorMotherChildUtils.values(form);
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_CONFIRMATION_RECEIVED,
+                    MotherMentorChildEidReturnVisit.confirmationReceived(prepared));
+            MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_RESULT_NOTE,
+                    returnNote(context, prepared, dob, day, tests));
         }
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_CHILD_AGE_NOTE,
                 age(context, dob, day));
@@ -220,6 +227,15 @@ public final class MotherMentorChildEidHeiUi {
         return dob;
     }
 
+    private static boolean isFinalTest(Map<String, String> values) {
+        String state = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
+        String key = MotherMentorChildEidReturnVisit.applies(values)
+                && (MotherMentorChildEidReturnVisit.AWAITING_RESULT.equals(state)
+                    || MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(state))
+                ? DBConstants.KEY.MTOTO_PENDING_TEST : DBConstants.KEY.CHILD_EID_TEST_TYPE;
+        return Stage.fromCode(values.get(key)) == Stage.EIGHTEEN_MONTHS;
+    }
+
     private static void prepareReturn(JSONObject form, Context context, Map<String, String> values,
             LocalDate dob, LocalDate day, Map<Stage, TestRecord> tests, List<Stage> sampling) {
         String state = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
@@ -256,8 +272,6 @@ public final class MotherMentorChildEidHeiUi {
                 } catch (org.json.JSONException ignored) { }
             }
         }
-        MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RETURN_RESULT_NOTE,
-                returnNote(context, MotherMentorMotherChildUtils.values(form), dob, day, tests));
     }
 
     private static void setConfirmatorySampleLabels(JSONObject form, Context context) {

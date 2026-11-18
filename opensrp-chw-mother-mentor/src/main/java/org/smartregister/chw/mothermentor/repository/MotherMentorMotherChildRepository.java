@@ -142,7 +142,7 @@ public final class MotherMentorMotherChildRepository {
             LocalDate delivery = MotherMentorMotherDeliveryRepository.getDeliveryDate(db, motherId, excludedVisitId);
             if (delivery == null || delivery.isAfter(assessmentDate)) state.childBaseEntityId = "";
         }
-        if ("breast_feeding".equals(state.originalStatus)) state.breastfeedingStatus = "breastfeeding";
+        if ("breast_feeding".equals(state.originalStatus)) state.recordBreastfeeding("breastfeeding", null);
         else if ("not_pregnant".equals(state.originalStatus)) state.breastfeedingStatus = "not_breastfeeding";
         if (context.getEnrollmentId().isEmpty()) return state;
         if (before == null && !state.childBaseEntityId.isEmpty()) {
@@ -168,6 +168,10 @@ public final class MotherMentorMotherChildRepository {
                 if (context.getEnrollmentTime() == 0
                         || !item.date.isBefore(new LocalDate(context.getEnrollmentTime()))) {
                     seedBreastfeeding(state, item.values, item.date);
+                } else {
+                    State past = new State(state.childDob);
+                    seedBreastfeeding(past, item.values, item.date);
+                    state.hasBreastfeedingHistory |= past.hasBreastfeedingHistory;
                 }
                 seedLegacyTest(state, item.values, item.date);
             }
@@ -175,6 +179,7 @@ public final class MotherMentorMotherChildRepository {
                     && item.date.isBefore(new LocalDate(context.getEnrollmentTime()))) {
                 State past = new State(state.childDob);
                 applyChild(past, item.values, item.date);
+                state.hasBreastfeedingHistory |= past.hasBreastfeedingHistory;
                 state.knownPerformed.putAll(past.tests);
             } else if (item.child) applyChild(state, item.values, item.date);
             else applyMother(state, item.values, item.date);
@@ -261,6 +266,7 @@ public final class MotherMentorMotherChildRepository {
                 State lifetime = new State(dob);
                 for (Evidence item : childEvidence(db, childId, MotherMentorMotherVisitDao.Context.empty(),
                         excludedVisitId, assessmentDate, before)) applyChild(lifetime, item.values, item.date);
+                shared.hasBreastfeedingHistory |= lifetime.hasBreastfeedingHistory;
                 for (Map.Entry<Stage, TestRecord> item : lifetime.tests.entrySet()) {
                     TestRecord current = shared.tests.get(item.getKey());
                     if (current == null || current.getServiceDate() != null && item.getValue().getServiceDate() != null
@@ -274,18 +280,23 @@ public final class MotherMentorMotherChildRepository {
         }
         State state = new State(dob);
         state.childBaseEntityId = childId;
-        seedBreastfeeding(state, enrollment, assessmentDate);
         List<Evidence> evidence = new ArrayList<>(childEvidence(db, childId,
                 MotherMentorMotherVisitDao.Context.empty(), excludedVisitId, assessmentDate, before));
-        evidence.addAll(enrollmentEvidence(db, childId, dob, assessmentDate, before));
+        List<Evidence> enrollments = enrollmentEvidence(db, childId, dob, assessmentDate, before);
+        if (enrollments.isEmpty()) seedBreastfeeding(state, enrollment, assessmentDate);
+        evidence.addAll(enrollments);
         if (before == null && assessmentDate.equals(LocalDate.now())
                 && MotherMentorChildEidDao.enrollmentHistory(db, childId, assessmentDate).isEmpty()) {
             seedLegacyTest(state, enrollment, null);
         }
         evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
         for (Evidence item : evidence) {
-            if (item.enrollmentSample) seedLegacyTest(state, item.values, item.date);
-            else applyChild(state, item.values, item.date);
+            if (item.enrollmentSample) {
+                seedBreastfeeding(state, item.values, item.date);
+                seedLegacyTest(state, item.values, item.date);
+            } else {
+                applyChild(state, item.values, item.date);
+            }
         }
         return state;
     }
@@ -293,12 +304,18 @@ public final class MotherMentorMotherChildRepository {
     private static void seedBreastfeeding(State state, Map<String, String> enrollment, LocalDate day) {
         String status = enrollment.get(DBConstants.KEY.BREASTFEEDING_STATUS);
         if ("breast_feeding".equals(status)) {
-            state.breastfeedingStatus = "breastfeeding";
-            state.weaningDate = null;
+            state.recordBreastfeeding("breastfeeding", null);
+        } else if (MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(status)) {
+            if (!state.hasBreastfeedingHistory) state.recordBreastfeeding(status, null);
         } else if ("not_breast_feeding".equals(status) || "stop_breast_feeding".equals(status)) {
-            state.breastfeedingStatus = "not_breastfeeding";
             LocalDate cessation = MotherMentorHeiSchedule.parseDate(enrollment.get(DBConstants.KEY.WEANING_DATE));
-            if (MotherMentorHeiSchedule.validDate(cessation, state.childDob, day)) state.weaningDate = cessation;
+            if (MotherMentorHeiSchedule.validDate(cessation, state.childDob, day)) {
+                state.recordBreastfeeding("not_breastfeeding", cessation);
+            } else if ("stop_breast_feeding".equals(status) && !state.hasBreastfeedingHistory) {
+                state.recordBreastfeeding("not_breastfeeding", null);
+            } else if (!state.hasBreastfeedingHistory && state.breastfeedingStatus.isEmpty()) {
+                state.breastfeedingStatus = "not_breastfeeding";
+            }
         }
     }
 
@@ -356,9 +373,8 @@ public final class MotherMentorMotherChildRepository {
             return;
         }
         state.childDeathDate = null;
-        state.breastfeedingStatus = value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-        state.weaningDate = "not_breastfeeding".equals(state.breastfeedingStatus)
-                ? MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)) : null;
+        state.recordBreastfeeding(value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS),
+                MotherMentorChildEidHeiUtils.cessation(values));
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
         record(state, Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE)),
                 values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT),
@@ -390,12 +406,13 @@ public final class MotherMentorMotherChildRepository {
                 return;
             }
             if (!MotherMentorChildEidStatusUtils.isFoundAlive(values)
-                    || !MotherMentorChildEidHeiUtils.isBreastfeedingComplete(values, state.childDob, date)) return;
+                    || !MotherMentorChildEidHeiUtils.isBreastfeedingComplete(values, state.childDob, date,
+                            state.hasBreastfeedingHistory)) return;
             // Breastfeeding is shared clinical evidence even when an offline referral snapshot is stale.
             state.childStatus = "alive";
             state.childDeathDate = null;
-            state.breastfeedingStatus = values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-            state.weaningDate = MotherMentorChildEidHeiUtils.cessation(values);
+            state.recordBreastfeeding(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS),
+                    MotherMentorChildEidHeiUtils.cessation(values));
             String before = values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE);
             if (MotherMentorChildEidReturnVisit.applies(values)) {
                 MotherMentorChildEidReturnVisit.Result result = MotherMentorChildEidReturnVisit.evaluate(
@@ -508,6 +525,7 @@ public final class MotherMentorMotherChildRepository {
         private String childBaseEntityId = "";
         private String childStatus = "";
         private String breastfeedingStatus = "";
+        private boolean hasBreastfeedingHistory;
         private LocalDate recordedDelivery;
         private LocalDate weaningDate;
         private LocalDate childDeathDate;
@@ -523,6 +541,8 @@ public final class MotherMentorMotherChildRepository {
         public String getChildBaseEntityId() { return childBaseEntityId; }
         public String getChildStatus() { return childStatus; }
         public String getBreastfeedingStatus() { return breastfeedingStatus; }
+        /** Whether this child has a recorded breastfeeding or cessation answer. */
+        public boolean hasBreastfeedingHistory() { return hasBreastfeedingHistory; }
         public LocalDate getWeaningDate() { return weaningDate; }
         public LocalDate getChildDeathDate() { return childDeathDate; }
         public Map<Stage, TestRecord> getTests() { return MotherMentorHeiSchedule.immutableTests(tests); }
@@ -541,6 +561,13 @@ public final class MotherMentorMotherChildRepository {
             TestRecord test = tests.get(Stage.EIGHTEEN_MONTHS);
             return test != null && "negative".equals(test.getResult());
         }
+
+        private void recordBreastfeeding(String status, LocalDate cessation) {
+            breastfeedingStatus = status;
+            weaningDate = cessation;
+            hasBreastfeedingHistory |= "breastfeeding".equals(status) || "not_breastfeeding".equals(status);
+        }
+
         private void terminal(MotherMentorMotherChildUtils.TerminalOutcome outcome, LocalDate date) {
             if (date != null && (terminalDate == null || date.isBefore(terminalDate))) {
                 terminal = outcome;

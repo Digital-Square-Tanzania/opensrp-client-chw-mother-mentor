@@ -156,8 +156,15 @@
             "openmrs_entity_id": "breastfeeding"
           },
           {
+            "key": "never_breastfed",
+            "text": "Hajawahi kunyonyeshwa",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "never_breastfed"
+          },
+          {
             "key": "not_breastfeeding",
-            "text": "Hanyonyeshwi",
+            "text": "Ameacha kunyonyeshwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breastfeeding"
@@ -757,11 +764,11 @@
         }
       },
       {
-        "key": "mtoto_confirmation_received",
+        "key": "mtoto_confirmatory_test_done",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "mtoto_confirmation_received",
-        "label": "Majibu ya kipimo cha uthibitisho yamepatikana?",
+        "openmrs_entity_id": "mtoto_confirmatory_test_done",
+        "label": "Kipimo cha uthibitisho kimefanyika?",
         "type": "native_radio",
         "options": [
           {
@@ -812,6 +819,13 @@
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
           }
         ],
         "v_required": {
@@ -825,6 +839,14 @@
             }
           }
         }
+      },
+      {
+        "key": "mtoto_confirmation_received",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_confirmation_received",
+        "type": "hidden",
+        "value": ""
       },
       {
         "key": "mtoto_return_result_note",

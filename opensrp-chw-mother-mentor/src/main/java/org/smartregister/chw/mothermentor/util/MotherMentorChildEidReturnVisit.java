@@ -27,7 +27,7 @@ public final class MotherMentorChildEidReturnVisit {
     };
     private static final String[] SAMPLE_FIELDS = {CHILD_EID_TEST_TYPE, MAMA_HEI_TEST_DATE};
     private static final String[] REVIEW_FIELDS = {
-        MTOTO_PENDING_TEST, MTOTO_PENDING_TEST_DATE, MTOTO_RESULT_RECEIVED, MTOTO_RECEIVED_RESULT, MTOTO_CONFIRMATORY_RESULT
+        MTOTO_PENDING_TEST, MTOTO_PENDING_TEST_DATE, MTOTO_RESULT_RECEIVED, MTOTO_RECEIVED_RESULT
     };
     private static final String[] LEGACY_FIELDS = {
         CHILD_EID_FINAL_HIV_TEST_DONE, CHILD_EID_FINAL_HIV_TEST_DATE, CHILD_EID_FINAL_HIV_RESULT
@@ -95,8 +95,7 @@ public final class MotherMentorChildEidReturnVisit {
             return resolveConfirmatorySample(stage, testDate, value(values, MAMA_HEI_TEST_RESULT));
         }
         if (!validSavedReceivedDate(values, testDate, day)) return null;
-        return resolveResult(stage, testDate, value(values, MAMA_HEI_TEST_RESULT),
-                value(values, MTOTO_CONFIRMATION_RECEIVED), true);
+        return resolveInitialResult(stage, testDate, value(values, MAMA_HEI_TEST_RESULT), values, true);
     }
 
     private static Result resolveConfirmatorySample(Stage stage, LocalDate date, String result) {
@@ -118,18 +117,17 @@ public final class MotherMentorChildEidReturnVisit {
                 || !MotherMentorHeiSchedule.validDate(date, dob, day)
                 || !date.equals(original.getDate())) return null;
         boolean confirming = AWAITING_CONFIRM.equals(priorState);
+        if (confirming && !value(values, MTOTO_CONFIRMATORY_TEST_DONE).isEmpty()) {
+            return resolveConfirmation(stage, date, values, true);
+        }
         String received = value(values, confirming ? MTOTO_CONFIRMATION_RECEIVED : MTOTO_RESULT_RECEIVED);
         if ("no".equals(received)) return keep(priorState);
         if (!"yes".equals(received)) return null;
         if (confirming) {
-            String result = value(values, MTOTO_CONFIRMATORY_RESULT);
-            if ("negative".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMATORY_NEGATIVE);
-            if ("positive".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
-            return null;
+            return confirmed(stage, date, value(values, MTOTO_CONFIRMATORY_RESULT));
         }
         if (!validSavedReceivedDate(values, date, day)) return null;
-        return resolveResult(stage, date, value(values, MTOTO_RECEIVED_RESULT),
-                value(values, MTOTO_CONFIRMATION_RECEIVED), false);
+        return resolveInitialResult(stage, date, value(values, MTOTO_RECEIVED_RESULT), values, false);
     }
 
     public static boolean matchesPending(TestRecord record, String priorState) {
@@ -145,23 +143,39 @@ public final class MotherMentorChildEidReturnVisit {
         LocalDate received = date(values, MTOTO_RESULT_RECEIVED_DATE);
         if (stage == null || date == null || !MotherMentorHeiSchedule.validDate(received, date, day)) return null;
         String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
-        if (AWAITING_RESULT.equals(state) && "negative".equals(value(values, MTOTO_RECEIVED_RESULT))) {
-            return resolveResult(stage, date, "negative", "", false);
-        }
-        if (!AWAITING_CONFIRM.equals(state)
-                && !(AWAITING_RESULT.equals(state) && "positive".equals(value(values, MTOTO_RECEIVED_RESULT)))) {
-            return null;
-        }
+        if (AWAITING_CONFIRM.equals(state)) return resolveConfirmation(stage, date, values, false);
+        if (!AWAITING_RESULT.equals(state)) return null;
+        String result = value(values, MTOTO_RECEIVED_RESULT);
+        if ("negative".equals(result)) return negative(stage, date);
+        return "positive".equals(result) ? resolveConfirmation(stage, date, values, true) : null;
+    }
+
+    private static Result resolveConfirmation(Stage stage, LocalDate date, Map<String, String> values,
+            boolean allowWaiting) {
         String done = value(values, MTOTO_CONFIRMATORY_TEST_DONE);
         String result = value(values, MTOTO_CONFIRMATORY_RESULT);
-        if (AWAITING_RESULT.equals(state) && ("no".equals(done) || "yes".equals(done)
-                && "pending".equals(result) && stage != Stage.EIGHTEEN_MONTHS)) {
-            return new Result(AWAITING_CONFIRM, stage, date, "positive", Outcome.CONTINUE);
+        if (allowWaiting && ("no".equals(done) || ("yes".equals(done)
+                && "pending".equals(result) && stage != Stage.EIGHTEEN_MONTHS))) {
+            return awaitingConfirmation(stage, date);
         }
-        if (!"yes".equals(done)) return null;
+        return "yes".equals(done) ? confirmed(stage, date, result) : null;
+    }
+
+    private static Result awaitingConfirmation(Stage stage, LocalDate date) {
+        return new Result(AWAITING_CONFIRM, stage, date, "positive", Outcome.CONTINUE);
+    }
+
+    private static Result confirmed(Stage stage, LocalDate date, String result) {
         if ("negative".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMATORY_NEGATIVE);
         if ("positive".equals(result)) return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
         return null;
+    }
+
+    /** The result-availability snapshot used by existing report readers. */
+    public static String confirmationReceived(Map<String, String> values) {
+        String done = value(values, MTOTO_CONFIRMATORY_TEST_DONE);
+        if (done.isEmpty()) return "";
+        return "yes".equals(done) && availableResult(value(values, MTOTO_CONFIRMATORY_RESULT)) ? "yes" : "no";
     }
 
     public static boolean requiresReceivedDate(Map<String, String> values) {
@@ -196,19 +210,28 @@ public final class MotherMentorChildEidReturnVisit {
                 || MotherMentorHeiSchedule.validDate(date(values, MTOTO_RESULT_RECEIVED_DATE), testDate, day);
     }
 
-    private static Result resolveResult(Stage stage, LocalDate date, String result,
-            String confirmation, boolean allowPending) {
+    private static Result resolveInitialResult(Stage stage, LocalDate date, String result,
+            Map<String, String> values, boolean allowPending) {
         switch (result) {
             case "pending": return allowPending
                     ? new Result(AWAITING_RESULT, stage, date, result, Outcome.CONTINUE) : null;
-            case "negative": return new Result("none", stage, date, result, stage == Stage.EIGHTEEN_MONTHS
-                    ? Outcome.GRADUATED : Outcome.TESTED_NEGATIVE);
+            case "negative": return negative(stage, date);
             case "positive":
-                if ("yes".equals(confirmation)) return new Result("none", stage, date, result, Outcome.CONFIRMED_POSITIVE);
-                if ("no".equals(confirmation)) return new Result(AWAITING_CONFIRM, stage, date, result, Outcome.CONTINUE);
+                if (!value(values, MTOTO_CONFIRMATORY_TEST_DONE).isEmpty()) {
+                    return resolveConfirmation(stage, date, values, true);
+                }
+                // Historical visits used one question, where "yes" meant confirmed positive.
+                String reported = value(values, MTOTO_CONFIRMATION_RECEIVED);
+                if ("yes".equals(reported)) return confirmed(stage, date, "positive");
+                if ("no".equals(reported)) return awaitingConfirmation(stage, date);
                 return null;
             default: return null;
         }
+    }
+
+    private static Result negative(Stage stage, LocalDate date) {
+        return new Result("none", stage, date, "negative", stage == Stage.EIGHTEEN_MONTHS
+                ? Outcome.GRADUATED : Outcome.TESTED_NEGATIVE);
     }
 
     private static Result keep(String state) {
@@ -235,16 +258,15 @@ public final class MotherMentorChildEidReturnVisit {
         if (confirmatorySample) clear(form, CHILD_EID_TEST_TYPE);
         if (!awaitingResult && !awaitingConfirm) clear(form, REVIEW_FIELDS);
         if (!awaitingResult) clear(form, MTOTO_RESULT_RECEIVED);
-        if (!awaitingConfirm || !"yes".equals(value(values, MTOTO_CONFIRMATION_RECEIVED))) {
-            clear(form, MTOTO_CONFIRMATORY_RESULT);
-        }
         if (!tested) clear(form, MAMA_HEI_TEST_RESULT);
         if (!hasResult) clear(form, MTOTO_RECEIVED_RESULT);
         if (!requiresReceivedDate(values)) clear(form, MTOTO_RESULT_RECEIVED_DATE);
         boolean positive = tested && !confirmatorySample && "positive".equals(value(values, MAMA_HEI_TEST_RESULT))
                 || hasResult && "positive".equals(value(values, MTOTO_RECEIVED_RESULT));
         if (!awaitingConfirm && !positive) {
-            clear(form, MTOTO_CONFIRMATION_RECEIVED);
+            clear(form, MTOTO_CONFIRMATORY_TEST_DONE, MTOTO_CONFIRMATORY_RESULT, MTOTO_CONFIRMATION_RECEIVED);
+        } else if (!"yes".equals(value(values, MTOTO_CONFIRMATORY_TEST_DONE))) {
+            clear(form, MTOTO_CONFIRMATORY_RESULT);
         }
         if (!attended) clear(form, CHILD_EID_FACILITY_ARRIVAL_DATE, MAMA_HEI_TEST_DONE);
         if (!attended || !"no".equals(value(values, MAMA_HEI_TEST_DONE))) clear(form, MTOTO_SABABU_KUTOPIMWA);
@@ -256,7 +278,17 @@ public final class MotherMentorChildEidReturnVisit {
 
     public static void clearSample(JSONObject form) {
         clear(form, MAMA_HEI_TEST_DATE, MAMA_HEI_TEST_RESULT, MTOTO_RESULT_RECEIVED_DATE,
-                MTOTO_CONFIRMATION_RECEIVED);
+                MTOTO_CONFIRMATORY_TEST_DONE, MTOTO_CONFIRMATORY_RESULT, MTOTO_CONFIRMATION_RECEIVED);
+    }
+
+    public static void restoreLegacyConfirmation(JSONObject form) {
+        Map<String, String> values = MotherMentorMotherChildUtils.values(form);
+        // A separately recorded outcome establishes that the test was done; the old Yes/No alone is ambiguous.
+        if (value(values, MTOTO_CONFIRMATORY_TEST_DONE).isEmpty()
+                && "yes".equals(value(values, MTOTO_CONFIRMATION_RECEIVED))
+                && availableResult(value(values, MTOTO_CONFIRMATORY_RESULT))) {
+            MotherMentorMotherChildUtils.put(form, MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        }
     }
 
     private static void clear(JSONObject form, String... keys) {
