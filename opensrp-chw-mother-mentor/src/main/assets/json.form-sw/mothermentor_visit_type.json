@@ -1145,6 +1145,21 @@
         }
       },
       {
+        "key": "mama_hei_pending_result_note",
+        "type": "label",
+        "text": "Fuatilia majibu kituoni.",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_pending_result_note",
+        "openmrs_entity_parent": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "hei_chanya_imethibitishwa",
         "type": "native_radio",
         "openmrs_entity_parent": "",

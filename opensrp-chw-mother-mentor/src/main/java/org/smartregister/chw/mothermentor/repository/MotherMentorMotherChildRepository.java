@@ -43,7 +43,8 @@ public final class MotherMentorMotherChildRepository {
                 DBConstants.KEY.MAMA_BREASTFEEDING_STATUS,
                 DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
-                DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+                DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA,
+                DBConstants.KEY.MAMA_HEI_RESULT_DEADLINE));
         for (Stage stage : Stage.values()) {
             columns.add(stage.getResultKey());
             columns.add(stage.getDateKey());
@@ -81,6 +82,14 @@ public final class MotherMentorMotherChildRepository {
         projection.put(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI, iso(state.getChildDeathDate()));
         projection.put(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA,
                 state.hasConfirmedPositive() ? "yes" : "no");
+        LocalDate firstDeadline = null;
+        for (MotherMentorMotherResultEvent.PendingTest pending : state.getPendingMotherTests()) {
+            LocalDate deadline = pending.resultDeadline();
+            if (deadline != null && (firstDeadline == null || deadline.isBefore(firstDeadline))) {
+                firstDeadline = deadline;
+            }
+        }
+        projection.put(DBConstants.KEY.MAMA_HEI_RESULT_DEADLINE, iso(firstDeadline));
         for (Map.Entry<Stage, TestRecord> entry : state.tests.entrySet()) {
             projection.put(entry.getKey().getResultKey(), entry.getValue().getResult());
             projection.put(entry.getKey().getDateKey(), iso(entry.getValue().getDate()));

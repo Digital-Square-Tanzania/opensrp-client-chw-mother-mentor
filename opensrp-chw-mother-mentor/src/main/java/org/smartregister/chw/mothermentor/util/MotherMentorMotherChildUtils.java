@@ -37,7 +37,8 @@ public final class MotherMentorMotherChildUtils {
             MAMA_CARRIED_WEANING_DATE, MAMA_PREVIOUS_WEANING_DATE, MAMA_PREVIOUS_BREASTFEEDING_STATUS,
             MAMA_HEI_TEST_HISTORY, MTOTO_SUPPRESSED_TESTS, MAMA_HEI_ASSESSMENT_DATE,
             MAMA_HEI_DUE_TESTS, MAMA_HEI_DUE_TEST, MAMA_HEI_DUE_DATE,
-            MAMA_CHILD_AGE_NOTE, MAMA_HEI_NEXT_TEST_NOTE, MTOTO_CLOSED_FOLLOWUP_NOTE);
+            MAMA_CHILD_AGE_NOTE, MAMA_HEI_NEXT_TEST_NOTE, MAMA_HEI_PENDING_RESULT_NOTE,
+            MTOTO_CLOSED_FOLLOWUP_NOTE);
 
     private MotherMentorMotherChildUtils() {}
 
@@ -177,6 +178,10 @@ public final class MotherMentorMotherChildUtils {
                     DBConstants.KEY.MAMA_HEI_TEST_RESULT, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)) put(form, key, "");
         } else if (!"positive".equals(values(form).get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
             put(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "");
+            if (Stage.EIGHTEEN_MONTHS == Stage.fromCode(values.get(MAMA_HEI_TEST_TYPE))
+                    && "pending".equals(values.get(MAMA_HEI_TEST_RESULT))) {
+                put(form, MAMA_HEI_TEST_RESULT, "");
+            }
         }
     }
 

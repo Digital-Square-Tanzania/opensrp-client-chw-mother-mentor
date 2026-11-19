@@ -123,6 +123,10 @@ public class MotherMentorMotherChildNativeRulesTest {
             FormUtils.getFieldFromForm(form, key).put("value", value);
         }
 
+        String text(String key) throws Exception {
+            return FormUtils.getFieldFromForm(form, key).getString("text");
+        }
+
         Facts facts(String key) throws Exception {
             JSONObject field = FormUtils.getFieldFromForm(form, key);
             String file = field.getJSONObject("relevance").getJSONObject("rules-engine")
@@ -137,6 +141,26 @@ public class MotherMentorMotherChildNativeRulesTest {
 
         boolean relevant(String key) throws Exception {
             return activity.getRulesEngineFactory().getRelevance(facts(key), RULES);
+        }
+    }
+
+    @Test
+    public void pendingResultShowsTheFacilityPromptForRoutineTestsOnly() throws Exception {
+        for (String language : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm nativeForm = new NativeForm(language);
+            assertEquals("json.form-sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", nativeForm.text(MAMA_HEI_PENDING_RESULT_NOTE));
+            nativeForm.answer(MAMA_CHILD_PATH, "true");
+            nativeForm.answer(MAMA_CHILD_STATUS, "alive");
+            nativeForm.answer(MAMA_HEI_TEST_DONE, "yes");
+            nativeForm.answer(MAMA_HEI_TEST_TYPE, "six_weeks");
+            nativeForm.answer(MAMA_HEI_TEST_RESULT, "pending");
+            assertTrue(nativeForm.relevant(MAMA_HEI_PENDING_RESULT_NOTE));
+            nativeForm.answer(MAMA_HEI_TEST_RESULT, "negative");
+            assertFalse(nativeForm.relevant(MAMA_HEI_PENDING_RESULT_NOTE));
+            nativeForm.answer(MAMA_HEI_TEST_RESULT, "pending");
+            nativeForm.answer(MAMA_HEI_TEST_TYPE, "eighteen_months");
+            assertFalse(nativeForm.relevant(MAMA_HEI_PENDING_RESULT_NOTE));
         }
     }
 }

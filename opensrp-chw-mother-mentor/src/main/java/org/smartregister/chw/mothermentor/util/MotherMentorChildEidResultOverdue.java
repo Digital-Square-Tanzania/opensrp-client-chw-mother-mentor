@@ -23,8 +23,16 @@ public final class MotherMentorChildEidResultOverdue {
     }
 
     public static boolean isOverdue(Stage stage, LocalDate sample, LocalDate day) {
+        return isOverdue(deadline(stage, sample), day);
+    }
+
+    public static LocalDate deadline(Stage stage, LocalDate sample) {
         int limit = limit(stage);
-        return limit > 0 && sample != null && day != null && day.isAfter(sample.plusDays(limit));
+        return limit > 0 && sample != null ? sample.plusDays(limit) : null;
+    }
+
+    public static boolean isOverdue(LocalDate deadline, LocalDate day) {
+        return deadline != null && day != null && day.isAfter(deadline);
     }
 
     /** List queries use the same thresholds as the card and keep the stored state intact. */

@@ -60,6 +60,17 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/mama_kinara_client_result_overdue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/mothermentor_eid_result_overdue"
+                android:textColor="@color/mama_kinara_overdue"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/mama_kinara_ctc_visits"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

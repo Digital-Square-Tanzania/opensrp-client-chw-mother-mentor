@@ -211,6 +211,8 @@ public final class DBConstants {
         public static final String MAMA_HEI_DUE_DATE = "mama_hei_due_date";
         public static final String MAMA_CHILD_AGE_NOTE = "mama_child_age_note";
         public static final String MAMA_HEI_NEXT_TEST_NOTE = "mama_hei_next_test_note";
+        public static final String MAMA_HEI_PENDING_RESULT_NOTE = "mama_hei_pending_result_note";
+        public static final String MAMA_HEI_RESULT_DEADLINE = "mama_hei_result_deadline";
         public static final String HEI_TEST_WIKI6_RESULT = "hei_test_wiki6_result";
         public static final String HEI_TEST_WIKI6_DATE = "hei_test_wiki6_date";
         public static final String HEI_TEST_MIEZI9_RESULT = "hei_test_miezi9_result";

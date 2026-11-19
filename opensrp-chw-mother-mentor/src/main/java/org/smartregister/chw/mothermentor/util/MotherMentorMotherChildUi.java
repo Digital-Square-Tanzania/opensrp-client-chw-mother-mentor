@@ -121,6 +121,16 @@ public final class MotherMentorMotherChildUi {
             String canonical = "yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))
                     ? (due.size() == 1 ? due.get(0).getCode() : choice == null ? "" : choice.getCode()) : "";
             set(form, root, DBConstants.KEY.MAMA_HEI_TEST_TYPE, canonical);
+            boolean pendingAllowed = !Stage.EIGHTEEN_MONTHS.getCode().equals(canonical);
+            if (!pendingAllowed && "pending".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
+                set(form, root, DBConstants.KEY.MAMA_HEI_TEST_RESULT, "");
+            }
+            for (View control : controls(root, DBConstants.KEY.MAMA_HEI_TEST_RESULT)) {
+                if (control instanceof RadioButton
+                        && "pending".equals(control.getTag(com.vijay.jsonwizard.R.id.childKey))) {
+                    MotherMentorChildEidHeiUi.showOption((RadioButton) control, pendingAllowed);
+                }
+            }
             updateQuestion(activity, form, root, due);
             previous = new LinkedHashMap<>(MotherMentorMotherChildUtils.values(form));
         } finally {

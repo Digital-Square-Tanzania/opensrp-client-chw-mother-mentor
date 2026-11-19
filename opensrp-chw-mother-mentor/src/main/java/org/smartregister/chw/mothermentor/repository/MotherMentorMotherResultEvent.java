@@ -69,7 +69,11 @@ public final class MotherMentorMotherResultEvent {
         }
 
         public boolean isOverdue(LocalDate today) {
-            return !awaitingConfirmation && MotherMentorChildEidResultOverdue.isOverdue(stage, testDate, today);
+            return MotherMentorChildEidResultOverdue.isOverdue(resultDeadline(), today);
+        }
+
+        LocalDate resultDeadline() {
+            return awaitingConfirmation ? null : MotherMentorChildEidResultOverdue.deadline(stage, testDate);
         }
 
         boolean matches(Map<String, String> values) {
