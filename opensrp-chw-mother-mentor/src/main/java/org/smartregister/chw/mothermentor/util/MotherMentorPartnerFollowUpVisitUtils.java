@@ -14,7 +14,38 @@ import java.util.Map;
 
 /** Allows one completed partner follow-up per client and local calendar day. */
 public final class MotherMentorPartnerFollowUpVisitUtils {
+    public static final String REFERRAL_SCHEMA = "3";
+    public static final String TRACING = "tracing";
+    public static final String REFERRAL = "referral";
+    public static final String ATTENDANCE = "attendance";
+
     private MotherMentorPartnerFollowUpVisitUtils() {}
+
+    public static boolean hasWorkflowSchema(Map<String, String> values) {
+        return matches(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA), "2", REFERRAL_SCHEMA);
+    }
+
+    public static boolean hasReferralAnswer(Map<String, String> values) {
+        return matches(values.get(DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN), "yes", "no");
+    }
+
+    /** The next phase for a completed visit on the same linkage. */
+    public static String nextPhase(Map<String, String> values) {
+        if (!hasWorkflowSchema(values)) return TRACING;
+        String phase = values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
+        boolean agreed = TRACING.equals(phase)
+                && "found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                && "agreed".equals(values.get(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT));
+        if (agreed || REFERRAL.equals(phase)) {
+            return "yes".equals(values.get(DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN))
+                    ? ATTENDANCE : REFERRAL;
+        }
+        if (ATTENDANCE.equals(phase)) {
+            return REFERRAL_SCHEMA.equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+                    ? ATTENDANCE : REFERRAL;
+        }
+        return TRACING;
+    }
 
     public static boolean hasCompletedVisitToday(List<Visit> visits, Date now) {
         if (visits == null || now == null) return false;
@@ -31,7 +62,7 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                 Map<String, String> values =
                         MotherMentorVisitCompletion.observationValues(event.optJSONArray("obs"));
                 String category = values.get(DBConstants.KEY.FOLLOW_UP_CATEGORY);
-                if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+                if (hasWorkflowSchema(values)
                         && !MotherMentorFollowUpType.PARTNER.getValue().equals(category)) continue;
                 if (answered(category)
                         && !MotherMentorFollowUpType.PARTNER.getValue().equals(category)) continue;
@@ -49,9 +80,7 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
         if (values == null || (!partnerSchema && values.containsKey(DBConstants.KEY.ATTENDANCE_TYPE))) {
             return false;
         }
-        if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))) {
-            return isCompleteSchema2(values);
-        }
+        if (hasWorkflowSchema(values)) return isWorkflowComplete(values);
         String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
         if (!matches(
                 status,
@@ -87,15 +116,24 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                                         : DBConstants.KEY.FACILITY_RETURN_DATE));
     }
 
-    /** Completion of the partner-only tracing/attendance workflow. Comments are optional. */
     public static boolean isCompleteSchema2(Map<String, String> values) {
-        if (values == null) return false;
+        return values != null && isWorkflowComplete(values, false);
+    }
+
+    public static boolean isWorkflowComplete(Map<String, String> values) {
+        return isWorkflowComplete(values,
+                REFERRAL_SCHEMA.equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA)));
+    }
+
+    private static boolean isWorkflowComplete(Map<String, String> values, boolean usesReferral) {
         String phase = values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
-        if ("tracing".equals(phase)) {
+        if (REFERRAL.equals(phase)) return usesReferral && hasReferralAnswer(values);
+        if (TRACING.equals(phase)) {
             String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
             if ("found".equals(status)) {
-                return matches(values.get(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT),
-                        "agreed", "refused") && educationComplete(values);
+                String agreement = values.get(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT);
+                return educationComplete(values) && ("refused".equals(agreement)
+                        || ("agreed".equals(agreement) && (!usesReferral || hasReferralAnswer(values))));
             }
             if (!"not_found".equals(status)) return false;
             String reason = values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
@@ -103,13 +141,15 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                     && (!"other".equals(reason)
                             || answered(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER)));
         }
-        if (!"attendance".equals(phase)) return false;
+        if (!ATTENDANCE.equals(phase)) return false;
         String attendance = values.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY);
         if ("no".equals(attendance)) return true;
-        return "yes".equals(attendance)
-                && educationComplete(values)
-                && validRecordedDate(values.get(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))
-                && testComplete(values, DBConstants.KEY.PARTNER_HIV_TESTED,
+        if (!"yes".equals(attendance)
+                || !validRecordedDate(values.get(DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE))) {
+            return false;
+        }
+        if (usesReferral) return true;
+        return educationComplete(values) && testComplete(values, DBConstants.KEY.PARTNER_HIV_TESTED,
                         DBConstants.KEY.PARTNER_HIV_RESULT,
                         DBConstants.KEY.PARTNER_HIV_NOT_TESTED_REASON,
                         DBConstants.KEY.PARTNER_HIV_NOT_TESTED_REASON_OTHER, true)

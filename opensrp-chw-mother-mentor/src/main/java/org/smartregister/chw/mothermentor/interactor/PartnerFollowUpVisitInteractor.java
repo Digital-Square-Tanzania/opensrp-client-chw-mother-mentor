@@ -1,5 +1,10 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import static org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils.ATTENDANCE;
+import static org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils.REFERRAL;
+import static org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA;
+import static org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils.TRACING;
+
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,9 +16,7 @@ import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerArriva
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerEducationActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerFollowUpCommentActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerFollowUpStatusActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerHepatitisBTestActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerHivTestActionHelper;
-import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerSyphilisTestActionHelper;
+import org.smartregister.chw.mothermentor.actionhelper.MotherMentorPartnerReferralActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorPartnerFollowUpDao;
@@ -26,6 +29,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -43,21 +47,17 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-/** Partner tracing and attendance are distinct visits; saved visits retain their original context. */
+/** Partner tracing, referral and attendance are distinct phases; saved visits retain their original context. */
 public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisitInteractor {
     private static final String STATUS = "status";
     private static final String ARRIVAL = "arrival";
-    private static final String HIV = "hiv";
-    private static final String SYPHILIS = "syphilis";
-    private static final String HEPATITIS_B = "hepatitis_b";
     private static final String EDUCATION = "education";
     private static final String COMMENTS = DBConstants.KEY.COMMENTS;
-    private static final String TRACING = "tracing";
-    private static final String ATTENDANCE = "attendance";
 
     private final LinkedHashMap<String, BaseMotherMentorVisitAction> actions = new LinkedHashMap<>();
     private final Map<String, BaseMotherMentorVisitAction> workflow = new LinkedHashMap<>();
     private final Map<String, String> snapshot = new LinkedHashMap<>();
+    private final ArrayList<Obs> historicalTests = new ArrayList<>();
     private final ArrayList<Obs> originalNonAttendanceEducation = new ArrayList<>();
     private String editedVisitId = "";
     private Date serviceDate = new Date();
@@ -84,6 +84,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         serviceDate = new Date();
         snapshot.clear();
         originalNonAttendanceEducation.clear();
+        historicalTests.clear();
         frozenContext = false;
         if (!Boolean.TRUE.equals(view.getEditMode())) return;
         Visit visit = loadEditingVisit(member.getBaseEntityId());
@@ -98,8 +99,11 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             serviceDate = originalServiceDate(
                     saved.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE), visit.getDate());
             String phase = saved.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
-            if ("2".equals(saved.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
-                    && (TRACING.equals(phase) || ATTENDANCE.equals(phase))) {
+            boolean referralWorkflow = REFERRAL_SCHEMA.equals(saved.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA));
+            // A pre-referral attendance draft must resume through the linkage's current phase.
+            if (MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(saved)
+                    && (TRACING.equals(phase) || (referralWorkflow
+                            && (REFERRAL.equals(phase) || ATTENDANCE.equals(phase))))) {
                 for (String key : new String[] {
                         DBConstants.KEY.PARTNER_LINKAGE_ID,
                         DBConstants.KEY.MOTHER_BASE_ENTITY_ID,
@@ -110,10 +114,14 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 }
                 frozenContext = true;
                 active = true;
-                if (ATTENDANCE.equals(phase)
-                        && "no".equals(saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))) {
-                    for (Obs obs : new Gson().fromJson(observations.toString(), Obs[].class)) {
-                        if (isEducationObservation(obs)) originalNonAttendanceEducation.add(obs);
+            }
+            if (observations != null) {
+                boolean nonAttendance = ATTENDANCE.equals(phase)
+                        && "no".equals(saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
+                for (Obs obs : new Gson().fromJson(observations.toString(), Obs[].class)) {
+                    if (isTestObservation(obs)) historicalTests.add(obs);
+                    if (nonAttendance && isEducationObservation(obs)) {
+                        originalNonAttendanceEducation.add(obs);
                     }
                 }
             }
@@ -165,7 +173,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 snapshot.put(DBConstants.KEY.MOTHER_PREGNANCY_EPISODE_ID, linkage.getPregnancyEpisodeId());
                 snapshot.put(DBConstants.KEY.PARTNER_MOTHER_PREGNANT, linkage.getMotherPregnant());
                 snapshot.put(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE,
-                        linkage.isAttendancePending() ? ATTENDANCE : TRACING);
+                        linkage.getNextPhase());
                 active = linkage.isActive();
             }
             try {
@@ -175,18 +183,12 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 add(ARRIVAL, R.string.mothermentor_partner_attendance_section,
                         "mothermentor_partner_arrival",
                         new MotherMentorPartnerArrivalActionHelper(this::clearHiddenActions), false);
-                add(HIV, R.string.mothermentor_partner_hiv_test_section,
-                        "mothermentor_partner_hiv_test",
-                        new MotherMentorPartnerHivTestActionHelper(this::clearHiddenActions), false);
-                add(SYPHILIS, R.string.mothermentor_partner_syphilis_test_section,
-                        "mothermentor_partner_syphilis_test",
-                        new MotherMentorPartnerSyphilisTestActionHelper(this::clearHiddenActions), false);
-                add(HEPATITIS_B, R.string.mothermentor_partner_hepatitis_b_test_section,
-                        "mothermentor_partner_hepatitis_b_test",
-                        new MotherMentorPartnerHepatitisBTestActionHelper(this::clearHiddenActions), false);
+                add(REFERRAL, R.string.mothermentor_partner_referral_section,
+                        "mothermentor_partner_testing_referral",
+                        new MotherMentorPartnerReferralActionHelper(), false);
                 add(EDUCATION, R.string.mothermentor_partner_education_section,
                         "mothermentor_partner_education",
-                        new MotherMentorPartnerEducationActionHelper(), false);
+                        new MotherMentorPartnerEducationActionHelper(), !isPhase(TRACING));
                 add(COMMENTS, R.string.mothermentor_comments_section,
                         "mothermentor_partner_follow_up_comment",
                         new MotherMentorPartnerFollowUpCommentActionHelper(), true);
@@ -210,8 +212,8 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         workflow.put(key, action);
     }
 
-    private boolean attendancePhase() {
-        return ATTENDANCE.equals(snapshot.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE));
+    private boolean isPhase(String phase) {
+        return phase.equals(snapshot.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE));
     }
 
     private boolean found() {
@@ -231,15 +233,13 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     private boolean visible(String key) {
         if (!active) return false;
         switch (key) {
-            case STATUS: return !attendancePhase();
-            case ARRIVAL: return attendancePhase();
-            case HIV: return attendancePhase() && attended() && complete(ARRIVAL);
-            case SYPHILIS: return visible(HIV) && complete(HIV);
-            case HEPATITIS_B: return visible(SYPHILIS) && complete(SYPHILIS);
-            case EDUCATION: return attendancePhase() ? attended() && complete(ARRIVAL) : found();
-            case COMMENTS: return attendancePhase()
-                    && ("yes".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
-                    || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)));
+            case STATUS: return isPhase(TRACING);
+            case REFERRAL: return isPhase(REFERRAL);
+            case ARRIVAL: return isPhase(ATTENDANCE);
+            case EDUCATION: return isPhase(ATTENDANCE) ? attended() && complete(ARRIVAL)
+                    : isPhase(REFERRAL) || found();
+            case COMMENTS: return isPhase(REFERRAL) || (isPhase(ATTENDANCE)
+                    && (attended() || "no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))));
             default: return true;
         }
     }
@@ -288,8 +288,21 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     @Override
     protected String submitVisit(boolean edit, String memberId,
             Map<String, BaseMotherMentorVisitAction> map, String parentEventType) throws Exception {
-        if (loadClosureState(memberId, editedVisitId).isClosed()) return null;
+        if (!MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(currentValues())
+                || loadClosureState(memberId, editedVisitId).isClosed()) return null;
         return super.submitVisit(edit, memberId, map, parentEventType);
+    }
+
+    @Override
+    protected boolean shouldSubmitOnSave() {
+        return true;
+    }
+
+    @Override
+    protected void processSavedVisit(Visit visit) throws Exception {
+        VisitUtils.persistVisitEvents(Collections.singletonList(visit), visitRepository());
+        NCUtils.getClientProcessorForJava().processClient(NCUtils.getSyncHelper()
+                .getEvents(Collections.singletonList(visit.getFormSubmissionId())));
     }
 
     @Override
@@ -306,19 +319,20 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     protected void prepareEvent(Event event) {
         if (event == null) return;
         restoreHistoricalEducation(event);
+        for (Obs observation : historicalTests) event.addObs(observation);
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
         putObservation(event, DBConstants.KEY.FOLLOW_UP_CATEGORY,
                 MotherMentorFollowUpType.PARTNER.getValue());
-        putObservation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2");
+        putObservation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, REFERRAL_SCHEMA);
         for (Map.Entry<String, String> entry : snapshot.entrySet()) {
             putObservation(event, entry.getKey(), entry.getValue());
         }
         Map<String, String> values = currentValues();
         MotherMentorPartnerClosure closure = loadClosureState(
                 memberObject.getBaseEntityId(), editedVisitId);
-        if (MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values)) {
+        if (MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values)) {
             closure = closure.advance(values,
                     new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
         }
@@ -326,13 +340,14 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
                 MotherMentorPartnerClosureRepository.observationValues(closure).entrySet()) {
             putObservation(event, entry.getKey(), entry.getValue());
         }
-        String end = MotherMentorPartnerClosure.ATTENDED_TESTED.equals(closure.getStatus())
+        String end = MotherMentorPartnerClosure.ATTENDED.equals(closure.getStatus())
                 ? "completed" : (closure.isClosed() ? closure.getStatus() : "");
         putObservation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_END, end);
     }
 
     private Map<String, String> currentValues() {
         Map<String, String> values = new LinkedHashMap<>(snapshot);
+        values.put(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, REFERRAL_SCHEMA);
         for (BaseMotherMentorVisitAction action : workflow.values()) {
             if (!action.isValid() || StringUtils.isBlank(action.getJsonPayload())) continue;
             try {
@@ -353,7 +368,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     }
 
     private void restoreHistoricalEducation(Event event) {
-        if (!attendancePhase()
+        if (!isPhase(ATTENDANCE)
                 || !"no".equals(value(ARRIVAL, DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
                 || originalNonAttendanceEducation.isEmpty()) return;
         if (event.getObs() != null) {
@@ -363,6 +378,12 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
             }
         }
         for (Obs obs : originalNonAttendanceEducation) event.addObs(obs);
+    }
+
+    private static boolean isTestObservation(Obs obs) {
+        String key = StringUtils.defaultString(obs.getFieldCode());
+        return key.startsWith("partner_hiv_") || key.startsWith("partner_syphilis_")
+                || key.startsWith("partner_hepatitis_b_");
     }
 
     private static boolean isEducationObservation(Obs obs) {

@@ -124,6 +124,9 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertStatus("mothermentor_partner_follow_up_status", false);
         assertVisitCanBeSubmitted(false);
         answer("mothermentor_partner_follow_up_status", "partner_facility_agreement", "agreed");
+        assertStatus("mothermentor_partner_follow_up_status", false);
+        assertVisitCanBeSubmitted(false);
+        answer("mothermentor_partner_follow_up_status", "partner_testing_referral_given", "no");
         assertStatus("mothermentor_partner_follow_up_status", true);
         assertVisible("mothermentor_partner_education", true);
         assertVisible("mothermentor_partner_arrival", false);
@@ -135,6 +138,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
         answer("mothermentor_partner_follow_up_status", "comments", "Follow-up notes");
         assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
         answer("mothermentor_partner_follow_up_status", "partner_facility_agreement", "refused");
+        assertEquals("", value("mothermentor_partner_follow_up_status", "partner_testing_referral_given"));
         assertStatus("mothermentor_partner_follow_up_status", true);
         answer("mothermentor_partner_follow_up_status", "follow_up_status", "not_found",
                 "partner_not_found_reason", "other");
@@ -172,7 +176,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
     private void resumeTracingComments() throws Exception {
         start(false);
         answer("mothermentor_partner_follow_up_status", "follow_up_status", "found",
-                "partner_facility_agreement", "agreed", "comments", "Return after work");
+                "partner_facility_agreement", "agreed", "partner_testing_referral_given", "yes",
+                "comments", "Return after work");
         answer("mothermentor_partner_education", "partner_education_provided", "no");
         assertVisitCanBeSubmitted(true);
         Event event = aggregateNativeEvent();
@@ -197,58 +202,41 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
-    @Config(qualifiers = "en")
-    public void englishAttendanceAsksTestsInOrderAndCompletesEvenWhenAllTestsWereNotDone() throws Exception {
-        attendanceBranches();
+    public void attendanceWithADateClosesWithoutTestsOrEducation() throws Exception {
+        start(true);
+        assertNoTestActions();
+        assertVisible("mothermentor_partner_arrival", true);
+        assertVisible("mothermentor_partner_testing_referral", false);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes");
+        assertVisitCanBeSubmitted(false);
+        answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "01-02-2025");
+        assertVisitCanBeSubmitted(true);
+        Event event = aggregateNativeEvent();
+        assertEquals("completed", observation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+        assertEquals("attended", observation(event, DBConstants.KEY.MWENZI_STATUS));
     }
 
     @Test
-    @Config(qualifiers = "sw")
-    public void swahiliAttendanceAsksTestsInOrderAndCompletesEvenWhenAllTestsWereNotDone() throws Exception {
-        attendanceBranches();
+    public void referralRetryRequiresAnAnswerAndDoesNotExposeSameVisitAttendance() throws Exception {
+        interactor = new TestInteractor();
+        interactor.state = new MotherMentorPartnerFollowUpDao.Context(
+                "link", "mother", "episode", "yes", "referral", true);
+        calculate(false);
+        assertVisible("mothermentor_partner_follow_up_status", false);
+        assertVisible("mothermentor_partner_testing_referral", true);
+        assertVisible("mothermentor_partner_arrival", false);
+        assertVisitCanBeSubmitted(false);
+        for (String referral : new String[] {"no", "yes"}) {
+            answer("mothermentor_partner_testing_referral", "partner_testing_referral_given", referral);
+            assertVisitCanBeSubmitted(true);
+            assertVisible("mothermentor_partner_arrival", false);
+            assertEquals(referral, observation(aggregateNativeEvent(),
+                    DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN));
+        }
     }
 
-    private void attendanceBranches() throws Exception {
-        start(true);
-        assertVisible("mothermentor_partner_follow_up_status", false);
-        assertVisible("mothermentor_partner_arrival", true);
-        assertTrue(new ArrayList<>(actions.values()).get(actions.size() - 1).isOptional());
-        assertVisible("mothermentor_partner_hiv_test", false);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes");
-        assertVisible("mothermentor_partner_follow_up_comment", true);
-        assertStatus("mothermentor_partner_arrival", false);
-        assertVisible("mothermentor_partner_hiv_test", false);
-        answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "01-02-2025");
-        assertVisible("mothermentor_partner_hiv_test", true);
-        assertVisible("mothermentor_partner_syphilis_test", false);
-        answer("mothermentor_partner_hiv_test", "partner_hiv_tested", "no");
-        assertStatus("mothermentor_partner_hiv_test", false);
-        answer("mothermentor_partner_hiv_test", "partner_hiv_not_tested_reason", "already_infected");
-        assertStatus("mothermentor_partner_hiv_test", true);
-        assertVisible("mothermentor_partner_syphilis_test", true);
-        answer("mothermentor_partner_syphilis_test", "partner_syphilis_tested", "no",
-                "partner_syphilis_not_tested_reason", "already_infected");
-        assertStatus("mothermentor_partner_syphilis_test", false);
-        assertVisible("mothermentor_partner_hepatitis_b_test", false);
-        answer("mothermentor_partner_syphilis_test", "partner_syphilis_not_tested_reason", "other");
-        assertStatus("mothermentor_partner_syphilis_test", false);
-        answer("mothermentor_partner_syphilis_test", "partner_syphilis_not_tested_reason_other", "Testing postponed");
-        assertVisible("mothermentor_partner_hepatitis_b_test", true);
-        answer("mothermentor_partner_hepatitis_b_test", "partner_hepatitis_b_tested", "no",
-                "partner_hepatitis_b_not_tested_reason", "stock_out");
-        assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
-        answer("mothermentor_partner_education", "partner_education_provided", "no");
-        Event notTested = interactor.event();
-        assertEquals("", observation(notTested, DBConstants.KEY.PARTNER_FOLLOW_UP_END));
-        assertEquals("active", observation(notTested, DBConstants.KEY.MWENZI_STATUS));
-        assertBlankCommentDoesNotBlockSave();
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
-        assertEquals("", value("mothermentor_partner_arrival", "partner_facility_arrival_date"));
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            assertVisible("mothermentor_partner_" + disease + "_test", false);
-            assertNull(action("mothermentor_partner_" + disease + "_test").getJsonPayload());
-        }
-        assertEquals("", observation(interactor.event(), DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+    private void assertNoTestActions() {
+        assertFalse(actions.values().stream().anyMatch(action -> action.getFormName().endsWith("_test")));
     }
 
     @Test
@@ -273,53 +261,27 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertVisible("mothermentor_partner_follow_up_comment", true);
         assertVisible("mothermentor_partner_education", false);
         assertNull(action("mothermentor_partner_education").getJsonPayload());
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            assertVisible("mothermentor_partner_" + disease + "_test", false);
-        }
+        assertNoTestActions();
         assertBlankCommentDoesNotBlockSave();
         Event event = aggregateNativeEvent();
         Map<String, String> saved = MotherMentorVisitCompletion.observationValues(
                 new JSONArray(new Gson().toJson(event.getObs())));
         assertEquals("no", saved.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY));
         assertFalse(saved.containsKey(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
-        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(saved));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(saved));
     }
 
     @Test
-    public void malformedAttendanceDateCannotAdvanceToTestingOrEducation() throws Exception {
+    public void malformedAttendanceDateCannotAdvanceToEducation() throws Exception {
         start(true);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "31-02-2026");
         assertStatus("mothermentor_partner_arrival", false);
-        assertVisible("mothermentor_partner_hiv_test", false);
         assertVisible("mothermentor_partner_education", false);
         answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "2026-02-28");
         assertStatus("mothermentor_partner_arrival", true);
-        assertVisible("mothermentor_partner_hiv_test", true);
         assertVisible("mothermentor_partner_education", true);
         assertVisible("mothermentor_partner_follow_up_comment", true);
-    }
-
-    @Test
-    public void changingTestAnswersClearsOnlyHiddenResultsAndRequiresOtherText() throws Exception {
-        start(true);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
-                "partner_facility_arrival_date", "01-02-2025");
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            String form = "mothermentor_partner_" + disease + "_test";
-            String key = "partner_" + disease;
-            answer(form, key + "_tested", "yes");
-            assertStatus(form, false);
-            answer(form, key + "_result", "positive");
-            assertStatus(form, true);
-            answer(form, key + "_tested", "no", key + "_not_tested_reason", "other");
-            assertEquals("", value(form, key + "_result"));
-            assertStatus(form, false);
-            answer(form, key + "_not_tested_reason_other", "Declined this time");
-            assertStatus(form, true);
-            answer(form, key + "_not_tested_reason", "refused");
-            assertEquals("", value(form, key + "_not_tested_reason_other"));
-        }
     }
 
     @Test
@@ -342,12 +304,12 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
-    public void nativeEventAggregationRetainsAllEducationTopicsAndQualifyingTestResults()
+    public void nativeEventAggregationRetainsAllEducationTopicsAndOmitsTestResults()
             throws Exception {
         Event event = nativeCompletedEvent();
         Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                 new JSONArray(new Gson().toJson(event.getObs())));
-        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values));
         assertEquals("completed", values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END));
         Obs education = null;
         for (Obs obs : event.getObs()) {
@@ -358,20 +320,15 @@ public class PartnerFollowUpWorkflowInteractorTest {
         for (String topic : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
             assertTrue(topics, topics.contains(topic));
         }
-        assertEquals("negative", values.get(DBConstants.KEY.PARTNER_HIV_RESULT));
-        assertEquals("negative", values.get(DBConstants.KEY.PARTNER_SYPHILIS_RESULT));
-        assertEquals("negative", values.get(DBConstants.KEY.PARTNER_HEPATITIS_B_RESULT));
+        assertFalse(values.containsKey(DBConstants.KEY.PARTNER_HIV_RESULT));
+        assertFalse(values.containsKey(DBConstants.KEY.PARTNER_SYPHILIS_RESULT));
+        assertFalse(values.containsKey(DBConstants.KEY.PARTNER_HEPATITIS_B_RESULT));
     }
 
     private Event nativeCompletedEvent() throws Exception {
         start(true);
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "01-02-2025");
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            answer("mothermentor_partner_" + disease + "_test",
-                    "partner_" + disease + "_tested", "yes",
-                    "partner_" + disease + "_result", "negative");
-        }
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
                 "partner_education_topics", new JSONArray().put("hiv").put("syphilis").put("hepatitis_b"));
         return aggregateNativeEvent();
@@ -380,7 +337,9 @@ public class PartnerFollowUpWorkflowInteractorTest {
     private Event aggregateNativeEvent() throws Exception {
         Map<String, String> forms = new LinkedHashMap<>();
         for (Map.Entry<String, BaseMotherMentorVisitAction> entry : actions.entrySet()) {
-            if (entry.getValue().isValid()) forms.put(entry.getKey(), entry.getValue().getJsonPayload());
+            if (entry.getValue().isValid() && entry.getValue().getJsonPayload() != null) {
+                forms.put(entry.getKey(), entry.getValue().getJsonPayload());
+            }
         }
         Event event = MotherMentorJsonFormUtils.processVisitJsonForm(
                 mock(AllSharedPreferences.class), "partner",
@@ -419,13 +378,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
         calculate(true);
         assertVisible("mothermentor_partner_follow_up_status", false);
         assertEquals("yes", value("mothermentor_partner_arrival", "partner_arrived_at_facility"));
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            String form = "mothermentor_partner_" + disease + "_test";
-            assertVisible(form, true);
-            assertStatus(form, true);
-            assertEquals("yes", value(form, "partner_" + disease + "_tested"));
-            assertEquals("negative", value(form, "partner_" + disease + "_result"));
-        }
+        assertNoTestActions();
         assertStatus("mothermentor_partner_education", true);
         JSONArray topics = field(new JSONObject(action("mothermentor_partner_education").getJsonPayload()),
                 "partner_education_topics").getJSONArray("value");
@@ -471,11 +424,6 @@ public class PartnerFollowUpWorkflowInteractorTest {
         editNativeEvent(historicalNonAttendanceEvent());
         answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "01-02-2025");
-        for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
-            answer("mothermentor_partner_" + disease + "_test",
-                    "partner_" + disease + "_tested", "yes",
-                    "partner_" + disease + "_result", "negative");
-        }
         assertVisible("mothermentor_partner_education", true);
         assertStatus("mothermentor_partner_education", false);
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
@@ -483,7 +431,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
         Event saved = aggregateNativeEvent();
         Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                 new JSONArray(new Gson().toJson(saved.getObs())));
-        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values));
+        assertTrue(MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values));
         assertEquals("yes", values.get(DBConstants.KEY.PARTNER_EDUCATION_PROVIDED));
         String topics = rawEducation(saved).get(DBConstants.KEY.PARTNER_EDUCATION_TOPICS);
         assertTrue(topics, topics.contains("syphilis"));
@@ -537,7 +485,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
-    public void schemaTwoDraftRetainsOriginalPhaseLinkagePregnancyAndServiceDate() throws Exception {
+    public void referralWorkflowDraftRetainsOriginalPhaseLinkagePregnancyAndServiceDate() throws Exception {
         interactor = new TestInteractor();
         interactor.editing = savedVisit(true);
         interactor.forbidContextRead = true;
@@ -552,6 +500,28 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertEquals("01-02-2025", new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(event.getEventDate()));
         assertVisible("mothermentor_partner_arrival", true);
         assertVisible("mothermentor_partner_follow_up_status", false);
+    }
+
+    @Test
+    public void preReferralDraftKeepsHistoricalTestsWhenItResumesWithReferral() throws Exception {
+        interactor = new TestInteractor();
+        interactor.editing = savedVisit(true);
+        JSONObject json = new JSONObject(interactor.editing.getJson());
+        JSONArray observations = json.getJSONArray("obs");
+        observations.getJSONObject(1).put("values", new JSONArray().put("2"));
+        observations.put(new JSONObject().put("fieldCode", DBConstants.KEY.PARTNER_HIV_RESULT)
+                .put("values", new JSONArray().put("negative")));
+        interactor.editing.setJson(json.toString());
+        interactor.state = new MotherMentorPartnerFollowUpDao.Context(
+                "original-link", "original-mother", "original-episode", "yes", "referral", true);
+        calculate(true);
+        assertVisible("mothermentor_partner_testing_referral", true);
+        assertVisible("mothermentor_partner_arrival", false);
+        assertNoTestActions();
+        answer("mothermentor_partner_testing_referral", "partner_testing_referral_given", "yes");
+        Event event = aggregateNativeEvent();
+        assertEquals("negative", observation(event, DBConstants.KEY.PARTNER_HIV_RESULT));
+        assertEquals("yes", observation(event, DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN));
     }
 
     @Test
@@ -591,6 +561,7 @@ public class PartnerFollowUpWorkflowInteractorTest {
         interactor.editing = savedVisit(true);
         interactor.forbidContextRead = true;
         calculate(true);
+        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
         BaseMotherMentorVisitContract.InteractorCallBack callback =
                 mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
         interactor.submitVisit(true, "partner", actions, callback);
@@ -599,13 +570,13 @@ public class PartnerFollowUpWorkflowInteractorTest {
         verify(callback).onSubmitted("saved");
     }
 
-    private Visit savedVisit(boolean schemaTwo) throws Exception {
+    private Visit savedVisit(boolean currentSchema) throws Exception {
         Visit visit = new Visit();
         visit.setVisitId("editing-visit");
         visit.setDate(new SimpleDateFormat("dd-MM-yyyy", Locale.US).parse("01-02-2025"));
         JSONArray obs = new JSONArray();
         for (String[] pair : new String[][] {{"mothermentor_visit_date", "01-02-2025"},
-                {"partner_follow_up_schema", schemaTwo ? "2" : ""},
+                {"partner_follow_up_schema", currentSchema ? "3" : ""},
                 {"partner_follow_up_phase", "attendance"}, {"partner_linkage_id", "original-link"},
                 {"mother_base_entity_id", "original-mother"}, {"mother_pregnancy_episode_id", "original-episode"},
                 {"partner_mother_pregnant", "yes"}}) {
@@ -725,6 +696,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
             closureExcludedId = excluded;
             return closureState;
         }
+
+        @Override protected boolean shouldSubmitOnSave() { return false; }
 
         @Override protected Visit saveVisit(boolean edit, String memberId, String encounterType,
                 Map<String, String> json, String parentEventType) {

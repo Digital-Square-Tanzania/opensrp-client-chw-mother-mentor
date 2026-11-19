@@ -58,6 +58,12 @@ public final class MotherMentorPartnerClosureRepository {
         if (ownTransaction) database.beginTransaction();
         try {
             ensureColumns(database, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER);
+            Set<String> enrollmentColumns = columns(database, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER);
+            if (!enrollmentColumns.isEmpty()
+                    && !enrollmentColumns.contains(DBConstants.KEY.PARTNER_NEXT_FOLLOW_UP_PHASE)) {
+                database.execSQL("ALTER TABLE " + Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER
+                        + " ADD COLUMN " + DBConstants.KEY.PARTNER_NEXT_FOLLOW_UP_PHASE + " VARCHAR");
+            }
             ensureColumns(database, Constants.TABLES.MOTHERMENTOR_FOLLOWUP_VISIT);
             if (!columns(database, Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER).isEmpty()) {
                 try (Cursor cursor = database.rawQuery("SELECT DISTINCT "
@@ -88,7 +94,11 @@ public final class MotherMentorPartnerClosureRepository {
         Map<String, String> enrollment = enrollment(database, partnerId);
         if (enrollment.isEmpty()) return;
         MotherMentorPartnerClosure state = project(database, partnerId, null, enrollment, true);
-        database.update(Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER, contentValues(state),
+        ContentValues values = contentValues(state);
+        if (enrollmentColumns.contains(DBConstants.KEY.PARTNER_NEXT_FOLLOW_UP_PHASE)) {
+            values.put(DBConstants.KEY.PARTNER_NEXT_FOLLOW_UP_PHASE, state.getNextPhase());
+        }
+        database.update(Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER, values,
                 DBConstants.KEY.BASE_ENTITY_ID + " = ?", new String[] {partnerId});
     }
 
@@ -210,9 +220,9 @@ public final class MotherMentorPartnerClosureRepository {
                         event.optJSONArray("obs"));
                 String recorded = value(values, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE);
                 boolean valid = partnerLike(text(cursor, DBConstants.KEY.VISIT_TYPE), values)
-                        && "2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+                        && MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)
                         && currentLinkage.equals(linkage(values, partnerId))
-                        && MotherMentorPartnerFollowUpVisitUtils.isCompleteSchema2(values)
+                        && MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values)
                         && (recorded.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}")
                                 || recorded.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"));
                 Date date = valid ? MotherMentorPartnerFollowUpVisitUtils.getVisitDate(
