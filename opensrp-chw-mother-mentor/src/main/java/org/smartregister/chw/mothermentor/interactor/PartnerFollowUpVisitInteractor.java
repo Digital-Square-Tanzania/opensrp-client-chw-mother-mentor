@@ -29,6 +29,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -295,6 +296,13 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     @Override
     protected boolean shouldSubmitOnSave() {
         return true;
+    }
+
+    @Override
+    protected void processSavedVisit(Visit visit) throws Exception {
+        VisitUtils.persistVisitEvents(Collections.singletonList(visit), visitRepository());
+        NCUtils.getClientProcessorForJava().processClient(NCUtils.getSyncHelper()
+                .getEvents(Collections.singletonList(visit.getFormSubmissionId())));
     }
 
     @Override
