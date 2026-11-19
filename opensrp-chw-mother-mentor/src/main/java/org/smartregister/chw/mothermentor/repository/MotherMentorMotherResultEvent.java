@@ -102,23 +102,26 @@ public final class MotherMentorMotherResultEvent {
     }
 
     public static boolean isComplete(PendingTest pending, Map<String, String> answers, LocalDate day) {
-        return evaluate(pending, answers, day) != null;
+        return answers.containsKey(MTOTO_RESULT_RECEIVED_DATE) && evaluate(pending, answers, day) != null;
     }
 
     public static boolean closesCard(PendingTest pending, Map<String, String> answers, LocalDate day) {
         Outcome result = evaluate(pending, answers, day);
-        return result != null && "positive".equals(result.confirmation);
+        return answers.containsKey(MTOTO_RESULT_RECEIVED_DATE) && result != null
+                && "positive".equals(result.confirmation);
     }
 
     static Outcome evaluate(PendingTest pending, Map<String, String> values, LocalDate day) {
         if (day == null || day.isBefore(pending.testDate)) return null;
+        LocalDate receipt = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_RESULT_RECEIVED_DATE));
+        // Confirmation events from the first birth-test workflow may omit the receipt date.
+        if ((!pending.awaitingConfirmation || values.containsKey(MTOTO_RESULT_RECEIVED_DATE))
+                && !MotherMentorHeiSchedule.validDate(receipt, pending.testDate, day)) return null;
         String confirmation = values.get(MTOTO_CONFIRMATORY_RESULT);
         if (pending.awaitingConfirmation) {
             return "negative".equals(confirmation) || "positive".equals(confirmation)
                     ? new Outcome("positive", confirmation) : null;
         }
-        LocalDate receipt = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_RESULT_RECEIVED_DATE));
-        if (!MotherMentorHeiSchedule.validDate(receipt, pending.testDate, day)) return null;
         String result = values.get(MTOTO_RECEIVED_RESULT);
         if ("negative".equals(result)) return new Outcome(result, null);
         String done = values.get(MTOTO_CONFIRMATORY_TEST_DONE);
@@ -147,8 +150,8 @@ public final class MotherMentorMotherResultEvent {
             observe(event, MTOTO_RUFAA_STATE_BEFORE, current.getState());
             if (!current.awaitingConfirmation) {
                 observe(event, MTOTO_RECEIVED_RESULT, answers.get(MTOTO_RECEIVED_RESULT));
-                observe(event, MTOTO_RESULT_RECEIVED_DATE, answers.get(MTOTO_RESULT_RECEIVED_DATE));
             }
+            observe(event, MTOTO_RESULT_RECEIVED_DATE, answers.get(MTOTO_RESULT_RECEIVED_DATE));
             if (current.awaitingConfirmation || "positive".equals(answers.get(MTOTO_RECEIVED_RESULT))) {
                 String done = current.awaitingConfirmation ? "yes" : answers.get(MTOTO_CONFIRMATORY_TEST_DONE);
                 observe(event, MTOTO_CONFIRMATORY_TEST_DONE, done);

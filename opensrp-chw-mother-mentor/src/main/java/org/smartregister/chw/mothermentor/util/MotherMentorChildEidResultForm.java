@@ -34,6 +34,14 @@ public final class MotherMentorChildEidResultForm {
             performed.put("value", "yes");
             performed.remove("relevance");
             performed.remove("options");
+            JSONObject step = form.getJSONObject("step1");
+            JSONArray fields = step.getJSONArray("fields");
+            JSONArray ordered = new JSONArray();
+            for (int i = 0; i < fields.length(); i++) {
+                JSONObject field = fields.getJSONObject(i);
+                if (field != receipt) ordered.put(field);
+            }
+            step.put("fields", ordered.put(receipt));
         }
         if (recordingConfirmation || MotherMentorHeiSchedule.Stage.fromCode(stageCode)
                 == MotherMentorHeiSchedule.Stage.EIGHTEEN_MONTHS) {
