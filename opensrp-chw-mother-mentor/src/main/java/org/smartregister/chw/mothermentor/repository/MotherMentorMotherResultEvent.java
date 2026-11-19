@@ -19,6 +19,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
@@ -27,6 +28,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
+import org.smartregister.repository.BaseRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -309,13 +311,14 @@ public final class MotherMentorMotherResultEvent {
             if ("yes".equals(done)) observe(event, MTOTO_CONFIRMATORY_RESULT, answers.get(MTOTO_CONFIRMATORY_RESULT));
         }
 
-        NCUtils.addEvent(MotherMentorLibrary.getInstance().context().allSharedPreferences(), event);
+        JsonFormUtils.tagEvent(MotherMentorLibrary.getInstance().context().allSharedPreferences(), event);
+        NCUtils.getSyncHelper().addEvent(motherId, new JSONObject(JsonFormUtils.gson.toJson(event)),
+                BaseRepository.TYPE_Unsynced);
         if (history(db, motherId, day).stream().noneMatch(entry ->
                 id.equals(entry.id) && entry.revision == event.getVersion())) {
             throw new IllegalStateException("Unable to persist the linked Mama Kadi result");
         }
         rebuild(db, motherId);
-        MotherMentorLibrary.getInstance().context().getEventClientRepository().markEventAsProcessed(id);
     }
 
     public static void rebuild(SQLiteDatabase db, String motherId) {
