@@ -13,7 +13,7 @@ import java.util.Map;
 /** Calendar-based HEI schedule. A result awaiting confirmation remains actionable. */
 public final class MotherMentorHeiSchedule {
     public enum Stage {
-        AT_BIRTH("at_birth", null, null),
+        AT_BIRTH("at_birth", DBConstants.KEY.MAMA_BIRTH_TEST_RESULT, DBConstants.KEY.MAMA_BIRTH_TEST_DATE),
         SIX_WEEKS("six_weeks", DBConstants.KEY.HEI_TEST_WIKI6_RESULT,
                 DBConstants.KEY.HEI_TEST_WIKI6_DATE),
         NINE_MONTHS("nine_months", DBConstants.KEY.HEI_TEST_MIEZI9_RESULT,
@@ -60,21 +60,29 @@ public final class MotherMentorHeiSchedule {
         private final LocalDate date;
         private final boolean confirmed;
         private final LocalDate serviceDate;
+        private final boolean confirmationNegative;
 
         public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate) {
+            this(result, date, confirmed, serviceDate, false);
+        }
+
+        public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate,
+                boolean confirmationNegative) {
             this.result = result;
             this.date = date;
             this.confirmed = confirmed;
             this.serviceDate = serviceDate;
+            this.confirmationNegative = confirmationNegative;
         }
 
         public String getResult() { return result; }
         public LocalDate getDate() { return date; }
         public boolean isConfirmed() { return confirmed; }
         public LocalDate getServiceDate() { return serviceDate; }
+        public boolean isConfirmationNegative() { return confirmationNegative; }
         public boolean requiresFollowUp() {
             return "pending".equals(result) || "unknown".equals(result)
-                    || ("positive".equals(result) && !confirmed);
+                    || ("positive".equals(result) && !confirmed && !confirmationNegative);
         }
     }
 

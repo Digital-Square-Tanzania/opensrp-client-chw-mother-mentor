@@ -259,7 +259,9 @@ public class MotherMentorMotherExitActionFlowTest {
                 MAMA_BIRTH_TEST_DONE, "yes", MAMA_BIRTH_TEST_DATE, birth.toString(),
                 MAMA_BIRTH_TEST_RESULT, "positive", MAMA_BIRTH_TEST_RECEIVED_DATE, DAY.toString());
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
-        answer(child, MAMA_BIRTH_TEST_CONFIRMED, "yes");
+        answer(child, MAMA_BIRTH_TEST_CONFIRMATION_DONE, "yes");
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+        answer(child, MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "positive");
         assertEquals(VisitOutcome.CHILD_CONFIRMED_POSITIVE, outcome(entry, child));
         assertEquals(3, visible(actions));
 
@@ -336,7 +338,8 @@ public class MotherMentorMotherExitActionFlowTest {
                 MAMA_PRETERM_DELIVERY_DATE_INPUT, dob, MAMA_STILLBIRTH_DATE_INPUT, dob,
                 MAMA_CHILD_STATUS, "child_deceased".equals(outcome) ? "deceased" : "alive",
                 MAMA_TAREHE_MTOTO_ALIFARIKI, DAY.toString(), MAMA_BREASTFEEDING_STATUS,
-                "breastfeeding", MAMA_HEI_TEST_DONE, "not_done".equals(outcome) ? "no" : "yes",
+                "breastfeeding", MAMA_BIRTH_TEST_DONE, "no",
+                MAMA_HEI_TEST_DONE, "not_done".equals(outcome) ? "no" : "yes",
                 MAMA_HEI_TEST_TYPE,
                 "final_negative".equals(outcome) ? "eighteen_months" : "six_weeks",
                 MAMA_HEI_TEST_DATE, DAY.toString(), MAMA_HEI_TEST_RESULT,

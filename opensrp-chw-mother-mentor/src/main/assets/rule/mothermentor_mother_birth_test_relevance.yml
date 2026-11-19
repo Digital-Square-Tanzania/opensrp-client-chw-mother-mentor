@@ -1,35 +1,56 @@
 ---
 name: step1_mama_birth_test_done
-description: First-visit birth test for a child under eight weeks
+description: Birth assessment for a child under eight weeks
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true'"
 actions:
   - "isRelevant = true"
 ---
+name: step1_mama_birth_test_window_note
+description: Birth-test sampling window
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes'"
+actions:
+  - "isRelevant = true"
+---
 name: step1_mama_birth_test_date
-description: Birth test sampling date
+description: Birth-test sampling date
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mama_birth_test_result
-description: Birth test result
+description: Birth-test result
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes'"
 actions:
   - "isRelevant = true"
 ---
 name: step1_mama_birth_test_received_date
-description: Date the facility received the birth test result
+description: Date the facility received the result
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && (step1_mama_birth_test_result == 'negative' || step1_mama_birth_test_result == 'positive')"
 actions:
   - "isRelevant = true"
 ---
-name: step1_mama_birth_test_confirmed
-description: Positive birth test confirmation
+name: step1_mama_birth_test_pending_note
+description: Follow up a pending result at the facility
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && step1_mama_birth_test_result == 'pending'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_confirmation_done
+description: Confirmation after a positive result
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && step1_mama_birth_test_result == 'positive'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_confirmation_result
+description: Result of the confirmatory test
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && step1_mama_birth_test_result == 'positive' && step1_mama_birth_test_confirmation_done == 'yes'"
 actions:
   - "isRelevant = true"

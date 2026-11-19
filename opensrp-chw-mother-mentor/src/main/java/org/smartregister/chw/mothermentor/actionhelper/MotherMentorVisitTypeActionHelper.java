@@ -20,6 +20,7 @@ import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepo
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
@@ -157,7 +158,9 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA, mother.getChildDob());
             }
             MotherMentorMotherChildRepository.State child = loadChildState();
-            MotherMentorMotherChildUtils.prepare(form, child, childAssessmentDate(form));
+            LocalDate assessment = childAssessmentDate(form);
+            MotherMentorMotherChildUtils.prepare(form, child, assessment);
+            MotherMentorMotherBirthTest.prepare(form, MotherMentorMotherChildUtils.values(form), assessment);
             JSONObject cessation = MotherMentorMotherChildUtils.field(form,
                     DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA);
             if (canCarryWeaningDate(form) && cessation != null && child.getWeaningDate() != null) {

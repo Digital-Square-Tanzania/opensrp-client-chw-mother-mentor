@@ -101,10 +101,11 @@ public final class MotherMentorMotherClosureRepository {
                 // Malformed source events cannot close a card or advance a counter.
             }
         }
+        Evidence preview = null;
         if (answers != null && date != null && !date.isAfter(LocalDate.now())
                 && (context.getEnrollmentTime() == 0
                         || !date.isBefore(new LocalDate(context.getEnrollmentTime())))) {
-            Evidence preview = new Evidence("~preview", new HashMap<>(answers), date,
+            preview = new Evidence("~preview", new HashMap<>(answers), date,
                     System.currentTimeMillis(), 0);
             for (Visit previous : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, null)) {
                 if (StringUtils.isNotBlank(excludedVisitId)
@@ -154,7 +155,8 @@ public final class MotherMentorMotherClosureRepository {
             Map<String, String> values = new HashMap<>(item.values);
             values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
             values.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
-            VisitOutcome outcome = item.outcome == null ? classify(values, item.date) : item.outcome;
+            VisitOutcome outcome = item.outcome == null
+                    ? classify(values, item.date, item == preview) : item.outcome;
             state = state.advance(outcome, item.date.toString(),
                     value(values, outcome == VisitOutcome.PREGNANCY_ENDED_OTHER
                             ? MAMA_PREGNANCY_OUTCOME_OTHER : MAMA_SABABU_NYINGINE_TEXT),
@@ -201,6 +203,10 @@ public final class MotherMentorMotherClosureRepository {
 
     /** Null means invalid/incomplete evidence, so it must not reset a valid consecutive counter. */
     public static VisitOutcome classify(Map<String, String> values, LocalDate date) {
+        return classify(values, date, true);
+    }
+
+    private static VisitOutcome classify(Map<String, String> values, LocalDate date, boolean preview) {
         if (values == null || date == null || date.isAfter(LocalDate.now())
                 || !MotherMentorMotherVisitUtils.isEntryComplete(values)) return null;
         if ("new".equals(value(values, ATTENDANCE_TYPE))
@@ -223,8 +229,11 @@ public final class MotherMentorMotherClosureRepository {
             default: break;
         }
         if (!MotherMentorMotherPregnancyUtils.isChildPath(values, date)) return VisitOutcome.CONTINUE;
-        if (!MotherMentorMotherChildUtils.isComplete(values, date)) return null;
-        VisitOutcome child = childOutcome(MotherMentorMotherChildUtils.terminalOutcome(values, date));
+        // Finalized birth-test outcomes come from the child projection, which can see earlier answers.
+        if (preview && !MotherMentorMotherChildUtils.isComplete(values, date)
+                || !preview && !MotherMentorMotherChildUtils.isRoutineAssessmentComplete(values, date)) return null;
+        VisitOutcome child = childOutcome(preview ? MotherMentorMotherChildUtils.terminalOutcome(values, date)
+                : MotherMentorMotherChildUtils.routineTerminalOutcome(values, date));
         return child == null ? VisitOutcome.CONTINUE : child;
     }
 

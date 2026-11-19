@@ -169,7 +169,8 @@ public final class MotherMentorClientRegisterDao {
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CTC_NUMBER);
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CHILD_DOB);
         for (String field : new String[] {DBConstants.KEY.IS_CLOSED, DBConstants.KEY.MAMA_STATUS,
-                DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA}) {
+                DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA,
+                DBConstants.KEY.MAMA_BIRTH_TEST_DATE, DBConstants.KEY.MAMA_BIRTH_TEST_RESULT}) {
             columns.add(ENROLLMENT + "." + field);
         }
         columns.add(currentStatus() + " AS " + CURRENT_STATUS);
