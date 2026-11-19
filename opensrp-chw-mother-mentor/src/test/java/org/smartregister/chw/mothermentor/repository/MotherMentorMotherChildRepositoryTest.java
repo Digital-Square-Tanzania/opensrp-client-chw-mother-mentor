@@ -27,6 +27,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
@@ -61,18 +62,122 @@ public class MotherMentorMotherChildRepositoryTest {
     @After public void tearDown() { data.close(); }
 
     @Test
-    public void explicitMigrationAddsThirteenColumnsOnceAndRebuildsFromFinalizedEvidence() throws Exception {
+    public void explicitMigrationAddsProjectionColumnsOnceAndRebuildsFromFinalizedEvidence() throws Exception {
         Map<String, String> values = MotherMentorMotherChildUtilsTest.test("six_weeks", "negative", dob.plusDays(43));
         visit("one", "source-one", "mother", values, dob.plusDays(45), 1, false);
         MotherMentorMotherChildRepository.upgrade(db);
         MotherMentorMotherChildRepository.upgrade(db);
-        assertEquals(13, MotherMentorMotherChildRepository.COLUMNS.size());
+        assertEquals(16, MotherMentorMotherChildRepository.COLUMNS.size());
         assertEquals("negative", scalar("SELECT hei_test_wiki6_result FROM ec_mothermentor_enrollment"));
         assertEquals("2025-03-15", scalar("SELECT hei_test_wiki6_date FROM ec_mothermentor_enrollment"));
         assertEquals("breastfeeding", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
         data.delete("visits", null, null);
         MotherMentorMotherChildRepository.rebuild(db, "mother");
         assertEquals("", scalar("SELECT hei_test_wiki6_result FROM ec_mothermentor_enrollment"));
+    }
+
+    @Test
+    public void aSavedNoSuppressesBirthAssessmentWithoutDisplacingWikiSix() throws Exception {
+        LocalDate day = dob.plusDays(42);
+        Map<String, String> first = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", day);
+        first.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        first.put(MAMA_BIRTH_TEST_DONE, "no");
+        visit("first", "first-source", "mother", first, day, 1, false);
+        // An offline duplicate answer cannot overwrite an earlier saved decision.
+        Map<String, String> duplicate = new LinkedHashMap<>(first);
+        duplicate.put(MAMA_BIRTH_TEST_DONE, "yes");
+        duplicate.put(MAMA_BIRTH_TEST_DATE, dob.plusDays(2).toString());
+        duplicate.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        visit("duplicate", "duplicate-source", "mother", duplicate, day.plusDays(1), 1, false);
+
+        MotherMentorMotherChildRepository.State state =
+                MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals(dob, state.getBirthTestAnsweredDob());
+        assertEquals("pending", state.getTests().get(Stage.SIX_WEEKS).getResult());
+        assertFalse(state.getTests().containsKey(Stage.AT_BIRTH));
+    }
+
+    @Test
+    public void birthAndWikiSixStayIndependentWhenAnOverdueResultReturns() throws Exception {
+        LocalDate day = dob.plusDays(49);
+        Map<String, String> first = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", day);
+        first.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        first.put(MAMA_BIRTH_TEST_DONE, "yes");
+        first.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        first.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        visit("first", "first-source", "mother", first, day, 1, false);
+
+        List<MotherMentorMotherResultEvent.PendingTest> pending =
+                MotherMentorMotherResultEvent.pending(db, "mother", day);
+        assertEquals(2, pending.size());
+        assertEquals(Stage.AT_BIRTH, pending.get(0).getStage());
+        assertFalse(pending.get(0).isOverdue(dob.plusDays(7)));
+        assertTrue(pending.get(0).isOverdue(dob.plusDays(8)));
+        assertEquals(Stage.SIX_WEEKS, pending.get(1).getStage());
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals(dob.plusDays(7).toString(), resultDeadline());
+
+        resultEvent("unmatched", "unrelated-source", Stage.AT_BIRTH, dob,
+                day.plusDays(1), "negative", "awaiting_result", null);
+        assertEquals(2, MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(1)).size());
+        resultEvent("result", "first-source", Stage.AT_BIRTH, dob,
+                day.plusDays(2), "positive", "awaiting_result", null);
+        pending = MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(2));
+        assertEquals(2, pending.size());
+        assertTrue(pending.get(0).isAwaitingConfirmation());
+        assertFalse(pending.get(0).isOverdue(day.plusDays(2)));
+        MotherMentorMotherChildRepository.rebuild(db, "mother");
+        assertEquals(day.plusDays(14).toString(), resultDeadline());
+        resultEvent("confirm", "first-source", Stage.AT_BIRTH, dob,
+                day.plusDays(3), null, "awaiting_confirm", "negative");
+        pending = MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(3));
+        assertEquals(1, pending.size());
+        assertEquals(Stage.SIX_WEEKS, pending.get(0).getStage());
+        resultEvent("routine-result", "first-source", Stage.SIX_WEEKS, day,
+                day.plusDays(16), "negative", "awaiting_result", null);
+        MotherMentorMotherChildRepository.rebuild(db, "mother");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(16)).isEmpty());
+        assertEquals("", resultDeadline());
+        assertEquals("1", scalar("SELECT COUNT(*) FROM visits"));
+        assertFalse(MotherMentorMotherChildRepository.getState(db, "mother", null).hasConfirmedPositive());
+    }
+
+    @Test
+    public void eachRoutinePendingResultTurnsOverdueOnDayFifteenAndTheFinalTestNeverDoes() {
+        for (Stage stage : Arrays.asList(Stage.SIX_WEEKS, Stage.NINE_MONTHS, Stage.AFTER_WEANING)) {
+            MotherMentorMotherResultEvent.PendingTest pending =
+                    new MotherMentorMotherResultEvent.PendingTest("source", stage, dob, false);
+            assertFalse(stage.getCode(), pending.isOverdue(dob.plusDays(14)));
+            assertTrue(stage.getCode(), pending.isOverdue(dob.plusDays(15)));
+        }
+        MotherMentorMotherResultEvent.PendingTest finalTest =
+                new MotherMentorMotherResultEvent.PendingTest("source", Stage.EIGHTEEN_MONTHS, dob, false);
+        assertFalse(finalTest.isOverdue(dob.plusDays(100)));
+    }
+
+    private String resultDeadline() {
+        return scalar("SELECT " + MAMA_HEI_RESULT_DEADLINE + " FROM ec_mothermentor_enrollment");
+    }
+
+    private void resultEvent(String id, String source, Stage stage, LocalDate sample, LocalDate day,
+            String result, String phase, String confirmation) throws Exception {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(MAMA_ENROLLMENT_ID, "episode-one");
+        values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
+        values.put("mama_hei_sample_submission_id", source);
+        values.put(MTOTO_PENDING_TEST, stage.getCode());
+        values.put(MTOTO_PENDING_TEST_DATE, sample.toString());
+        values.put(MTOTO_RUFAA_STATE_BEFORE, phase);
+        if (result != null) {
+            values.put(MTOTO_RECEIVED_RESULT, result);
+            values.put(MTOTO_RESULT_RECEIVED_DATE, day.toString());
+            values.put(MTOTO_CONFIRMATORY_TEST_DONE, "no");
+        }
+        if (confirmation != null) values.put(MTOTO_CONFIRMATORY_RESULT, confirmation);
+        JSONObject event = new JSONObject().put("formSubmissionId", id).put("eventDate", day.toString())
+                .put("version", 1).put("obs", observations(values));
+        data.execSQL("INSERT INTO event VALUES ('mother', ?, ?, ?, ?)",
+                new Object[] {MotherMentorMotherResultEvent.EVENT_TYPE, day.toString(), id, event.toString()});
     }
 
     @Test

@@ -4,6 +4,7 @@
     <color name="mama_kinara_white">#FFFFFF</color>
     <color name="mama_kinara_text">#0F1A26</color>
     <color name="mama_kinara_secondary">#6A7686</color>
+    <color name="mama_kinara_overdue">#B3261E</color>
     <color name="mama_kinara_muted">#9AA4B2</color>
     <color name="mama_kinara_divider">#EEEEEE</color>
     <color name="mama_kinara_chevron">#C0C0C0</color>

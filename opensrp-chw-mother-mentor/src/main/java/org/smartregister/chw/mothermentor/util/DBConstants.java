@@ -211,6 +211,8 @@ public final class DBConstants {
         public static final String MAMA_HEI_DUE_DATE = "mama_hei_due_date";
         public static final String MAMA_CHILD_AGE_NOTE = "mama_child_age_note";
         public static final String MAMA_HEI_NEXT_TEST_NOTE = "mama_hei_next_test_note";
+        public static final String MAMA_HEI_PENDING_RESULT_NOTE = "mama_hei_pending_result_note";
+        public static final String MAMA_HEI_RESULT_DEADLINE = "mama_hei_result_deadline";
         public static final String HEI_TEST_WIKI6_RESULT = "hei_test_wiki6_result";
         public static final String HEI_TEST_WIKI6_DATE = "hei_test_wiki6_date";
         public static final String HEI_TEST_MIEZI9_RESULT = "hei_test_miezi9_result";
@@ -353,11 +355,15 @@ public final class DBConstants {
         public static final String MAMA_CARRIED_WEANING_DATE = "mama_carried_weaning_date";
         public static final String MAMA_FIRST_VISIT_ASSESSMENT = "mama_first_visit_assessment";
         public static final String MAMA_BIRTH_TEST_REQUIRED = "mama_birth_test_required";
+        public static final String MAMA_BIRTH_TEST_WORKFLOW = "mama_birth_test_workflow";
+        public static final String MAMA_BIRTH_TEST_ANSWERED_DOB = "mama_birth_test_answered_dob";
         public static final String MAMA_BIRTH_TEST_DONE = "mama_birth_test_done";
         public static final String MAMA_BIRTH_TEST_DATE = "mama_birth_test_date";
         public static final String MAMA_BIRTH_TEST_RESULT = "mama_birth_test_result";
         public static final String MAMA_BIRTH_TEST_RECEIVED_DATE = "mama_birth_test_received_date";
         public static final String MAMA_BIRTH_TEST_CONFIRMED = "mama_birth_test_confirmed";
+        public static final String MAMA_BIRTH_TEST_CONFIRMATION_DONE = "mama_birth_test_confirmation_done";
+        public static final String MAMA_BIRTH_TEST_CONFIRMATION_RESULT = "mama_birth_test_confirmation_result";
 
         // Shared visit and event columns.
         public static final String AGE = "age";
