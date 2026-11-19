@@ -201,6 +201,7 @@ public class VisitRepository extends BaseRepository {
             MotherMentorMotherDeliveryRepository.rebuild(database, existing.getBaseEntityId());
             MotherMentorMotherChildRepository.rebuild(database, existing.getBaseEntityId());
             MotherMentorChildEidRepository.rebuildForMother(database, existing.getBaseEntityId());
+            MotherMentorMotherClosureRepository.rebuild(database, existing.getBaseEntityId());
             if (ownTransaction) database.setTransactionSuccessful();
         } finally {
             if (ownTransaction) database.endTransaction();
