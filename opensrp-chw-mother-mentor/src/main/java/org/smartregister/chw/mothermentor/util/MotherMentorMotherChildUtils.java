@@ -37,12 +37,13 @@ public final class MotherMentorMotherChildUtils {
             MAMA_CARRIED_WEANING_DATE, MAMA_PREVIOUS_WEANING_DATE, MAMA_PREVIOUS_BREASTFEEDING_STATUS,
             MAMA_HEI_TEST_HISTORY, MTOTO_SUPPRESSED_TESTS, MAMA_HEI_ASSESSMENT_DATE,
             MAMA_HEI_DUE_TESTS, MAMA_HEI_DUE_TEST, MAMA_HEI_DUE_DATE,
-            MAMA_CHILD_AGE_NOTE, MAMA_HEI_NEXT_TEST_NOTE, MTOTO_CLOSED_FOLLOWUP_NOTE);
+            MAMA_CHILD_AGE_NOTE, MAMA_HEI_NEXT_TEST_NOTE, MAMA_HEI_PENDING_RESULT_NOTE,
+            MTOTO_CLOSED_FOLLOWUP_NOTE);
 
     private MotherMentorMotherChildUtils() {}
 
     public static boolean isChildField(String key) {
-        return CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key);
+        return CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key) || MotherMentorMotherBirthTest.isField(key);
     }
 
     public static boolean applies(Map<String, String> values) {
@@ -73,6 +74,13 @@ public final class MotherMentorMotherChildUtils {
 
     public static boolean isComplete(
             Map<String, String> values, LocalDate assessment, boolean hasBreastfeedingHistory) {
+        return isRoutineAssessmentComplete(values, assessment, hasBreastfeedingHistory)
+                && (!applies(values) || !"alive".equals(values.get(MAMA_CHILD_STATUS))
+                        || MotherMentorMotherBirthTest.isComplete(values, assessment));
+    }
+
+    public static boolean isRoutineAssessmentComplete(
+            Map<String, String> values, LocalDate assessment, boolean hasBreastfeedingHistory) {
         if (!applies(values)) return true;
         LocalDate dob = birth(values);
         if (assessment == null || dob.isAfter(assessment)) return false;
@@ -90,7 +98,6 @@ public final class MotherMentorMotherChildUtils {
                 && !(NEVER_BREASTFED.equals(breastfeeding) && !hasBreastfeedingHistory)) {
             return false;
         }
-        if (!MotherMentorMotherBirthTest.isComplete(values, assessment)) return false;
         List<Stage> due = due(values, assessment);
         if (due.isEmpty()) return StringUtils.isBlank(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE));
         if ("no".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return true;
@@ -110,10 +117,15 @@ public final class MotherMentorMotherChildUtils {
         if ("deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
         if (MotherMentorMotherBirthTest.isRequired(values, assessment)
                 && "yes".equals(values.get(MAMA_BIRTH_TEST_DONE))
-                && "positive".equals(values.get(MAMA_BIRTH_TEST_RESULT))
-                && "yes".equals(values.get(MAMA_BIRTH_TEST_CONFIRMED))) {
+                && "positive".equals(MotherMentorMotherBirthTest.confirmationResult(values))) {
             return TerminalOutcome.CHILD_CONFIRMED_POSITIVE;
         }
+        return routineTerminalOutcome(values, assessment);
+    }
+
+    public static TerminalOutcome routineTerminalOutcome(Map<String, String> values, LocalDate assessment) {
+        if (!applies(values) || !isRoutineAssessmentComplete(values, assessment, false)) return TerminalOutcome.NONE;
+        if ("deceased".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return TerminalOutcome.NONE;
         String result = values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT);
         if ("positive".equals(result) && "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA))) {
@@ -166,6 +178,10 @@ public final class MotherMentorMotherChildUtils {
                     DBConstants.KEY.MAMA_HEI_TEST_RESULT, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)) put(form, key, "");
         } else if (!"positive".equals(values(form).get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
             put(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "");
+            if (Stage.EIGHTEEN_MONTHS == Stage.fromCode(values.get(MAMA_HEI_TEST_TYPE))
+                    && "pending".equals(values.get(MAMA_HEI_TEST_RESULT))) {
+                put(form, MAMA_HEI_TEST_RESULT, "");
+            }
         }
     }
 
@@ -173,6 +189,7 @@ public final class MotherMentorMotherChildUtils {
             LocalDate serviceDate) {
         put(form, DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE, serviceDate.toString());
         put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getSamplingHistory()));
+        put(form, MAMA_BIRTH_TEST_ANSWERED_DOB, date(state.getBirthTestAnsweredDob()));
         put(form, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS,
                 MotherMentorChildEidRepository.encodeStages(state.getTracingExcludedTests()));
         prepareBreastfeeding(form, state);
@@ -182,7 +199,8 @@ public final class MotherMentorMotherChildUtils {
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
         for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
-            if (!entry.getValue().requiresFollowUp() || state.getTracingExcludedTests().contains(entry.getKey())) continue;
+            if (entry.getKey() == Stage.AT_BIRTH || !entry.getValue().requiresFollowUp()
+                    || state.getTracingExcludedTests().contains(entry.getKey())) continue;
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_DONE, "yes");
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE, entry.getKey().getCode());
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, entry.getKey().getCode());
@@ -262,7 +280,8 @@ public final class MotherMentorMotherChildUtils {
             TestRecord record = entry.getValue();
             result.put(entry.getKey().getCode(), new JSONObject().put("result", record.getResult())
                     .put("date", date(record.getDate())).put("confirmed", record.isConfirmed())
-                    .put("service_date", date(record.getServiceDate())));
+                    .put("service_date", date(record.getServiceDate()))
+                    .put("confirmation_negative", record.isConfirmationNegative()));
         } catch (Exception ignored) { }
         return result.toString();
     }
@@ -276,7 +295,8 @@ public final class MotherMentorMotherChildUtils {
                 if (entry == null || !Arrays.asList("negative", "positive", "pending", "unknown").contains(entry.optString("result"))) continue;
                 result.put(stage, new TestRecord(entry.optString("result"),
                         MotherMentorHeiSchedule.parseDate(entry.optString("date")),
-                        entry.optBoolean("confirmed"), MotherMentorHeiSchedule.parseDate(entry.optString("service_date"))));
+                        entry.optBoolean("confirmed"), MotherMentorHeiSchedule.parseDate(entry.optString("service_date")),
+                        entry.optBoolean("confirmation_negative")));
             }
         } catch (Exception ignored) { }
         return result;

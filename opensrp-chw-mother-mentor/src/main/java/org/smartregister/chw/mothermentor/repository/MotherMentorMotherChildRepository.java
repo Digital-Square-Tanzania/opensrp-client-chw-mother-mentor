@@ -43,8 +43,9 @@ public final class MotherMentorMotherChildRepository {
                 DBConstants.KEY.MAMA_BREASTFEEDING_STATUS,
                 DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                 DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
-                DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
-        for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
+                DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA,
+                DBConstants.KEY.MAMA_HEI_RESULT_DEADLINE));
+        for (Stage stage : Stage.values()) {
             columns.add(stage.getResultKey());
             columns.add(stage.getDateKey());
         }
@@ -53,7 +54,7 @@ public final class MotherMentorMotherChildRepository {
 
     private MotherMentorMotherChildRepository() {}
 
-    /** Called only by the host's explicit database-64/fresh-schema migration. */
+    /** Add missing projection columns and rebuild them from saved events. */
     public static void upgrade(SQLiteDatabase db) {
         String table = Constants.TABLES.MOTHERMENTOR_ENROLLMENT;
         if (!hasTable(db, table)) return;
@@ -81,8 +82,15 @@ public final class MotherMentorMotherChildRepository {
         projection.put(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI, iso(state.getChildDeathDate()));
         projection.put(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA,
                 state.hasConfirmedPositive() ? "yes" : "no");
+        LocalDate firstDeadline = null;
+        for (MotherMentorMotherResultEvent.PendingTest pending : state.getPendingMotherTests()) {
+            LocalDate deadline = pending.resultDeadline();
+            if (deadline != null && (firstDeadline == null || deadline.isBefore(firstDeadline))) {
+                firstDeadline = deadline;
+            }
+        }
+        projection.put(DBConstants.KEY.MAMA_HEI_RESULT_DEADLINE, iso(firstDeadline));
         for (Map.Entry<Stage, TestRecord> entry : state.tests.entrySet()) {
-            if (entry.getKey() == Stage.AT_BIRTH) continue;
             projection.put(entry.getKey().getResultKey(), entry.getValue().getResult());
             projection.put(entry.getKey().getDateKey(), iso(entry.getValue().getDate()));
         }
@@ -166,6 +174,12 @@ public final class MotherMentorMotherChildRepository {
         }
         evidence.addAll(childEvidence(db, state.childBaseEntityId, context, excludedVisitId, assessmentDate, before));
         evidence.addAll(enrollmentEvidence(db, state.childBaseEntityId, state.childDob, assessmentDate, before));
+        for (Visit visit : MotherMentorMotherResultEvent.evidence(
+                db, motherId, context.getEnrollmentId(), assessmentDate)) {
+            if (before == null || MotherMentorChildEidDao.compareChronology(visit, before) < 0) {
+                evidence.add(new Evidence(visit, false));
+            }
+        }
         if (before == null && assessmentDate.equals(LocalDate.now())
                 && MotherMentorChildEidDao.enrollmentHistory(db, state.childBaseEntityId, assessmentDate).isEmpty()) {
             Map<String, String> enrollment = MotherMentorChildEidDao.enrollment(db, state.childBaseEntityId);
@@ -192,7 +206,11 @@ public final class MotherMentorMotherChildRepository {
                 state.hasBreastfeedingHistory |= past.hasBreastfeedingHistory;
                 state.knownPerformed.putAll(past.tests);
             } else if (item.child) applyChild(state, item.values, item.date);
-            else applyMother(state, item.values, item.date);
+            else if (MotherMentorMotherResultEvent.EVENT_TYPE.equals(item.visit.getVisitType())) {
+                applyMotherResult(state, item);
+            } else {
+                applyMother(state, item.values, item.date, MotherMentorChildEidDao.sourceIdentity(item.visit));
+            }
         }
         return state;
     }
@@ -353,15 +371,14 @@ public final class MotherMentorMotherChildRepository {
     public static State replay(LocalDate dob, List<Map<String, String>> values,
             List<LocalDate> serviceDates) {
         State state = new State(dob);
-        for (int i = 0; i < values.size(); i++) applyMother(state, values.get(i), serviceDates.get(i));
+        for (int i = 0; i < values.size(); i++) applyMother(state, values.get(i), serviceDates.get(i), "");
         return state;
     }
 
-    private static void applyMother(State state, Map<String, String> values, LocalDate date) {
+    private static void applyMother(State state, Map<String, String> values, LocalDate date, String sourceId) {
         values = new LinkedHashMap<>(values);
         if (!state.originalStatus.isEmpty()) values.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, state.originalStatus);
         values.put(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, iso(state.enrollmentChildDob));
-        values.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(state.getSamplingHistory()));
         if (!org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils.isComplete(values, date)
                 || !MotherMentorMotherChildUtils.applies(values)) return;
         LocalDate dob = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA));
@@ -373,7 +390,13 @@ public final class MotherMentorMotherChildRepository {
         if ("true".equals(values.get(DBConstants.KEY.MAMA_CARRIED_WEANING_DATE))) {
             values.put(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, iso(state.weaningDate));
         }
-        if (!MotherMentorMotherChildUtils.isComplete(values, date, state.hasBreastfeedingHistory())) return;
+        values.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(state.getSamplingHistory()));
+        values.put(DBConstants.KEY.MAMA_BIRTH_TEST_ANSWERED_DOB, iso(state.birthTestAnsweredDob));
+        if (!MotherMentorMotherChildUtils.isRoutineAssessmentComplete(values, date,
+                state.hasBreastfeedingHistory())) return;
+        if ("alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
+            applyBirthAssessment(state, values, dob, date, sourceId);
+        }
         if (dob != null) state.childDob = dob;
         state.childStatus = value(values, DBConstants.KEY.MAMA_CHILD_STATUS);
         if ("deceased".equals(state.childStatus)) {
@@ -385,17 +408,44 @@ public final class MotherMentorMotherChildRepository {
         state.childDeathDate = null;
         state.recordBreastfeeding(value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS),
                 MotherMentorChildEidHeiUtils.cessation(values));
-        if (MotherMentorMotherBirthTest.isRequired(values, date)
-                && "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) {
-            record(state, Stage.AT_BIRTH, values.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
-                    MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE)),
-                    "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED)), date);
-        }
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
-        record(state, Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE)),
+        Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE));
+        TestRecord before = state.tests.get(stage);
+        record(state, stage,
                 values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT),
                 MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_TEST_DATE)),
                 "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)), date);
+        state.trackMotherTest(stage, before, sourceId);
+    }
+
+    private static void applyBirthAssessment(State state, Map<String, String> values,
+            LocalDate dob, LocalDate day, String sourceId) {
+        if (!MotherMentorMotherBirthTest.isRequired(values, day)
+                || !MotherMentorMotherBirthTest.isComplete(values, day)) return;
+        state.birthTestAnsweredDob = dob;
+        if (!"yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) return;
+        String confirmation = MotherMentorMotherBirthTest.confirmationResult(values);
+        String result = values.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT);
+        LocalDate sample = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE));
+        record(state, Stage.AT_BIRTH, result, sample, "positive".equals(confirmation), day,
+                "negative".equals(confirmation));
+        state.trackMotherTest(Stage.AT_BIRTH, null, sourceId);
+    }
+
+    private static void applyMotherResult(State state, Evidence item) {
+        if (state.terminalDate != null) return;
+        Map<String, String> values = item.values;
+        LocalDate day = item.date;
+        Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_PENDING_TEST));
+        MotherMentorMotherResultEvent.PendingTest pending = state.pendingMotherTest(stage);
+        if (pending == null || !pending.matches(values)) return;
+        MotherMentorMotherResultEvent.Outcome result = MotherMentorMotherResultEvent.evaluate(pending, values, day);
+        if (result == null) return;
+        MotherMentorMotherResultEvent.Entry entry = MotherMentorMotherResultEvent.readEntry(item.visit, pending, values, day);
+        state.resultHistory.add(entry);
+        boolean confirmed = "positive".equals(result.confirmation);
+        record(state, stage, result.result, pending.getTestDate(), confirmed, day, "negative".equals(result.confirmation));
+        if (confirmed) state.terminalResultTime = entry.getRecordedAt();
     }
 
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
@@ -466,8 +516,14 @@ public final class MotherMentorMotherChildRepository {
 
     private static void record(State state, Stage stage, String result, LocalDate date,
             boolean confirmed, LocalDate serviceDate) {
+        record(state, stage, result, date, confirmed, serviceDate, false);
+    }
+
+    private static void record(State state, Stage stage, String result, LocalDate date,
+            boolean confirmed, LocalDate serviceDate, boolean confirmationNegative) {
         if (stage == null || !Arrays.asList("negative", "positive", "pending").contains(result)) return;
-        state.tests.put(stage, new TestRecord(result, date, "positive".equals(result) && confirmed, serviceDate));
+        state.tests.put(stage, new TestRecord(result, date, "positive".equals(result) && confirmed,
+                serviceDate, confirmationNegative));
         if ("positive".equals(result) && confirmed) {
             state.terminal(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE, serviceDate);
         } else if (stage == Stage.EIGHTEEN_MONTHS && "negative".equals(result)) {
@@ -545,10 +601,14 @@ public final class MotherMentorMotherChildRepository {
         private LocalDate recordedDelivery;
         private LocalDate weaningDate;
         private LocalDate childDeathDate;
+        private LocalDate birthTestAnsweredDob;
         private final Map<Stage, TestRecord> tests = new LinkedHashMap<>();
+        private final Map<Stage, String> motherTestSources = new LinkedHashMap<>();
         private final Map<Stage, TestRecord> knownPerformed = new LinkedHashMap<>();
         private MotherMentorMotherChildUtils.TerminalOutcome terminal = MotherMentorMotherChildUtils.TerminalOutcome.NONE;
         private LocalDate terminalDate;
+        private long terminalResultTime;
+        private final List<MotherMentorMotherResultEvent.Entry> resultHistory = new ArrayList<>();
 
         public State(LocalDate childDob) { this.childDob = childDob; this.enrollmentChildDob = childDob; }
         public LocalDate getChildDob() { return childDob; }
@@ -561,6 +621,7 @@ public final class MotherMentorMotherChildRepository {
         public boolean hasBreastfeedingHistory() { return hasBreastfeedingHistory; }
         public LocalDate getWeaningDate() { return weaningDate; }
         public LocalDate getChildDeathDate() { return childDeathDate; }
+        public LocalDate getBirthTestAnsweredDob() { return birthTestAnsweredDob; }
         public Map<Stage, TestRecord> getTests() { return MotherMentorHeiSchedule.immutableTests(tests); }
         public Map<Stage, TestRecord> getSamplingHistory() {
             Map<Stage, TestRecord> result = new LinkedHashMap<>(knownPerformed);
@@ -569,6 +630,10 @@ public final class MotherMentorMotherChildRepository {
         }
         public MotherMentorMotherChildUtils.TerminalOutcome getTerminalOutcome() { return terminal; }
         public LocalDate getTerminalServiceDate() { return terminalDate; }
+        long getTerminalResultTime() { return terminalResultTime; }
+        List<MotherMentorMotherResultEvent.Entry> testResultHistory() {
+            return Collections.unmodifiableList(resultHistory);
+        }
         public boolean hasConfirmedPositive() {
             for (TestRecord test : tests.values()) if ("positive".equals(test.getResult()) && test.isConfirmed()) return true;
             return false;
@@ -576,6 +641,34 @@ public final class MotherMentorMotherChildRepository {
         public boolean hasFinalNegative() {
             TestRecord test = tests.get(Stage.EIGHTEEN_MONTHS);
             return test != null && "negative".equals(test.getResult());
+        }
+
+        public List<MotherMentorMotherResultEvent.PendingTest> getPendingMotherTests() {
+            if (terminalDate != null) return Collections.emptyList();
+            List<MotherMentorMotherResultEvent.PendingTest> result = new ArrayList<>();
+            for (Stage stage : Stage.values()) {
+                if (tracingExcludedTests.contains(stage)) continue;
+                MotherMentorMotherResultEvent.PendingTest pending = pendingMotherTest(stage);
+                if (pending != null) result.add(pending);
+            }
+            return result;
+        }
+
+        private MotherMentorMotherResultEvent.PendingTest pendingMotherTest(Stage stage) {
+            String source = motherTestSources.get(stage);
+            TestRecord test = tests.get(stage);
+            if (source == null || test == null || !test.requiresFollowUp() || test.getDate() == null) return null;
+            return new MotherMentorMotherResultEvent.PendingTest(source, stage, test.getDate(),
+                    "positive".equals(test.getResult()));
+        }
+
+        private void trackMotherTest(Stage stage, TestRecord previous, String source) {
+            TestRecord recorded = tests.get(stage);
+            if (stage == null || stage == Stage.EIGHTEEN_MONTHS || recorded == null || recorded == previous
+                    || recorded.getDate() == null || StringUtils.isBlank(source)) return;
+            if (previous == null || !Objects.equals(previous.getDate(), recorded.getDate())
+                    || !previous.requiresFollowUp()) motherTestSources.put(stage, source);
+            else motherTestSources.putIfAbsent(stage, source);
         }
 
         private void recordBreastfeeding(String status, LocalDate cessation) {

@@ -69,6 +69,13 @@ condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive
 actions:
   - "isRelevant = true"
 ---
+name: step1_mama_hei_pending_result_note
+description: Follow up a pending routine test result at the facility
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_type != '' && step1_mama_hei_test_type != 'eighteen_months' && step1_mama_hei_test_result == 'pending'"
+actions:
+  - "isRelevant = true"
+---
 name: step1_hei_chanya_imethibitishwa
 description: Mother child assessment relevance
 priority: 1

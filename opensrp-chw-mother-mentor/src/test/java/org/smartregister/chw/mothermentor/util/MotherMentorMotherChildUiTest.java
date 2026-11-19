@@ -81,10 +81,33 @@ public class MotherMentorMotherChildUiTest {
         assertTrue(fixture.value(MAMA_HEI_NEXT_TEST_NOTE).endsWith("01-06-2027"));
     }
 
+    @Test
+    public void eighteenMonthsHidesPendingAndClearsAStalePendingAnswer() throws Exception {
+        LocalDate dob = new LocalDate(2025, 1, 1);
+        Fixture routine = new Fixture("json.form-sw", dob, dob.plusWeeks(6));
+        routine.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        routine.put(MAMA_HEI_TEST_DONE, "yes");
+        routine.put(MAMA_HEI_TEST_RESULT, "pending");
+        routine.refresh();
+        assertEquals(View.VISIBLE, routine.pendingResult.getVisibility());
+        assertEquals("pending", routine.value(MAMA_HEI_TEST_RESULT));
+
+        Fixture finalTest = new Fixture("json.form-sw", dob, dob.plusMonths(18));
+        finalTest.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        finalTest.put(MAMA_HEI_TEST_DONE, "yes");
+        finalTest.put(MAMA_HEI_TEST_RESULT, "pending");
+        finalTest.refresh();
+        assertEquals("eighteen_months", finalTest.value(MAMA_HEI_TEST_TYPE));
+        assertEquals(View.GONE, finalTest.pendingResult.getVisibility());
+        assertFalse(finalTest.pendingResult.isEnabled());
+        assertEquals("", finalTest.value(MAMA_HEI_TEST_RESULT));
+    }
+
     private static final class Fixture {
         private final JSONObject form;
         private final JsonFormActivity activity;
         private final RadioGroup options;
+        private final RadioButton pendingResult;
         private final MotherMentorMotherChildUi helper = new MotherMentorMotherChildUi();
 
         Fixture(String directory, LocalDate dob, LocalDate date) throws Exception {
@@ -107,6 +130,13 @@ public class MotherMentorMotherChildUiTest {
                 options.addView(button);
             }
             root.addView(options);
+            RadioGroup results = new RadioGroup(RuntimeEnvironment.getApplication());
+            results.setTag(com.vijay.jsonwizard.R.id.key, MAMA_HEI_TEST_RESULT);
+            pendingResult = new RadioButton(RuntimeEnvironment.getApplication());
+            pendingResult.setTag(com.vijay.jsonwizard.R.id.key, MAMA_HEI_TEST_RESULT);
+            pendingResult.setTag(com.vijay.jsonwizard.R.id.childKey, "pending");
+            results.addView(pendingResult);
+            root.addView(results);
             activity = mock(JsonFormActivity.class);
             Window window = mock(Window.class);
             when(activity.getmJSONObject()).thenReturn(form);

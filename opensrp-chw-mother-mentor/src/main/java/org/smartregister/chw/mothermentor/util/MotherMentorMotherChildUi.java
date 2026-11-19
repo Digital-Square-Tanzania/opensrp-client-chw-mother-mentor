@@ -1,5 +1,8 @@
 package org.smartregister.chw.mothermentor.util;
 
+import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,16 +70,8 @@ public final class MotherMentorMotherChildUi {
                             values.getOrDefault(DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, ""));
                 }
                 validateDates(activity, form, root, dob, assessment);
-                if (form.optBoolean("mothermentor_child_section")
-                        && "true".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_REQUIRED))) {
-                    validateDate(activity, form, root, DBConstants.KEY.MAMA_BIRTH_TEST_DATE,
-                            dob, MotherMentorMotherBirthTest.latestSampleDate(dob, assessment));
-                    String sample = MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE);
-                    LocalDate sampleDate = MotherMentorHeiSchedule.parseDate(sample);
-                    validateDate(activity, form, root, DBConstants.KEY.MAMA_BIRTH_TEST_RECEIVED_DATE,
-                            sampleDate == null ? dob : sampleDate, assessment);
-                }
             }
+            refreshBirthTest(activity, form, root, values, path, dob, assessment);
             values = MotherMentorMotherChildUtils.values(form);
             List<Stage> due = path && "alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))
                     ? MotherMentorMotherChildUtils.due(values, assessment) : new ArrayList<>();
@@ -126,6 +121,16 @@ public final class MotherMentorMotherChildUi {
             String canonical = "yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))
                     ? (due.size() == 1 ? due.get(0).getCode() : choice == null ? "" : choice.getCode()) : "";
             set(form, root, DBConstants.KEY.MAMA_HEI_TEST_TYPE, canonical);
+            boolean pendingAllowed = !Stage.EIGHTEEN_MONTHS.getCode().equals(canonical);
+            if (!pendingAllowed && "pending".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
+                set(form, root, DBConstants.KEY.MAMA_HEI_TEST_RESULT, "");
+            }
+            for (View control : controls(root, DBConstants.KEY.MAMA_HEI_TEST_RESULT)) {
+                if (control instanceof RadioButton
+                        && "pending".equals(control.getTag(com.vijay.jsonwizard.R.id.childKey))) {
+                    MotherMentorChildEidHeiUi.showOption((RadioButton) control, pendingAllowed);
+                }
+            }
             updateQuestion(activity, form, root, due);
             previous = new LinkedHashMap<>(MotherMentorMotherChildUtils.values(form));
         } finally {
@@ -135,12 +140,12 @@ public final class MotherMentorMotherChildUi {
 
     private void clearChangedBranches(JSONObject form, View root, Map<String, String> now) {
         if (previous == null) return;
-        if (changed(now, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA)
-                || changed(now, DBConstants.KEY.FOLLOW_UP_STATUS)
+        boolean changedContext = changed(now, DBConstants.KEY.FOLLOW_UP_STATUS)
                 || changed(now, DBConstants.KEY.MAMA_PREGNANCY_OUTCOME)
-                || changed(now, DBConstants.KEY.VISIT_PREGNANCY_STATUS)) {
+                || changed(now, DBConstants.KEY.VISIT_PREGNANCY_STATUS);
+        if (changedContext || changed(now, DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA)) {
             clear(form, root, MotherMentorMotherChildUtils.ANSWER_FIELDS);
-            clear(form, root, MotherMentorMotherBirthTest.ANSWERS);
+            if (changedContext) clear(form, root, MotherMentorMotherBirthTest.ANSWERS);
         } else if (changed(now, DBConstants.KEY.MAMA_CHILD_STATUS)
                 && previous.get(DBConstants.KEY.MAMA_CHILD_STATUS) != null
                 && !previous.get(DBConstants.KEY.MAMA_CHILD_STATUS).isEmpty()) {
@@ -159,14 +164,70 @@ public final class MotherMentorMotherChildUi {
         } else if (changed(now, DBConstants.KEY.MAMA_HEI_TEST_RESULT)) {
             clear(form, root, Arrays.asList(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
         }
-        if (changed(now, DBConstants.KEY.MAMA_BIRTH_TEST_DONE)
-                && !"yes".equals(now.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) {
-            clear(form, root, MotherMentorMotherBirthTest.ANSWERS.subList(1, MotherMentorMotherBirthTest.ANSWERS.size()));
-        } else if (changed(now, DBConstants.KEY.MAMA_BIRTH_TEST_RESULT)) {
-            set(form, root, DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED, "");
-            if ("pending".equals(now.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT))) {
-                set(form, root, DBConstants.KEY.MAMA_BIRTH_TEST_RECEIVED_DATE, "");
+        if (changed(now, MAMA_BIRTH_TEST_DONE) && !"yes".equals(now.get(MAMA_BIRTH_TEST_DONE))) {
+            clear(form, root, MotherMentorMotherBirthTest.dependentAnswers());
+        } else if (changed(now, MAMA_BIRTH_TEST_RESULT)) {
+            if (!"positive".equals(now.get(MAMA_BIRTH_TEST_RESULT))) {
+                set(form, root, MAMA_BIRTH_TEST_CONFIRMATION_DONE, "");
+                set(form, root, MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "");
             }
+            if ("pending".equals(now.get(MAMA_BIRTH_TEST_RESULT))) {
+                set(form, root, MAMA_BIRTH_TEST_RECEIVED_DATE, "");
+            }
+        } else if (changed(now, MAMA_BIRTH_TEST_CONFIRMATION_DONE)
+                && !"yes".equals(now.get(MAMA_BIRTH_TEST_CONFIRMATION_DONE))) {
+            set(form, root, MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "");
+        }
+    }
+
+    private void refreshBirthTest(JsonFormActivity activity, JSONObject form, View root,
+            Map<String, String> values, boolean path, LocalDate dob, LocalDate assessment) {
+        if (!values.containsKey(MAMA_BIRTH_TEST_REQUIRED)) return;
+        boolean required = path && MotherMentorMotherBirthTest.isRequired(values, assessment);
+        String relevance = Boolean.toString(required);
+        if (!relevance.equals(values.get(MAMA_BIRTH_TEST_REQUIRED))) {
+            set(form, root, MAMA_BIRTH_TEST_REQUIRED, relevance);
+            activity.refreshSkipLogic(MAMA_BIRTH_TEST_REQUIRED, MAMA_BIRTH_TEST_REQUIRED, false, "step1", false);
+        }
+        if (!required) {
+            if (path) clear(form, root, MotherMentorMotherBirthTest.ANSWERS);
+            return;
+        }
+
+        LocalDate latest = MotherMentorMotherBirthTest.latestSampleDate(dob, assessment);
+        bindBirthDatePicker(activity, form, root, MAMA_BIRTH_TEST_DATE, dob, latest,
+                R.string.mothermentor_mother_birth_invalid_date);
+        JSONObject sample = MotherMentorMotherChildUtils.field(form, MAMA_BIRTH_TEST_DATE);
+        LocalDate sampleDate = MotherMentorHeiSchedule.parseDate(sample.optString("value"));
+        if (sampleDate == null) set(form, root, MAMA_BIRTH_TEST_RECEIVED_DATE, "");
+        bindBirthDatePicker(activity, form, root, MAMA_BIRTH_TEST_RECEIVED_DATE,
+                sampleDate == null ? dob : sampleDate, assessment, R.string.mothermentor_eid_received_before_test);
+    }
+
+    // The native wizard captures date limits at widget creation. Use the current bounds when opened.
+    private void bindBirthDatePicker(Context context, JSONObject form, View root, String key,
+            LocalDate min, LocalDate max, int error) {
+        JSONObject field = MotherMentorMotherChildUtils.field(form, key);
+        if (field == null) return;
+        LocalDate date = MotherMentorHeiSchedule.parseDate(field.optString("value"));
+        boolean invalid = !field.optString("value").isEmpty() && !MotherMentorHeiSchedule.validDate(date, min, max);
+        if (invalid) set(form, root, key, "");
+        for (View view : controls(root, key)) {
+            if (!(view instanceof EditText)) continue;
+            EditText input = (EditText) view;
+            if (invalid) input.setError(context.getString(error));
+            input.setOnClickListener(clicked -> {
+                LocalDate selected = MotherMentorHeiSchedule.parseDate(field.optString("value"));
+                LocalDate initial = MotherMentorHeiSchedule.validDate(selected, min, max) ? selected : max;
+                DatePickerDialog dialog = new DatePickerDialog(input.getContext(), (picker, year, month, day) -> {
+                    String value = new LocalDate(year, month + 1, day).toString("dd-MM-yyyy", java.util.Locale.US);
+                    input.setTag(com.vijay.jsonwizard.R.id.locale_independent_value, value);
+                    input.setText(value);
+                }, initial.getYear(), initial.getMonthOfYear() - 1, initial.getDayOfMonth());
+                dialog.getDatePicker().setMinDate(min.toDate().getTime());
+                dialog.getDatePicker().setMaxDate(max.toDate().getTime());
+                dialog.show();
+            });
         }
     }
 
@@ -217,6 +278,9 @@ public final class MotherMentorMotherChildUi {
         MotherMentorMotherChildUtils.put(form, key, value);
         for (View view : controls(root, key)) {
             if (view instanceof EditText && !value.contentEquals(((EditText) view).getText())) {
+                if (value.isEmpty() && (MAMA_BIRTH_TEST_DATE.equals(key) || MAMA_BIRTH_TEST_RECEIVED_DATE.equals(key))) {
+                    view.setTag(com.vijay.jsonwizard.R.id.locale_independent_value, "");
+                }
                 ((EditText) view).setText(value);
             } else if (view instanceof RadioGroup) {
                 RadioGroup group = (RadioGroup) view;
@@ -282,6 +346,7 @@ public final class MotherMentorMotherChildUi {
     }
 
     public static String label(Context context, Stage stage) {
+        if (stage == Stage.AT_BIRTH) return context.getString(R.string.mothermentor_eid_direct_at_birth);
         int resource = context.getResources().getIdentifier("mothermentor_child_eid_test_" + stage.getCode(), "string", context.getPackageName());
         return resource == 0 ? stage.getCode() : context.getString(resource);
     }
