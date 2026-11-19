@@ -192,7 +192,8 @@ public class MotherMentorActionHelpersTest {
             if (partner) {
                 assertStatus(helper, found, false);
                 found = form(DBConstants.KEY.FOLLOW_UP_STATUS, "found",
-                        DBConstants.KEY.PARTNER_FACILITY_AGREEMENT, "agreed");
+                        DBConstants.KEY.PARTNER_FACILITY_AGREEMENT, "agreed",
+                        DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN, "yes");
             }
             assertStatus(helper, found, true);
             // Category-specific callbacks run after action post-processing.
