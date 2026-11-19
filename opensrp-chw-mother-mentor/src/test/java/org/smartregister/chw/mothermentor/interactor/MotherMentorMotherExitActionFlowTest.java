@@ -24,10 +24,18 @@ import org.smartregister.chw.mothermentor.actionhelper.MotherMentorVisitTypeActi
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
+import org.smartregister.repository.AllSharedPreferences;
 import org.smartregister.repository.Repository;
 import org.smartregister.util.FormUtils;
 
@@ -57,6 +65,8 @@ public class MotherMentorMotherExitActionFlowTest {
         data.execSQL(
                 "CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, art_status TEXT, art_start_date TEXT)");
         MotherMentorLibrary library = mock(MotherMentorLibrary.class);
+        when(library.getSourceDateFormat()).thenReturn("dd-MM-yyyy");
+        when(library.getSaveDateFormat()).thenReturn("yyyy-MM-dd");
         Repository repository = mock(Repository.class);
         net.zetetic.database.sqlcipher.SQLiteDatabase cipher =
                 mock(net.zetetic.database.sqlcipher.SQLiteDatabase.class);
@@ -126,7 +136,7 @@ public class MotherMentorMotherExitActionFlowTest {
                 Map<String, BaseMotherMentorVisitAction> actions = start(false);
                 String[] values;
                 if ("new".equals(path))
-                    values = new String[] {ATTENDANCE_TYPE, "new"};
+                    values = new String[] {ATTENDANCE_TYPE, "new", VISIT_PREGNANCY_STATUS, "pregnant"};
                 else if ("pregnant".equals(path))
                     values = new String[] {ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "found",
                             VISIT_PREGNANCY_STATUS, "pregnant"};
@@ -169,6 +179,9 @@ public class MotherMentorMotherExitActionFlowTest {
         assertEquals(2, visible(first));
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, entry(first).getActionStatus());
         answer(entry(first), ATTENDANCE_TYPE, "new");
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, entry(first).getActionStatus());
+        assertEquals(2, visible(first));
+        answer(entry(first), VISIT_PREGNANCY_STATUS, "pregnant");
         assertEquals(6, visible(first));
         data.execSQL("INSERT INTO visits VALUES ('previous','mother',?,1,'1')",
                 new Object[] {Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES});
@@ -182,6 +195,108 @@ public class MotherMentorMotherExitActionFlowTest {
         assertEquals(2, visible(repeat));
         answer(entry(repeat), VISIT_PREGNANCY_STATUS, "pregnant");
         assertEquals(6, visible(repeat));
+    }
+
+    @Test
+    public void firstPostDeliveryVisitRequiresSeparateBirthAndDueTestAnswersInBothLanguages()
+            throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            language = directory;
+            LocalDate birth = DAY.minusDays(49);
+            FixtureInteractor interactor = new FixtureInteractor("breast_feeding", birth);
+            Map<String, BaseMotherMentorVisitAction> actions = start(interactor, false);
+            BaseMotherMentorVisitAction child = byForm(actions, "mothermentor_visit_child");
+            assertFalse(child.isValid());
+            answer(entry(actions), ATTENDANCE_TYPE, "new", FOLLOW_UP_STATUS, "not_found");
+            assertEquals("", value(entry(actions), FOLLOW_UP_STATUS));
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, entry(actions).getActionStatus());
+            assertTrue(child.isValid());
+            assertFalse(child.isOptional());
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            assertEquals("true", value(child, MAMA_BIRTH_TEST_REQUIRED));
+            assertEquals(birth.plusDays(2).toString("dd-MM-yyyy"),
+                    field(child, MAMA_BIRTH_TEST_DATE).getString("max_date"));
+
+            answer(child, MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_BIRTH_TEST_DONE, "yes", MAMA_BIRTH_TEST_RESULT, "pending",
+                    MAMA_BIRTH_TEST_DATE, birth.plusDays(3).toString(),
+                    MAMA_HEI_TEST_DONE, "no");
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_BIRTH_TEST_DATE, birth.plusDays(1).toString(), MAMA_HEI_TEST_DONE, "");
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_DONE, "yes", MAMA_HEI_TEST_TYPE, "six_weeks",
+                    MAMA_HEI_TEST_DATE, DAY.toString());
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_RESULT, "pending");
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, child.getActionStatus());
+            assertEquals(7, visible(actions));
+            answer(entry(actions), ATTENDANCE_TYPE, "new");
+            assertEquals("pending", value(child, MAMA_BIRTH_TEST_RESULT));
+            assertEquals("pending", value(child, MAMA_HEI_TEST_RESULT));
+        }
+    }
+
+    @Test
+    public void firstVisitAppliesChildExitsAndPersistsEachAnswerOnce() throws Exception {
+        language = "json.form";
+        LocalDate birth = DAY.minusDays(1);
+        FixtureInteractor interactor = new FixtureInteractor("pregnant", null);
+        Map<String, BaseMotherMentorVisitAction> actions = start(interactor, false);
+        BaseMotherMentorVisitAction entry = entry(actions);
+        BaseMotherMentorVisitAction child = byForm(actions, "mothermentor_visit_child");
+        answer(entry, ATTENDANCE_TYPE, "new", VISIT_PREGNANCY_STATUS, "not_pregnant",
+                MAMA_PREGNANCY_OUTCOME, "delivered", MAMA_DELIVERY_DATE_INPUT, birth.toString());
+        assertTrue(child.isValid());
+        answer(child, MAMA_CHILD_STATUS, "deceased");
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+        answer(child, MAMA_TAREHE_MTOTO_ALIFARIKI, DAY.toString());
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, child.getActionStatus());
+        assertEquals(VisitOutcome.CHILD_DECEASED, outcome(entry, child));
+        assertEquals(3, visible(actions));
+
+        answer(child, MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding",
+                MAMA_BIRTH_TEST_DONE, "yes", MAMA_BIRTH_TEST_DATE, birth.toString(),
+                MAMA_BIRTH_TEST_RESULT, "positive", MAMA_BIRTH_TEST_RECEIVED_DATE, DAY.toString());
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+        answer(child, MAMA_BIRTH_TEST_CONFIRMED, "yes");
+        assertEquals(VisitOutcome.CHILD_CONFIRMED_POSITIVE, outcome(entry, child));
+        assertEquals(3, visible(actions));
+
+        MotherMentorLibrary library = MotherMentorLibrary.getInstance();
+        when(library.context().allSharedPreferences()).thenReturn(mock(AllSharedPreferences.class));
+        when(library.visitRepository()).thenReturn(mock(VisitRepository.class));
+        Map<String, String> forms = new LinkedHashMap<>();
+        forms.put(entry.getTitle(), entry.getJsonPayload());
+        forms.put(child.getTitle(), child.getJsonPayload());
+        Visit saved = interactor.saveVisit(false, "mother", Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, forms, "");
+        org.json.JSONArray observations = new JSONObject(saved.getJson()).getJSONArray("obs");
+        Map<String, String> recorded = MotherMentorVisitCompletion.observationValues(observations);
+        for (String key : new String[] {ATTENDANCE_TYPE, VISIT_PREGNANCY_STATUS,
+                MAMA_TAREHE_KUJIFUNGUA, MAMA_CHILD_STATUS, MAMA_BIRTH_TEST_RESULT}) {
+            int count = 0;
+            for (int i = 0; i < observations.length(); i++) {
+                if (key.equals(observations.getJSONObject(i).optString("fieldCode"))) count++;
+            }
+            assertEquals(key, 1, count);
+        }
+        assertTrue(MotherMentorVisitCompletion.isComplete(observations));
+        assertEquals(VisitOutcome.CHILD_CONFIRMED_POSITIVE,
+                MotherMentorMotherClosureRepository.outcome(recorded));
+        assertEquals("positive", MotherMentorMotherChildRepository.replay(birth,
+                Collections.singletonList(recorded), Collections.singletonList(DAY))
+                        .getSamplingHistory().get(Stage.AT_BIRTH).getResult());
+
+        answer(entry, VISIT_PREGNANCY_STATUS, "pregnant");
+        assertFalse(child.isValid());
+        assertNull(child.getJsonPayload());
+    }
+
+    private VisitOutcome outcome(BaseMotherMentorVisitAction entry, BaseMotherMentorVisitAction child)
+            throws Exception {
+        Map<String, String> values = MotherMentorMotherVisitUtils.formValues(new JSONObject(entry.getJsonPayload()));
+        values.putAll(MotherMentorMotherVisitUtils.formValues(new JSONObject(child.getJsonPayload())));
+        return MotherMentorMotherClosureRepository.classify(values, DAY);
     }
 
     @Test
@@ -232,7 +347,11 @@ public class MotherMentorMotherExitActionFlowTest {
     }
 
     private LinkedHashMap<String, BaseMotherMentorVisitAction> start(boolean edit) {
-        FixtureInteractor interactor = new FixtureInteractor();
+        return start(new FixtureInteractor("pregnant", null), edit);
+    }
+
+    private LinkedHashMap<String, BaseMotherMentorVisitAction> start(FixtureInteractor interactor,
+            boolean edit) {
         interactor.appExecutors = new AppExecutors(Runnable::run, Runnable::run, Runnable::run);
         BaseMotherMentorVisitContract.View view = mock(BaseMotherMentorVisitContract.View.class);
         when(view.getContext()).thenReturn(RuntimeEnvironment.getApplication());
@@ -287,13 +406,19 @@ public class MotherMentorMotherExitActionFlowTest {
     }
 
     private static final class FixtureInteractor extends MotherMentorServiceVisitInteractor {
-        FixtureInteractor() {
+        private final String status;
+        private final LocalDate birth;
+
+        FixtureInteractor(String status, LocalDate birth) {
             super(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
+            this.status = status;
+            this.birth = birth;
         }
         @Override
         protected MotherMentorMotherVisitDao.Context loadMotherContext(String id) {
+            String dob = birth == null ? "" : birth.toString();
             return new MotherMentorMotherVisitDao.Context(
-                    "enrollment-one", "", "pregnant", "", "", "family", 1);
+                    "enrollment-one", "", status, dob, dob, "family", 1);
         }
         @Override
         protected MotherMentorVisitTypeActionHelper createVisitTypeActionHelper() {

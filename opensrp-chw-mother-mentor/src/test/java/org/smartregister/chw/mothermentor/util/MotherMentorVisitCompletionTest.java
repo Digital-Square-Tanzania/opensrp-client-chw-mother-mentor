@@ -27,4 +27,16 @@ public class MotherMentorVisitCompletionTest {
         values.put(DBConstants.KEY.MAMA_NOT_FOUND_REASON, "moved_area");
         assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values));
     }
+
+    @Test
+    public void savedNewVisitsKeepTheirOriginalCompletionRulesUntilEdited() {
+        Map<String, String> values = new HashMap<>();
+        values.put(DBConstants.KEY.ATTENDANCE_TYPE, "new");
+        values.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant");
+        assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values));
+        values.put(DBConstants.KEY.MAMA_FIRST_VISIT_ASSESSMENT, "true");
+        assertFalse(MotherMentorVisitCompletion.isVisitTypeComplete(values));
+        values.put(DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
+        assertTrue(MotherMentorVisitCompletion.isVisitTypeComplete(values));
+    }
 }

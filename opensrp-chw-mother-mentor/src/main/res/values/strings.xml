@@ -203,6 +203,7 @@
     <string name="mothermentor_comments_section">Comments</string>
     <string name="mothermentor_follow_up_status_section">Follow-up status</string>
     <string name="mothermentor_visit_type_section">Visit Type</string>
+    <string name="mothermentor_visit_child_section">Child 1</string>
     <string name="mothermentor_group_linkage_section">Group Linkage</string>
     <string name="mothermentor_education_provided_section">Education Provided</string>
     <string name="mothermentor_referral_provided_section">Referral Provided</string>

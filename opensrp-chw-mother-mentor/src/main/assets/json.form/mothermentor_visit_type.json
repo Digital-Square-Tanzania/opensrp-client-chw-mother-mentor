@@ -220,6 +220,14 @@
         }
       },
       {
+        "key": "mama_first_visit_assessment",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_first_visit_assessment",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
         "key": "mama_enrollment_child_dob",
         "type": "hidden",
         "openmrs_entity": "concept",

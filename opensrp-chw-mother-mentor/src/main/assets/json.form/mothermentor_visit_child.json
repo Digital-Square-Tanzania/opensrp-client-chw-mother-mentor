@@ -1,0 +1,172 @@
+{
+  "count": "1",
+  "step1": {
+    "title": "Child 1",
+    "fields": [
+      {
+        "key": "mama_birth_test_required",
+        "type": "hidden",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_birth_test_required",
+        "openmrs_entity_parent": "",
+        "value": "false"
+      },
+      {
+        "key": "mama_birth_test_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_done",
+        "label": "Was the birth test done?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_date",
+        "hint": "Date the birth test was done",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_result",
+        "label": "Birth test result",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Negative",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Positive",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Result pending",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_received_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_received_date",
+        "hint": "Date the birth test result was received at the facility",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_confirmed",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_confirmed",
+        "label": "Was the positive birth test result confirmed?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

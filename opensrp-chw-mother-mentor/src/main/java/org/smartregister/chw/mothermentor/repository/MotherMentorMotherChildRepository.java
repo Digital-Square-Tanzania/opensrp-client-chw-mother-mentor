@@ -21,6 +21,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 
@@ -375,6 +376,12 @@ public final class MotherMentorMotherChildRepository {
         state.childDeathDate = null;
         state.recordBreastfeeding(value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS),
                 MotherMentorChildEidHeiUtils.cessation(values));
+        if (MotherMentorMotherBirthTest.isRequired(values, date)
+                && "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) {
+            record(state, Stage.AT_BIRTH, values.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
+                    MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE)),
+                    "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED)), date);
+        }
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
         record(state, Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE)),
                 values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT),

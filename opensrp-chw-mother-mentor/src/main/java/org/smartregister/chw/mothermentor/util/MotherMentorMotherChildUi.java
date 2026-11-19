@@ -54,7 +54,9 @@ public final class MotherMentorMotherChildUi {
             values = MotherMentorMotherChildUtils.values(form);
             LocalDate assessment = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE));
             if (assessment == null) assessment = LocalDate.now();
-            boolean path = MotherMentorMotherChildUtils.applies(values);
+            boolean path = MotherMentorMotherChildUtils.applies(values)
+                    && (!MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)
+                            || form.optBoolean("mothermentor_child_section"));
             set(form, root, DBConstants.KEY.MAMA_CHILD_PATH, Boolean.toString(path));
             LocalDate dob = MotherMentorMotherChildUtils.birth(values);
             if (path) {
@@ -65,6 +67,15 @@ public final class MotherMentorMotherChildUi {
                             values.getOrDefault(DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, ""));
                 }
                 validateDates(activity, form, root, dob, assessment);
+                if (form.optBoolean("mothermentor_child_section")
+                        && "true".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_REQUIRED))) {
+                    validateDate(activity, form, root, DBConstants.KEY.MAMA_BIRTH_TEST_DATE,
+                            dob, MotherMentorMotherBirthTest.latestSampleDate(dob, assessment));
+                    String sample = MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE);
+                    LocalDate sampleDate = MotherMentorHeiSchedule.parseDate(sample);
+                    validateDate(activity, form, root, DBConstants.KEY.MAMA_BIRTH_TEST_RECEIVED_DATE,
+                            sampleDate == null ? dob : sampleDate, assessment);
+                }
             }
             values = MotherMentorMotherChildUtils.values(form);
             List<Stage> due = path && "alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))
@@ -129,12 +140,14 @@ public final class MotherMentorMotherChildUi {
                 || changed(now, DBConstants.KEY.MAMA_PREGNANCY_OUTCOME)
                 || changed(now, DBConstants.KEY.VISIT_PREGNANCY_STATUS)) {
             clear(form, root, MotherMentorMotherChildUtils.ANSWER_FIELDS);
+            clear(form, root, MotherMentorMotherBirthTest.ANSWERS);
         } else if (changed(now, DBConstants.KEY.MAMA_CHILD_STATUS)
                 && previous.get(DBConstants.KEY.MAMA_CHILD_STATUS) != null
                 && !previous.get(DBConstants.KEY.MAMA_CHILD_STATUS).isEmpty()) {
             clear(form, root, Arrays.asList(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
                     DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
             clearTests(form, root, true);
+            clear(form, root, MotherMentorMotherBirthTest.ANSWERS);
         } else if (changed(now, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS)) {
             clear(form, root, Arrays.asList(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
             clearTests(form, root, true);
@@ -145,6 +158,15 @@ public final class MotherMentorMotherChildUi {
             clearTests(form, root, false);
         } else if (changed(now, DBConstants.KEY.MAMA_HEI_TEST_RESULT)) {
             clear(form, root, Arrays.asList(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+        }
+        if (changed(now, DBConstants.KEY.MAMA_BIRTH_TEST_DONE)
+                && !"yes".equals(now.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) {
+            clear(form, root, MotherMentorMotherBirthTest.ANSWERS.subList(1, MotherMentorMotherBirthTest.ANSWERS.size()));
+        } else if (changed(now, DBConstants.KEY.MAMA_BIRTH_TEST_RESULT)) {
+            set(form, root, DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED, "");
+            if ("pending".equals(now.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT))) {
+                set(form, root, DBConstants.KEY.MAMA_BIRTH_TEST_RECEIVED_DATE, "");
+            }
         }
     }
 
@@ -167,19 +189,24 @@ public final class MotherMentorMotherChildUi {
     private void validateDates(Context context, JSONObject form, View root, LocalDate dob, LocalDate assessment) {
         for (String key : Arrays.asList(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
                 DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, DBConstants.KEY.MAMA_HEI_TEST_DATE)) {
-            JSONObject field = MotherMentorMotherChildUtils.field(form, key);
-            if (field == null) continue;
-            try {
-                field.put("min_date", dob.toString("dd-MM-yyyy"));
-                field.put("max_date", assessment.toString("dd-MM-yyyy"));
-            } catch (Exception ignored) { }
-            String value = field.optString("value");
-            if (!value.isEmpty() && !MotherMentorHeiSchedule.validDate(
-                    MotherMentorHeiSchedule.parseDate(value), dob, assessment)) {
-                set(form, root, key, "");
-                for (View view : controls(root, key)) if (view instanceof EditText) {
-                    ((EditText) view).setError(context.getString(R.string.mothermentor_mother_child_invalid_date));
-                }
+            validateDate(context, form, root, key, dob, assessment);
+        }
+    }
+
+    private void validateDate(Context context, JSONObject form, View root, String key,
+            LocalDate min, LocalDate max) {
+        JSONObject field = MotherMentorMotherChildUtils.field(form, key);
+        if (field == null) return;
+        try {
+            field.put("min_date", min.toString("dd-MM-yyyy"));
+            field.put("max_date", max.toString("dd-MM-yyyy"));
+        } catch (Exception ignored) { }
+        String value = field.optString("value");
+        if (!value.isEmpty() && !MotherMentorHeiSchedule.validDate(
+                MotherMentorHeiSchedule.parseDate(value), min, max)) {
+            set(form, root, key, "");
+            for (View view : controls(root, key)) if (view instanceof EditText) {
+                ((EditText) view).setError(context.getString(R.string.mothermentor_mother_child_invalid_date));
             }
         }
     }

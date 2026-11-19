@@ -34,6 +34,12 @@ public final class MotherMentorMotherVisitUtils {
                 values.get(DBConstants.KEY.FOLLOW_UP_STATUS));
     }
 
+    /** Visits recorded before the first-visit assessment have no clinical answers to validate. */
+    public static boolean hasFirstVisitAssessment(Map<String, String> values) {
+        return "new".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
+                && "true".equals(values.get(DBConstants.KEY.MAMA_FIRST_VISIT_ASSESSMENT));
+    }
+
     public static boolean isComplete(Map<String, String> values) {
         if (!isEntryComplete(values)) return false;
         return !isFullVisit(values)
