@@ -49,8 +49,12 @@ public final class MotherMentorChildEidResultForm {
     }
 
     public static int receiptDateError(Map<String, String> answers, LocalDate sampleDate) {
-        LocalDate received = MotherMentorHeiSchedule.parseDate(answers.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE));
-        if (received == null || received.isAfter(LocalDate.now())) return R.string.mothermentor_eid_received_invalid_date;
-        return received.isBefore(sampleDate) ? R.string.mothermentor_eid_received_before_test : 0;
+        return receiptDateError(answers.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE), sampleDate, LocalDate.now());
+    }
+
+    static int receiptDateError(String value, LocalDate sampleDate, LocalDate latestDate) {
+        LocalDate received = MotherMentorHeiSchedule.parseDate(value);
+        if (received == null || received.isAfter(latestDate)) return R.string.mothermentor_eid_received_invalid_date;
+        return sampleDate != null && received.isBefore(sampleDate) ? R.string.mothermentor_eid_received_before_test : 0;
     }
 }

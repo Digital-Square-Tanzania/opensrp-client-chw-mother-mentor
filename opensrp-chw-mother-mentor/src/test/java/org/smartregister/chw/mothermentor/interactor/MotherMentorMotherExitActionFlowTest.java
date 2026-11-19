@@ -228,7 +228,16 @@ public class MotherMentorMotherExitActionFlowTest {
             answer(child, MAMA_HEI_TEST_DONE, "yes", MAMA_HEI_TEST_TYPE, "six_weeks",
                     MAMA_HEI_TEST_DATE, DAY.toString());
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_RESULT, "negative");
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_RECEIVED_DATE, DAY.minusDays(1).toString());
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_RECEIVED_DATE, DAY.plusDays(1).toString());
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
+            answer(child, MAMA_HEI_TEST_RECEIVED_DATE, DAY.toString());
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, child.getActionStatus());
             answer(child, MAMA_HEI_TEST_RESULT, "pending");
+            assertEquals("", value(child, MAMA_HEI_TEST_RECEIVED_DATE));
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, child.getActionStatus());
             assertEquals(7, visible(actions));
             answer(entry(actions), ATTENDANCE_TYPE, "new");
@@ -273,13 +282,14 @@ public class MotherMentorMotherExitActionFlowTest {
         org.json.JSONArray observations = new JSONObject(saved.getJson()).getJSONArray("obs");
         Map<String, String> recorded = MotherMentorVisitCompletion.observationValues(observations);
         for (String key : new String[] {ATTENDANCE_TYPE, VISIT_PREGNANCY_STATUS,
-                MAMA_TAREHE_KUJIFUNGUA, MAMA_CHILD_STATUS, MAMA_BIRTH_TEST_RESULT}) {
+                MAMA_TAREHE_KUJIFUNGUA, MAMA_CHILD_STATUS, MAMA_BIRTH_TEST_RESULT, MAMA_BIRTH_TEST_RECEIVED_DATE}) {
             int count = 0;
             for (int i = 0; i < observations.length(); i++) {
                 if (key.equals(observations.getJSONObject(i).optString("fieldCode"))) count++;
             }
             assertEquals(key, 1, count);
         }
+        assertEquals(DAY.toString(), recorded.get(MAMA_BIRTH_TEST_RECEIVED_DATE));
         assertTrue(MotherMentorVisitCompletion.isComplete(observations));
         assertEquals(VisitOutcome.CHILD_CONFIRMED_POSITIVE,
                 MotherMentorMotherClosureRepository.outcome(recorded));
@@ -343,6 +353,7 @@ public class MotherMentorMotherExitActionFlowTest {
                 "confirmed_positive".equals(outcome) || "unconfirmed".equals(outcome) ? "positive"
                         : "pending".equals(outcome)                                   ? "pending"
                                                                                         : "negative",
+                MAMA_HEI_TEST_RECEIVED_DATE, DAY.toString(),
                 HEI_CHANYA_IMETHIBITISHWA, "confirmed_positive".equals(outcome) ? "yes" : "no"};
     }
 

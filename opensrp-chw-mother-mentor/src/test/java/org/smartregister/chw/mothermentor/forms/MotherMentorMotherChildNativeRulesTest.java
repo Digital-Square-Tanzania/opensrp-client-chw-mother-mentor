@@ -81,10 +81,15 @@ public class MotherMentorMotherChildNativeRulesTest {
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_TYPE_CHOICE));
             assertTrue(nativeForm.relevant(MAMA_HEI_TEST_DATE));
             assertTrue(nativeForm.relevant(MAMA_HEI_TEST_RESULT));
+            assertFalse(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             nativeForm.answer(MAMA_HEI_TEST_RESULT, "positive");
+            assertTrue(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             assertTrue(nativeForm.relevant(HEI_CHANYA_IMETHIBITISHWA));
             nativeForm.answer(MAMA_HEI_TEST_RESULT, "negative");
+            assertTrue(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             assertFalse(nativeForm.relevant(HEI_CHANYA_IMETHIBITISHWA));
+            nativeForm.answer(MAMA_HEI_TEST_RESULT, "pending");
+            assertFalse(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             nativeForm.answer(MAMA_HEI_TEST_DONE, "no");
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_DATE));
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_RESULT));

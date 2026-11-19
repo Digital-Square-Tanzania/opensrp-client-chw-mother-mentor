@@ -60,18 +60,26 @@ public final class MotherMentorHeiSchedule {
         private final LocalDate date;
         private final boolean confirmed;
         private final LocalDate serviceDate;
+        private final LocalDate receivedDate;
 
         public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate) {
+            this(result, date, confirmed, serviceDate, null);
+        }
+
+        public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate,
+                LocalDate receivedDate) {
             this.result = result;
             this.date = date;
             this.confirmed = confirmed;
             this.serviceDate = serviceDate;
+            this.receivedDate = receivedDate;
         }
 
         public String getResult() { return result; }
         public LocalDate getDate() { return date; }
         public boolean isConfirmed() { return confirmed; }
         public LocalDate getServiceDate() { return serviceDate; }
+        public LocalDate getReceivedDate() { return receivedDate; }
         public boolean requiresFollowUp() {
             return "pending".equals(result) || "unknown".equals(result)
                     || ("positive".equals(result) && !confirmed);
@@ -179,6 +187,10 @@ public final class MotherMentorHeiSchedule {
         } catch (IllegalArgumentException invalid) {
             return null;
         }
+    }
+
+    static boolean hasReceivedResult(String result) {
+        return "negative".equals(result) || "positive".equals(result);
     }
 
     public static boolean validDate(LocalDate date, LocalDate dob, LocalDate assessment) {

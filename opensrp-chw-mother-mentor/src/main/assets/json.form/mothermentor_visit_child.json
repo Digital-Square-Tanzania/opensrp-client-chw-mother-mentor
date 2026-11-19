@@ -116,13 +116,13 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mama_birth_test_received_date",
-        "hint": "Date the birth test result was received at the facility",
+        "hint": "Date results were received at the facility",
         "max_date": "today",
         "expanded": false,
         "display_format": "dd/MM/yyyy",
         "v_required": {
           "value": true,
-          "err": "Please complete this field"
+          "err": "Enter the date the results were received at the facility"
         },
         "relevance": {
           "rules-engine": {

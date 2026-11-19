@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+import static org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.hasReceivedResult;
 import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils.NEVER_BREASTFED;
 
 import androidx.annotation.Keep;
@@ -31,7 +32,8 @@ public final class MotherMentorMotherChildUtils {
             DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
             DBConstants.KEY.MAMA_HEI_TEST_DONE, DBConstants.KEY.MAMA_HEI_TEST_TYPE,
             DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
-            DBConstants.KEY.MAMA_HEI_TEST_RESULT, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+            DBConstants.KEY.MAMA_HEI_TEST_RESULT, MAMA_HEI_TEST_RECEIVED_DATE,
+            DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
 
     private static final List<String> CHILD_FIELDS = Arrays.asList(MAMA_CHILD_PATH,
             MAMA_CARRIED_WEANING_DATE, MAMA_PREVIOUS_WEANING_DATE, MAMA_PREVIOUS_BREASTFEEDING_STATUS,
@@ -96,11 +98,16 @@ public final class MotherMentorMotherChildUtils {
         if ("no".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return true;
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return false;
         Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE));
+        LocalDate testDate = MotherMentorHeiSchedule.parseDate(values.get(MAMA_HEI_TEST_DATE));
         if (stage == null || !due.contains(stage)
-                || !MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
-                        values.get(DBConstants.KEY.MAMA_HEI_TEST_DATE)), dob, assessment)) return false;
+                || !MotherMentorHeiSchedule.validDate(testDate, dob, assessment)) return false;
         String result = values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT);
-        if (!Arrays.asList("negative", "positive", "pending").contains(result)) return false;
+        if ("pending".equals(result)) return true;
+        if (!hasReceivedResult(result)) return false;
+        // Visits recorded before this field was introduced have no receipt-date observation.
+        if (values.containsKey(MAMA_HEI_TEST_RECEIVED_DATE)
+                && !MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
+                        values.get(MAMA_HEI_TEST_RECEIVED_DATE)), testDate, assessment)) return false;
         return !"positive".equals(result) || Arrays.asList("yes", "no")
                 .contains(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
     }
@@ -163,9 +170,12 @@ public final class MotherMentorMotherChildUtils {
         if (!"yes".equals(values(form).get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) {
             for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_TYPE,
                     DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
-                    DBConstants.KEY.MAMA_HEI_TEST_RESULT, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)) put(form, key, "");
-        } else if (!"positive".equals(values(form).get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) {
-            put(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "");
+                    DBConstants.KEY.MAMA_HEI_TEST_RESULT, MAMA_HEI_TEST_RECEIVED_DATE,
+                    DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)) put(form, key, "");
+        } else {
+            String result = values.get(MAMA_HEI_TEST_RESULT);
+            if (!hasReceivedResult(result)) put(form, MAMA_HEI_TEST_RECEIVED_DATE, "");
+            if (!"positive".equals(result)) put(form, HEI_CHANYA_IMETHIBITISHWA, "");
         }
     }
 
@@ -182,15 +192,25 @@ public final class MotherMentorMotherChildUtils {
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
         for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
-            if (!entry.getValue().requiresFollowUp() || state.getTracingExcludedTests().contains(entry.getKey())) continue;
+            TestRecord record = entry.getValue();
+            if (!record.requiresFollowUp() || state.getTracingExcludedTests().contains(entry.getKey())) continue;
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_DONE, "yes");
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE, entry.getKey().getCode());
             fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, entry.getKey().getCode());
-            fill(form, DBConstants.KEY.MAMA_HEI_TEST_DATE, date(entry.getValue().getDate()));
-            if (!"unknown".equals(entry.getValue().getResult())) {
-                fill(form, DBConstants.KEY.MAMA_HEI_TEST_RESULT, entry.getValue().getResult());
+            fill(form, DBConstants.KEY.MAMA_HEI_TEST_DATE, date(record.getDate()));
+            if (!"unknown".equals(record.getResult())) {
+                fill(form, DBConstants.KEY.MAMA_HEI_TEST_RESULT, record.getResult());
             }
-            if ("positive".equals(entry.getValue().getResult())) fill(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "no");
+            if ("positive".equals(record.getResult())) {
+                Map<String, String> answers = values(form);
+                if ("positive".equals(answers.get(MAMA_HEI_TEST_RESULT))
+                        && entry.getKey() == Stage.fromCode(answers.get(MAMA_HEI_TEST_TYPE))
+                        && record.getDate() != null && record.getDate().equals(
+                                MotherMentorHeiSchedule.parseDate(answers.get(MAMA_HEI_TEST_DATE)))) {
+                    fill(form, MAMA_HEI_TEST_RECEIVED_DATE, date(record.getReceivedDate()));
+                }
+                fill(form, HEI_CHANYA_IMETHIBITISHWA, "no");
+            }
             break;
         }
     }
@@ -262,6 +282,7 @@ public final class MotherMentorMotherChildUtils {
             TestRecord record = entry.getValue();
             result.put(entry.getKey().getCode(), new JSONObject().put("result", record.getResult())
                     .put("date", date(record.getDate())).put("confirmed", record.isConfirmed())
+                    .put("received_date", date(record.getReceivedDate()))
                     .put("service_date", date(record.getServiceDate())));
         } catch (Exception ignored) { }
         return result.toString();
@@ -276,7 +297,8 @@ public final class MotherMentorMotherChildUtils {
                 if (entry == null || !Arrays.asList("negative", "positive", "pending", "unknown").contains(entry.optString("result"))) continue;
                 result.put(stage, new TestRecord(entry.optString("result"),
                         MotherMentorHeiSchedule.parseDate(entry.optString("date")),
-                        entry.optBoolean("confirmed"), MotherMentorHeiSchedule.parseDate(entry.optString("service_date"))));
+                        entry.optBoolean("confirmed"), MotherMentorHeiSchedule.parseDate(entry.optString("service_date")),
+                        MotherMentorHeiSchedule.parseDate(entry.optString("received_date"))));
             }
         } catch (Exception ignored) { }
         return result;

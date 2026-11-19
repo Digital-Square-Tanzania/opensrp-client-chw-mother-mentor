@@ -389,13 +389,15 @@ public final class MotherMentorMotherChildRepository {
                 && "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DONE))) {
             record(state, Stage.AT_BIRTH, values.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
                     MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_DATE)),
-                    "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED)), date);
+                    "yes".equals(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_CONFIRMED)), date,
+                    MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_BIRTH_TEST_RECEIVED_DATE)));
         }
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
         record(state, Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE)),
                 values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT),
                 MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_TEST_DATE)),
-                "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)), date);
+                "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)), date,
+                MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_TEST_RECEIVED_DATE)));
     }
 
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
@@ -405,7 +407,8 @@ public final class MotherMentorMotherChildRepository {
             if (result != null && MotherMentorChildEidReturnVisit.matchesPending(state.tests.get(result.stage),
                     values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) {
                 state.tests.put(result.stage, new TestRecord(result.result, result.testDate,
-                        result.outcome == MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE, date));
+                        result.outcome == MotherMentorChildEidReturnVisit.Outcome.CONFIRMED_POSITIVE, date,
+                        MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE))));
             }
             return;
         }
@@ -466,8 +469,14 @@ public final class MotherMentorMotherChildRepository {
 
     private static void record(State state, Stage stage, String result, LocalDate date,
             boolean confirmed, LocalDate serviceDate) {
+        record(state, stage, result, date, confirmed, serviceDate, null);
+    }
+
+    private static void record(State state, Stage stage, String result, LocalDate date,
+            boolean confirmed, LocalDate serviceDate, LocalDate receivedDate) {
         if (stage == null || !Arrays.asList("negative", "positive", "pending").contains(result)) return;
-        state.tests.put(stage, new TestRecord(result, date, "positive".equals(result) && confirmed, serviceDate));
+        state.tests.put(stage, new TestRecord(result, date, "positive".equals(result) && confirmed, serviceDate,
+                "pending".equals(result) ? null : receivedDate));
         if ("positive".equals(result) && confirmed) {
             state.terminal(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE, serviceDate);
         } else if (stage == Stage.EIGHTEEN_MONTHS && "negative".equals(result)) {

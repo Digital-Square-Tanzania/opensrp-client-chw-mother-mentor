@@ -116,13 +116,13 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "mama_birth_test_received_date",
-        "hint": "Tarehe majibu ya kipimo cha wakati wa kuzaliwa yalipopokelewa kituoni",
+        "hint": "Tarehe majibu yalipopokelewa kituoni",
         "max_date": "today",
         "expanded": false,
         "display_format": "dd/MM/yyyy",
         "v_required": {
           "value": true,
-          "err": "Tafadhali jaza sehemu hii"
+          "err": "Jaza tarehe majibu yalipopokelewa kituoni"
         },
         "relevance": {
           "rules-engine": {

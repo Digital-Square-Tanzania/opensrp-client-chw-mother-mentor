@@ -885,6 +885,28 @@
         }
       },
       {
+        "key": "mama_hei_test_received_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_received_date",
+        "hint": "Tarehe majibu yalipopokelewa kituoni",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Jaza tarehe majibu yalipopokelewa kituoni"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "hei_chanya_imethibitishwa",
         "type": "native_radio",
         "openmrs_entity_parent": "",
