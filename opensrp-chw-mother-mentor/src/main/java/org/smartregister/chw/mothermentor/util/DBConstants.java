@@ -354,11 +354,15 @@ public final class DBConstants {
         public static final String MAMA_CARRIED_WEANING_DATE = "mama_carried_weaning_date";
         public static final String MAMA_FIRST_VISIT_ASSESSMENT = "mama_first_visit_assessment";
         public static final String MAMA_BIRTH_TEST_REQUIRED = "mama_birth_test_required";
+        public static final String MAMA_BIRTH_TEST_WORKFLOW = "mama_birth_test_workflow";
+        public static final String MAMA_BIRTH_TEST_ANSWERED_DOB = "mama_birth_test_answered_dob";
         public static final String MAMA_BIRTH_TEST_DONE = "mama_birth_test_done";
         public static final String MAMA_BIRTH_TEST_DATE = "mama_birth_test_date";
         public static final String MAMA_BIRTH_TEST_RESULT = "mama_birth_test_result";
         public static final String MAMA_BIRTH_TEST_RECEIVED_DATE = "mama_birth_test_received_date";
         public static final String MAMA_BIRTH_TEST_CONFIRMED = "mama_birth_test_confirmed";
+        public static final String MAMA_BIRTH_TEST_CONFIRMATION_DONE = "mama_birth_test_confirmation_done";
+        public static final String MAMA_BIRTH_TEST_CONFIRMATION_RESULT = "mama_birth_test_confirmation_result";
 
         // Shared visit and event columns.
         public static final String AGE = "age";

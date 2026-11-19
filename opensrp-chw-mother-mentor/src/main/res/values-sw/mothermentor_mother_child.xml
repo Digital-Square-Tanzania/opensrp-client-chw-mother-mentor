@@ -10,4 +10,13 @@
     <string name="mothermentor_mother_child_weeks">Wiki %1$d</string>
     <string name="mothermentor_mother_child_months">Miezi %1$d</string>
     <string name="mothermentor_mother_child_invalid_date">Weka tarehe kuanzia kujifungua hadi tarehe ya tembeleo.</string>
+    <string name="mothermentor_mother_birth_invalid_date">Tarehe ya kipimo haiwezi kuzidi saa 48 baada ya tarehe ya kuzaliwa.</string>
+    <string name="mothermentor_mother_result_title">Majibu ya Kipimo</string>
+    <string name="mothermentor_mother_results_title">Majibu ya Vipimo</string>
+    <string name="mothermentor_mother_result_subtitle">Angalia majibu ya kipimo</string>
+    <string name="mothermentor_mother_results_subtitle">Angalia majibu ya vipimo</string>
+    <string name="mothermentor_mother_result_record">Rekodi Majibu</string>
+    <string name="mothermentor_mother_result_list_item">%1$s · %2$s\n%3$s</string>
+    <string name="mothermentor_mother_result_unavailable">Kipimo hiki hakina majibu yanayosubiri kurekodiwa.</string>
+    <string name="mothermentor_mother_result_saved">Majibu yamehifadhiwa</string>
 </resources>

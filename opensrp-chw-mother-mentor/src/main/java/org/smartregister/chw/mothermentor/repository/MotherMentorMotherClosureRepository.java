@@ -102,10 +102,11 @@ public final class MotherMentorMotherClosureRepository {
                 // Malformed source events cannot close a card or advance a counter.
             }
         }
+        Evidence preview = null;
         if (answers != null && date != null && !date.isAfter(LocalDate.now())
                 && (context.getEnrollmentTime() == 0
                         || !date.isBefore(new LocalDate(context.getEnrollmentTime())))) {
-            Evidence preview = new Evidence("~preview", new HashMap<>(answers), date,
+            preview = new Evidence("~preview", new HashMap<>(answers), date,
                     System.currentTimeMillis(), 0);
             for (Visit previous : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, null)) {
                 if (StringUtils.isNotBlank(excludedVisitId)
@@ -160,7 +161,7 @@ public final class MotherMentorMotherClosureRepository {
                 boolean hasBreastfeedingHistory = NEVER_BREASTFED.equals(values.get(MAMA_BREASTFEEDING_STATUS))
                         && MotherMentorMotherChildRepository.getStateBeforeMotherVisit(db, motherId, item.id)
                                 .hasBreastfeedingHistory();
-                outcome = classify(values, item.date, hasBreastfeedingHistory);
+                outcome = classify(values, item.date, hasBreastfeedingHistory, item == preview);
             }
             state = state.advance(outcome, item.date.toString(),
                     value(values, outcome == VisitOutcome.PREGNANCY_ENDED_OTHER
@@ -208,11 +209,11 @@ public final class MotherMentorMotherClosureRepository {
 
     /** Null means invalid/incomplete evidence, so it must not reset a valid consecutive counter. */
     public static VisitOutcome classify(Map<String, String> values, LocalDate date) {
-        return classify(values, date, false);
+        return classify(values, date, false, true);
     }
 
     private static VisitOutcome classify(
-            Map<String, String> values, LocalDate date, boolean hasBreastfeedingHistory) {
+            Map<String, String> values, LocalDate date, boolean hasBreastfeedingHistory, boolean preview) {
         if (values == null || date == null || date.isAfter(LocalDate.now())
                 || !MotherMentorMotherVisitUtils.isEntryComplete(values)) return null;
         if ("new".equals(value(values, ATTENDANCE_TYPE))
@@ -235,8 +236,13 @@ public final class MotherMentorMotherClosureRepository {
             default: break;
         }
         if (!MotherMentorMotherPregnancyUtils.isChildPath(values, date)) return VisitOutcome.CONTINUE;
-        if (!MotherMentorMotherChildUtils.isComplete(values, date, hasBreastfeedingHistory)) return null;
-        VisitOutcome child = childOutcome(MotherMentorMotherChildUtils.terminalOutcome(values, date));
+        // Finalized birth-test outcomes come from the child projection, which can see earlier answers.
+        boolean complete = preview
+                ? MotherMentorMotherChildUtils.isComplete(values, date, hasBreastfeedingHistory)
+                : MotherMentorMotherChildUtils.isRoutineAssessmentComplete(values, date, hasBreastfeedingHistory);
+        if (!complete) return null;
+        VisitOutcome child = childOutcome(preview ? MotherMentorMotherChildUtils.terminalOutcome(values, date)
+                : MotherMentorMotherChildUtils.routineTerminalOutcome(values, date));
         return child == null ? VisitOutcome.CONTINUE : child;
     }
 
