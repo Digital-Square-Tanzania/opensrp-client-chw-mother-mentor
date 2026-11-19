@@ -202,6 +202,21 @@ public class MotherMentorChildEidEntryRepositoryTest {
         assertEquals(day, MotherMentorChildEidDao.latestEnrollment(db, "child", day).day());
     }
 
+    @Test public void missedRoutineTestKeepsNeverBreastfedWhenCreatingTheChildEidRecord() throws Exception {
+        data.delete("event", "formSubmissionId = ?", new String[] {"mother-epoch"});
+        rawEnrollment("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLLMENT, "mother-epoch",
+                new LocalDate(2025, 2, 1), fields(PREGNANCY_STATUS, "not_pregnant", CHILD_DOB, dob.toString()));
+        Map<String, String> never = missed();
+        never.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        never.put(MAMA_TAREHE_ACHA_KUNYONYESHA, dob.toString());
+        visit("late", "source", "mother", never, dob.plusDays(57), 1, true, false, 9);
+
+        Map<String, String> linkedEnrollment = observations(plan().toEvent());
+        assertEquals("wiki6", linkedEnrollment.get(MTOTO_MISSED_TEST));
+        assertEquals("never_breastfed", linkedEnrollment.get(BREASTFEEDING_STATUS));
+        assertTrue(org.apache.commons.lang3.StringUtils.isBlank(linkedEnrollment.get(WEANING_DATE)));
+    }
+
     @Test public void persistedPayloadSurvivesChangedParentAnswersAndUsesItsLatestStoredRevision() throws Exception {
         LocalDate day = dob.plusMonths(9).plusDays(15);
         visit("late", "source", "mother", missed(), day, 1, true, false, 9);

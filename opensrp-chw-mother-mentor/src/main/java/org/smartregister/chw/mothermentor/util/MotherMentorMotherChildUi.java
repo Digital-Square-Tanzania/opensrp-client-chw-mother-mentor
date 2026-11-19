@@ -80,7 +80,7 @@ public final class MotherMentorMotherChildUi {
             set(form, root, DBConstants.KEY.MAMA_HEI_DUE_TESTS, codes.toString());
             Stage first = due.isEmpty() ? null : due.get(0);
             set(form, root, DBConstants.KEY.MAMA_HEI_DUE_TEST, first == null ? "" : first.getCode());
-            LocalDate stop = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
+            LocalDate stop = MotherMentorChildEidHeiUtils.cessation(values);
             LocalDate dueDate = MotherMentorHeiSchedule.dueDate(first, dob, stop);
             set(form, root, DBConstants.KEY.MAMA_HEI_DUE_DATE, dueDate == null ? "" : dueDate.toString());
             set(form, root, DBConstants.KEY.MAMA_CHILD_AGE_NOTE, path ? age(activity, dob, assessment) : "");
@@ -319,12 +319,14 @@ public final class MotherMentorMotherChildUi {
         LocalDate dob = MotherMentorMotherChildUtils.birth(values);
         if (dob == null) return "";
         Map<Stage, TestRecord> tests = MotherMentorMotherChildUtils.parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY));
-        LocalDate stop = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
+        LocalDate stop = MotherMentorChildEidHeiUtils.cessation(values);
         for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
             if (tests.containsKey(stage)) continue;
             if (stage == Stage.SIX_WEEKS && !day.isBefore(dob.plusMonths(9))) continue;
             if (stage == Stage.NINE_MONTHS && !day.isBefore(dob.plusMonths(18))) continue;
-            if (stage == Stage.AFTER_WEANING && !day.isBefore(dob.plusMonths(18))) continue;
+            if (stage == Stage.AFTER_WEANING && (!day.isBefore(dob.plusMonths(18))
+                    || MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(
+                            values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS)))) continue;
             LocalDate date = MotherMentorHeiSchedule.dueDate(stage, dob, stop);
             if (stage == Stage.AFTER_WEANING && date == null) return context.getString(R.string.mothermentor_mother_hei_wait_weaning);
             if (date != null) return context.getString(R.string.mothermentor_mother_hei_next,

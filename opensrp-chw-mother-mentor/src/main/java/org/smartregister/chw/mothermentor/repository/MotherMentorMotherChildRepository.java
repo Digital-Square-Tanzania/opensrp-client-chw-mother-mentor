@@ -125,6 +125,15 @@ public final class MotherMentorMotherChildRepository {
         return getState(db, motherId, excludedVisitId, assessmentDate, null);
     }
 
+    public static State getStateBeforeMotherVisit(SQLiteDatabase db, String motherId, String visitId) {
+        Visit before = MotherMentorChildEidDao.findVisit(db, visitId);
+        LocalDate date = before == null ? null : MotherMentorMotherVisitDao.getServiceDate(before);
+        if (date != null && motherId.equals(before.getBaseEntityId())) {
+            return getState(db, motherId, visitId, date, before);
+        }
+        return getState(db, motherId, visitId);
+    }
+
     private static State getState(SQLiteDatabase db, String motherId, String excludedVisitId,
             LocalDate assessmentDate, Visit before) {
         MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, motherId);
@@ -374,10 +383,11 @@ public final class MotherMentorMotherChildRepository {
         }
         values.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(state.getSamplingHistory()));
         values.put(DBConstants.KEY.MAMA_BIRTH_TEST_ANSWERED_DOB, iso(state.birthTestAnsweredDob));
+        if (!MotherMentorMotherChildUtils.isRoutineAssessmentComplete(values, date,
+                state.hasBreastfeedingHistory())) return;
         if ("alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
             applyBirthAssessment(state, values, dob, date, sourceId);
         }
-        if (!MotherMentorMotherChildUtils.isRoutineAssessmentComplete(values, date)) return;
         if (dob != null) state.childDob = dob;
         state.childStatus = value(values, DBConstants.KEY.MAMA_CHILD_STATUS);
         if ("deceased".equals(state.childStatus)) {

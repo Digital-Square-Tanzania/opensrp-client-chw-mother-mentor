@@ -59,7 +59,7 @@ public class MotherMentorMotherChildUiTest {
         fixture.put(MAMA_HEI_TEST_RESULT, "negative");
         fixture.refresh();
         assertEquals("three_months_after_weaning", fixture.value(MAMA_HEI_TEST_TYPE));
-        fixture.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        fixture.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
         fixture.refresh();
         assertEquals("", fixture.value(MAMA_TAREHE_ACHA_KUNYONYESHA));
         assertEquals("", fixture.value(MAMA_HEI_TEST_DONE));
@@ -69,6 +69,16 @@ public class MotherMentorMotherChildUiTest {
         fixture.refresh();
         assertEquals("", fixture.value(MAMA_CHILD_STATUS));
         assertEquals("false", fixture.value(MAMA_CHILD_PATH));
+    }
+
+    @Test
+    public void neverBreastfedShowsTheNextAgeBasedTestAfterNineMonths() throws Exception {
+        LocalDate dob = new LocalDate(2025, 12, 1);
+        Fixture fixture = new Fixture("json.form", dob, dob.plusMonths(10));
+        fixture.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        fixture.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\"}}");
+        fixture.refresh();
+        assertTrue(fixture.value(MAMA_HEI_NEXT_TEST_NOTE).endsWith("01-06-2027"));
     }
 
     private static final class Fixture {

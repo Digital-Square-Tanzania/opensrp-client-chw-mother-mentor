@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.repository;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils.NEVER_BREASTFED;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -284,7 +285,9 @@ public final class MotherMentorMotherCascadeRepository {
                 mother.get(MAMA_BREASTFEEDING_STATUS)).toLowerCase(Locale.ROOT);
         // A current child assessment supersedes the older enrollment breastfeeding label.
         boolean breastfeeding = "breastfeeding".equals(currentBreastfeeding)
-                || (!"not_breastfeeding".equals(currentBreastfeeding) && "breast_feeding".equals(status));
+                || (!"not_breastfeeding".equals(currentBreastfeeding)
+                    && !NEVER_BREASTFED.equals(currentBreastfeeding)
+                    && "breast_feeding".equals(status));
         LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(mother.get(CHILD_DOB));
         return "pregnant".equals(status) || breastfeeding
                 || dob != null && !dob.isAfter(day) && !dob.plusMonths(18).isBefore(day);
