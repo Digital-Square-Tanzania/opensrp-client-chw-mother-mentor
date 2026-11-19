@@ -52,8 +52,9 @@ public final class MotherMentorMotherPregnancyUtils {
     }
 
     public static boolean isFound(Map<String, String> values) {
-        return "repeat".equals(values.get(ATTENDANCE_TYPE))
-                && "found".equals(values.get(FOLLOW_UP_STATUS));
+        return MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)
+                || ("repeat".equals(values.get(ATTENDANCE_TYPE))
+                        && "found".equals(values.get(FOLLOW_UP_STATUS)));
     }
 
     public static boolean isChildPath(Map<String, String> values, LocalDate serviceDate) {

@@ -106,14 +106,14 @@ public class MotherMentorServiceVisitInteractorTest {
     @Test
     @Config(qualifiers = "en")
     public void englishActionsPreserveVisitFlow() throws Exception {
-        assertLocalizedVisitFlow("Visit Type", "Group Linkage", "Education Provided",
+        assertLocalizedVisitFlow("Visit Type", "Child 1", "Group Linkage", "Education Provided",
                 "Referral Provided", "Next Visit Date", "Comment");
     }
 
     @Test
     @Config(qualifiers = "sw")
     public void swahiliActionsPreserveVisitFlow() throws Exception {
-        assertLocalizedVisitFlow("Aina ya hudhurio", "Uunganishaji wa vikundi", "Elimu iliyotolewa",
+        assertLocalizedVisitFlow("Aina ya hudhurio", "Mtoto wa 1", "Uunganishaji wa vikundi", "Elimu iliyotolewa",
                 "Rufaa iliyotolewa", "Tarehe ya tembeleo lijalo", "Maoni");
     }
 
@@ -151,7 +151,7 @@ public class MotherMentorServiceVisitInteractorTest {
                 assertEquals(2, visible(actions));
                 answer(entry, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
             } else {
-                answer(entry, DBConstants.KEY.FOLLOW_UP_STATUS, "");
+                answer(entry, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
             }
             assertEquals(6, visible(actions));
             BaseMotherMentorVisitAction group = byForm(actions, "mothermentor_visit_group_linkage");
@@ -341,7 +341,7 @@ public class MotherMentorServiceVisitInteractorTest {
             } else if (DBConstants.KEY.FOLLOW_UP_STATUS.equals(field.optString("key"))) {
                 field.put("value", status);
             } else if (DBConstants.KEY.VISIT_PREGNANCY_STATUS.equals(field.optString("key"))) {
-                field.put("value", "found".equals(status) ? "pregnant" : "");
+                field.put("value", "new".equals(attendance) || "found".equals(status) ? "pregnant" : "");
             }
         }
         action.setJsonPayload(form.toString());
@@ -377,7 +377,7 @@ public class MotherMentorServiceVisitInteractorTest {
         activity.redrawVisitUI();
         assertTrue(submit.hasOnClickListeners());
         for (BaseMotherMentorVisitAction required : actions.values()) {
-            if (required.isOptional()) continue;
+            if (required.isOptional() || !required.isValid()) continue;
             required.setActionStatus(BaseMotherMentorVisitAction.Status.PENDING);
             activity.redrawVisitUI();
             assertFalse(required.getTitle(), submit.hasOnClickListeners());
@@ -391,7 +391,8 @@ public class MotherMentorServiceVisitInteractorTest {
         assertTrue(actions.get(0).isEnabled());
         for (int i = 1; i < actions.size(); i++) {
             BaseMotherMentorVisitAction action = actions.get(i);
-            boolean expected = i == actions.size() - 1 ? comment : fullVisit;
+            boolean expected = i == actions.size() - 1 ? comment
+                    : !"mothermentor_visit_child".equals(action.getFormName()) && fullVisit;
             assertEquals(action.getTitle(), expected, action.isValid());
             assertEquals(action.getTitle(), expected, action.isEnabled());
         }

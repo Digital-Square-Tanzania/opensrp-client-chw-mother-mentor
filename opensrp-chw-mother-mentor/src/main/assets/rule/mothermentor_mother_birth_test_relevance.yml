@@ -1,0 +1,35 @@
+---
+name: step1_mama_birth_test_done
+description: First-visit birth test for a child under eight weeks
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_date
+description: Birth test sampling date
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_result
+description: Birth test result
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_received_date
+description: Date the facility received the birth test result
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && (step1_mama_birth_test_result == 'negative' || step1_mama_birth_test_result == 'positive')"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_birth_test_confirmed
+description: Positive birth test confirmation
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_birth_test_required == 'true' && step1_mama_birth_test_done == 'yes' && step1_mama_birth_test_result == 'positive'"
+actions:
+  - "isRelevant = true"

@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
+import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+
 import androidx.annotation.Keep;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,11 +32,20 @@ public final class MotherMentorMotherChildUtils {
             DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
             DBConstants.KEY.MAMA_HEI_TEST_RESULT, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
 
+    private static final List<String> CHILD_FIELDS = Arrays.asList(MAMA_CHILD_PATH,
+            MAMA_CARRIED_WEANING_DATE, MAMA_PREVIOUS_WEANING_DATE, MAMA_PREVIOUS_BREASTFEEDING_STATUS,
+            MAMA_HEI_TEST_HISTORY, MTOTO_SUPPRESSED_TESTS, MAMA_HEI_ASSESSMENT_DATE,
+            MAMA_HEI_DUE_TESTS, MAMA_HEI_DUE_TEST, MAMA_HEI_DUE_DATE,
+            MAMA_CHILD_AGE_NOTE, MAMA_HEI_NEXT_TEST_NOTE, MTOTO_CLOSED_FOLLOWUP_NOTE);
+
     private MotherMentorMotherChildUtils() {}
 
+    public static boolean isChildField(String key) {
+        return CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key);
+    }
+
     public static boolean applies(Map<String, String> values) {
-        if (values == null || !"repeat".equals(values.get(DBConstants.KEY.ATTENDANCE_TYPE))
-                || !"found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))) return false;
+        if (values == null || !MotherMentorMotherPregnancyUtils.isFound(values)) return false;
         String original = values.get(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS);
         boolean enrolledWithChild = Arrays.asList("breast_feeding", "not_pregnant", "bf", "none").contains(original);
         boolean delivered = "pregnant".equals(original)
@@ -71,6 +82,7 @@ public final class MotherMentorMotherChildUtils {
         if ("not_breastfeeding".equals(breastfeeding)
                 && !MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
                         values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)), dob, assessment)) return false;
+        if (!MotherMentorMotherBirthTest.isComplete(values, assessment)) return false;
         List<Stage> due = due(values, assessment);
         if (due.isEmpty()) return StringUtils.isBlank(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE));
         if ("no".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return true;
@@ -88,6 +100,12 @@ public final class MotherMentorMotherChildUtils {
     public static TerminalOutcome terminalOutcome(Map<String, String> values, LocalDate assessment) {
         if (!applies(values) || !isComplete(values, assessment)) return TerminalOutcome.NONE;
         if ("deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
+        if (MotherMentorMotherBirthTest.isRequired(values, assessment)
+                && "yes".equals(values.get(MAMA_BIRTH_TEST_DONE))
+                && "positive".equals(values.get(MAMA_BIRTH_TEST_RESULT))
+                && "yes".equals(values.get(MAMA_BIRTH_TEST_CONFIRMED))) {
+            return TerminalOutcome.CHILD_CONFIRMED_POSITIVE;
+        }
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return TerminalOutcome.NONE;
         String result = values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT);
         if ("positive".equals(result) && "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA))) {
@@ -101,6 +119,11 @@ public final class MotherMentorMotherChildUtils {
     /** Clears submitted answers from branches which no longer apply. */
     public static void normalize(JSONObject form, LocalDate assessment) {
         Map<String, String> values = values(form);
+        if (applies(values) && "alive".equals(values.get(MAMA_CHILD_STATUS))) {
+            MotherMentorMotherBirthTest.normalize(form, values, assessment);
+        } else {
+            for (String key : MotherMentorMotherBirthTest.ANSWERS) put(form, key, "");
+        }
         if (!applies(values)) {
             for (String key : ANSWER_FIELDS) put(form, key, "");
             put(form, DBConstants.KEY.MAMA_HEI_DUE_TESTS, "[]");

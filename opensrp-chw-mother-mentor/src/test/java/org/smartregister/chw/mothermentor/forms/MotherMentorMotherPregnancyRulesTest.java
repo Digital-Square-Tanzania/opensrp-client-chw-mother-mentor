@@ -125,17 +125,27 @@ public class MotherMentorMotherPregnancyRulesTest {
     }
 
     @Test
-    public void newAttendanceHidesAllPregnancyFieldsAndClearsDatesInBothLanguages() throws Exception {
+    public void newAttendanceUsesPregnancyAndDeliveryRulesWithNoFollowUpAnswer() throws Exception {
         for (String language : LANGUAGES) {
             JSONObject form = foundPregnant(language);
             JsonFormActivity activity = nativeActivity(form);
             set(form, ATTENDANCE_TYPE, "new");
+            set(form, FOLLOW_UP_STATUS, "");
+            assertTrue(relevant(activity, form, VISIT_PREGNANCY_STATUS));
+            assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
             set(form, VISIT_PREGNANCY_STATUS, "not_pregnant");
+            assertTrue(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
             set(form, MAMA_PREGNANCY_OUTCOME, "delivered");
             set(form, MAMA_DELIVERY_DATE_INPUT, "01-11-2026");
-            for (String key : CONDITIONAL_FIELDS) assertFalse(language + ":" + key, relevant(activity, form, key));
-            assertEquals("", calculated(activity, form, MAMA_TAREHE_KUJIFUNGUA));
-            assertEquals("", calculated(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+            assertTrue(relevant(activity, form, MAMA_DELIVERY_DATE_INPUT));
+            assertFalse(relevant(activity, form, MAMA_STILLBIRTH_DATE_INPUT));
+            assertEquals("01-11-2026", calculated(activity, form, MAMA_TAREHE_KUJIFUNGUA));
+
+            set(form, MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
+            set(form, MAMA_ENROLLMENT_CHILD_DOB, "02-11-2026");
+            assertFalse(relevant(activity, form, VISIT_PREGNANCY_STATUS));
+            assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+            assertEquals("02-11-2026", calculated(activity, form, MAMA_TAREHE_KUJIFUNGUA));
         }
     }
 

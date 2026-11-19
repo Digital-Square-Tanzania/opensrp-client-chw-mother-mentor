@@ -203,8 +203,10 @@ public final class MotherMentorMotherClosureRepository {
     public static VisitOutcome classify(Map<String, String> values, LocalDate date) {
         if (values == null || date == null || date.isAfter(LocalDate.now())
                 || !MotherMentorMotherVisitUtils.isEntryComplete(values)) return null;
-        if ("new".equals(value(values, ATTENDANCE_TYPE))) return VisitOutcome.CONTINUE;
-        if ("not_found".equals(value(values, FOLLOW_UP_STATUS))) {
+        if ("new".equals(value(values, ATTENDANCE_TYPE))
+                && !MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)) return VisitOutcome.CONTINUE;
+        if ("repeat".equals(value(values, ATTENDANCE_TYPE))
+                && "not_found".equals(value(values, FOLLOW_UP_STATUS))) {
             switch (value(values, MAMA_NOT_FOUND_REASON)) {
                 case "deceased": return VisitOutcome.DECEASED;
                 case "moved_area": return VisitOutcome.MOVED_AREA;
