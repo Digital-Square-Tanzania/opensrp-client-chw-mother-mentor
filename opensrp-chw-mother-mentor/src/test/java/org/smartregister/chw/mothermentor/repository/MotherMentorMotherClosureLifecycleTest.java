@@ -25,15 +25,15 @@ import java.util.HashMap;
 import java.util.Map;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
-import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultRepository.Answers;
-import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultRepository.Entry;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultEvent.Answers;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultEvent.Entry;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.domain.db.EventClient;
 import org.smartregister.repository.AllSharedPreferences;
-import org.smartregister.repository.EventClientRepository;
+import org.smartregister.repository.BaseRepository;
 import org.smartregister.repository.Repository;
 import org.smartregister.sync.helper.ECSyncHelper;
 import org.robolectric.util.ReflectionHelpers;
@@ -206,44 +206,44 @@ public class MotherMentorMotherClosureLifecycleTest {
         setupPendingProfileTest(sampleDate);
         stubResultEventWrites();
 
-        Entry pending = MotherMentorMotherResultRepository.visible(db, "mother", today).get(0);
-        String id = pending.getSample().getId();
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        String id = pending.getId();
         assertEquals(Stage.SIX_WEEKS, pending.getSample().getStage());
         assertFalse(pending.isRecorded());
         assertFalse(pending.getSample().isOverdue(sampleDate.plusDays(14)));
         assertTrue(pending.getSample().isOverdue(sampleDate.plusDays(15)));
-        assertFalse(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("negative", null, "", "")));
-        assertFalse(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("negative", sampleDate.minusDays(1), "", "")));
-        assertFalse(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("negative", today.plusDays(1), "", "")));
 
-        assertTrue(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("positive", today.minusDays(1), "yes", "positive")));
         assertEquals("1", column(IS_CLOSED));
         assertEquals(today.toString(), column(MAMA_TAREHE_YA_KUFUNGWA));
-        Entry recorded = MotherMentorMotherResultRepository.editable(db, "mother", id, today);
+        Entry recorded = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
         assertNotNull(recorded);
         assertTrue(recorded.isRecorded());
         assertFalse(recorded.isCorrected());
-        assertNull(MotherMentorMotherResultRepository.editable(db, "mother", id, today.plusDays(1)));
+        assertNull(MotherMentorMotherResultEvent.editable(db, "mother", recorded.getId(), today.plusDays(1)));
 
-        assertTrue(MotherMentorMotherResultRepository.save(db, "mother", id, recorded.getRevision(),
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
                 new Answers("negative", today, "yes", "positive")));
-        assertFalse(MotherMentorMotherResultRepository.save(db, "mother", id, recorded.getRevision(),
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
                 new Answers("positive", today, "yes", "positive")));
         assertEquals("0", column(IS_CLOSED));
         assertEquals(1, count("visits"));
         assertEquals(1, count("event"));
-        Entry corrected = MotherMentorMotherResultRepository.history(db, "mother", today).get(0);
+        Entry corrected = MotherMentorMotherResultEvent.history(db, "mother", today).get(0);
         assertTrue(corrected.isCorrected());
-        assertEquals(id, corrected.getSample().getId());
+        assertEquals(recorded.getId(), corrected.getId());
         assertEquals("negative", corrected.getAnswers().getResult());
         assertEquals(today, corrected.getAnswers().getReceivedDate());
         assertEquals("", corrected.getAnswers().getConfirmationResult());
-        assertTrue(MotherMentorMotherResultRepository.visible(db, "mother", today.plusDays(1)).isEmpty());
-        assertEquals(1, MotherMentorMotherResultRepository.history(db, "mother", today.plusDays(1)).size());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
+        assertEquals(1, MotherMentorMotherResultEvent.history(db, "mother", today.plusDays(1)).size());
     }
 
     @Test
@@ -252,25 +252,25 @@ public class MotherMentorMotherClosureLifecycleTest {
         setupPendingProfileTest(today.minusDays(2));
         stubResultEventWrites();
 
-        Entry pending = MotherMentorMotherResultRepository.visible(db, "mother", today).get(0);
-        String id = pending.getSample().getId();
-        assertFalse(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        String id = pending.getId();
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("positive", today, "yes", "")));
-        assertTrue(MotherMentorMotherResultRepository.save(db, "mother", id, "",
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
                 new Answers("positive", today, "no", "")));
         assertEquals("0", column(IS_CLOSED));
-        Entry confirmation = MotherMentorMotherResultRepository.visible(db, "mother", today.plusDays(1)).get(0);
-        assertTrue(confirmation.getSample().isConfirmation());
-        assertNotEquals(id, confirmation.getSample().getId());
+        Entry confirmation = MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).get(0);
+        assertTrue(confirmation.getSample().isAwaitingConfirmation());
+        assertNotEquals(id, confirmation.getId());
 
-        Entry recorded = MotherMentorMotherResultRepository.editable(db, "mother", id, today);
-        assertTrue(MotherMentorMotherResultRepository.save(db, "mother", id, recorded.getRevision(),
+        Entry recorded = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
                 new Answers("positive", today, "yes", "negative")));
         MotherMentorMotherChildRepository.State state =
                 MotherMentorMotherChildRepository.getState(db, "mother", null);
         assertEquals("positive", state.getTests().get(Stage.SIX_WEEKS).getResult());
         assertFalse(state.getTests().get(Stage.SIX_WEEKS).requiresFollowUp());
-        assertTrue(MotherMentorMotherResultRepository.visible(db, "mother", today.plusDays(1)).isEmpty());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
     }
 
     @Test
@@ -320,7 +320,6 @@ public class MotherMentorMotherClosureLifecycleTest {
         ECSyncHelper sync = mock(ECSyncHelper.class);
         when(library.context()).thenReturn(context);
         when(context.allSharedPreferences()).thenReturn(mock(AllSharedPreferences.class));
-        when(context.getEventClientRepository()).thenReturn(mock(EventClientRepository.class));
         when(library.getEcSyncHelper()).thenReturn(sync);
         doAnswer(call -> {
             JSONObject event = call.getArgument(1);
@@ -330,7 +329,7 @@ public class MotherMentorMotherClosureLifecycleTest {
                     call.getArgument(0), event.getString("eventType"), event.getString("eventDate"), id,
                     event.toString()});
             return null;
-        }).when(sync).addEvent(eq("mother"), any(JSONObject.class));
+        }).when(sync).addEvent(eq("mother"), any(JSONObject.class), eq(BaseRepository.TYPE_Unsynced));
     }
 
     private final class FixtureVisits extends VisitRepository {
