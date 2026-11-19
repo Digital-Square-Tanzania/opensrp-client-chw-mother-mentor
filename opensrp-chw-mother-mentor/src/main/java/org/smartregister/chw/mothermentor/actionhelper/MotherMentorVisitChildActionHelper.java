@@ -110,7 +110,7 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
         if (payload == null) return BaseMotherMentorVisitAction.Status.PENDING;
         Map<String, String> values = MotherMentorMotherChildUtils.values(payload);
         return completed(MotherMentorMotherChildUtils.applies(values)
-                && MotherMentorMotherChildUtils.isComplete(values, entryHelper.childAssessmentDate(payload)));
+                && entryHelper.isChildAssessmentComplete(payload, values));
     }
 
     @Override

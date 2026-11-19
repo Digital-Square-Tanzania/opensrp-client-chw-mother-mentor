@@ -5,7 +5,6 @@ import android.text.TextUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
@@ -173,7 +172,7 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
                 }
             }
             if (prefill) {
-                prepareBreastfeeding(form, clinical);
+                MotherMentorMotherChildUtils.prepareBreastfeeding(form, clinical);
                 putIfEmpty(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                         clinical.getWeaningDate() == null ? "" : clinical.getWeaningDate().toString());
                 if (currentVisitId != null) MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(form);
@@ -185,29 +184,6 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
             Timber.e(e, "Unable to prepare the Child EID HEI assessment");
             return source;
         }
-    }
-
-    private void prepareBreastfeeding(JSONObject form, MotherMentorMotherChildRepository.State clinical) {
-        JSONObject field = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-        if (field == null) return;
-        String status = clinical.getBreastfeedingStatus();
-        if (clinical.hasBreastfeedingHistory()) {
-            JSONArray options = field.optJSONArray("options");
-            for (int i = options == null ? 0 : options.length(); i > 0; i--) {
-                JSONObject option = options.optJSONObject(i - 1);
-                if (option != null && MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(option.optString("key"))) {
-                    options.remove(i - 1);
-                }
-            }
-            if (MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(field.optString("value"))) {
-                MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, "");
-            }
-            if (MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(status)) status = "";
-        } else if ("not_breastfeeding".equals(status) && clinical.getWeaningDate() == null) {
-            // A legacy not-breastfeeding label without a stop date does not distinguish the two answers.
-            status = "";
-        }
-        putIfEmpty(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, status);
     }
 
     private void putIfEmpty(JSONObject form, String key, String value) {

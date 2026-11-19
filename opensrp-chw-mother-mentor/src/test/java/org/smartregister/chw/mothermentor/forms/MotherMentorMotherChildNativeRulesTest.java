@@ -71,6 +71,8 @@ public class MotherMentorMotherChildNativeRulesTest {
             assertTrue(nativeForm.relevant(MAMA_BREASTFEEDING_STATUS));
             assertFalse(nativeForm.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_DONE));
+            nativeForm.answer(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+            assertFalse(nativeForm.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
             nativeForm.answer(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
             assertTrue(nativeForm.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
             nativeForm.answer(MAMA_HEI_DUE_TESTS, "[\"eighteen_months\"]");

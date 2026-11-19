@@ -5,6 +5,8 @@ import android.content.Context;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
@@ -19,6 +21,7 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
@@ -175,8 +178,12 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     protected MotherMentorMotherChildRepository.State loadChildState() {
-        return MotherMentorMotherChildRepository.getState(MotherMentorLibrary.getInstance()
-                .getRepository().getReadableDatabase(), member.getBaseEntityId(), currentVisitId);
+        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) {
+            return new MotherMentorMotherChildRepository.State(null);
+        }
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        return MotherMentorMotherChildRepository.getStateBeforeMotherVisit(
+                database, member.getBaseEntityId(), currentVisitId);
     }
 
     LocalDate childAssessmentDate(JSONObject form) {
@@ -316,6 +323,19 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         return completed(MotherMentorMotherVisitUtils.isEntryComplete(values)
                 && MotherMentorMotherPregnancyUtils.isComplete(values, loadServiceDate())
                 && (MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)
-                        || MotherMentorMotherChildUtils.isComplete(values, childAssessmentDate(payload))));
+                        || isChildAssessmentComplete(payload, values)));
+    }
+
+    boolean isChildAssessmentComplete(JSONObject form, Map<String, String> values) {
+        try {
+            boolean hasBreastfeedingHistory = MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(
+                    values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
+                    && MotherMentorMotherChildUtils.applies(values)
+                    && loadChildState().hasBreastfeedingHistory();
+            return MotherMentorMotherChildUtils.isComplete(values, childAssessmentDate(form), hasBreastfeedingHistory);
+        } catch (Exception unavailable) {
+            Timber.w(unavailable, "Unable to validate the mother child assessment");
+            return false;
+        }
     }
 }
