@@ -164,8 +164,8 @@ public final class MotherMentorChildEidResultEvent {
         values.put(MTOTO_RUFAA_STATE_BEFORE, sample.state);
         values.put(MTOTO_RETURN_FLOW, "1");
         values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
-        values.put(MTOTO_RESULT_RECEIVED_DATE, value(answers, MTOTO_RESULT_RECEIVED_DATE));
         if (AWAITING_RESULT.equals(sample.state)) {
+            values.put(MTOTO_RESULT_RECEIVED_DATE, value(answers, MTOTO_RESULT_RECEIVED_DATE));
             values.put(MTOTO_RESULT_RECEIVED, "yes");
             values.put(MTOTO_RECEIVED_RESULT, value(answers, MTOTO_RECEIVED_RESULT));
         }

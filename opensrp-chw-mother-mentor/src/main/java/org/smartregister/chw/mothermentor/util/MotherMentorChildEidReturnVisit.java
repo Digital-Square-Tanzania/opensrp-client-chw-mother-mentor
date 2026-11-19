@@ -118,7 +118,7 @@ public final class MotherMentorChildEidReturnVisit {
                 || !date.equals(original.getDate())) return null;
         boolean confirming = AWAITING_CONFIRM.equals(priorState);
         if (confirming && !value(values, MTOTO_CONFIRMATORY_TEST_DONE).isEmpty()) {
-            return resolveConfirmation(stage, date, values, true);
+            return resolveConfirmation(stage, date, values);
         }
         String received = value(values, confirming ? MTOTO_CONFIRMATION_RECEIVED : MTOTO_RESULT_RECEIVED);
         if ("no".equals(received)) return keep(priorState);
@@ -140,25 +140,23 @@ public final class MotherMentorChildEidReturnVisit {
     public static Result evaluateStandalone(Map<String, String> values, LocalDate day) {
         Stage stage = Stage.fromCode(value(values, MTOTO_PENDING_TEST));
         LocalDate date = date(values, MTOTO_PENDING_TEST_DATE);
-        LocalDate received = date(values, MTOTO_RESULT_RECEIVED_DATE);
-        if (stage == null || date == null || !MotherMentorHeiSchedule.validDate(received, date, day)) return null;
+        if (stage == null || date == null || day == null || date.isAfter(day)) return null;
         String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
-        if (AWAITING_CONFIRM.equals(state)) return resolveConfirmation(stage, date, values, false);
-        if (!AWAITING_RESULT.equals(state)) return null;
+        if (AWAITING_CONFIRM.equals(state)) return resolveConfirmation(stage, date, values);
+        if (!AWAITING_RESULT.equals(state) || stage == Stage.EIGHTEEN_MONTHS
+                || !MotherMentorHeiSchedule.validDate(date(values, MTOTO_RESULT_RECEIVED_DATE), date, day)) return null;
         String result = value(values, MTOTO_RECEIVED_RESULT);
         if ("negative".equals(result)) return negative(stage, date);
-        return "positive".equals(result) ? resolveConfirmation(stage, date, values, true) : null;
+        return "positive".equals(result) ? resolveConfirmation(stage, date, values) : null;
     }
 
-    private static Result resolveConfirmation(Stage stage, LocalDate date, Map<String, String> values,
-            boolean allowWaiting) {
-        String done = value(values, MTOTO_CONFIRMATORY_TEST_DONE);
+    private static Result resolveConfirmation(Stage stage, LocalDate date, Map<String, String> values) {
         String result = value(values, MTOTO_CONFIRMATORY_RESULT);
-        if (allowWaiting && ("no".equals(done) || ("yes".equals(done)
-                && "pending".equals(result) && stage != Stage.EIGHTEEN_MONTHS))) {
-            return awaitingConfirmation(stage, date);
-        }
-        return "yes".equals(done) ? confirmed(stage, date, result) : null;
+        MotherMentorHeiConfirmation.Outcome outcome = MotherMentorHeiConfirmation.resolve(
+                stage, value(values, MTOTO_CONFIRMATORY_TEST_DONE), result);
+        if (outcome == null) return null;
+        return outcome == MotherMentorHeiConfirmation.Outcome.WAITING ? awaitingConfirmation(stage, date)
+                : confirmed(stage, date, result);
     }
 
     private static Result awaitingConfirmation(Stage stage, LocalDate date) {
@@ -213,12 +211,12 @@ public final class MotherMentorChildEidReturnVisit {
     private static Result resolveInitialResult(Stage stage, LocalDate date, String result,
             Map<String, String> values, boolean allowPending) {
         switch (result) {
-            case "pending": return allowPending
+            case "pending": return allowPending && stage != Stage.EIGHTEEN_MONTHS
                     ? new Result(AWAITING_RESULT, stage, date, result, Outcome.CONTINUE) : null;
             case "negative": return negative(stage, date);
             case "positive":
                 if (!value(values, MTOTO_CONFIRMATORY_TEST_DONE).isEmpty()) {
-                    return resolveConfirmation(stage, date, values, true);
+                    return resolveConfirmation(stage, date, values);
                 }
                 // Historical visits used one question, where "yes" meant confirmed positive.
                 String reported = value(values, MTOTO_CONFIRMATION_RECEIVED);

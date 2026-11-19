@@ -209,7 +209,19 @@ public final class MotherMentorChildEidRepository {
         state.visits = Collections.unmodifiableList(history);
         state.visitCount = history.size();
         replayReferrals(db, state, day, before);
+        if (state.exit == null && !state.isClosed()
+                && state.clinical.getTerminalOutcome()
+                        == org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE
+                && !state.getMotherId().isEmpty() && before == null
+                && hasSibling(db, state.getMotherId(), state.clinical.getChildDob())) {
+            state.close(MotherMentorChildEidExit.E4, state.clinical.getTerminalServiceDate(), Collections.emptyMap());
+        }
         return state;
+    }
+
+    private static boolean hasSibling(SQLiteDatabase db, String motherId, LocalDate dob) {
+        MotherMentorMotherVisitDao.Context mother = MotherMentorMotherVisitDao.getContext(db, motherId);
+        return MotherMentorChildEidDao.followedChildren(db, motherId, mother, dob).size() > 1;
     }
 
     private static void seedDirectEnrollment(State state, Map<String, String> original) {
@@ -536,6 +548,10 @@ public final class MotherMentorChildEidRepository {
 
     /** A later missed test updates metadata, never the open episode's referral progress. */
     public static void rebuildForMother(SQLiteDatabase db, String motherId) {
+        MotherMentorMotherVisitDao.Context mother = MotherMentorMotherVisitDao.getContext(db, motherId);
+        LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(mother.getChildDob());
+        String child = MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
+        if (!child.isEmpty() && hasSibling(db, motherId, dob)) rebuild(db, child);
         EnrollmentPlan latest = enrollmentPlan(db, motherId, true);
         if (latest == null || !MotherMentorChildEidDao.columns(db,
                 Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID).containsAll(COLUMNS)) return;

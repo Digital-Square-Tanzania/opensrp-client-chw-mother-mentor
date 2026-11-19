@@ -33,7 +33,7 @@ public final class MotherMentorMotherChildUtils {
             DBConstants.KEY.MAMA_HEI_TEST_DONE, DBConstants.KEY.MAMA_HEI_TEST_TYPE,
             DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
             DBConstants.KEY.MAMA_HEI_TEST_RESULT, MAMA_HEI_TEST_RECEIVED_DATE,
-            DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+            MAMA_HEI_CONFIRMATORY_TEST_DONE, MAMA_HEI_CONFIRMATORY_RESULT));
 
     private static final List<String> CHILD_FIELDS = Arrays.asList(MAMA_CHILD_PATH,
             MAMA_CARRIED_WEANING_DATE, MAMA_PREVIOUS_WEANING_DATE, MAMA_PREVIOUS_BREASTFEEDING_STATUS,
@@ -108,14 +108,13 @@ public final class MotherMentorMotherChildUtils {
         if (stage == null || !due.contains(stage)
                 || !MotherMentorHeiSchedule.validDate(testDate, dob, assessment)) return false;
         String result = values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT);
-        if ("pending".equals(result)) return true;
+        if ("pending".equals(result)) return stage != Stage.EIGHTEEN_MONTHS;
         if (!hasReceivedResult(result)) return false;
         // Visits recorded before this field was introduced have no receipt-date observation.
         if (values.containsKey(MAMA_HEI_TEST_RECEIVED_DATE)
                 && !MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
                         values.get(MAMA_HEI_TEST_RECEIVED_DATE)), testDate, assessment)) return false;
-        return !"positive".equals(result) || Arrays.asList("yes", "no")
-                .contains(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+        return !"positive".equals(result) || MotherMentorHeiConfirmation.fromRoutineVisit(stage, values) != null;
     }
 
     public static TerminalOutcome terminalOutcome(Map<String, String> values, LocalDate assessment) {
@@ -134,11 +133,11 @@ public final class MotherMentorMotherChildUtils {
         if ("deceased".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
         if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return TerminalOutcome.NONE;
         String result = values.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT);
-        if ("positive".equals(result) && "yes".equals(values.get(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA))) {
+        Stage stage = Stage.fromCode(values.get(MAMA_HEI_TEST_TYPE));
+        if (MotherMentorHeiConfirmation.fromRoutineVisit(stage, values) == MotherMentorHeiConfirmation.Outcome.POSITIVE) {
             return TerminalOutcome.CHILD_CONFIRMED_POSITIVE;
         }
-        return "negative".equals(result)
-                && Stage.EIGHTEEN_MONTHS.getCode().equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE))
+        return "negative".equals(result) && stage == Stage.EIGHTEEN_MONTHS
                 ? TerminalOutcome.GRADUATED : TerminalOutcome.NONE;
     }
 
@@ -182,11 +181,14 @@ public final class MotherMentorMotherChildUtils {
             for (String key : Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_TYPE,
                     DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, DBConstants.KEY.MAMA_HEI_TEST_DATE,
                     DBConstants.KEY.MAMA_HEI_TEST_RESULT, MAMA_HEI_TEST_RECEIVED_DATE,
-                    DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA)) put(form, key, "");
+                    MAMA_HEI_CONFIRMATORY_TEST_DONE, MAMA_HEI_CONFIRMATORY_RESULT)) put(form, key, "");
         } else {
             String result = values.get(MAMA_HEI_TEST_RESULT);
             if (!hasReceivedResult(result)) put(form, MAMA_HEI_TEST_RECEIVED_DATE, "");
-            if (!"positive".equals(result)) put(form, HEI_CHANYA_IMETHIBITISHWA, "");
+            if (!"positive".equals(result)) put(form, MAMA_HEI_CONFIRMATORY_TEST_DONE, "");
+            if (!"positive".equals(result) || !"yes".equals(values.get(MAMA_HEI_CONFIRMATORY_TEST_DONE))) {
+                put(form, MAMA_HEI_CONFIRMATORY_RESULT, "");
+            }
         }
     }
 
@@ -222,7 +224,6 @@ public final class MotherMentorMotherChildUtils {
                                 MotherMentorHeiSchedule.parseDate(answers.get(MAMA_HEI_TEST_DATE)))) {
                     fill(form, MAMA_HEI_TEST_RECEIVED_DATE, date(record.getReceivedDate()));
                 }
-                fill(form, HEI_CHANYA_IMETHIBITISHWA, "no");
             }
             break;
         }

@@ -24,6 +24,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -134,23 +135,89 @@ public class MotherMentorMotherChildRepositoryTest {
 
     private void resultEvent(String id, String source, LocalDate day, String result,
             String phase, String confirmation) throws Exception {
+        resultEvent(id, source, Stage.AT_BIRTH, dob, day, result, phase, confirmation);
+    }
+
+    private void resultEvent(String id, String source, Stage stage, LocalDate sampleDay, LocalDate day,
+            String result, String phase, String confirmation) throws Exception {
         Map<String, String> values = new LinkedHashMap<>();
         values.put(MAMA_ENROLLMENT_ID, "episode-one");
         values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
         values.put("mama_hei_sample_submission_id", source);
-        values.put(MTOTO_PENDING_TEST, "at_birth");
-        values.put(MTOTO_PENDING_TEST_DATE, dob.toString());
+        values.put(MTOTO_PENDING_TEST, stage.getCode());
+        values.put(MTOTO_PENDING_TEST_DATE, sampleDay.toString());
         values.put(MTOTO_RUFAA_STATE_BEFORE, phase);
         if (result != null) {
             values.put(MTOTO_RECEIVED_RESULT, result);
             values.put(MTOTO_RESULT_RECEIVED_DATE, day.toString());
             values.put(MTOTO_CONFIRMATORY_TEST_DONE, "no");
         }
-        if (confirmation != null) values.put(MTOTO_CONFIRMATORY_RESULT, confirmation);
+        if (confirmation != null) {
+            values.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+            values.put(MTOTO_CONFIRMATORY_RESULT, confirmation);
+        }
         JSONObject event = new JSONObject().put("formSubmissionId", id).put("eventDate", day.toString())
                 .put("version", 1).put("obs", observations(values));
         data.execSQL("INSERT INTO event VALUES ('mother', ?, ?, ?, ?)",
                 new Object[] {MotherMentorMotherResultEvent.EVENT_TYPE, day.toString(), id, event.toString()});
+    }
+
+    @Test
+    public void profileConfirmationFollowsTheOriginalSampleAndClosesOnlyForPositive() throws Exception {
+        LocalDate day = dob.plusDays(43);
+        Map<String, String> values = MotherMentorMotherChildUtilsTest.test("six_weeks", "positive", day);
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        values.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("first", "sample", "mother", values, day, 1, false);
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).isAwaitingConfirmation());
+
+        resultEvent("waiting", "sample", Stage.SIX_WEEKS, day, day.plusDays(1), null, "awaiting_confirm", "pending");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(1)).get(0).isAwaitingConfirmation());
+        resultEvent("unlinked", "other", Stage.SIX_WEEKS, day, day.plusDays(2), null, "awaiting_confirm", "positive");
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+        resultEvent("final", "sample", Stage.SIX_WEEKS, day, day.plusDays(3), null, "awaiting_confirm", "positive");
+        assertEquals(MotherMentorMotherClosure.CHILD_CONFIRMED_POSITIVE,
+                MotherMentorMotherClosureRepository.getState(db, "mother", null).getStatus());
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(3)).isEmpty());
+        assertEquals("1", scalar("SELECT COUNT(*) FROM visits"));
+    }
+
+    @Test
+    public void eighteenMonthConfirmatoryNegativeClearsPendingWithoutGraduation() throws Exception {
+        LocalDate day = dob.plusMonths(18);
+        Map<String, String> values = MotherMentorMotherChildUtilsTest.test("eighteen_months", "positive", day);
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        values.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("first", "sample", "mother", values, day, 1, false);
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).isAwaitingConfirmation());
+
+        resultEvent("invalid", "sample", Stage.EIGHTEEN_MONTHS, day, day.plusDays(1), null, "awaiting_confirm", "pending");
+        assertEquals(1, MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(1)).size());
+        resultEvent("final", "sample", Stage.EIGHTEEN_MONTHS, day, day.plusDays(2), null, "awaiting_confirm", "negative");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(2)).isEmpty());
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertTrue(state.getTests().get(Stage.EIGHTEEN_MONTHS).isConfirmationNegative());
+        assertFalse(state.hasFinalNegative());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test
+    public void twinsKeepTheirOwnOutcomeAndTheMotherCardClosesAfterTheLastChild() throws Exception {
+        link("child", dob);
+        link("twin", dob);
+        Map<String, String> positive = childResult("positive");
+        positive.put(HEI_CHANYA_IMETHIBITISHWA, "yes");
+        visit("positive", "positive", "child", positive, dob.plusMonths(18), 1, false);
+        assertTrue(MotherMentorMotherChildRepository.getStateForChild(db, "child", null).hasConfirmedPositive());
+        assertFalse(MotherMentorMotherChildRepository.getStateForChild(db, "twin", null).hasConfirmedPositive());
+        assertTrue(MotherMentorMotherClosureRepository.hasOpenSibling(db, "mother", "child"));
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+
+        LocalDate last = dob.plusMonths(19);
+        visit("negative", "negative", "twin", childResult("negative"), last, 1, false);
+        MotherMentorMotherClosure closure = MotherMentorMotherClosureRepository.getState(db, "mother", null);
+        assertEquals(MotherMentorMotherClosure.GRADUATED, closure.getStatus());
+        assertEquals(last.toString(), closure.getClosedDate());
     }
 
     @Test

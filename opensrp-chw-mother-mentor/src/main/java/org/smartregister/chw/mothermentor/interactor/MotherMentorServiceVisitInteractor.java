@@ -118,11 +118,15 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected boolean shouldSubmitOnSave() {
         if (super.shouldSubmitOnSave()) return true;
         if (memberObject == null || serviceDate == null) return false;
+        LocalDate day = LocalDate.fromDateFields(serviceDate);
+        Map<String, String> values = clinicalValues();
+        if (MotherMentorMotherClosureRepository.classify(values, day) == VisitOutcome.CHILD_CONFIRMED_POSITIVE) {
+            return true;
+        }
         // A confirmed terminal visit must close the card and its Kaya even while offline.
         return MotherMentorMotherClosureRepository.preview(
                 MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                memberObject.getBaseEntityId(), null, clinicalValues(),
-                LocalDate.fromDateFields(serviceDate)).isClosed();
+                memberObject.getBaseEntityId(), null, values, day).isClosed();
     }
 
     @Override

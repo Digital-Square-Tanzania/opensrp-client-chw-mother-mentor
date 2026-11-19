@@ -361,6 +361,8 @@ public final class DBConstants {
         public static final String MAMA_BIRTH_TEST_RESULT = "mama_birth_test_result";
         public static final String MAMA_BIRTH_TEST_RECEIVED_DATE = "mama_birth_test_received_date";
         public static final String MAMA_BIRTH_TEST_CONFIRMED = "mama_birth_test_confirmed";
+        public static final String MAMA_HEI_CONFIRMATORY_TEST_DONE = "mama_hei_confirmatory_test_done";
+        public static final String MAMA_HEI_CONFIRMATORY_RESULT = "mama_hei_confirmatory_result";
         public static final String MAMA_BIRTH_TEST_CONFIRMATION_DONE = "mama_birth_test_confirmation_done";
         public static final String MAMA_BIRTH_TEST_CONFIRMATION_RESULT = "mama_birth_test_confirmation_result";
 

@@ -92,6 +92,35 @@ public final class MotherMentorChildEidDao {
         return matches.size() == 1 ? matches.iterator().next() : "";
     }
 
+    public static Set<String> childrenBornOn(SQLiteDatabase db, String motherId, LocalDate dob) {
+        Set<String> linked = new HashSet<>();
+        if (dob == null || StringUtils.isBlank(motherId)) return linked;
+        collectLinks(db, ENROLLMENTS, DBConstants.KEY.MOTHER_BASE_ENTITY_ID, motherId, linked);
+        collectLinks(db, DBConstants.KEY.CHILD, DBConstants.KEY.MOTHER_ENTITY_ID, motherId, linked);
+        linked.removeIf(id -> {
+            Map<String, String> person = person(db, id);
+            String birthDate = StringUtils.defaultIfBlank(person.get(DBConstants.KEY.DOB),
+                    enrollment(db, id).get(DBConstants.KEY.CHILD_DOB));
+            return id.equals(motherId) || !dob.equals(MotherMentorHeiSchedule.parseBirthDate(birthDate));
+        });
+        return linked;
+    }
+
+    public static Set<String> followedChildren(SQLiteDatabase db, String motherId,
+            MotherMentorMotherVisitDao.Context context, LocalDate dob) {
+        Set<String> children = childrenBornOn(db, motherId, dob);
+        Set<String> enrolled = new HashSet<>();
+        collectLinks(db, ENROLLMENTS, DBConstants.KEY.MOTHER_BASE_ENTITY_ID, motherId, enrolled);
+        for (String child : enrolled) {
+            String episode = enrollment(db, child).get(DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID);
+            if (StringUtils.isNotBlank(episode) && episode.equals(context.getEnrollmentId())) {
+                children.add(child);
+            }
+        }
+        children.remove(motherId);
+        return children;
+    }
+
     public static boolean isActivePerson(Map<String, String> person) {
         return !person.isEmpty() && !"1".equals(person.get(DBConstants.KEY.IS_CLOSED))
                 && !recorded(person.get(DBConstants.KEY.DATE_DIED)) && !recorded(person.get(DBConstants.KEY.DOD));

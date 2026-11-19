@@ -20,9 +20,9 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiConfirmation;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
-import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -105,25 +105,26 @@ public final class MotherMentorMotherResultEvent {
         return evaluate(pending, answers, day) != null;
     }
 
-    public static boolean closesCard(PendingTest pending, Map<String, String> answers, LocalDate day) {
+    public static boolean confirmsPositive(PendingTest pending, Map<String, String> answers, LocalDate day) {
         Outcome result = evaluate(pending, answers, day);
         return result != null && "positive".equals(result.confirmation);
     }
 
     static Outcome evaluate(PendingTest pending, Map<String, String> values, LocalDate day) {
         if (day == null || day.isBefore(pending.testDate)) return null;
-        String confirmation = values.get(MTOTO_CONFIRMATORY_RESULT);
-        if (pending.awaitingConfirmation) {
-            return "negative".equals(confirmation) || "positive".equals(confirmation)
-                    ? new Outcome("positive", confirmation) : null;
+        if (!pending.awaitingConfirmation) {
+            LocalDate receipt = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_RESULT_RECEIVED_DATE));
+            if (pending.stage == Stage.EIGHTEEN_MONTHS
+                    || !MotherMentorHeiSchedule.validDate(receipt, pending.testDate, day)) return null;
+            String result = values.get(MTOTO_RECEIVED_RESULT);
+            if ("negative".equals(result)) return new Outcome(result, null);
+            if (!"positive".equals(result)) return null;
         }
-        LocalDate receipt = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_RESULT_RECEIVED_DATE));
-        if (!MotherMentorHeiSchedule.validDate(receipt, pending.testDate, day)) return null;
-        String result = values.get(MTOTO_RECEIVED_RESULT);
-        if ("negative".equals(result)) return new Outcome(result, null);
-        String done = values.get(MTOTO_CONFIRMATORY_TEST_DONE);
-        return "positive".equals(result) && MotherMentorMotherBirthTest.validConfirmation(done, confirmation)
-                ? new Outcome(result, "yes".equals(done) ? confirmation : null) : null;
+        String confirmation = values.get(MTOTO_CONFIRMATORY_RESULT);
+        MotherMentorHeiConfirmation.Outcome outcome = MotherMentorHeiConfirmation.resolve(
+                pending.stage, values.get(MTOTO_CONFIRMATORY_TEST_DONE), confirmation);
+        if (outcome == null) return null;
+        return new Outcome("positive", outcome == MotherMentorHeiConfirmation.Outcome.WAITING ? null : confirmation);
     }
 
     public static boolean save(SQLiteDatabase db, String motherId, PendingTest displayed,
@@ -150,7 +151,7 @@ public final class MotherMentorMotherResultEvent {
                 observe(event, MTOTO_RESULT_RECEIVED_DATE, answers.get(MTOTO_RESULT_RECEIVED_DATE));
             }
             if (current.awaitingConfirmation || "positive".equals(answers.get(MTOTO_RECEIVED_RESULT))) {
-                String done = current.awaitingConfirmation ? "yes" : answers.get(MTOTO_CONFIRMATORY_TEST_DONE);
+                String done = answers.get(MTOTO_CONFIRMATORY_TEST_DONE);
                 observe(event, MTOTO_CONFIRMATORY_TEST_DONE, done);
                 if ("yes".equals(done)) observe(event, MTOTO_CONFIRMATORY_RESULT, answers.get(MTOTO_CONFIRMATORY_RESULT));
             }
@@ -172,6 +173,7 @@ public final class MotherMentorMotherResultEvent {
     public static void rebuild(SQLiteDatabase db, String motherId) {
         if (db == null || StringUtils.isBlank(motherId)) return;
         MotherMentorMotherChildRepository.rebuild(db, motherId);
+        MotherMentorChildEidRepository.rebuildForMother(db, motherId);
         MotherMentorMotherClosureRepository.rebuild(db, motherId);
     }
 

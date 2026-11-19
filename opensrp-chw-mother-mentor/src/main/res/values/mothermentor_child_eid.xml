@@ -11,4 +11,5 @@
     <string name="mothermentor_child_eid_eligibility">Children must be younger than 18 months with a known date of birth.</string>
     <string name="mothermentor_child_eid_age_error">Enter a date of birth for a child younger than 18 months</string>
     <string name="mothermentor_child_eid_enrollment_unavailable">Child EID enrollment requires a child younger than 18 months with a known date of birth who is not already enrolled.</string>
+    <string name="mothermentor_eid_exit_mother_continues">The Mama card stays open for the other children.</string>
 </resources>

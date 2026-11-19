@@ -156,10 +156,11 @@ public class MotherMentorMotherExitActionFlowTest {
             language = directory;
             for (String missing : new String[] {VISIT_PREGNANCY_STATUS, MAMA_PREGNANCY_OUTCOME,
                             MAMA_PREGNANCY_LOSS_DATE, MAMA_PREGNANCY_OUTCOME_OTHER,
-                            MAMA_TAREHE_MTOTO_ALIFARIKI, HEI_CHANYA_IMETHIBITISHWA}) {
+                            MAMA_TAREHE_MTOTO_ALIFARIKI, MAMA_HEI_CONFIRMATORY_TEST_DONE,
+                            MAMA_HEI_CONFIRMATORY_RESULT}) {
                 Map<String, BaseMotherMentorVisitAction> actions = start(false);
                 String outcome = MAMA_TAREHE_MTOTO_ALIFARIKI.equals(missing) ? "child_deceased"
-                        : HEI_CHANYA_IMETHIBITISHWA.equals(missing)          ? "confirmed_positive"
+                        : missing.startsWith("mama_hei_confirmatory_")          ? "confirmed_positive"
                         : MAMA_PREGNANCY_OUTCOME_OTHER.equals(missing)       ? "other"
                                                                                 : "pregnancy_loss";
                 answer(entry(actions), clinical(outcome));
@@ -357,7 +358,8 @@ public class MotherMentorMotherExitActionFlowTest {
                         : "pending".equals(outcome)                                   ? "pending"
                                                                                         : "negative",
                 MAMA_HEI_TEST_RECEIVED_DATE, DAY.toString(),
-                HEI_CHANYA_IMETHIBITISHWA, "confirmed_positive".equals(outcome) ? "yes" : "no"};
+                MAMA_HEI_CONFIRMATORY_TEST_DONE, "confirmed_positive".equals(outcome) ? "yes" : "no",
+                MAMA_HEI_CONFIRMATORY_RESULT, "confirmed_positive".equals(outcome) ? "positive" : ""};
     }
 
     private LinkedHashMap<String, BaseMotherMentorVisitAction> start(boolean edit) {
