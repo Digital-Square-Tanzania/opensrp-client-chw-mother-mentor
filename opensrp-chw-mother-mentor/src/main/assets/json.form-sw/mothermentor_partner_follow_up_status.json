@@ -91,6 +91,54 @@
         }
       },
       {
+        "key": "partner_testing_referral_given",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_testing_referral_given",
+        "label": "Rufaa ya upimaji imetolewa?",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Jibu swali: Rufaa ya upimaji imetolewa?"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "partner_testing_referral_prompt",
+        "type": "label",
+        "text": "Mpe mwenzi rufaa ya upimaji.",
+        "hint_on_text": false,
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "partner_not_found_reason",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",

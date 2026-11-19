@@ -19,4 +19,8 @@
     <string name="mothermentor_partner_closure_other_3">Hajapatikana — Nyingine mara 3+</string>
     <string name="mothermentor_partner_closure_lost_to_follow_up">Lost to Follow-up (LTFU)</string>
     <string name="mothermentor_partner_closure_completed">Ufuatiliaji umekamilika</string>
+    <string name="mothermentor_partner_referral_section">Rufaa ya upimaji imetolewa?</string>
+    <string name="mothermentor_partner_referred_status">Amekubali — amepewa rufaa, anasubiriwa kituoni</string>
+    <string name="mothermentor_partner_referral_pending_status">Amekubali — rufaa bado haijatolewa</string>
+    <string name="mothermentor_partner_closure_attended">Amehudhuria kituoni</string>
 </resources>

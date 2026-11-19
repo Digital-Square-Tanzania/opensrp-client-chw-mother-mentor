@@ -1,0 +1,73 @@
+{
+  "count": "1",
+  "skip_blank_steps": true,
+  "encounter_type": "Mother Mentor Partner Testing Referral",
+  "entity_id": "",
+  "metadata": {
+    "start": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "start",
+      "openmrs_entity_id": "start"
+    },
+    "end": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "concept",
+      "openmrs_data_type": "end",
+      "openmrs_entity_id": "end"
+    },
+    "today": {
+      "openmrs_entity_parent": "",
+      "openmrs_entity": "encounter",
+      "openmrs_entity_id": "encounter_date"
+    },
+    "encounter_location": ""
+  },
+  "global": {},
+  "step1": {
+    "title": "Was a referral for testing given?",
+    "fields": [
+      {
+        "key": "partner_testing_referral_given",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_testing_referral_given",
+        "label": "Was a referral for testing given?",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Yes",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes"
+          },
+          {
+            "key": "no",
+            "text": "No",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Answer the question: Was a referral for testing given?"
+        }
+      },
+      {
+        "key": "partner_testing_referral_prompt",
+        "type": "label",
+        "text": "Give the partner a referral for testing.",
+        "hint_on_text": false,
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_referral_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

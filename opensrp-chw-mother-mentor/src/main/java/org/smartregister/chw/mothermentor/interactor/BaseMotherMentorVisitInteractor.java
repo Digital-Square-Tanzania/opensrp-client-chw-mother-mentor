@@ -237,13 +237,15 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         saveVisitDetails(visit, payloadType, payloadDetails);
         processExternalVisits(visit, externalVisits, memberID);
 
-        if (shouldSubmitOnSave()) {
-            VisitUtils.processVisits(
-                    Collections.singletonList(visit),
-                    MotherMentorLibrary.getInstance().visitRepository(),
-                    MotherMentorLibrary.getInstance().visitDetailsRepository());
-        }
+        if (shouldSubmitOnSave()) processSavedVisit(visit);
         return visit.getJson();
+    }
+
+    protected void processSavedVisit(Visit visit) throws Exception {
+        VisitUtils.processVisits(
+                Collections.singletonList(visit),
+                MotherMentorLibrary.getInstance().visitRepository(),
+                MotherMentorLibrary.getInstance().visitDetailsRepository());
     }
 
     protected boolean shouldSubmitOnSave() {

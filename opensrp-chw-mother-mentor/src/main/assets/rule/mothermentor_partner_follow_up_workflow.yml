@@ -109,3 +109,19 @@ priority: 1
 condition: "step1_partner_education_provided == 'yes'"
 actions:
   - "isRelevant = true"
+
+---
+name: step1_partner_testing_referral_given
+description: Ask about referral when the partner agrees to attend
+priority: 1
+condition: "step1_follow_up_status == 'found' && step1_partner_facility_agreement == 'agreed'"
+actions:
+  - "isRelevant = true"
+
+---
+name: step1_partner_testing_referral_prompt
+description: Prompt the worker to give the referral
+priority: 2
+condition: "step1_partner_testing_referral_given == 'no' && step1_follow_up_status == 'found' && step1_partner_facility_agreement == 'agreed'"
+actions:
+  - "isRelevant = true"

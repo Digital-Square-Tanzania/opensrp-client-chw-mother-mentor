@@ -58,7 +58,7 @@ public final class MotherMentorPartnerFollowUpDao {
                     partnerId, excludedVisitId).isClosed();
             return new Context(state.getLinkageId(), state.getMotherId(),
                     state.getPregnancyEpisodeId(), state.getMotherPregnant(),
-                    state.isAttendancePending() && !closed, state.isActive() && !closed);
+                    state.getNextPhase(), state.isActive() && !closed);
         } catch (Exception e) {
             Timber.e(e);
             return Context.empty();
@@ -117,11 +117,12 @@ public final class MotherMentorPartnerFollowUpDao {
                 + "coalesce(nullif(" + alias + "." + DBConstants.KEY.PARTNER_LINKAGE_ID
                 + ", ''), 'legacy:' || " + alias + "." + DBConstants.KEY.BASE_ENTITY_ID + ")";
         String serviceDate = normalizedDate(f + "." + DBConstants.KEY.MOTHERMENTOR_VISIT_DATE);
-        String complete = schema + " = '2' AND " + linked + " AND "
+        String complete = linked + " AND "
                 + "trim(coalesce(" + alias + "." + DBConstants.KEY.MWENZI_STATUS + ", '')) = '' AND "
                 + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'completed' AND "
-                + attendanceCompleteCondition(f) + " AND "
-                + serviceDate + " < " + today;
+                + "((" + schema + " = '2' AND " + attendanceCompleteCondition(f) + " AND "
+                + serviceDate + " < " + today + ") OR (" + schema + " = '3' AND "
+                + attendanceDateCondition(f) + " AND " + serviceDate + " <= " + today + "))";
         return "(" + MotherMentorDao.getActiveClientCondition(alias)
                 + " AND coalesce(nullif(" + alias + "." + DBConstants.KEY.MWENZI_STATUS
                 + ", ''), 'active') = 'active' AND NOT EXISTS (SELECT 1 FROM "
@@ -173,20 +174,24 @@ public final class MotherMentorPartnerFollowUpDao {
 
     private static String deathCondition(String f) {
         String schema = f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA;
-        return "((" + schema + " = '2' AND "
+        return "((" + schema + " IN ('2', '3') AND "
                 + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' AND "
                 + f + "." + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'not_found' AND "
                 + f + "." + DBConstants.KEY.PARTNER_NOT_FOUND_REASON + " = 'deceased' AND "
                 + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'deceased') OR ("
-                + "coalesce(" + schema + ", '') <> '2' AND "
+                + "coalesce(" + schema + ", '') NOT IN ('2', '3') AND "
                 + f + "." + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'deceased'))";
     }
 
-    private static String attendanceCompleteCondition(String alias) {
+    private static String attendanceDateCondition(String alias) {
         return alias + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'attendance' AND "
                 + alias + "." + DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY + " = 'yes' AND "
                 + normalizedDate(alias + "." + DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE)
-                + " IS NOT NULL AND " + educationCondition(alias) + " AND "
+                + " IS NOT NULL";
+    }
+
+    private static String attendanceCompleteCondition(String alias) {
+        return attendanceDateCondition(alias) + " AND " + educationCondition(alias) + " AND "
                 + testCondition(alias, DBConstants.KEY.PARTNER_HIV_TESTED,
                         DBConstants.KEY.PARTNER_HIV_RESULT,
                         DBConstants.KEY.PARTNER_HIV_NOT_TESTED_REASON,
@@ -327,20 +332,13 @@ public final class MotherMentorPartnerFollowUpDao {
                 latestId = id;
             }
         }
-        boolean pending = "2".equals(latest.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
-                && (("tracing".equals(latest.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
-                        && "found".equals(latest.get(DBConstants.KEY.FOLLOW_UP_STATUS))
-                        && "agreed".equals(latest.get(DBConstants.KEY.PARTNER_FACILITY_AGREEMENT)))
-                    || ("attendance".equals(latest.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
-                        && ("no".equals(latest.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY))
-                            || "yes".equals(latest.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY)))));
         String pregnant = value(maternal, DBConstants.KEY.PREGNANCY_STATUS);
         pregnant = "pregnant".equals(pregnant) ? "yes"
                 : ("not_pregnant".equals(pregnant) || "breast_feeding".equals(pregnant)
                     ? "no" : "unknown");
         return new Context(linkageId, value(enrollment, DBConstants.KEY.MOTHER_BASE_ENTITY_ID),
                 value(maternal, DBConstants.KEY.MOTHER_PREGNANCY_EPISODE_ID), pregnant,
-                active && pending, active);
+                MotherMentorPartnerFollowUpVisitUtils.nextPhase(latest), active);
     }
 
     private static boolean hasDeath(List<Visit> history) {
@@ -356,7 +354,7 @@ public final class MotherMentorPartnerFollowUpDao {
     }
 
     private static boolean deceased(Map<String, String> values) {
-        if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))) {
+        if (MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)) {
             return "deceased".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END))
                     && "tracing".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
                     && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
@@ -370,7 +368,7 @@ public final class MotherMentorPartnerFollowUpDao {
         return "PARTNER".equals(category)
                 || (StringUtils.isBlank(category)
                     && MotherMentorFollowUpType.PARTNER.getEventType().equals(visit.getVisitType())
-                    && !"2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))
+                    && !MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)
                     && !deceased(values));
     }
 
@@ -384,7 +382,7 @@ public final class MotherMentorPartnerFollowUpDao {
     }
 
     private static Date date(Visit visit, Map<String, String> values) {
-        if ("2".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))) {
+        if (MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)) {
             String recorded = value(values, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE);
             if (!(recorded.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}")
                     || recorded.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))) return null;
@@ -422,16 +420,23 @@ public final class MotherMentorPartnerFollowUpDao {
         private final String motherId;
         private final String pregnancyEpisodeId;
         private final String motherPregnant;
-        private final boolean attendancePending;
+        private final String nextPhase;
         private final boolean active;
 
         public Context(String linkageId, String motherId, String pregnancyEpisodeId,
                 String motherPregnant, boolean attendancePending, boolean active) {
+            this(linkageId, motherId, pregnancyEpisodeId, motherPregnant, attendancePending
+                    ? MotherMentorPartnerFollowUpVisitUtils.ATTENDANCE
+                    : MotherMentorPartnerFollowUpVisitUtils.TRACING, active);
+        }
+
+        public Context(String linkageId, String motherId, String pregnancyEpisodeId,
+                String motherPregnant, String nextPhase, boolean active) {
             this.linkageId = linkageId;
             this.motherId = motherId;
             this.pregnancyEpisodeId = pregnancyEpisodeId;
             this.motherPregnant = motherPregnant;
-            this.attendancePending = attendancePending;
+            this.nextPhase = nextPhase;
             this.active = active;
         }
 
@@ -443,7 +448,10 @@ public final class MotherMentorPartnerFollowUpDao {
         public String getMotherId() { return motherId; }
         public String getPregnancyEpisodeId() { return pregnancyEpisodeId; }
         public String getMotherPregnant() { return motherPregnant; }
-        public boolean isAttendancePending() { return attendancePending; }
+        public String getNextPhase() { return nextPhase; }
+        public boolean isAttendancePending() {
+            return active && MotherMentorPartnerFollowUpVisitUtils.ATTENDANCE.equals(nextPhase);
+        }
         public boolean isActive() { return active; }
     }
 }
