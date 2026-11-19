@@ -28,6 +28,7 @@ import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 import timber.log.Timber;
 
@@ -43,6 +45,7 @@ import timber.log.Timber;
 public final class MotherMentorMotherResultEvent {
     public static final String EVENT_TYPE = "Mother Mentor HEI Test Result";
     private static final String SAMPLE_SOURCE = "mama_hei_sample_submission_id";
+    private static final String CORRECTED = "mama_hei_result_corrected";
 
     private MotherMentorMotherResultEvent() {}
 
@@ -82,6 +85,120 @@ public final class MotherMentorMotherResultEvent {
                     && testDate.equals(MotherMentorHeiSchedule.parseDate(values.get(MTOTO_PENDING_TEST_DATE)))
                     && getState().equals(values.get(MTOTO_RUFAA_STATE_BEFORE));
         }
+    }
+
+    public static final class Answers {
+        private final String result;
+        private final LocalDate receivedDate;
+        private final String confirmationDone;
+        private final String confirmationResult;
+
+        public Answers(String result, LocalDate receivedDate, String confirmationDone,
+                String confirmationResult) {
+            this.result = result;
+            this.receivedDate = receivedDate;
+            this.confirmationDone = "positive".equals(result) ? StringUtils.defaultString(confirmationDone) : "";
+            this.confirmationResult = "yes".equals(this.confirmationDone)
+                    ? StringUtils.defaultString(confirmationResult) : "";
+        }
+
+        public String getResult() { return result; }
+        public LocalDate getReceivedDate() { return receivedDate; }
+        public String getConfirmationDone() { return confirmationDone; }
+        public String getConfirmationResult() { return confirmationResult; }
+
+        public boolean isValid(PendingTest sample, LocalDate day) {
+            return MotherMentorHeiSchedule.validDate(receivedDate, sample.testDate, day)
+                    && isComplete(sample, observations(sample), day);
+        }
+
+        public boolean closesFollowUp(PendingTest sample, LocalDate day) {
+            return closesCard(sample, observations(sample), day);
+        }
+
+        private Map<String, String> observations(PendingTest sample) {
+            Map<String, String> values = new LinkedHashMap<>();
+            if (receivedDate != null) values.put(MTOTO_RESULT_RECEIVED_DATE, receivedDate.toString());
+            if (sample.awaitingConfirmation) {
+                values.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+                values.put(MTOTO_CONFIRMATORY_RESULT, result);
+            } else {
+                values.put(MTOTO_RECEIVED_RESULT, result);
+                values.put(MTOTO_CONFIRMATORY_TEST_DONE, confirmationDone);
+                values.put(MTOTO_CONFIRMATORY_RESULT, confirmationResult);
+            }
+            return values;
+        }
+    }
+
+    public static final class Entry {
+        private final PendingTest sample;
+        private final String id;
+        private final Answers answers;
+        private final LocalDate recordedDate;
+        private final long recordedAt;
+        private final long revision;
+        private final String eventId;
+        private final boolean corrected;
+
+        private Entry(PendingTest sample, String id, Answers answers, LocalDate recordedDate,
+                long recordedAt, long revision, String eventId, boolean corrected) {
+            this.sample = sample;
+            this.id = id;
+            this.answers = answers;
+            this.recordedDate = recordedDate;
+            this.recordedAt = recordedAt;
+            this.revision = revision;
+            this.eventId = eventId;
+            this.corrected = corrected;
+        }
+
+        public PendingTest getSample() { return sample; }
+        public String getId() { return id; }
+        public Answers getAnswers() { return answers; }
+        public LocalDate getRecordedDate() { return recordedDate; }
+        public long getRecordedAt() { return recordedAt; }
+        public long getRevision() { return revision; }
+        public boolean isRecorded() { return answers != null; }
+        public boolean isCorrected() { return corrected; }
+    }
+
+    static Entry readEntry(Visit evidence, PendingTest sample, Map<String, String> values, LocalDate day) {
+        JSONObject event = MotherMentorChildEidDao.json(evidence);
+        long recordedAt = evidence.getDate().getTime();
+        String result = values.get(sample.awaitingConfirmation ? MTOTO_CONFIRMATORY_RESULT : MTOTO_RECEIVED_RESULT);
+        LocalDate receipt = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_RESULT_RECEIVED_DATE));
+        Answers answers = new Answers(result, receipt,
+                sample.awaitingConfirmation ? "" : values.get(MTOTO_CONFIRMATORY_TEST_DONE),
+                sample.awaitingConfirmation ? "" : values.get(MTOTO_CONFIRMATORY_RESULT));
+        return new Entry(sample, evidence.getVisitId(), answers, day, recordedAt,
+                event.optLong(EVENT_VERSION), event.optString("eventId"), "true".equals(values.get(CORRECTED)));
+    }
+
+    public static List<Entry> history(SQLiteDatabase db, String motherId, LocalDate day) {
+        return MotherMentorMotherChildRepository.getState(db, motherId, null, day).testResultHistory();
+    }
+
+    public static List<Entry> visible(SQLiteDatabase db, String motherId, LocalDate day) {
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, motherId, null, day);
+        Map<Stage, Entry> entries = new LinkedHashMap<>();
+        List<PendingTest> pending = state.getPendingMotherTests();
+        if (!pending.isEmpty() && !MotherMentorMotherClosureRepository.isClosed(db, motherId)) {
+            for (PendingTest sample : pending) {
+                entries.put(sample.stage, new Entry(sample, sample.getKey(), null, null, 0, 0, "", false));
+            }
+        }
+        for (Entry entry : state.testResultHistory()) {
+            if (day.equals(entry.recordedDate)) entries.put(entry.sample.stage, entry);
+        }
+        return new ArrayList<>(entries.values());
+    }
+
+    public static Entry editable(SQLiteDatabase db, String motherId, String id, LocalDate day) {
+        for (Entry entry : visible(db, motherId, day)) {
+            if (entry.id.equals(id)) return entry;
+        }
+        return null;
     }
 
     static final class Outcome {
@@ -133,50 +250,86 @@ public final class MotherMentorMotherResultEvent {
     public static boolean save(SQLiteDatabase db, String motherId, PendingTest displayed,
             Map<String, String> answers, LocalDate day) {
         if (db == null || day == null || day.isAfter(LocalDate.now())) return false;
-        db.beginTransaction();
         try {
-            PendingTest current = pending(db, motherId, displayed.getKey(), day);
-            if (current == null || !isComplete(current, answers, day)
-                    || MotherMentorMotherClosureRepository.getState(db, motherId, null).isClosed()) return false;
-            String enrollment = MotherMentorMotherVisitDao.getContext(db, motherId).getEnrollmentId();
-            if (enrollment.isEmpty()) return false;
-            Event event = new Event().withBaseEntityId(motherId).withEventType(EVENT_TYPE)
-                    .withEntityType(Constants.TABLES.MOTHERMENTOR_ENROLLMENT)
-                    .withEventDate(new Date()).withFormSubmissionId(UUID.randomUUID().toString());
-            observe(event, MAMA_ENROLLMENT_ID, enrollment);
-            observe(event, SAMPLE_SOURCE, current.sampleSource);
-            observe(event, MOTHERMENTOR_VISIT_DATE, day.toString());
-            observe(event, MTOTO_PENDING_TEST, current.stage.getCode());
-            observe(event, MTOTO_PENDING_TEST_DATE, current.testDate.toString());
-            observe(event, MTOTO_RUFAA_STATE_BEFORE, current.getState());
-            if (!current.awaitingConfirmation) {
-                observe(event, MTOTO_RECEIVED_RESULT, answers.get(MTOTO_RECEIVED_RESULT));
-                observe(event, MTOTO_RESULT_RECEIVED_DATE, answers.get(MTOTO_RESULT_RECEIVED_DATE));
-            }
-            if (current.awaitingConfirmation || "positive".equals(answers.get(MTOTO_RECEIVED_RESULT))) {
-                String done = current.awaitingConfirmation ? "yes" : answers.get(MTOTO_CONFIRMATORY_TEST_DONE);
-                observe(event, MTOTO_CONFIRMATORY_TEST_DONE, done);
-                if ("yes".equals(done)) observe(event, MTOTO_CONFIRMATORY_RESULT, answers.get(MTOTO_CONFIRMATORY_RESULT));
-            }
-            NCUtils.addEvent(MotherMentorLibrary.getInstance().context().allSharedPreferences(), event);
-            if (MotherMentorChildEidDao.storedEvent(db, motherId, EVENT_TYPE, event.getFormSubmissionId()) == null) {
-                throw new IllegalStateException("Result was not stored");
-            }
-            rebuild(db, motherId);
-            db.setTransactionSuccessful();
+            return save(db, motherId, displayed.getKey(), 0, sample -> answers, day, false);
         } catch (Exception error) {
             Timber.e(error, "Unable to save the Mama Kadi test result");
             return false;
+        }
+    }
+
+    public static boolean save(SQLiteDatabase db, String motherId, String id, long expectedRevision,
+            Answers answers) throws Exception {
+        return save(db, motherId, id, expectedRevision, answers::observations, LocalDate.now(), true);
+    }
+
+    private static boolean save(SQLiteDatabase db, String motherId, String id, long expectedRevision,
+            Function<PendingTest, Map<String, String>> form, LocalDate day, boolean requireReceipt) throws Exception {
+        db.beginTransaction();
+        try {
+            Entry previous = editable(db, motherId, id, day);
+            if (previous == null || previous.revision != expectedRevision) return false;
+            PendingTest sample = previous.sample;
+            Map<String, String> answers = form.apply(sample);
+            LocalDate receipt = MotherMentorHeiSchedule.parseDate(answers.get(MTOTO_RESULT_RECEIVED_DATE));
+            if (!isComplete(sample, answers, day) || (requireReceipt
+                    && !MotherMentorHeiSchedule.validDate(receipt, sample.testDate, day))) return false;
+            persist(db, motherId, previous, answers, day);
+            db.setTransactionSuccessful();
+            return true;
         } finally {
             db.endTransaction();
         }
-        return true;
+    }
+
+    private static void persist(SQLiteDatabase db, String motherId, Entry previous,
+            Map<String, String> answers, LocalDate day) throws Exception {
+        PendingTest sample = previous.sample;
+        String enrollment = MotherMentorMotherVisitDao.getContext(db, motherId).getEnrollmentId();
+        String key = EVENT_TYPE + ":" + motherId + ":" + enrollment + ":" + sample.getKey();
+        String id = previous.isRecorded() ? previous.id
+                : UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8)).toString();
+        Date time = previous.isRecorded() ? new Date(previous.recordedAt) : new Date();
+        Event event = new Event().withBaseEntityId(motherId).withEventType(EVENT_TYPE)
+                .withEntityType(Constants.TABLES.MOTHERMENTOR_ENROLLMENT)
+                .withEventDate(time).withFormSubmissionId(id);
+        if (!previous.eventId.isEmpty()) event.setEventId(previous.eventId);
+        event.setVersion(Math.max(System.currentTimeMillis(), previous.revision + 1));
+        observe(event, MAMA_ENROLLMENT_ID, enrollment);
+        observe(event, SAMPLE_SOURCE, sample.sampleSource);
+        observe(event, MOTHERMENTOR_VISIT_DATE, day.toString());
+        observe(event, MTOTO_PENDING_TEST, sample.stage.getCode());
+        observe(event, MTOTO_PENDING_TEST_DATE, sample.testDate.toString());
+        observe(event, MTOTO_RUFAA_STATE_BEFORE, sample.getState());
+        observe(event, MTOTO_RESULT_RECEIVED_DATE, answers.get(MTOTO_RESULT_RECEIVED_DATE));
+        observe(event, CORRECTED, previous.isRecorded() ? "true" : "");
+        if (!sample.awaitingConfirmation) observe(event, MTOTO_RECEIVED_RESULT, answers.get(MTOTO_RECEIVED_RESULT));
+        if (sample.awaitingConfirmation || "positive".equals(answers.get(MTOTO_RECEIVED_RESULT))) {
+            String done = sample.awaitingConfirmation ? "yes" : answers.get(MTOTO_CONFIRMATORY_TEST_DONE);
+            observe(event, MTOTO_CONFIRMATORY_TEST_DONE, done);
+            if ("yes".equals(done)) observe(event, MTOTO_CONFIRMATORY_RESULT, answers.get(MTOTO_CONFIRMATORY_RESULT));
+        }
+
+        NCUtils.addEvent(MotherMentorLibrary.getInstance().context().allSharedPreferences(), event);
+        if (history(db, motherId, day).stream().noneMatch(entry ->
+                id.equals(entry.id) && entry.revision == event.getVersion())) {
+            throw new IllegalStateException("Unable to persist the linked Mama Kadi result");
+        }
+        rebuild(db, motherId);
+        MotherMentorLibrary.getInstance().context().getEventClientRepository().markEventAsProcessed(id);
     }
 
     public static void rebuild(SQLiteDatabase db, String motherId) {
         if (db == null || StringUtils.isBlank(motherId)) return;
-        MotherMentorMotherChildRepository.rebuild(db, motherId);
-        MotherMentorMotherClosureRepository.rebuild(db, motherId);
+        boolean ownsTransaction = !db.inTransaction();
+        if (ownsTransaction) db.beginTransaction();
+        try {
+            MotherMentorMotherChildRepository.rebuild(db, motherId);
+            MotherMentorMotherClosureRepository.rebuild(db, motherId);
+            if (ownsTransaction) db.setTransactionSuccessful();
+        } finally {
+            if (ownsTransaction) db.endTransaction();
+        }
     }
 
     public static boolean processDeletion(SQLiteDatabase db, String submissionId) {
