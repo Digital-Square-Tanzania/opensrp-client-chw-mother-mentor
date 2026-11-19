@@ -205,6 +205,36 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void mamaVisitReplaysNeverBreastfedThenKeepsNewBreastfeedingHistory() throws Exception {
+        data.delete("event", "formSubmissionId = ?", new String[] {"episode-one"});
+        enrollment("episode-one", "2025-03-01T08:00:00.000+03:00", "not_pregnant");
+        link("child", dob);
+        LocalDate sixWeeks = dob.plusDays(42);
+        Map<String, String> never = MotherMentorMotherChildUtilsTest.child(dob);
+        never.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        never.put(MAMA_HEI_TEST_DONE, "no");
+        visit("never", "never", "mother", never, sixWeeks, 1, false);
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals("never_breastfed", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
+        assertEquals("", scalar("SELECT mama_tarehe_acha_kunyonyesha FROM ec_mothermentor_enrollment"));
+        assertFalse(MotherMentorMotherChildRepository.getState(db, "mother", null).hasBreastfeedingHistory());
+        assertEquals("never_breastfed", MotherMentorMotherChildRepository.getStateForChild(db, "child", null)
+                .getBreastfeedingStatus());
+
+        Map<String, String> started = new LinkedHashMap<>(never);
+        started.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        visit("started", "started", "mother", started, sixWeeks.plusDays(1), 1, false);
+        visit("stale", "stale", "mother", never, sixWeeks.plusDays(2), 1, false);
+        MotherMentorMotherChildRepository.rebuild(db, "mother");
+        assertEquals("breastfeeding", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
+        assertTrue(MotherMentorMotherChildRepository.getState(db, "mother", null).hasBreastfeedingHistory());
+        assertFalse(MotherMentorMotherChildRepository.getStateBeforeMotherVisit(db, "mother", "never")
+                .hasBreastfeedingHistory());
+        assertTrue(MotherMentorMotherChildRepository.getStateBeforeMotherVisit(db, "mother", "stale")
+                .hasBreastfeedingHistory());
+    }
+
+    @Test
     public void earlierEnrollmentRemainsBreastfeedingEvidenceAfterAnAmbiguousLegacyEnrollment() throws Exception {
         data.execSQL("INSERT INTO ec_mothermentor_enroll_child_eid VALUES ('child', '', ?)",
                 new Object[] {dob.toString()});
@@ -356,7 +386,12 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     private void enrollment(String id, String date) throws Exception {
-        Map<String, String> values = new LinkedHashMap<>(); values.put(PREGNANCY_STATUS, "breast_feeding");
+        enrollment(id, date, "breast_feeding");
+    }
+
+    private void enrollment(String id, String date, String pregnancyStatus) throws Exception {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(PREGNANCY_STATUS, pregnancyStatus);
         values.put(CHILD_DOB, dob.toString());
         JSONObject event = new JSONObject().put("formSubmissionId", id).put("eventDate", date)
                 .put("version", 1).put("obs", observations(values));

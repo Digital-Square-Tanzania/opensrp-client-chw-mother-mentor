@@ -587,11 +587,10 @@ public final class MotherMentorChildEidRepository {
             answers.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(clinical.getSamplingHistory()));
             if (!MotherMentorMotherPregnancyUtils.isComplete(answers, day)
                     || !MotherMentorMotherChildUtils.applies(answers)
-                    || !MotherMentorMotherChildUtils.isComplete(answers, day)
+                    || !MotherMentorMotherChildUtils.isComplete(answers, day, clinical.hasBreastfeedingHistory())
                     || !"alive".equals(answers.get(DBConstants.KEY.MAMA_CHILD_STATUS))
                     || !dob.equals(MotherMentorMotherChildUtils.birth(answers))) continue;
-            LocalDate cessation = "not_breastfeeding".equals(answers.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
-                    ? MotherMentorHeiSchedule.parseDate(answers.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)) : null;
+            LocalDate cessation = MotherMentorChildEidHeiUtils.cessation(answers);
             for (Stage stage : MotherMentorHeiSchedule.eligibleForSampling(dob, cessation, clinical.getSamplingHistory(), day)) {
                 if (suppressed.contains(stage)) continue;
                 LocalDate due = MotherMentorHeiSchedule.dueDate(stage, dob, cessation);
@@ -738,10 +737,15 @@ public final class MotherMentorChildEidRepository {
             fields.put(DBConstants.KEY.MTOTO_MISSED_DUE, due.toString());
             fields.put(DBConstants.KEY.MTOTO_RUFAA_STATE, "none");
             fields.put(DBConstants.KEY.MTOTO_STATUS, "active");
-            fields.put(DBConstants.KEY.BREASTFEEDING_STATUS,
-                    "breastfeeding".equals(answers.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
-                            ? "breast_feeding" : "stop_breast_feeding");
-            fields.put(DBConstants.KEY.WEANING_DATE, value(answers, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA));
+            String breastfeeding = answers.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
+            if ("breastfeeding".equals(breastfeeding)) {
+                breastfeeding = "breast_feeding";
+            } else if ("not_breastfeeding".equals(breastfeeding)) {
+                breastfeeding = "stop_breast_feeding";
+            }
+            fields.put(DBConstants.KEY.BREASTFEEDING_STATUS, breastfeeding);
+            fields.put(DBConstants.KEY.WEANING_DATE, "stop_breast_feeding".equals(breastfeeding)
+                    ? value(answers, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA) : "");
             for (Map.Entry<String, String> field : fields.entrySet()) {
                 List<Object> values = new ArrayList<>();
                 values.add(field.getValue());

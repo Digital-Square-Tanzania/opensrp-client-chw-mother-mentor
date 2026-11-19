@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+import static org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils.NEVER_BREASTFED;
 
 import androidx.annotation.Keep;
 
@@ -59,8 +60,7 @@ public final class MotherMentorMotherChildUtils {
     }
 
     public static List<Stage> due(Map<String, String> values, LocalDate assessment) {
-        LocalDate stop = "not_breastfeeding".equals(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
-                ? MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)) : null;
+        LocalDate stop = MotherMentorChildEidHeiUtils.cessation(values);
         List<Stage> due = new ArrayList<>(MotherMentorHeiSchedule.due(birth(values), stop,
                 parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY)), assessment));
         due.removeAll(MotherMentorChildEidRepository.suppressedTests(values.get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS)));
@@ -68,6 +68,11 @@ public final class MotherMentorMotherChildUtils {
     }
 
     public static boolean isComplete(Map<String, String> values, LocalDate assessment) {
+        return isComplete(values, assessment, false);
+    }
+
+    public static boolean isComplete(
+            Map<String, String> values, LocalDate assessment, boolean hasBreastfeedingHistory) {
         if (!applies(values)) return true;
         LocalDate dob = birth(values);
         if (assessment == null || dob.isAfter(assessment)) return false;
@@ -78,10 +83,13 @@ public final class MotherMentorMotherChildUtils {
         }
         if (!"alive".equals(child)) return false;
         String breastfeeding = values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
-        if (!Arrays.asList("breastfeeding", "not_breastfeeding").contains(breastfeeding)) return false;
-        if ("not_breastfeeding".equals(breastfeeding)
-                && !MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
-                        values.get(DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA)), dob, assessment)) return false;
+        if ("not_breastfeeding".equals(breastfeeding)) {
+            if (!MotherMentorHeiSchedule.validDate(
+                    MotherMentorChildEidHeiUtils.cessation(values), dob, assessment)) return false;
+        } else if (!"breastfeeding".equals(breastfeeding)
+                && !(NEVER_BREASTFED.equals(breastfeeding) && !hasBreastfeedingHistory)) {
+            return false;
+        }
         if (!MotherMentorMotherBirthTest.isComplete(values, assessment)) return false;
         List<Stage> due = due(values, assessment);
         if (due.isEmpty()) return StringUtils.isBlank(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE));
@@ -167,13 +175,10 @@ public final class MotherMentorMotherChildUtils {
         put(form, DBConstants.KEY.MAMA_HEI_TEST_HISTORY, serializeTests(state.getSamplingHistory()));
         put(form, DBConstants.KEY.MTOTO_SUPPRESSED_TESTS,
                 MotherMentorChildEidRepository.encodeStages(state.getTracingExcludedTests()));
-        String breastfeeding = state.getBreastfeedingStatus();
-        if (MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(breastfeeding)) breastfeeding = "";
-        put(form, DBConstants.KEY.MAMA_PREVIOUS_BREASTFEEDING_STATUS, breastfeeding);
+        prepareBreastfeeding(form, state);
         put(form, DBConstants.KEY.MAMA_PREVIOUS_WEANING_DATE, date(state.getWeaningDate()));
         fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE,
                 values(form).getOrDefault(DBConstants.KEY.MAMA_HEI_TEST_TYPE, ""));
-        fill(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS, breastfeeding);
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
         // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
         for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
@@ -188,6 +193,31 @@ public final class MotherMentorMotherChildUtils {
             if ("positive".equals(entry.getValue().getResult())) fill(form, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "no");
             break;
         }
+    }
+
+    /** Prepares the shared feeding question from recorded evidence for this child. */
+    public static void prepareBreastfeeding(JSONObject form, MotherMentorMotherChildRepository.State state) {
+        JSONObject field = field(form, MAMA_BREASTFEEDING_STATUS);
+        if (field == null) return;
+        String status = state.getBreastfeedingStatus();
+        if (state.hasBreastfeedingHistory()) {
+            JSONArray options = field.optJSONArray("options");
+            for (int i = options == null ? 0 : options.length(); i > 0; i--) {
+                JSONObject option = options.optJSONObject(i - 1);
+                if (option != null && NEVER_BREASTFED.equals(option.optString("key"))) {
+                    options.remove(i - 1);
+                }
+            }
+            if (NEVER_BREASTFED.equals(field.optString("value"))) {
+                put(form, MAMA_BREASTFEEDING_STATUS, "");
+            }
+            if (NEVER_BREASTFED.equals(status)) status = "";
+        } else if ("not_breastfeeding".equals(status) && state.getWeaningDate() == null) {
+            // A legacy non-breastfeeding enrollment does not tell us whether breastfeeding ever started.
+            status = "";
+        }
+        put(form, MAMA_PREVIOUS_BREASTFEEDING_STATUS, status);
+        fill(form, MAMA_BREASTFEEDING_STATUS, status);
     }
 
     public static Map<String, String> values(JSONObject form) {

@@ -10,7 +10,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -98,6 +100,25 @@ public class MotherMentorMotherChildUtilsTest {
         assertTrue(MotherMentorMotherChildUtils.isComplete(values, dob.plusDays(20)));
         values.put(MAMA_TAREHE_ACHA_KUNYONYESHA, dob.minusDays(1).toString());
         assertFalse(MotherMentorMotherChildUtils.isComplete(values, dob.plusDays(20)));
+    }
+
+    @Test
+    public void neverBreastfedCompletesWithoutADateAndUsesTheRoutineSchedule() {
+        Map<String, String> values = child(dob);
+        values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "not_pregnant");
+        values.put(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
+        values.put(MAMA_HEI_TEST_DONE, "no");
+        assertTrue(MotherMentorMotherChildUtils.isComplete(values, dob.plusDays(42)));
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, dob.plusDays(42), true));
+        assertEquals(Collections.singletonList(Stage.SIX_WEEKS),
+                MotherMentorMotherChildUtils.due(values, dob.plusDays(42)));
+
+        // A stale date from switching answers must not put the after-weaning test on the schedule.
+        values.put(MAMA_TAREHE_ACHA_KUNYONYESHA, dob.plusMonths(10).toString());
+        assertEquals(Collections.singletonList(Stage.NINE_MONTHS),
+                MotherMentorMotherChildUtils.due(values, dob.plusMonths(15)));
+        assertEquals(Collections.singletonList(Stage.EIGHTEEN_MONTHS),
+                MotherMentorMotherChildUtils.due(values, dob.plusMonths(18)));
     }
 
     public static Map<String, String> child(LocalDate dob) {
