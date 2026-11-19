@@ -55,7 +55,7 @@ public class MotherMentorPartnerFollowUpDaoTest {
         create("event", EVENT_FORM_SUBMISSION_ID, EVENT_JSON);
         create(Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER,
                 BASE_ENTITY_ID, MOTHER_BASE_ENTITY_ID, PARTNER_LINKAGE_ID, IS_CLOSED,
-                LAST_INTERACTED_WITH, MWENZI_STATUS, MWENZI_TAREHE_YA_KUFUNGWA,
+                LAST_INTERACTED_WITH, PARTNER_NEXT_FOLLOW_UP_PHASE, MWENZI_STATUS, MWENZI_TAREHE_YA_KUFUNGWA,
                 MWENZI_SABABU_YA_KUFUNGWA, MWENZI_COUNTER_AMEKATAA, MWENZI_COUNTER_HAJAHUDHURIA,
                 MWENZI_COUNTER_AMESAFIRI, MWENZI_COUNTER_NYINGINE, MWENZI_COUNTER_HAJAPATIKANA);
         create(Constants.TABLES.MOTHERMENTOR_ENROLLMENT,
@@ -66,7 +66,7 @@ public class MotherMentorPartnerFollowUpDaoTest {
         create(Constants.TABLES.MOTHERMENTOR_FOLLOWUP_VISIT,
                 BASE_ENTITY_ID, ENTITY_ID, FOLLOW_UP_CATEGORY, FOLLOW_UP_OUTCOME, MOTHERMENTOR_VISIT_DATE,
                 PARTNER_FOLLOW_UP_SCHEMA, PARTNER_LINKAGE_ID, PARTNER_FOLLOW_UP_PHASE,
-                FOLLOW_UP_STATUS, PARTNER_FACILITY_AGREEMENT, PARTNER_NOT_FOUND_REASON,
+                FOLLOW_UP_STATUS, PARTNER_FACILITY_AGREEMENT, PARTNER_TESTING_REFERRAL_GIVEN, PARTNER_NOT_FOUND_REASON,
                 PARTNER_NOT_FOUND_REASON_OTHER, PARTNER_FOLLOW_UP_END,
                 PARTNER_ARRIVED_AT_FACILITY, PARTNER_FACILITY_ARRIVAL_DATE,
                 PARTNER_EDUCATION_PROVIDED, PARTNER_EDUCATION_TOPICS,
@@ -143,7 +143,7 @@ public class MotherMentorPartnerFollowUpDaoTest {
         addVisit("ongoing-all-no", today, true, legacyAllNo());
         assertTrue(active(tomorrow));
         assertTrue(context(tomorrow).isActive());
-        assertTrue(context(tomorrow).isAttendancePending());
+        assertEquals("referral", context(tomorrow).getNextPhase());
         assertFalse(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date(tomorrow)));
     }
 
@@ -229,7 +229,7 @@ public class MotherMentorPartnerFollowUpDaoTest {
         addVisit("editing-refused", "28-10-2026", true, tracingAgreement("refused"));
         MotherMentorPartnerFollowUpDao.Context state = MotherMentorPartnerFollowUpDao.getContext(
                 "partner", "editing-refused", date("2026-10-29 12:00:00"));
-        assertTrue(state.isAttendancePending());
+        assertEquals("referral", state.getNextPhase());
         assertEquals("mother", state.getMotherId());
         assertEquals("yes", state.getMotherPregnant());
         assertFalse(context("2026-10-29 12:00:00").isAttendancePending());
@@ -244,8 +244,47 @@ public class MotherMentorPartnerFollowUpDaoTest {
         Map<String, String> old = tracingAgreement("refused");
         old.put(PARTNER_LINKAGE_ID, "older-link");
         addVisit("other-link-refused", "28-10-2026", true, old);
-        assertTrue(context("2026-10-29 12:00:00").isAttendancePending());
+        assertEquals("referral", context("2026-10-29 12:00:00").getNextPhase());
         assertTrue(active("2026-10-29 12:00:00"));
+    }
+
+    @Test
+    public void referralRoutingAndThreeAttendanceStrikesAgreeWithTheProjectedRegister() throws Exception {
+        Map<String, String> first = tracingAgreement("agreed");
+        first.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        first.put(PARTNER_TESTING_REFERRAL_GIVEN, "no");
+        addVisit("not-referred", "20-10-2026", true, first);
+        assertEquals("referral", context("2026-10-21 12:00:00").getNextPhase());
+        assertProjectedPhase("referral");
+        addVisit("still-not-referred", "21-10-2026", true, referralVisit("no"));
+        assertEquals("referral", context("2026-10-22 12:00:00").getNextPhase());
+        addVisit("referred", "22-10-2026", true, referralVisit("yes"));
+        assertTrue(context("2026-10-23 12:00:00").isAttendancePending());
+        assertProjectedPhase("attendance");
+        for (int day = 23; day <= 25; day++) {
+            addVisit("missed-" + day, day + "-10-2026", true, map(
+                    FOLLOW_UP_CATEGORY, "PARTNER", PARTNER_LINKAGE_ID, "link-one",
+                    PARTNER_FOLLOW_UP_SCHEMA, "3", PARTNER_FOLLOW_UP_PHASE, "attendance",
+                    PARTNER_ARRIVED_AT_FACILITY, "no"));
+            if (day < 25) assertTrue(context("2026-10-" + (day + 1) + " 12:00:00").isAttendancePending());
+        }
+        assertFalse(active("2026-10-26 12:00:00"));
+        assertEquals("not_attended_3", MotherMentorPartnerClosureRepository.getState(
+                cipher, "partner", null).getStatus());
+    }
+
+    private Map<String, String> referralVisit(String answer) {
+        return map(FOLLOW_UP_CATEGORY, "PARTNER", PARTNER_LINKAGE_ID, "link-one",
+                PARTNER_FOLLOW_UP_SCHEMA, "3", PARTNER_FOLLOW_UP_PHASE, "referral",
+                PARTNER_TESTING_REFERRAL_GIVEN, answer);
+    }
+
+    private void assertProjectedPhase(String expected) {
+        try (Cursor cursor = data.rawQuery("SELECT " + PARTNER_NEXT_FOLLOW_UP_PHASE + " FROM "
+                + Constants.TABLES.MOTHERMENTOR_ENROLL_PARTNER, null)) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals(expected, cursor.getString(0));
+        }
     }
 
     @Test

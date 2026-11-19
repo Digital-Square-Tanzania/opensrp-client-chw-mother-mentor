@@ -1,0 +1,7 @@
+---
+name: step1_partner_testing_referral_prompt
+description: Prompt the worker to give the referral
+priority: 2
+condition: "step1_partner_testing_referral_given == 'no'"
+actions:
+  - "isRelevant = true"

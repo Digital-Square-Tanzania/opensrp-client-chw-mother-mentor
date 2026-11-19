@@ -113,7 +113,7 @@ public class VisitUtils {
                                 v.getBaseEntityId(), v.getVisitType(), baseEvent.getFormSubmissionId()) == null) {
                     throw new IllegalStateException("Child EID visit was not persisted");
                 }
-                verifyIitEventSaved(baseEvent);
+                verifyFollowUpEventSaved(baseEvent);
 
                 visitRepository.completeProcessing(v.getVisitId());
             }
@@ -121,11 +121,15 @@ public class VisitUtils {
 
     }
 
-    private static void verifyIitEventSaved(Event source) {
-        if (!MotherMentorFollowUpType.MOTHER_IIT.getEventType().equals(source.getEventType())
-                || source.getObs() == null || source.getObs().stream().noneMatch(obs ->
-                        DBConstants.KEY.IIT_FOLLOW_UP_SCHEMA.equals(obs.getFieldCode())
-                                && obs.getValues() != null && obs.getValues().contains("2"))) return;
+    private static void verifyFollowUpEventSaved(Event source) {
+        boolean iit = MotherMentorFollowUpType.MOTHER_IIT.getEventType().equals(source.getEventType());
+        boolean partner = MotherMentorFollowUpType.PARTNER.getEventType().equals(source.getEventType());
+        if ((!iit && !partner) || source.getObs() == null) return;
+        String schemaField = partner ? DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA
+                : DBConstants.KEY.IIT_FOLLOW_UP_SCHEMA;
+        String schema = partner ? MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA : "2";
+        if (source.getObs().stream().noneMatch(obs -> schemaField.equals(obs.getFieldCode())
+                && obs.getValues() != null && obs.getValues().contains(schema))) return;
 
         // ECSyncHelper logs write failures internally, so confirm this exact revision first.
         List<EventClient> stored = NCUtils.getSyncHelper().getEvents(
@@ -137,7 +141,7 @@ public class VisitUtils {
                     && source.getEventType().equals(event.getEventType())
                     && source.getVersion() == event.getVersion()) return;
         }
-        throw new IllegalStateException("Mother IIT event revision could not be saved");
+        throw new IllegalStateException(source.getEventType() + " event revision could not be saved");
     }
 
 

@@ -412,6 +412,8 @@ public final class DBConstants {
         public static final String MOTHER_PREGNANCY_EPISODE_ID = "mother_pregnancy_episode_id";
         public static final String PARTNER_MOTHER_PREGNANT = "partner_mother_pregnant";
         public static final String PARTNER_FOLLOW_UP_PHASE = "partner_follow_up_phase";
+        public static final String PARTNER_TESTING_REFERRAL_GIVEN = "partner_testing_referral_given";
+        public static final String PARTNER_NEXT_FOLLOW_UP_PHASE = "partner_next_follow_up_phase";
         public static final String PARTNER_FACILITY_AGREEMENT = "partner_facility_agreement";
         public static final String PARTNER_NOT_FOUND_REASON = "partner_not_found_reason";
         public static final String PARTNER_NOT_FOUND_REASON_OTHER = "partner_not_found_reason_other";

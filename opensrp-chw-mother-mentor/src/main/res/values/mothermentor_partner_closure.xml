@@ -20,4 +20,8 @@
     <string name="mothermentor_partner_closure_lost_to_follow_up">Lost to Follow-up</string>
     <string name="mothermentor_partner_closure_completed">Follow-up completed</string>
     <item name="action_mothermentor_partner_history" type="id" />
+    <string name="mothermentor_partner_referral_section">Was a referral for testing given?</string>
+    <string name="mothermentor_partner_referred_status">Agreed — referred, awaited at the facility</string>
+    <string name="mothermentor_partner_referral_pending_status">Agreed — referral not yet given</string>
+    <string name="mothermentor_partner_closure_attended">Attended the facility</string>
 </resources>

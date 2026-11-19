@@ -4,6 +4,8 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.FOLLOW_UP_
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_FACILITY_AGREEMENT;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE;
+import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA;
+import static org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_HEPATITIS_B_RESULT;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_HEPATITIS_B_TESTED;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.PARTNER_HIV_RESULT;
@@ -17,6 +19,7 @@ import java.util.Map;
 /** Closure and consecutive-visit counters for one partner linkage. */
 public final class MotherMentorPartnerClosure {
     public static final String ACTIVE = "active";
+    public static final String ATTENDED = "attended";
     public static final String ATTENDED_TESTED = "attended_tested";
     public static final String DECEASED = "deceased";
     public static final String MOVED = "moved";
@@ -29,16 +32,18 @@ public final class MotherMentorPartnerClosure {
 
     private final String status;
     private final String closedDate;
+    private final String nextPhase;
     private final int refusedCount;
     private final int nonAttendanceCount;
     private final int travelledCount;
     private final int otherCount;
     private final int notFoundCount;
 
-    private MotherMentorPartnerClosure(String status, String closedDate, int refusedCount,
+    private MotherMentorPartnerClosure(String status, String closedDate, String nextPhase, int refusedCount,
             int nonAttendanceCount, int travelledCount, int otherCount, int notFoundCount) {
         this.status = status;
         this.closedDate = closedDate;
+        this.nextPhase = nextPhase;
         this.refusedCount = refusedCount;
         this.nonAttendanceCount = nonAttendanceCount;
         this.travelledCount = travelledCount;
@@ -47,12 +52,12 @@ public final class MotherMentorPartnerClosure {
     }
 
     public static MotherMentorPartnerClosure active() {
-        return new MotherMentorPartnerClosure(ACTIVE, "", 0, 0, 0, 0, 0);
+        return new MotherMentorPartnerClosure(ACTIVE, "", MotherMentorPartnerFollowUpVisitUtils.TRACING, 0, 0, 0, 0, 0);
     }
 
     /** Preserve a linkage closed by the earlier attended, but not tested, workflow. */
     public static MotherMentorPartnerClosure legacyCompleted(String date) {
-        return new MotherMentorPartnerClosure(LEGACY_COMPLETED, date, 0, 0, 0, 0, 0);
+        return new MotherMentorPartnerClosure(LEGACY_COMPLETED, date, "", 0, 0, 0, 0, 0);
     }
 
     /** Apply a finalized, valid visit; the caller orders and deduplicates the linkage's visits. */
@@ -65,7 +70,10 @@ public final class MotherMentorPartnerClosure {
         String agreement = found ? values.get(PARTNER_FACILITY_AGREEMENT) : "";
         String reason = notFound ? values.get(PARTNER_NOT_FOUND_REASON) : "";
         String attended = attendance ? values.get(PARTNER_ARRIVED_AT_FACILITY) : "";
-        if (!(found && matches(agreement, "agreed", "refused"))
+        boolean referral = MotherMentorPartnerFollowUpVisitUtils.REFERRAL.equals(
+                values.get(PARTNER_FOLLOW_UP_PHASE));
+        if (!(referral && MotherMentorPartnerFollowUpVisitUtils.hasReferralAnswer(values))
+                && !(found && matches(agreement, "agreed", "refused"))
                 && !(notFound && matches(reason, "deceased", "moved", "travelled", "other"))
                 && !(attendance && matches(attended, "yes", "no"))) return this;
 
@@ -75,7 +83,9 @@ public final class MotherMentorPartnerClosure {
         int other = "other".equals(reason) ? otherCount + 1 : 0;
         int missing = notFound ? notFoundCount + 1 : 0;
         String nextStatus = ACTIVE;
-        if ("yes".equals(attended) && hasTestResult(values)) {
+        if ("yes".equals(attended) && REFERRAL_SCHEMA.equals(values.get(PARTNER_FOLLOW_UP_SCHEMA))) {
+            nextStatus = ATTENDED;
+        } else if ("yes".equals(attended) && hasTestResult(values)) {
             nextStatus = ATTENDED_TESTED;
         } else if ("deceased".equals(reason)) {
             nextStatus = DECEASED;
@@ -94,7 +104,7 @@ public final class MotherMentorPartnerClosure {
         }
         return new MotherMentorPartnerClosure(nextStatus,
                 ACTIVE.equals(nextStatus) ? "" : serviceDateIso,
-                refused, nonAttendance, travelled, other, missing);
+                MotherMentorPartnerFollowUpVisitUtils.nextPhase(values), refused, nonAttendance, travelled, other, missing);
     }
 
     private static boolean hasTestResult(Map<String, String> values) {
@@ -127,6 +137,10 @@ public final class MotherMentorPartnerClosure {
 
     public String getClosureReason() {
         return isClosed() ? status : "";
+    }
+
+    public String getNextPhase() {
+        return nextPhase;
     }
 
     public int getRefusedCount() {
