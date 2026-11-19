@@ -4,9 +4,12 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.DatePickerDialog;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -15,9 +18,11 @@ import org.joda.time.LocalDate;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowDialog;
 import java.util.Scanner;
 
 @RunWith(RobolectricTestRunner.class)
@@ -69,6 +74,77 @@ public class MotherMentorMotherChildUiTest {
         fixture.refresh();
         assertEquals("", fixture.value(MAMA_CHILD_STATUS));
         assertEquals("false", fixture.value(MAMA_CHILD_PATH));
+    }
+
+    @Test
+    public void birthPickerUsesTheDeliveryWindowAndClearsDatesAfterACorrection() throws Exception {
+        LocalDate dob = new LocalDate(2026, 10, 1);
+        Fixture fixture = new Fixture("json.form-sw", dob, dob.plusDays(49));
+        Activity host = Robolectric.buildActivity(Activity.class).setup().get();
+        EditText sample = new EditText(host);
+        sample.setTag(com.vijay.jsonwizard.R.id.key, MAMA_BIRTH_TEST_DATE);
+        ((LinearLayout) fixture.activity.getWindow().getDecorView()).addView(sample);
+        fixture.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        fixture.put(MAMA_BIRTH_TEST_DONE, "yes");
+        fixture.put(MAMA_BIRTH_TEST_DATE, dob.plusDays(2).toString("dd-MM-yyyy"));
+        sample.setText(fixture.value(MAMA_BIRTH_TEST_DATE));
+        fixture.refresh();
+        assertEquals("true", fixture.value(MAMA_BIRTH_TEST_REQUIRED));
+        assertTrue(sample.performClick());
+        DatePickerDialog picker = (DatePickerDialog) ShadowDialog.getLatestDialog();
+        assertEquals(dob, new LocalDate(picker.getDatePicker().getMinDate()));
+        assertEquals(dob.plusDays(2), new LocalDate(picker.getDatePicker().getMaxDate()));
+        picker.dismiss();
+
+        LocalDate corrected = dob.plusDays(3);
+        fixture.put(MAMA_TAREHE_KUJIFUNGUA, corrected.toString("dd-MM-yyyy"));
+        fixture.refresh();
+        assertEquals("", fixture.value(MAMA_BIRTH_TEST_DATE));
+        assertEquals("", sample.getText().toString());
+        assertTrue(sample.performClick());
+        picker = (DatePickerDialog) ShadowDialog.getLatestDialog();
+        assertEquals(corrected, new LocalDate(picker.getDatePicker().getMinDate()));
+        assertEquals(corrected.plusDays(2), new LocalDate(picker.getDatePicker().getMaxDate()));
+        picker.dismiss();
+
+        fixture.put(MAMA_HEI_ASSESSMENT_DATE, corrected.plusDays(56).toString());
+        fixture.refresh();
+        assertEquals("false", fixture.value(MAMA_BIRTH_TEST_REQUIRED));
+        host.finish();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void dueTestReceiptClearsInvalidDatesAndPendingAnswers() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate sampled = today.minusDays(1);
+        Fixture fixture = new Fixture("json.form-sw", today.minusDays(49), today);
+        EditText receipt = new EditText(RuntimeEnvironment.getApplication());
+        receipt.setTag(com.vijay.jsonwizard.R.id.key, MAMA_HEI_TEST_RECEIVED_DATE);
+        ((LinearLayout) fixture.activity.getWindow().getDecorView()).addView(receipt);
+        fixture.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        fixture.put(MAMA_HEI_TEST_DONE, "yes");
+        fixture.put(MAMA_HEI_TEST_DATE, sampled.toString());
+        fixture.put(MAMA_HEI_TEST_RESULT, "negative");
+        fixture.refresh();
+
+        fixture.setReceipt(receipt, sampled.minusDays(1));
+        assertEquals("Tarehe ya kupokea majibu haiwezi kuwa kabla ya tarehe ya kipimo",
+                receipt.getError().toString());
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+
+        fixture.setReceipt(receipt, today.plusDays(1));
+        assertEquals("Weka tarehe sahihi ya kupokea majibu ambayo haipo katika siku zijazo",
+                receipt.getError().toString());
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+
+        fixture.setReceipt(receipt, sampled);
+        assertEquals(sampled.toString(), fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+        fixture.put(MAMA_HEI_TEST_RESULT, "pending");
+        fixture.refresh();
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+        assertEquals("", receipt.getText().toString());
+        assertEquals("", receipt.getTag(com.vijay.jsonwizard.R.id.locale_independent_value));
     }
 
     @Test
@@ -124,6 +200,13 @@ public class MotherMentorMotherChildUiTest {
         void put(String key, String value) { MotherMentorMotherChildUtils.put(form, key, value); }
         String value(String key) { return MotherMentorMotherChildUtils.values(form).get(key); }
         void refresh() { helper.refresh(activity); }
+        void setReceipt(EditText input, LocalDate date) {
+            String value = date.toString();
+            input.setTag(com.vijay.jsonwizard.R.id.locale_independent_value, value);
+            input.setText(value);
+            put(MAMA_HEI_TEST_RECEIVED_DATE, value);
+            refresh();
+        }
         RadioButton option(String code) {
             for (int i = 0; i < options.getChildCount(); i++) {
                 RadioButton button = (RadioButton) options.getChildAt(i);
