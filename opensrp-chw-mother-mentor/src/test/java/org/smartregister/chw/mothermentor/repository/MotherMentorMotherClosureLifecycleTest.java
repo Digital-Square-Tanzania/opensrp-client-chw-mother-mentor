@@ -9,6 +9,8 @@ import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -198,6 +200,56 @@ public class MotherMentorMotherClosureLifecycleTest {
         MotherMentorMotherClosureRepository.rebuildForHousehold(db, "household");
         assertEquals("1", column(IS_CLOSED));
         assertEquals("not_found_other_3", column(MAMA_STATUS));
+    }
+
+    @Test
+    public void sameDayBirthResultReplaysAfterItsSampleVisitWithALegacyLocalTimestamp() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate birthSample = today.minusDays(42);
+        String episode = setupPostpartumEnrollment(birthSample);
+        Map<String, String> answers = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", today);
+        answers.put(MAMA_TAREHE_KUJIFUNGUA, birthSample.toString());
+        answers.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        answers.put(MAMA_BIRTH_TEST_DONE, "yes");
+        answers.put(MAMA_BIRTH_TEST_DATE, birthSample.toString());
+        answers.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        // Existing visit serialization can write the device's wall time as if it were UTC.
+        visit("sample", "sample-source", episode, today.toString(), 1, true, answers,
+                DateTime.now(DateTimeZone.UTC).plusHours(3).toString());
+        MotherMentorMotherClosureRepository.upgrade(db);
+        stubResultEventWrites();
+
+        List<Entry> before = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, before.size());
+        Entry birth = before.get(0);
+        assertEquals(Stage.AT_BIRTH, birth.getSample().getStage());
+        LocalDate receipt = today.minusDays(2);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", birth.getId(), birth.getRevision(),
+                new Answers("negative", receipt, "", "")));
+
+        List<Entry> after = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, after.size());
+        assertEquals(Stage.SIX_WEEKS, after.get(0).getSample().getStage());
+        assertFalse(after.get(0).isRecorded());
+        Entry recorded = after.get(1);
+        assertEquals(Stage.AT_BIRTH, recorded.getSample().getStage());
+        assertEquals(birthSample, recorded.getSample().getTestDate());
+        assertEquals(receipt, recorded.getAnswers().getReceivedDate());
+        assertEquals(1, count("visits"));
+        assertEquals(1, count("event"));
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
+                new Answers("negative", today.minusDays(1), "", "")));
+        MotherMentorMotherResultEvent.rebuild(db, "mother");
+        List<Entry> history = MotherMentorMotherResultEvent.history(db, "mother", today);
+        assertEquals(1, history.size());
+        assertEquals(recorded.getId(), history.get(0).getId());
+        assertEquals(recorded.getRecordedAt(), history.get(0).getRecordedAt());
+        assertEquals(today.minusDays(1), history.get(0).getAnswers().getReceivedDate());
+        assertTrue(history.get(0).isCorrected());
+        assertEquals(Stage.SIX_WEEKS, MotherMentorMotherResultEvent.pending(db, "mother", today).get(0).getStage());
+        assertEquals(1, count("visits"));
+        assertEquals(1, count("event"));
     }
 
     @Test
@@ -441,12 +493,17 @@ public class MotherMentorMotherClosureLifecycleTest {
     }
     private void visit(String id, String source, String episode, String date, int version,
             boolean processed, Map<String, String> values) throws Exception {
+        visit(id, source, episode, date, version, processed, values, date + "T14:00:00.000+03:00");
+    }
+
+    private void visit(String id, String source, String episode, String date, int version,
+            boolean processed, Map<String, String> values, String eventTime) throws Exception {
         Map<String, String> all = new HashMap<>(values);
         all.put(MAMA_ENROLLMENT_ID, episode);
         all.put(MOTHERMENTOR_VISIT_DATE, date);
         JSONObject event = new JSONObject()
                 .put("formSubmissionId", source)
-                .put("eventDate", date + "T14:00:00.000+03:00")
+                .put("eventDate", eventTime)
                 .put("version", version)
                 .put("obs", obs(all));
         data.execSQL(

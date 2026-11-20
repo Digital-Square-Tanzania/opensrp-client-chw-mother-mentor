@@ -178,6 +178,8 @@ public final class MotherMentorMotherChildRepository {
             seedLegacyTest(state, enrollment, null);
         }
         evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
+        Set<String> replayedMotherVisits = new HashSet<>();
+        Map<String, List<Evidence>> deferredResults = new LinkedHashMap<>();
         for (Evidence item : evidence) {
             if (item.enrollmentSample) {
                 if (context.getEnrollmentTime() == 0
@@ -198,9 +200,23 @@ public final class MotherMentorMotherChildRepository {
                 state.knownPerformed.putAll(past.tests);
             } else if (item.child) applyChild(state, item.values, item.date);
             else if (MotherMentorMotherResultEvent.EVENT_TYPE.equals(item.visit.getVisitType())) {
-                applyMotherResult(state, item);
+                String source = MotherMentorMotherResultEvent.sampleSource(item.values);
+                if (replayedMotherVisits.contains(source)) {
+                    applyMotherResult(state, item);
+                } else if (StringUtils.isNotBlank(source)) {
+                    // A legacy visit timestamp can sort after a result recorded from that visit.
+                    deferredResults.computeIfAbsent(source, ignored -> new ArrayList<>()).add(item);
+                }
             } else {
-                applyMother(state, item.values, item.date, MotherMentorChildEidDao.sourceIdentity(item.visit));
+                String source = MotherMentorChildEidDao.sourceIdentity(item.visit);
+                applyMother(state, item.values, item.date, source);
+                replayedMotherVisits.add(source);
+                List<Evidence> waiting = deferredResults.remove(source);
+                if (waiting != null) {
+                    for (Evidence result : waiting) {
+                        if (item.date.equals(result.date)) applyMotherResult(state, result);
+                    }
+                }
             }
         }
         return state;

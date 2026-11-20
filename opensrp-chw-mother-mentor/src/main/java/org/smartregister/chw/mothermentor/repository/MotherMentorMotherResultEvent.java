@@ -163,6 +163,10 @@ public final class MotherMentorMotherResultEvent {
         public boolean isCorrected() { return corrected; }
     }
 
+    static String sampleSource(Map<String, String> values) {
+        return values.get(SAMPLE_SOURCE);
+    }
+
     static Entry readEntry(Visit evidence, PendingTest sample, Map<String, String> values, LocalDate day) {
         JSONObject event = MotherMentorChildEidDao.json(evidence);
         long recordedAt = evidence.getDate().getTime();
