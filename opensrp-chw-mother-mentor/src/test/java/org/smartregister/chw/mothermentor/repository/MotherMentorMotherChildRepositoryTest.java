@@ -70,6 +70,8 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals(15, MotherMentorMotherChildRepository.COLUMNS.size());
         assertEquals("negative", scalar("SELECT hei_test_wiki6_result FROM ec_mothermentor_enrollment"));
         assertEquals("2025-03-15", scalar("SELECT hei_test_wiki6_date FROM ec_mothermentor_enrollment"));
+        assertNull(MotherMentorMotherChildRepository.getState(db, "mother", null)
+                .getTests().get(Stage.SIX_WEEKS).getReceivedDate());
         assertEquals("breastfeeding", scalar("SELECT mama_breastfeeding_status FROM ec_mothermentor_enrollment"));
         data.delete("visits", null, null);
         MotherMentorMotherChildRepository.rebuild(db, "mother");
@@ -122,6 +124,16 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals(2, pending.size());
         assertTrue(pending.get(0).isAwaitingConfirmation());
         assertFalse(pending.get(0).isOverdue(day.plusDays(2)));
+        Map<String, String> confirmation = new LinkedHashMap<>();
+        confirmation.put(MTOTO_CONFIRMATORY_RESULT, "negative");
+        LocalDate confirmationDay = day.plusDays(3);
+        assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, dob.minusDays(1).toString());
+        assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, confirmationDay.plusDays(1).toString());
+        assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, confirmationDay.toString());
+        assertTrue(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
         resultEvent("confirm", "first-source", day.plusDays(3), null, "awaiting_confirm", "negative");
         pending = MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(3));
         assertEquals(1, pending.size());
@@ -156,9 +168,12 @@ public class MotherMentorMotherChildRepositoryTest {
         Map<String, String> pending = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", dob.plusDays(43));
         Map<String, String> positive = MotherMentorMotherChildUtilsTest.test("six_weeks", "positive", dob.plusDays(43));
         positive.put(HEI_CHANYA_IMETHIBITISHWA, "no");
+        LocalDate received = dob.plusDays(49);
+        positive.put(MAMA_HEI_TEST_RECEIVED_DATE, received.toString());
         MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.replay(dob,
                 Arrays.asList(pending, positive), Arrays.asList(dob.plusDays(44), dob.plusDays(50)));
         assertEquals("positive", state.getTests().get(Stage.SIX_WEEKS).getResult());
+        assertEquals(received, state.getTests().get(Stage.SIX_WEEKS).getReceivedDate());
         assertFalse(state.hasConfirmedPositive());
         assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE, state.getTerminalOutcome());
         positive = new LinkedHashMap<>(positive); positive.put(HEI_CHANYA_IMETHIBITISHWA, "yes");

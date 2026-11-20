@@ -114,6 +114,40 @@ public class MotherMentorMotherChildUiTest {
     }
 
     @Test
+    @Config(qualifiers = "sw")
+    public void dueTestReceiptClearsInvalidDatesAndPendingAnswers() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate sampled = today.minusDays(1);
+        Fixture fixture = new Fixture("json.form-sw", today.minusDays(49), today);
+        EditText receipt = new EditText(RuntimeEnvironment.getApplication());
+        receipt.setTag(com.vijay.jsonwizard.R.id.key, MAMA_HEI_TEST_RECEIVED_DATE);
+        ((LinearLayout) fixture.activity.getWindow().getDecorView()).addView(receipt);
+        fixture.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        fixture.put(MAMA_HEI_TEST_DONE, "yes");
+        fixture.put(MAMA_HEI_TEST_DATE, sampled.toString());
+        fixture.put(MAMA_HEI_TEST_RESULT, "negative");
+        fixture.refresh();
+
+        fixture.setReceipt(receipt, sampled.minusDays(1));
+        assertEquals("Tarehe ya kupokea majibu haiwezi kuwa kabla ya tarehe ya kipimo",
+                receipt.getError().toString());
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+
+        fixture.setReceipt(receipt, today.plusDays(1));
+        assertEquals("Weka tarehe sahihi ya kupokea majibu ambayo haipo katika siku zijazo",
+                receipt.getError().toString());
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+
+        fixture.setReceipt(receipt, sampled);
+        assertEquals(sampled.toString(), fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+        fixture.put(MAMA_HEI_TEST_RESULT, "pending");
+        fixture.refresh();
+        assertEquals("", fixture.value(MAMA_HEI_TEST_RECEIVED_DATE));
+        assertEquals("", receipt.getText().toString());
+        assertEquals("", receipt.getTag(com.vijay.jsonwizard.R.id.locale_independent_value));
+    }
+
+    @Test
     public void neverBreastfedShowsTheNextAgeBasedTestAfterNineMonths() throws Exception {
         LocalDate dob = new LocalDate(2025, 12, 1);
         Fixture fixture = new Fixture("json.form", dob, dob.plusMonths(10));
@@ -166,6 +200,13 @@ public class MotherMentorMotherChildUiTest {
         void put(String key, String value) { MotherMentorMotherChildUtils.put(form, key, value); }
         String value(String key) { return MotherMentorMotherChildUtils.values(form).get(key); }
         void refresh() { helper.refresh(activity); }
+        void setReceipt(EditText input, LocalDate date) {
+            String value = date.toString();
+            input.setTag(com.vijay.jsonwizard.R.id.locale_independent_value, value);
+            input.setText(value);
+            put(MAMA_HEI_TEST_RECEIVED_DATE, value);
+            refresh();
+        }
         RadioButton option(String code) {
             for (int i = 0; i < options.getChildCount(); i++) {
                 RadioButton button = (RadioButton) options.getChildAt(i);

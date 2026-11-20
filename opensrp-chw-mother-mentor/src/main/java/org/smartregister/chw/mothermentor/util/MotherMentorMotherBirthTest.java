@@ -1,6 +1,7 @@
 package org.smartregister.chw.mothermentor.util;
 
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
+import static org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.hasReceivedResult;
 import static org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.parseDate;
 
 import org.joda.time.LocalDate;
@@ -110,7 +111,7 @@ public final class MotherMentorMotherBirthTest {
             if (!"positive".equals(result) || !"yes".equals(values.get(MAMA_BIRTH_TEST_CONFIRMATION_DONE))) {
                 MotherMentorMotherChildUtils.put(form, MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "");
             }
-            if ("pending".equals(result)) MotherMentorMotherChildUtils.put(form, MAMA_BIRTH_TEST_RECEIVED_DATE, "");
+            if (!hasReceivedResult(result)) MotherMentorMotherChildUtils.put(form, MAMA_BIRTH_TEST_RECEIVED_DATE, "");
         }
     }
 

@@ -122,7 +122,14 @@
         "display_format": "dd/MM/yyyy",
         "min_date": "today-5y",
         "max_date": "today",
-        "expanded": false
+        "expanded": false,
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_child_eid_record_result_relevance.yml"
+            }
+          }
+        }
       },
       {
         "key": "mtoto_confirmatory_test_done",
