@@ -10,6 +10,8 @@ import android.database.Cursor;
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -310,8 +312,10 @@ public final class MotherMentorMotherResultEvent {
         }
 
         JsonFormUtils.tagEvent(MotherMentorLibrary.getInstance().context().allSharedPreferences(), event);
-        NCUtils.getSyncHelper().addEvent(motherId, new JSONObject(JsonFormUtils.gson.toJson(event)),
-                BaseRepository.TYPE_Unsynced);
+        JSONObject payload = new JSONObject(JsonFormUtils.gson.toJson(event));
+        // The shared Gson formatter appends Z without converting the device's local time to UTC.
+        payload.put(EVENT_DATE_TIMESTAMP, new DateTime(time.getTime(), DateTimeZone.UTC).toString());
+        NCUtils.getSyncHelper().addEvent(motherId, payload, BaseRepository.TYPE_Unsynced);
         if (history(db, motherId, day).stream().noneMatch(entry ->
                 id.equals(entry.id) && entry.revision == event.getVersion())) {
             throw new IllegalStateException("Unable to persist the linked Mama Kadi result");
