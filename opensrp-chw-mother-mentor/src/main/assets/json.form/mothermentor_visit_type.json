@@ -886,7 +886,7 @@
         "display_format": "dd/MM/yyyy",
         "v_required": {
           "value": true,
-          "err": "Please complete this field"
+          "err": "Enter the date the results were received at the facility"
         },
         "relevance": {
           "rules-engine": {
@@ -1135,6 +1135,28 @@
         "v_required": {
           "value": true,
           "err": "Please complete this field"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_received_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_received_date",
+        "hint": "Date results were received at the facility",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Enter the date the results were received at the facility"
         },
         "relevance": {
           "rules-engine": {

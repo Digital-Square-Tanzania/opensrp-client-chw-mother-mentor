@@ -81,21 +81,27 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             assertEquals(2, form.field(MTOTO_CONFIRMATORY_RESULT).getJSONArray("options").length());
 
             assertTrue(form.relevant(MTOTO_RECEIVED_RESULT));
+            assertFalse(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
             assertFalse(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
             form.answer(MTOTO_RECEIVED_RESULT, "positive");
+            assertTrue(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
             assertTrue(form.relevant(MTOTO_CONFIRMATORY_TEST_DONE));
             assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             form.answer(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
             assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             form.answer(MTOTO_RECEIVED_RESULT, "negative");
+            assertTrue(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
             assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             NativeForm confirmation = new NativeForm(directory, MotherMentorChildEidResultForm.FORM_NAME, resultRules);
             MotherMentorChildEidResultForm.prepare(confirmation.form, RuntimeEnvironment.getApplication(),
                     "six_weeks", sampleDate, "awaiting_confirm");
             assertEquals("hidden", confirmation.field(MTOTO_CONFIRMATORY_TEST_DONE).getString("type"));
             assertFalse(confirmation.relevant(MTOTO_RECEIVED_RESULT));
+            assertFalse(confirmation.relevant(MTOTO_RESULT_RECEIVED_DATE));
             assertTrue(confirmation.relevant(MTOTO_CONFIRMATORY_RESULT));
             assertEquals(2, confirmation.field(MTOTO_CONFIRMATORY_RESULT).getJSONArray("options").length());
+            confirmation.answer(MTOTO_CONFIRMATORY_RESULT, "negative");
+            assertTrue(confirmation.relevant(MTOTO_RESULT_RECEIVED_DATE));
         }
     }
 

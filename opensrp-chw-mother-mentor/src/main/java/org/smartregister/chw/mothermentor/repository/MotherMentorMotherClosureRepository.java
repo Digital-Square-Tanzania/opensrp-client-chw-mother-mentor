@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
@@ -124,14 +125,20 @@ public final class MotherMentorMotherClosureRepository {
         MotherMentorChildEidRepository.State tracing = child.getChildBaseEntityId().isEmpty() ? null
                 : MotherMentorChildEidRepository.getState(db, child.getChildBaseEntityId(), null);
         MotherMentorChildEidExit tracingExit = tracing == null ? null : tracing.getVisitExit();
-        if (tracingExit != null && tracingExit.getMotherOutcome() != null && motherId.equals(tracing.getMotherId())
+        boolean linkedExit = tracingExit != null && tracingExit.getMotherOutcome() != null
+                && motherId.equals(tracing.getMotherId())
                 && (context.getEnrollmentId().equals(tracing.getMotherEnrollmentId())
                     || tracing.getMotherEnrollmentId().isEmpty()
                         && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
-                                new LocalDate(context.getEnrollmentTime()))))) {
+                                new LocalDate(context.getEnrollmentTime()))));
+        if (linkedExit) {
             evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
                     tracing.getVisitExitDate(), tracing.getVisitExitTime(), tracing.getExitFacility(), ""));
-        } else {
+        }
+        if (child.getTerminalResultTime() > 0) {
+            evidence.add(new Evidence("~mama-test-result", VisitOutcome.CHILD_CONFIRMED_POSITIVE,
+                    child.getTerminalServiceDate(), child.getTerminalResultTime(), "", ""));
+        } else if (!linkedExit) {
             VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
             if (childExit != null && child.getTerminalServiceDate() != null) {
                 evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate(), ""));
@@ -303,6 +310,30 @@ public final class MotherMentorMotherClosureRepository {
     public static boolean isClosed(SQLiteDatabase db, String motherId) {
         return "1".equals(value(enrollment(db, motherId), IS_CLOSED))
                 || !sharedDeath(db, motherId).isEmpty() || getState(db, motherId, null).isClosed();
+    }
+
+    /** Only an editable child outcome in the same-day, current, finalized visit can bypass closure. */
+    public static boolean isSameDayClosingVisit(SQLiteDatabase db, Visit visit, LocalDate today) {
+        if (visit == null || !Boolean.TRUE.equals(visit.getProcessed())
+                || !Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType())
+                || !today.equals(MotherMentorMotherVisitDao.getServiceDate(visit))
+                || !MotherMentorMotherVisitDao.belongsToCurrentEnrollment(db,
+                        visit.getBaseEntityId(), visit.getJson())) return false;
+
+        MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, visit.getBaseEntityId());
+        Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
+                MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
+        answers.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
+        answers.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
+        VisitOutcome outcome = classify(answers, today);
+        if (outcome != VisitOutcome.STILLBIRTH && outcome != VisitOutcome.CHILD_DECEASED
+                && outcome != VisitOutcome.CHILD_CONFIRMED_POSITIVE && outcome != VisitOutcome.GRADUATED) {
+            return false;
+        }
+        MotherMentorMotherClosure closure = getState(db, visit.getBaseEntityId(), null);
+        return today.toString().equals(closure.getClosedDate())
+                && closure.getStatus().equals(MotherMentorMotherClosure.active()
+                        .advance(outcome, today.toString()).getStatus());
     }
 
     /** An already-open linked follow-up must also respect a finalized mother cascade. */

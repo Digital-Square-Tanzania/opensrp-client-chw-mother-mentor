@@ -61,6 +61,7 @@ public final class MotherMentorHeiSchedule {
         private final boolean confirmed;
         private final LocalDate serviceDate;
         private final boolean confirmationNegative;
+        private final LocalDate receivedDate;
 
         public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate) {
             this(result, date, confirmed, serviceDate, false);
@@ -68,11 +69,17 @@ public final class MotherMentorHeiSchedule {
 
         public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate,
                 boolean confirmationNegative) {
+            this(result, date, confirmed, serviceDate, confirmationNegative, null);
+        }
+
+        public TestRecord(String result, LocalDate date, boolean confirmed, LocalDate serviceDate,
+                boolean confirmationNegative, LocalDate receivedDate) {
             this.result = result;
             this.date = date;
             this.confirmed = confirmed;
             this.serviceDate = serviceDate;
             this.confirmationNegative = confirmationNegative;
+            this.receivedDate = receivedDate;
         }
 
         public String getResult() { return result; }
@@ -80,6 +87,7 @@ public final class MotherMentorHeiSchedule {
         public boolean isConfirmed() { return confirmed; }
         public LocalDate getServiceDate() { return serviceDate; }
         public boolean isConfirmationNegative() { return confirmationNegative; }
+        public LocalDate getReceivedDate() { return receivedDate; }
         public boolean requiresFollowUp() {
             return "pending".equals(result) || "unknown".equals(result)
                     || ("positive".equals(result) && !confirmed && !confirmationNegative);
@@ -187,6 +195,10 @@ public final class MotherMentorHeiSchedule {
         } catch (IllegalArgumentException invalid) {
             return null;
         }
+    }
+
+    static boolean hasReceivedResult(String result) {
+        return "negative".equals(result) || "positive".equals(result);
     }
 
     public static boolean validDate(LocalDate date, LocalDate dob, LocalDate assessment) {

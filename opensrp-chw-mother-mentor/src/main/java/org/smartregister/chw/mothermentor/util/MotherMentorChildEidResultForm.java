@@ -34,6 +34,14 @@ public final class MotherMentorChildEidResultForm {
             performed.put("value", "yes");
             performed.remove("relevance");
             performed.remove("options");
+            JSONObject step = form.getJSONObject("step1");
+            JSONArray fields = step.getJSONArray("fields");
+            JSONArray ordered = new JSONArray();
+            for (int i = 0; i < fields.length(); i++) {
+                JSONObject field = fields.getJSONObject(i);
+                if (field != receipt) ordered.put(field);
+            }
+            step.put("fields", ordered.put(receipt));
         }
         if (recordingConfirmation || MotherMentorHeiSchedule.Stage.fromCode(stageCode)
                 == MotherMentorHeiSchedule.Stage.EIGHTEEN_MONTHS) {
@@ -49,8 +57,12 @@ public final class MotherMentorChildEidResultForm {
     }
 
     public static int receiptDateError(Map<String, String> answers, LocalDate sampleDate) {
-        LocalDate received = MotherMentorHeiSchedule.parseDate(answers.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE));
-        if (received == null || received.isAfter(LocalDate.now())) return R.string.mothermentor_eid_received_invalid_date;
-        return received.isBefore(sampleDate) ? R.string.mothermentor_eid_received_before_test : 0;
+        return receiptDateError(answers.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE), sampleDate, LocalDate.now());
+    }
+
+    static int receiptDateError(String value, LocalDate sampleDate, LocalDate latestDate) {
+        LocalDate received = MotherMentorHeiSchedule.parseDate(value);
+        if (received == null || received.isAfter(latestDate)) return R.string.mothermentor_eid_received_invalid_date;
+        return sampleDate != null && received.isBefore(sampleDate) ? R.string.mothermentor_eid_received_before_test : 0;
     }
 }
