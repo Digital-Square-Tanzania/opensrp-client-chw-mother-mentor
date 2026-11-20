@@ -133,7 +133,7 @@ public final class MotherMentorChildEidReturnVisit {
     public static boolean matchesPending(TestRecord record, String priorState) {
         if (record == null || record.getDate() == null) return false;
         if (AWAITING_RESULT.equals(priorState)) return "pending".equals(record.getResult());
-        return AWAITING_CONFIRM.equals(priorState) && "positive".equals(record.getResult()) && !record.isConfirmed();
+        return AWAITING_CONFIRM.equals(priorState) && "positive".equals(record.getResult()) && record.requiresFollowUp();
     }
 
     /** A linked result updates an existing sample without replaying the visit's tracing answers. */

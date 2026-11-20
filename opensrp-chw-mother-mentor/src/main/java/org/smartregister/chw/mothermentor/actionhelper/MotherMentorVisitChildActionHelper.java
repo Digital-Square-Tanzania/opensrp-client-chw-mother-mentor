@@ -32,7 +32,6 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
 
     public String prepare(JSONObject entry, boolean restoreAnswers) throws JSONException {
         JSONObject form = new JSONObject(sourceForm);
-        JSONArray birthFields = form.getJSONObject("step1").getJSONArray("fields");
         JSONArray childFields = new JSONArray();
         JSONArray entryFields = entry.getJSONObject("step1").getJSONArray("fields");
         for (int i = 0; i < entryFields.length(); i++) {
@@ -43,13 +42,6 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
                         .put("openmrs_entity", "ui_only").put("openmrs_entity_id", key)
                         .put("openmrs_entity_parent", "").put("value", field.optString("value")));
             } else if (MotherMentorMotherChildUtils.isChildField(key)) {
-                if (MAMA_HEI_TEST_DONE.equals(key)) {
-                    for (int j = 0; j < birthFields.length(); j++) {
-                        JSONObject birthField = birthFields.getJSONObject(j);
-                        if (!restoreAnswers) birthField.put("value", "");
-                        childFields.put(birthField);
-                    }
-                }
                 if (!restoreAnswers && MotherMentorMotherChildUtils.ANSWER_FIELDS.contains(key)) {
                     field.put("value", "");
                 }
@@ -60,19 +52,10 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
         form.put("encounter_type", entry.getString("encounter_type"));
         form.put("metadata", entry.getJSONObject("metadata"));
         form.getJSONObject("step1").put("fields", childFields);
-        Map<String, String> values = MotherMentorMotherChildUtils.values(form);
         LocalDate assessment = entryHelper.childAssessmentDate(form);
         MotherMentorMotherChildUtils.put(form, MAMA_HEI_ASSESSMENT_DATE, assessment.toString());
         MotherMentorMotherChildUtils.put(form, MAMA_CHILD_PATH, "true");
-        if (MotherMentorMotherBirthTest.isRequired(values, assessment)) {
-            MotherMentorMotherChildUtils.put(form, MAMA_BIRTH_TEST_REQUIRED, "true");
-            LocalDate dob = MotherMentorMotherChildUtils.birth(values);
-            setDateBounds(form, MAMA_BIRTH_TEST_DATE, dob,
-                    MotherMentorMotherBirthTest.latestSampleDate(dob, assessment));
-            setDateBounds(form, MAMA_BIRTH_TEST_RECEIVED_DATE, dob, assessment);
-        } else {
-            MotherMentorMotherChildUtils.put(form, MAMA_BIRTH_TEST_REQUIRED, "false");
-        }
+        MotherMentorMotherBirthTest.prepare(form, MotherMentorMotherChildUtils.values(form), assessment);
         return form.toString();
     }
 
@@ -83,13 +66,6 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
             if (!Objects.equals(childValues.get(key), entryValues.get(key))) return false;
         }
         return true;
-    }
-
-    private void setDateBounds(JSONObject form, String key, LocalDate min, LocalDate max)
-            throws JSONException {
-        JSONObject field = MotherMentorMotherChildUtils.field(form, key);
-        field.put("min_date", min.toString("dd-MM-yyyy"));
-        field.put("max_date", max.toString("dd-MM-yyyy"));
     }
 
     @Override

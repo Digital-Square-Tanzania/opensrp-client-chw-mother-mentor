@@ -18,10 +18,13 @@ public final class MotherMentorChildEidResultOverdue {
 
     static LocalDate overdueDate(Map<String, String> values, LocalDate day) {
         if (!MotherMentorChildEidReturnVisit.AWAITING_RESULT.equals(values.get(MTOTO_RUFAA_STATE))) return null;
-        String code = values.get(MTOTO_PENDING_TEST);
-        int limit = BIRTH_TEST.equals(code) ? BIRTH_LIMIT_DAYS : limit(Stage.fromCode(code));
         LocalDate sample = MotherMentorHeiSchedule.parseDate(values.get(MTOTO_PENDING_TEST_DATE));
-        return limit > 0 && sample != null && day.isAfter(sample.plusDays(limit)) ? sample : null;
+        return isOverdue(Stage.fromCode(values.get(MTOTO_PENDING_TEST)), sample, day) ? sample : null;
+    }
+
+    public static boolean isOverdue(Stage stage, LocalDate sample, LocalDate day) {
+        int limit = limit(stage);
+        return limit > 0 && sample != null && day != null && day.isAfter(sample.plusDays(limit));
     }
 
     /** List queries use the same thresholds as the card and keep the stored state intact. */
@@ -44,6 +47,7 @@ public final class MotherMentorChildEidResultOverdue {
     }
 
     private static int limit(Stage stage) {
+        if (stage == Stage.AT_BIRTH) return BIRTH_LIMIT_DAYS;
         return stage == null || stage == Stage.EIGHTEEN_MONTHS ? 0 : DBS_LIMIT_DAYS;
     }
 }

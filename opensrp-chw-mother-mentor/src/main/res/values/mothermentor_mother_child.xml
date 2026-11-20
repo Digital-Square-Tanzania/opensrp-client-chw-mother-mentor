@@ -10,4 +10,13 @@
     <string name="mothermentor_mother_child_weeks">%1$d weeks</string>
     <string name="mothermentor_mother_child_months">%1$d months</string>
     <string name="mothermentor_mother_child_invalid_date">Enter a date from delivery through the visit date.</string>
+    <string name="mothermentor_mother_birth_invalid_date">The test date cannot be more than 48 hours after the date of birth.</string>
+    <string name="mothermentor_mother_result_title">Test Result</string>
+    <string name="mothermentor_mother_results_title">Test Results</string>
+    <string name="mothermentor_mother_result_subtitle">View test result</string>
+    <string name="mothermentor_mother_results_subtitle">View test results</string>
+    <string name="mothermentor_mother_result_record">Record results</string>
+    <string name="mothermentor_mother_result_list_item">%1$s · %2$s\n%3$s</string>
+    <string name="mothermentor_mother_result_unavailable">This test no longer has a result awaiting entry.</string>
+    <string name="mothermentor_mother_result_saved">Result saved</string>
 </resources>
