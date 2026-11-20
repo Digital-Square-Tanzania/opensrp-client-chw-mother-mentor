@@ -426,7 +426,6 @@ public final class MotherMentorMotherChildRepository {
     }
 
     private static void applyMotherResult(State state, Evidence item) {
-        if (state.terminalDate != null) return;
         Map<String, String> values = item.values;
         LocalDate day = item.date;
         Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_PENDING_TEST));
@@ -436,6 +435,7 @@ public final class MotherMentorMotherChildRepository {
         if (result == null) return;
         MotherMentorMotherResultEvent.Entry entry = MotherMentorMotherResultEvent.readEntry(item.visit, pending, values, day);
         state.resultHistory.add(entry);
+        if (state.terminalDate != null) return;
         boolean confirmed = "positive".equals(result.confirmation);
         LocalDate received = pending.isAwaitingConfirmation() ? state.tests.get(stage).getReceivedDate()
                 : entry.getAnswers().getReceivedDate();

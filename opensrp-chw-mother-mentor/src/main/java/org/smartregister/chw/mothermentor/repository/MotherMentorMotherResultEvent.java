@@ -179,17 +179,17 @@ public final class MotherMentorMotherResultEvent {
 
     public static List<Entry> visible(SQLiteDatabase db, String motherId, LocalDate day) {
         MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, motherId, null, day);
-        Map<Stage, Entry> entries = new LinkedHashMap<>();
+        List<Entry> entries = new ArrayList<>();
         List<PendingTest> pending = state.getPendingMotherTests();
         if (!pending.isEmpty() && !MotherMentorMotherClosureRepository.isClosed(db, motherId)) {
             for (PendingTest sample : pending) {
-                entries.put(sample.stage, new Entry(sample, sample.getKey(), null, null, 0, 0, "", false));
+                entries.add(new Entry(sample, sample.getKey(), null, null, 0, 0, "", false));
             }
         }
         for (Entry entry : state.testResultHistory()) {
-            if (day.equals(entry.recordedDate)) entries.put(entry.sample.stage, entry);
+            if (day.equals(entry.recordedDate)) entries.add(entry);
         }
-        return new ArrayList<>(entries.values());
+        return entries;
     }
 
     public static Entry editable(SQLiteDatabase db, String motherId, String id, LocalDate day) {
@@ -252,7 +252,7 @@ public final class MotherMentorMotherResultEvent {
             Map<String, String> answers, LocalDate day) {
         if (db == null || day == null || day.isAfter(LocalDate.now())) return false;
         try {
-            return save(db, motherId, displayed.getKey(), 0, sample -> answers, day, false);
+            return save(db, motherId, displayed.getKey(), 0, sample -> answers, day);
         } catch (Exception error) {
             Timber.e(error, "Unable to save the Mama Kadi test result");
             return false;
@@ -261,20 +261,18 @@ public final class MotherMentorMotherResultEvent {
 
     public static boolean save(SQLiteDatabase db, String motherId, String id, long expectedRevision,
             Answers answers) throws Exception {
-        return save(db, motherId, id, expectedRevision, answers::observations, LocalDate.now(), true);
+        return save(db, motherId, id, expectedRevision, answers::observations, LocalDate.now());
     }
 
     private static boolean save(SQLiteDatabase db, String motherId, String id, long expectedRevision,
-            Function<PendingTest, Map<String, String>> form, LocalDate day, boolean requireReceipt) throws Exception {
+            Function<PendingTest, Map<String, String>> form, LocalDate day) throws Exception {
         db.beginTransaction();
         try {
             Entry previous = editable(db, motherId, id, day);
             if (previous == null || previous.revision != expectedRevision) return false;
             PendingTest sample = previous.sample;
             Map<String, String> answers = form.apply(sample);
-            LocalDate receipt = MotherMentorHeiSchedule.parseDate(answers.get(MTOTO_RESULT_RECEIVED_DATE));
-            if (!isComplete(sample, answers, day) || (requireReceipt
-                    && !MotherMentorHeiSchedule.validDate(receipt, sample.testDate, day))) return false;
+            if (!isComplete(sample, answers, day)) return false;
             persist(db, motherId, previous, answers, day);
             db.setTransactionSuccessful();
             return true;

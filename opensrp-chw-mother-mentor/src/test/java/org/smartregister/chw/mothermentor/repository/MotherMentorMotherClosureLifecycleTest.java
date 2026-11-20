@@ -22,6 +22,7 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
@@ -263,13 +264,70 @@ public class MotherMentorMotherClosureLifecycleTest {
         assertTrue(confirmation.getSample().isAwaitingConfirmation());
         assertNotEquals(id, confirmation.getId());
 
-        Entry recorded = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        Entry recorded = MotherMentorMotherResultEvent.history(db, "mother", today).get(0);
         assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
                 new Answers("positive", today, "yes", "negative")));
         MotherMentorMotherChildRepository.State state =
                 MotherMentorMotherChildRepository.getState(db, "mother", null);
         assertEquals("positive", state.getTests().get(Stage.SIX_WEEKS).getResult());
         assertFalse(state.getTests().get(Stage.SIX_WEEKS).requiresFollowUp());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
+    }
+
+    @Test
+    public void separateConfirmationKeepsItsOwnDatesAndDoesNotReplaceScreeningInHistory() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate sampleDate = today.minusDays(3);
+        LocalDate screeningReceipt = today.minusDays(2);
+        setupPendingProfileTest(sampleDate);
+        stubResultEventWrites();
+
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", pending.getId(), pending.getRevision(),
+                new Answers("positive", screeningReceipt, "no", "")));
+
+        List<Entry> queue = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, queue.size());
+        Entry confirmation = queue.get(0);
+        Entry screening = queue.get(1);
+        assertTrue(confirmation.getSample().isAwaitingConfirmation());
+        assertFalse(confirmation.isRecorded());
+        assertTrue(screening.isRecorded());
+        assertEquals(screeningReceipt, screening.getAnswers().getReceivedDate());
+        assertEquals(screening.getId(),
+                MotherMentorMotherResultEvent.editable(db, "mother", screening.getId(), today).getId());
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", confirmation.getId(), confirmation.getRevision(),
+                new Answers("positive", today, "", "")));
+        assertEquals("1", column(IS_CLOSED));
+        List<Entry> history = MotherMentorMotherResultEvent.history(db, "mother", today);
+        assertEquals(2, history.size());
+        Entry savedConfirmation = history.get(1);
+        assertNotEquals(screening.getId(), savedConfirmation.getId());
+        assertEquals(sampleDate, savedConfirmation.getSample().getTestDate());
+        assertEquals(today, savedConfirmation.getRecordedDate());
+        assertEquals(today, savedConfirmation.getAnswers().getReceivedDate());
+        assertEquals(2, MotherMentorMotherResultEvent.visible(db, "mother", today).size());
+
+        LocalDate correctedReceipt = today.minusDays(1);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", savedConfirmation.getId(),
+                savedConfirmation.getRevision(), new Answers("negative", correctedReceipt, "", "")));
+        assertEquals("0", column(IS_CLOSED));
+        assertEquals(1, count("visits"));
+        assertEquals(2, count("event"));
+        List<Entry> nextDay = MotherMentorMotherResultEvent.history(db, "mother", today.plusDays(1));
+        assertEquals(2, nextDay.size());
+        assertEquals(screening.getId(), nextDay.get(0).getId());
+        assertEquals(sampleDate, nextDay.get(0).getSample().getTestDate());
+        assertEquals(screeningReceipt, nextDay.get(0).getAnswers().getReceivedDate());
+        assertEquals("positive", nextDay.get(0).getAnswers().getResult());
+        assertFalse(nextDay.get(0).isCorrected());
+        Entry corrected = nextDay.get(1);
+        assertEquals(savedConfirmation.getId(), corrected.getId());
+        assertEquals(savedConfirmation.getRecordedAt(), corrected.getRecordedAt());
+        assertEquals(correctedReceipt, corrected.getAnswers().getReceivedDate());
+        assertEquals("negative", corrected.getAnswers().getResult());
+        assertTrue(corrected.isCorrected());
         assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
     }
 
