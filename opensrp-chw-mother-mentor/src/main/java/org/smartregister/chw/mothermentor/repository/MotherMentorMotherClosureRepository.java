@@ -17,6 +17,8 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils.TerminalOutcome;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
@@ -120,28 +122,52 @@ public final class MotherMentorMotherClosureRepository {
             }
             evidence.add(preview);
         }
-        MotherMentorMotherChildRepository.State child =
-                MotherMentorMotherChildRepository.getState(db, motherId, excludedVisitId);
-        MotherMentorChildEidRepository.State tracing = child.getChildBaseEntityId().isEmpty() ? null
-                : MotherMentorChildEidRepository.getState(db, child.getChildBaseEntityId(), null);
-        MotherMentorChildEidExit tracingExit = tracing == null ? null : tracing.getVisitExit();
-        boolean linkedExit = tracingExit != null && tracingExit.getMotherOutcome() != null
-                && motherId.equals(tracing.getMotherId())
-                && (context.getEnrollmentId().equals(tracing.getMotherEnrollmentId())
-                    || tracing.getMotherEnrollmentId().isEmpty()
-                        && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
-                                new LocalDate(context.getEnrollmentTime()))));
-        if (linkedExit) {
-            evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
-                    tracing.getVisitExitDate(), tracing.getVisitExitTime(), tracing.getExitFacility(), ""));
-        }
-        if (child.getTerminalResultTime() > 0) {
-            evidence.add(new Evidence("~mama-test-result", VisitOutcome.CHILD_CONFIRMED_POSITIVE,
-                    child.getTerminalServiceDate(), child.getTerminalResultTime(), "", ""));
-        } else if (!linkedExit) {
-            VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
-            if (childExit != null && child.getTerminalServiceDate() != null) {
-                evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate(), ""));
+        List<MotherMentorMotherChildRepository.State> children = preview == null
+                ? MotherMentorMotherChildRepository.getStates(db, motherId, excludedVisitId, LocalDate.now())
+                : MotherMentorMotherChildRepository.getStatesBeforeMotherVisit(db, motherId, excludedVisitId);
+        boolean multiple = children.size() > 1 || preview != null && MotherMentorDeliveryChildren.count(answers) > 1;
+        if (multiple) {
+            TerminalOutcome outcome = MotherMentorMotherChildRepository.closingOutcome(
+                    children, preview == null ? java.util.Collections.emptyMap() : preview.values, date);
+            if (outcome != TerminalOutcome.NONE) {
+                LocalDate ended = date;
+                long order = preview == null ? 0 : preview.order;
+                if (preview == null) {
+                    for (MotherMentorMotherChildRepository.State child : children) {
+                        LocalDate ending = child.getTerminalServiceDate();
+                        if (ended == null || ending.isAfter(ended)) {
+                            ended = ending;
+                            order = child.getTerminalResultTime();
+                        } else if (ending.equals(ended)) {
+                            order = Math.max(order, child.getTerminalResultTime());
+                        }
+                    }
+                }
+                evidence.add(new Evidence("~children", childOutcome(outcome), ended, order, "", ""));
+            }
+        } else {
+            MotherMentorMotherChildRepository.State child = children.get(0);
+            MotherMentorChildEidRepository.State tracing = child.getChildBaseEntityId().isEmpty() ? null
+                    : MotherMentorChildEidRepository.getState(db, child.getChildBaseEntityId(), null);
+            MotherMentorChildEidExit tracingExit = tracing == null ? null : tracing.getVisitExit();
+            boolean linkedExit = tracingExit != null && tracingExit.getMotherOutcome() != null
+                    && motherId.equals(tracing.getMotherId())
+                    && (context.getEnrollmentId().equals(tracing.getMotherEnrollmentId())
+                        || tracing.getMotherEnrollmentId().isEmpty()
+                            && (context.getEnrollmentTime() == 0 || !tracing.getVisitExitDate().isBefore(
+                                    new LocalDate(context.getEnrollmentTime()))));
+            if (linkedExit) {
+                evidence.add(new Evidence("~linked-child", tracingExit.getMotherOutcome(),
+                        tracing.getVisitExitDate(), tracing.getVisitExitTime(), tracing.getExitFacility(), ""));
+            }
+            if (child.getTerminalResultTime() > 0) {
+                evidence.add(new Evidence("~mama-test-result", VisitOutcome.CHILD_CONFIRMED_POSITIVE,
+                        child.getTerminalServiceDate(), child.getTerminalResultTime(), "", ""));
+            } else if (!linkedExit) {
+                VisitOutcome childExit = childOutcome(child.getTerminalOutcome());
+                if (childExit != null && child.getTerminalServiceDate() != null) {
+                    evidence.add(new Evidence("~linked-child", childExit, child.getTerminalServiceDate(), ""));
+                }
             }
         }
         if (includeIit && replayIit) {
@@ -169,6 +195,8 @@ public final class MotherMentorMotherClosureRepository {
                         && MotherMentorMotherChildRepository.getStateBeforeMotherVisit(db, motherId, item.id)
                                 .hasBreastfeedingHistory();
                 outcome = classify(values, item.date, hasBreastfeedingHistory, item == preview);
+                if (multiple && isChildOutcome(outcome)
+                        && !(outcome == VisitOutcome.STILLBIRTH && "stillbirth".equals(values.get(MAMA_PREGNANCY_OUTCOME)))) outcome = VisitOutcome.CONTINUE;
             }
             state = state.advance(outcome, item.date.toString(),
                     value(values, outcome == VisitOutcome.PREGNANCY_ENDED_OTHER
@@ -243,6 +271,11 @@ public final class MotherMentorMotherClosureRepository {
             default: break;
         }
         if (!MotherMentorMotherPregnancyUtils.isChildPath(values, date)) return VisitOutcome.CONTINUE;
+        if (MotherMentorDeliveryChildren.hasSections(values)) {
+            if (MotherMentorDeliveryChildren.count(values) > 1) return VisitOutcome.CONTINUE;
+            values = MotherMentorDeliveryChildren.childVisit(values, 1);
+            if (!values.containsKey(MAMA_CHILD_STATUS)) return VisitOutcome.CONTINUE;
+        }
         // Finalized birth-test outcomes come from the child projection, which can see earlier answers.
         boolean complete = preview
                 ? MotherMentorMotherChildUtils.isComplete(values, date, hasBreastfeedingHistory)
@@ -253,8 +286,28 @@ public final class MotherMentorMotherClosureRepository {
         return child == null ? VisitOutcome.CONTINUE : child;
     }
 
+    private static boolean isChildOutcome(VisitOutcome outcome) {
+        return outcome == VisitOutcome.STILLBIRTH || outcome == VisitOutcome.CHILD_DECEASED
+                || outcome == VisitOutcome.CHILD_CONFIRMED_POSITIVE || outcome == VisitOutcome.GRADUATED;
+    }
+
+    public static MotherMentorMotherClosure previewResult(SQLiteDatabase db, String motherId,
+            int number, TerminalOutcome result, LocalDate day) {
+        MotherMentorMotherClosure open = MotherMentorMotherClosure.active();
+        TerminalOutcome reason = result;
+        for (MotherMentorMotherChildRepository.State child :
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, day)) {
+            if (child.getNumber() == number) continue;
+            TerminalOutcome outcome = child.getTerminalOutcome();
+            if (outcome == TerminalOutcome.NONE) return open;
+            if (outcome.ordinal() > reason.ordinal()) reason = outcome;
+        }
+        return reason == TerminalOutcome.NONE ? open : open.advance(childOutcome(reason), day.toString());
+    }
+
     private static VisitOutcome childOutcome(MotherMentorMotherChildUtils.TerminalOutcome value) {
         switch (value) {
+            case STILLBIRTH: return VisitOutcome.STILLBIRTH;
             case CHILD_DECEASED: return VisitOutcome.CHILD_DECEASED;
             case CHILD_CONFIRMED_POSITIVE: return VisitOutcome.CHILD_CONFIRMED_POSITIVE;
             case GRADUATED: return VisitOutcome.GRADUATED;
@@ -326,6 +379,12 @@ public final class MotherMentorMotherClosureRepository {
         answers.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
         answers.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
         VisitOutcome outcome = classify(answers, today);
+        if (MotherMentorDeliveryChildren.hasSections(answers)) {
+            List<MotherMentorMotherChildRepository.State> children =
+                    MotherMentorMotherChildRepository.getStatesBeforeMotherVisit(db, visit.getBaseEntityId(), visit.getVisitId());
+            VisitOutcome childExit = childOutcome(MotherMentorMotherChildRepository.closingOutcome(children, answers, today));
+            if (childExit != null) outcome = childExit;
+        }
         if (outcome != VisitOutcome.STILLBIRTH && outcome != VisitOutcome.CHILD_DECEASED
                 && outcome != VisitOutcome.CHILD_CONFIRMED_POSITIVE && outcome != VisitOutcome.GRADUATED) {
             return false;

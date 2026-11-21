@@ -31,6 +31,8 @@ import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRe
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
@@ -63,7 +65,7 @@ public class MotherMentorMotherExitActionFlowTest {
                 "CREATE TABLE visits (visit_id TEXT, base_entity_id TEXT, visit_type TEXT, processed INTEGER, visit_date TEXT)");
         data.execSQL("CREATE TABLE visit_details (visit_id TEXT, visit_key TEXT, details TEXT)");
         data.execSQL(
-                "CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, art_status TEXT, art_start_date TEXT)");
+                "CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, art_status TEXT, art_start_date TEXT, last_interacted_with INTEGER)");
         MotherMentorLibrary library = mock(MotherMentorLibrary.class);
         when(library.getSourceDateFormat()).thenReturn("dd-MM-yyyy");
         when(library.getSaveDateFormat()).thenReturn("yyyy-MM-dd");
@@ -118,11 +120,12 @@ public class MotherMentorMotherExitActionFlowTest {
             for (String outcome : new String[] {"pregnancy_loss", "stillbirth", "other",
                             "child_deceased", "confirmed_positive", "final_negative"}) {
                 Map<String, BaseMotherMentorVisitAction> actions = start(false);
-                answer(entry(actions), clinical(outcome));
+                answerClinical(actions, clinical(outcome));
                 assertEquals(directory + ":" + outcome,
                         BaseMotherMentorVisitAction.Status.COMPLETED,
                         entry(actions).getActionStatus());
-                assertEquals(directory + ":" + outcome, 2, visible(actions));
+                assertEquals(directory + ":" + outcome,
+                        outcome.equals("pregnancy_loss") || outcome.equals("other") ? 2 : 3, visible(actions));
             }
         }
     }
@@ -142,10 +145,11 @@ public class MotherMentorMotherExitActionFlowTest {
                             VISIT_PREGNANCY_STATUS, "pregnant"};
                 else
                     values = clinical(path);
-                answer(entry(actions), values);
+                answerClinical(actions, values);
                 assertEquals(directory + ":" + path, BaseMotherMentorVisitAction.Status.COMPLETED,
                         entry(actions).getActionStatus());
-                assertEquals(directory + ":" + path, 6, visible(actions));
+                assertEquals(directory + ":" + path, "new".equals(path) || "pregnant".equals(path)
+                        ? 6 : 7, visible(actions));
             }
         }
     }
@@ -162,11 +166,13 @@ public class MotherMentorMotherExitActionFlowTest {
                         : HEI_CHANYA_IMETHIBITISHWA.equals(missing)          ? "confirmed_positive"
                         : MAMA_PREGNANCY_OUTCOME_OTHER.equals(missing)       ? "other"
                                                                                 : "pregnancy_loss";
-                answer(entry(actions), clinical(outcome));
-                answer(entry(actions), missing, "");
+                answerClinical(actions, clinical(outcome));
+                BaseMotherMentorVisitAction section = MotherMentorMotherChildUtils.isChildField(missing)
+                        ? byForm(actions, "mothermentor_visit_child") : entry(actions);
+                answer(section, missing, "");
                 assertEquals(directory + ":" + missing, BaseMotherMentorVisitAction.Status.PENDING,
-                        entry(actions).getActionStatus());
-                assertEquals(directory + ":" + missing, 2, visible(actions));
+                        section.getActionStatus());
+                assertEquals(directory + ":" + missing, section == entry(actions) ? 2 : 7, visible(actions));
             }
         }
     }
@@ -217,7 +223,8 @@ public class MotherMentorMotherExitActionFlowTest {
             assertEquals(birth.plusDays(2).toString("dd-MM-yyyy"),
                     field(child, MAMA_BIRTH_TEST_DATE).getString("max_date"));
 
-            answer(child, MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+            answer(child, MotherMentorDeliveryChildren.SEX, "female",
+                    MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding");
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
             answer(child, MAMA_BIRTH_TEST_DONE, "yes", MAMA_BIRTH_TEST_RESULT, "pending",
                     MAMA_BIRTH_TEST_DATE, birth.plusDays(3).toString(),
@@ -255,9 +262,10 @@ public class MotherMentorMotherExitActionFlowTest {
         BaseMotherMentorVisitAction entry = entry(actions);
         BaseMotherMentorVisitAction child = byForm(actions, "mothermentor_visit_child");
         answer(entry, ATTENDANCE_TYPE, "new", VISIT_PREGNANCY_STATUS, "not_pregnant",
-                MAMA_PREGNANCY_OUTCOME, "delivered", MAMA_DELIVERY_DATE_INPUT, birth.toString());
+                MAMA_PREGNANCY_OUTCOME, "delivered", MAMA_DELIVERY_DATE_INPUT, birth.toString(),
+                MotherMentorDeliveryChildren.COUNT, "1");
         assertTrue(child.isValid());
-        answer(child, MAMA_CHILD_STATUS, "deceased");
+        answer(child, MotherMentorDeliveryChildren.SEX, "male", MAMA_CHILD_STATUS, "deceased");
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, child.getActionStatus());
         answer(child, MAMA_TAREHE_MTOTO_ALIFARIKI, DAY.toString());
         assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, child.getActionStatus());
@@ -284,14 +292,15 @@ public class MotherMentorMotherExitActionFlowTest {
         org.json.JSONArray observations = new JSONObject(saved.getJson()).getJSONArray("obs");
         Map<String, String> recorded = MotherMentorVisitCompletion.observationValues(observations);
         for (String key : new String[] {ATTENDANCE_TYPE, VISIT_PREGNANCY_STATUS,
-                MAMA_TAREHE_KUJIFUNGUA, MAMA_CHILD_STATUS, MAMA_BIRTH_TEST_RESULT, MAMA_BIRTH_TEST_RECEIVED_DATE}) {
+                MAMA_TAREHE_KUJIFUNGUA, childKey(MAMA_CHILD_STATUS), childKey(MAMA_BIRTH_TEST_RESULT),
+                childKey(MAMA_BIRTH_TEST_RECEIVED_DATE)}) {
             int count = 0;
             for (int i = 0; i < observations.length(); i++) {
                 if (key.equals(observations.getJSONObject(i).optString("fieldCode"))) count++;
             }
             assertEquals(key, 1, count);
         }
-        assertEquals(DAY.toString(), recorded.get(MAMA_BIRTH_TEST_RECEIVED_DATE));
+        assertEquals(DAY.toString(), recorded.get(childKey(MAMA_BIRTH_TEST_RECEIVED_DATE)));
         assertTrue(MotherMentorVisitCompletion.isComplete(observations));
         assertEquals(VisitOutcome.CHILD_CONFIRMED_POSITIVE,
                 MotherMentorMotherClosureRepository.outcome(recorded));
@@ -304,10 +313,43 @@ public class MotherMentorMotherExitActionFlowTest {
         assertNull(child.getJsonPayload());
     }
 
+    @Test
+    @Config(qualifiers = "sw")
+    public void twinsRequireBothSectionsAndCanBeEditedBeforeSavingTheVisit() throws Exception {
+        language = "json.form-sw";
+        Map<String, BaseMotherMentorVisitAction> actions = start(false);
+        BaseMotherMentorVisitAction attendance = entry(actions);
+        answer(attendance, ATTENDANCE_TYPE, "new", VISIT_PREGNANCY_STATUS, "not_pregnant",
+                MAMA_PREGNANCY_OUTCOME, "delivered", MAMA_DELIVERY_DATE_INPUT, DAY.toString());
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, attendance.getActionStatus());
+        assertEquals(2, visible(actions));
+
+        answer(attendance, MotherMentorDeliveryChildren.COUNT, "2");
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, attendance.getActionStatus());
+        BaseMotherMentorVisitAction first = actions.get("Mtoto wa 1");
+        BaseMotherMentorVisitAction second = actions.get("Mtoto wa 2");
+        assertTrue(first.isValid());
+        assertTrue(second.isValid());
+        assertFalse(first.isOptional());
+        assertFalse(second.isOptional());
+        answer(first, MotherMentorDeliveryChildren.SEX, "female", MAMA_CHILD_STATUS, "stillbirth");
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, first.getActionStatus());
+        assertEquals("Mtoto wa 1 (Ke)", first.getDisplayTitle());
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, second.getActionStatus());
+        answer(first, MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding",
+                MAMA_BIRTH_TEST_DONE, "no");
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, first.getActionStatus());
+        assertEquals("alive", value(first, MAMA_CHILD_STATUS));
+        answer(second, MotherMentorDeliveryChildren.SEX, "male", MAMA_CHILD_STATUS, "stillbirth");
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, second.getActionStatus());
+        assertEquals("Mtoto wa 2 (Me)", second.getDisplayTitle());
+        assertEquals(8, visible(actions));
+    }
+
     private VisitOutcome outcome(BaseMotherMentorVisitAction entry, BaseMotherMentorVisitAction child)
             throws Exception {
         Map<String, String> values = MotherMentorMotherVisitUtils.formValues(new JSONObject(entry.getJsonPayload()));
-        values.putAll(MotherMentorMotherVisitUtils.formValues(new JSONObject(child.getJsonPayload())));
+        values.putAll(MotherMentorDeliveryChildren.actionValues(new JSONObject(child.getJsonPayload())));
         return MotherMentorMotherClosureRepository.classify(values, DAY);
     }
 
@@ -323,7 +365,7 @@ public class MotherMentorMotherExitActionFlowTest {
                 HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP, "no");
         BaseMotherMentorVisitAction comments = byForm(actions, "mothermentor_visit_comment");
         answer(comments, COMMENTS, "Keep this comment");
-        answer(entry(actions), clinical("pregnancy_loss"));
+        answerClinical(actions, clinical("pregnancy_loss"));
         assertEquals(2, visible(actions));
         assertEquals("", value(group, HAS_BEEN_LINKED_TO_IGA_GROUP));
         assertEquals("", value(group, HAS_BEEN_LINKED_TO_PSYCHOSOCIAL_SUPPORT_GROUP));
@@ -338,15 +380,16 @@ public class MotherMentorMotherExitActionFlowTest {
         if ("alive".equals(outcome))
             dob = DAY.minusDays(10).toString();
         return new String[] {ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "found",
+                MotherMentorDeliveryChildren.COUNT, "1", MotherMentorDeliveryChildren.SEX, "female",
                 VISIT_PREGNANCY_STATUS, "not_pregnant", MAMA_PREGNANCY_OUTCOME,
-                "pregnancy_loss".equals(outcome) || "stillbirth".equals(outcome)
-                                || "other".equals(outcome)
+                "pregnancy_loss".equals(outcome) || "other".equals(outcome)
                         ? outcome
                         : "delivered",
                 MAMA_PREGNANCY_LOSS_DATE, DAY.minusDays(1).toString(), MAMA_PREGNANCY_OUTCOME_OTHER,
                 "Clinical reason", MAMA_TAREHE_KUJIFUNGUA, dob, MAMA_DELIVERY_DATE_INPUT, dob,
                 MAMA_PRETERM_DELIVERY_DATE_INPUT, dob, MAMA_STILLBIRTH_DATE_INPUT, dob,
-                MAMA_CHILD_STATUS, "child_deceased".equals(outcome) ? "deceased" : "alive",
+                MAMA_CHILD_STATUS, "child_deceased".equals(outcome) ? "deceased"
+                        : "stillbirth".equals(outcome) ? "stillbirth" : "alive",
                 MAMA_TAREHE_MTOTO_ALIFARIKI, DAY.toString(), MAMA_BREASTFEEDING_STATUS,
                 "breastfeeding", MAMA_BIRTH_TEST_DONE, "no",
                 MAMA_HEI_TEST_DONE, "not_done".equals(outcome) ? "no" : "yes",
@@ -358,6 +401,23 @@ public class MotherMentorMotherExitActionFlowTest {
                                                                                         : "negative",
                 MAMA_HEI_TEST_RECEIVED_DATE, DAY.toString(),
                 HEI_CHANYA_IMETHIBITISHWA, "confirmed_positive".equals(outcome) ? "yes" : "no"};
+    }
+
+    private String childKey(String key) {
+        return MotherMentorDeliveryChildren.observationKey(1, key);
+    }
+
+    private void answerClinical(Map<String, BaseMotherMentorVisitAction> actions, String... answers) throws Exception {
+        java.util.List<String> maternal = new java.util.ArrayList<>();
+        java.util.List<String> child = new java.util.ArrayList<>();
+        for (int i = 0; i < answers.length; i += 2) {
+            java.util.List<String> target = MotherMentorMotherChildUtils.isChildField(answers[i]) ? child : maternal;
+            target.add(answers[i]);
+            target.add(answers[i + 1]);
+        }
+        answer(entry(actions), maternal.toArray(new String[0]));
+        BaseMotherMentorVisitAction action = byForm(actions, "mothermentor_visit_child");
+        if (action.isValid() && !child.isEmpty()) answer(action, child.toArray(new String[0]));
     }
 
     private LinkedHashMap<String, BaseMotherMentorVisitAction> start(boolean edit) {

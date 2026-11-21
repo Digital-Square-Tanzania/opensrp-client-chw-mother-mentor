@@ -25,7 +25,7 @@ import java.util.Map;
 /** Child-block preparation and validation, shared by the checklist, native UI and replay. */
 @Keep
 public final class MotherMentorMotherChildUtils {
-    public enum TerminalOutcome { NONE, CHILD_DECEASED, CHILD_CONFIRMED_POSITIVE, GRADUATED }
+    public enum TerminalOutcome { NONE, STILLBIRTH, CHILD_DECEASED, CHILD_CONFIRMED_POSITIVE, GRADUATED }
 
     public static final List<String> ANSWER_FIELDS = Collections.unmodifiableList(Arrays.asList(
             DBConstants.KEY.MAMA_CHILD_STATUS, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS,
@@ -44,7 +44,8 @@ public final class MotherMentorMotherChildUtils {
     private MotherMentorMotherChildUtils() {}
 
     public static boolean isChildField(String key) {
-        return CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key) || MotherMentorMotherBirthTest.isField(key);
+        return MotherMentorDeliveryChildren.SEX.equals(key) || MotherMentorDeliveryChildren.LINK.equals(key)
+                || CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key) || MotherMentorMotherBirthTest.isField(key);
     }
 
     public static boolean applies(Map<String, String> values) {
@@ -86,6 +87,7 @@ public final class MotherMentorMotherChildUtils {
         LocalDate dob = birth(values);
         if (assessment == null || dob.isAfter(assessment)) return false;
         String child = values.get(DBConstants.KEY.MAMA_CHILD_STATUS);
+        if ("stillbirth".equals(child)) return MotherMentorDeliveryChildren.recordsDelivery(values);
         if ("deceased".equals(child)) {
             return MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(
                     values.get(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI)), dob, assessment);
@@ -120,7 +122,8 @@ public final class MotherMentorMotherChildUtils {
 
     public static TerminalOutcome terminalOutcome(Map<String, String> values, LocalDate assessment) {
         if (!applies(values) || !isComplete(values, assessment)) return TerminalOutcome.NONE;
-        if ("deceased".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
+        if ("stillbirth".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.STILLBIRTH;
+        if ("deceased".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
         if (MotherMentorMotherBirthTest.isRequired(values, assessment)
                 && "yes".equals(values.get(MAMA_BIRTH_TEST_DONE))
                 && "positive".equals(MotherMentorMotherBirthTest.confirmationResult(values))) {
@@ -158,6 +161,8 @@ public final class MotherMentorMotherChildUtils {
             return;
         }
         if (!"alive".equals(values.get(DBConstants.KEY.MAMA_CHILD_STATUS))) {
+            if (!"deceased".equals(values.get(MAMA_CHILD_STATUS))) put(form, MAMA_TAREHE_MTOTO_ALIFARIKI, "");
+            if ("stillbirth".equals(values.get(MAMA_CHILD_STATUS))) put(form, MotherMentorDeliveryChildren.LINK, "");
             for (String key : ANSWER_FIELDS) if (!Arrays.asList(DBConstants.KEY.MAMA_CHILD_STATUS,
                     DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI).contains(key)) put(form, key, "");
             put(form, DBConstants.KEY.MAMA_HEI_DUE_TESTS, "[]");

@@ -109,7 +109,7 @@ public class MotherMentorMotherChildNativeRulesTest {
 
         NativeForm(String language) throws Exception {
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(language + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(language + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
             activity = Robolectric.buildActivity(JsonFormActivity.class).get();

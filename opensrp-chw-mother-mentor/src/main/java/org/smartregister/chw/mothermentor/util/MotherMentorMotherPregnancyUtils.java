@@ -41,7 +41,10 @@ public final class MotherMentorMotherPregnancyUtils {
             case "delivered":
             case "preterm":
             case "stillbirth":
-                return valid(deliveryDate(values), serviceDate);
+                return valid(deliveryDate(values), serviceDate)
+                        && (!MotherMentorDeliveryChildren.hasSections(values)
+                                || !MotherMentorDeliveryChildren.recordsDelivery(values)
+                                || MotherMentorDeliveryChildren.count(values) > 0);
             case "pregnancy_loss":
                 return valid(parseDate(values.get(MAMA_PREGNANCY_LOSS_DATE)), serviceDate);
             case "other":
@@ -145,6 +148,12 @@ public final class MotherMentorMotherPregnancyUtils {
         hideQuestion(form, VISIT_PREGNANCY_STATUS);
         hideQuestion(form, MAMA_PREGNANCY_OUTCOME);
         showRecordedDate(field(form, dateAlias(previous)), date);
+        JSONObject count = field(form, MotherMentorDeliveryChildren.COUNT);
+        if (count != null) {
+            int recordedCount = Math.max(1, MotherMentorDeliveryChildren.count(previous));
+            showRecordedDate(count, Integer.toString(recordedCount));
+            count.put("text", count.optString("label") + ": " + recordedCount);
+        }
         return true;
     }
 
@@ -192,6 +201,7 @@ public final class MotherMentorMotherPregnancyUtils {
         if (!isFound(values)) {
             for (String key : ANSWER_FIELDS) put(form, key, "");
             put(form, MAMA_CARRIED_DELIVERY, "");
+            put(form, MotherMentorDeliveryChildren.COUNT, "");
             return form;
         }
         String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
@@ -213,6 +223,7 @@ public final class MotherMentorMotherPregnancyUtils {
         boolean delivery = "delivered".equals(outcome) || "preterm".equals(outcome)
                 || "stillbirth".equals(outcome);
         put(form, MAMA_TAREHE_KUJIFUNGUA, delivery ? displayDate(deliveryDate(values)) : "");
+        if (!isLiveBirth(values)) put(form, MotherMentorDeliveryChildren.COUNT, "");
         if (!"pregnancy_loss".equals(outcome)) put(form, MAMA_PREGNANCY_LOSS_DATE, "");
         if (!"other".equals(outcome)) put(form, MAMA_PREGNANCY_OUTCOME_OTHER, "");
         for (String key : Arrays.asList(MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,

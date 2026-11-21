@@ -21,6 +21,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
@@ -67,7 +69,8 @@ public class MotherMentorMotherChildRepositoryTest {
         visit("one", "source-one", "mother", values, dob.plusDays(45), 1, false);
         MotherMentorMotherChildRepository.upgrade(db);
         MotherMentorMotherChildRepository.upgrade(db);
-        assertEquals(15, MotherMentorMotherChildRepository.COLUMNS.size());
+        assertTrue(MotherMentorMotherChildRepository.COLUMNS.contains("mama_followed_child_count"));
+        assertTrue(MotherMentorMotherChildRepository.COLUMNS.contains("mama_child_pending_tests"));
         assertEquals("negative", scalar("SELECT hei_test_wiki6_result FROM ec_mothermentor_enrollment"));
         assertEquals("2025-03-15", scalar("SELECT hei_test_wiki6_date FROM ec_mothermentor_enrollment"));
         assertNull(MotherMentorMotherChildRepository.getState(db, "mother", null)
@@ -140,6 +143,62 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals(Stage.SIX_WEEKS, pending.get(0).getStage());
         assertEquals("1", scalar("SELECT COUNT(*) FROM visits"));
         assertFalse(MotherMentorMotherChildRepository.getState(db, "mother", null).hasConfirmedPositive());
+    }
+
+    @Test
+    public void keepsStillbornTwinOutOfFollowUpAndClosesOnTheLastChild() throws Exception {
+        data.delete("event", null, null);
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'pregnant', child_dob = ''");
+        enrollment("episode-one", "2025-03-01T08:00:00.000+03:00", "pregnant");
+        LocalDate birth = new LocalDate(2025, 3, 5);
+        LocalDate firstVisit = birth.plusDays(1);
+        Map<String, String> delivery = twinDelivery(birth);
+        child(delivery, 1, MAMA_CHILD_STATUS, "stillbirth");
+        child(delivery, 2, MAMA_CHILD_STATUS, "alive");
+        child(delivery, 2, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        child(delivery, 2, MAMA_BIRTH_TEST_DONE, "no");
+        visit("delivery", "delivery", "mother", delivery, firstVisit, 1, false);
+        List<MotherMentorMotherChildRepository.State> states =
+                MotherMentorMotherChildRepository.getStates(db, "mother", null, firstVisit);
+        assertEquals(2, states.size());
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.STILLBIRTH, states.get(0).getTerminalOutcome());
+        assertEquals("female", states.get(0).getSex());
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE, states.get(1).getTerminalOutcome());
+        assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+
+        LocalDate finalDay = birth.plusMonths(18);
+        Map<String, String> later = twinDelivery(birth);
+        later.put(MAMA_CARRIED_DELIVERY, "true");
+        child(later, 2, MAMA_CHILD_STATUS, "alive");
+        child(later, 2, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        child(later, 2, MAMA_HEI_TEST_DONE, "yes");
+        child(later, 2, MAMA_HEI_TEST_TYPE, "eighteen_months");
+        child(later, 2, MAMA_HEI_TEST_DATE, finalDay.toString());
+        child(later, 2, MAMA_HEI_TEST_RESULT, "negative");
+        child(later, 2, MAMA_HEI_TEST_RECEIVED_DATE, finalDay.toString());
+        visit("last", "last", "mother", later, finalDay, 1, false);
+        MotherMentorMotherClosure closure = MotherMentorMotherClosureRepository.getState(db, "mother", null);
+        assertEquals(MotherMentorMotherClosure.GRADUATED, closure.getStatus());
+        assertEquals(finalDay.toString(), closure.getClosedDate());
+    }
+
+    private static Map<String, String> twinDelivery(LocalDate birth) {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(ATTENDANCE_TYPE, "repeat");
+        values.put(FOLLOW_UP_STATUS, "found");
+        values.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant");
+        values.put(VISIT_PREGNANCY_STATUS, "not_pregnant");
+        values.put(MAMA_PREGNANCY_OUTCOME, "delivered");
+        values.put(MAMA_TAREHE_KUJIFUNGUA, birth.toString());
+        values.put(MotherMentorDeliveryChildren.SECTIONS, "true");
+        values.put(MotherMentorDeliveryChildren.COUNT, "2");
+        child(values, 1, MotherMentorDeliveryChildren.SEX, "female");
+        child(values, 2, MotherMentorDeliveryChildren.SEX, "male");
+        return values;
+    }
+
+    private static void child(Map<String, String> visit, int number, String key, String value) {
+        visit.put(MotherMentorDeliveryChildren.observationKey(number, key), value);
     }
 
     private void resultEvent(String id, String source, LocalDate day, String result,

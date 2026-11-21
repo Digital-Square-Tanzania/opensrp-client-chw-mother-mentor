@@ -2,6 +2,767 @@
   "count": "1",
   "step1": {
     "title": "Mtoto wa 1",
-    "fields": []
+    "fields": [
+      {
+        "key": "mama_child_path",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_path",
+        "value": "false"
+      },
+      {
+        "key": "mama_carried_weaning_date",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_carried_weaning_date",
+        "value": ""
+      },
+      {
+        "key": "mama_previous_weaning_date",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_weaning_date"
+      },
+      {
+        "key": "mama_previous_breastfeeding_status",
+        "type": "hidden",
+        "value": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_parent": "",
+        "openmrs_entity_id": "mama_previous_breastfeeding_status"
+      },
+      {
+        "key": "mama_hei_test_history",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_history",
+        "value": "{}"
+      },
+      {
+        "key": "mtoto_suppressed_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_suppressed_tests",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_assessment_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_assessment_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_tests",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_tests",
+        "value": "[]"
+      },
+      {
+        "key": "mama_hei_due_test",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_test",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_due_date",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_due_date",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_test_type",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_type",
+        "value": ""
+      },
+      {
+        "key": "mama_child_age_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_child_age_note",
+        "hint": "Umri wa mtoto",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_next_test_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_next_test_note",
+        "hint": "Kipimo kinachofuata",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mtoto_closed_followup_note",
+        "type": "edit_text",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mtoto_closed_followup_note",
+        "hint": "",
+        "read_only": true,
+        "value": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_child_sex",
+        "type": "native_radio",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_sex",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "label": "Jinsia ya mtoto",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali chagua jibu"
+        },
+        "options": [
+          {
+            "key": "male",
+            "text": "Me (Mvulana)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "male",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "female",
+            "text": "Ke (Msichana)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "female",
+            "openmrs_entity_parent": ""
+          }
+        ]
+      },
+      {
+        "key": "mama_child_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_child_status",
+        "label": "Hali ya mtoto",
+        "options": [
+          {
+            "key": "alive",
+            "text": "Mtoto yupo hai",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "alive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "deceased",
+            "text": "Mtoto amefariki",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "stillbirth",
+            "text": "Mtoto kuzaliwa mfu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "stillbirth",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_mtoto_alifariki",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_mtoto_alifariki",
+        "hint": "Tarehe mtoto alipofariki",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_breastfeeding_status",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_breastfeeding_status",
+        "label": "Hali ya unyonyeshaji",
+        "options": [
+          {
+            "key": "breastfeeding",
+            "text": "Ananyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "breastfeeding",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "never_breastfed",
+            "text": "Hajawahi kunyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "never_breastfed",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "not_breastfeeding",
+            "text": "Ameacha kunyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_breastfeeding",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_tarehe_acha_kunyonyesha",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_tarehe_acha_kunyonyesha",
+        "hint": "Tarehe alipoacha kunyonyesha",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_workflow",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_workflow",
+        "openmrs_entity_parent": "",
+        "value": "true"
+      },
+      {
+        "key": "mama_birth_test_answered_dob",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_answered_dob",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
+        "key": "mama_birth_test_required",
+        "type": "hidden",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_birth_test_required",
+        "openmrs_entity_parent": "",
+        "value": "false"
+      },
+      {
+        "key": "mama_birth_test_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_done",
+        "label": "Kipimo cha wakati wa kuzaliwa kimefanyika?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_window_note",
+        "type": "label",
+        "text": "Kipimo hiki hufanyika ndani ya saa 48 baada ya kuzaliwa.",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_birth_test_window_note",
+        "openmrs_entity_parent": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_date",
+        "hint": "Tarehe kipimo kilipofanyika",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_result",
+        "label": "Majibu ya kipimo",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_received_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_received_date",
+        "hint": "Tarehe majibu yalipopokelewa kituoni",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Jaza tarehe majibu yalipopokelewa kituoni"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_pending_note",
+        "type": "label",
+        "text": "Fuatilia majibu kituoni.",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_birth_test_pending_note",
+        "openmrs_entity_parent": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_confirmation_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_confirmation_done",
+        "label": "Kipimo cha uthibitisho kimefanyika?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_confirmation_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_confirmation_result",
+        "label": "Majibu ya kipimo cha uthibitisho",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_birth_test_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_birth_test_confirmed",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_birth_test_confirmed",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
+        "key": "mama_hei_test_done",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_done",
+        "label": "Mtoto amepimwa kipimo cha HEI kinachostahili?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_type_choice",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_test_type_choice",
+        "label": "Aina ya kipimo",
+        "options": [
+          {
+            "key": "six_weeks",
+            "text": "Wiki 6",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "six_weeks",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "nine_months",
+            "text": "Miezi 9",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "nine_months",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "three_months_after_weaning",
+            "text": "Miezi 3 baada ya kuacha kunyonyesha",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "three_months_after_weaning",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "eighteen_months",
+            "text": "Miezi 18 (Uthibitisho)",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "eighteen_months",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_date",
+        "hint": "Tarehe ya kipimo",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_result",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_result",
+        "label": "Majibu ya kipimo",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_test_received_date",
+        "type": "date_picker",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_test_received_date",
+        "hint": "Tarehe majibu yalipopokelewa kituoni",
+        "max_date": "today",
+        "expanded": false,
+        "display_format": "dd/MM/yyyy",
+        "v_required": {
+          "value": true,
+          "err": "Jaza tarehe majibu yalipopokelewa kituoni"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "hei_chanya_imethibitishwa",
+        "type": "native_radio",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "hei_chanya_imethibitishwa",
+        "label": "Majibu ya uthibitisho yamepatikana?",
+        "options": [
+          {
+            "key": "yes",
+            "text": "Ndiyo",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "yes",
+            "openmrs_entity_parent": ""
+          },
+          {
+            "key": "no",
+            "text": "Hapana",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "no",
+            "openmrs_entity_parent": ""
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      }
+    ]
   }
 }

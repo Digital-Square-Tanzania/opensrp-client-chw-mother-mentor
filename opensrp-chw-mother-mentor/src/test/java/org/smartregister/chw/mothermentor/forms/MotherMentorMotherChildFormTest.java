@@ -8,6 +8,7 @@ import com.vijay.jsonwizard.utils.FormUtils;
 
 import org.json.JSONObject;
 import org.junit.Test;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -22,7 +23,7 @@ public class MotherMentorMotherChildFormTest {
     public void childStatusAndSerialTestQuestionsExistInBothLanguages() throws Exception {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(directory + "/mothermentor_visit_type.json"), "UTF-8")) {
+                    .open(directory + "/mothermentor_visit_child.json"), "UTF-8")) {
                 JSONObject form = new JSONObject(scanner.useDelimiter("\\A").next());
                 for (String key : new String[] {"mama_child_status", "mama_breastfeeding_status",
                         "mama_hei_test_done", "mama_hei_test_type", "mama_hei_test_result",
@@ -37,7 +38,7 @@ public class MotherMentorMotherChildFormTest {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             JSONObject form;
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(directory + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(directory + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
             String[] ui = {"mama_hei_test_type_choice", "mama_child_path",
@@ -51,14 +52,9 @@ public class MotherMentorMotherChildFormTest {
             FormUtils.getFieldFromForm(form, "mama_hei_test_type").put("value", "nine_months");
             FormUtils.getFieldFromForm(form, "mama_hei_due_test").put("value", "nine_months");
             FormUtils.getFieldFromForm(form, "mama_hei_due_date").put("value", "2026-10-01");
-            org.smartregister.domain.tag.FormTag tag = new org.smartregister.domain.tag.FormTag();
-            tag.providerId = "test-provider"; tag.locationId = "test-location";
-            tag.appVersion = 1; tag.databaseVersion = 64;
-            Object event = org.smartregister.util.JsonFormUtils.createEvent(
-                    form.getJSONObject("step1").getJSONArray("fields"), form.getJSONObject("metadata"),
-                    tag, "test-mother", "Mother Mentor Services", "ec_mothermentor_enrollment");
-            java.util.Map<String, String> values = org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion
-                    .observationValues(new JSONObject(new com.google.gson.Gson().toJson(event)).getJSONArray("obs"));
+            form.put(MotherMentorDeliveryChildren.NUMBER, 2);
+            java.util.Map<String, String> values = MotherMentorDeliveryChildren.section(
+                    MotherMentorDeliveryChildren.actionValues(form), 2);
             assertEquals("nine_months", values.get("mama_hei_test_type"));
             assertEquals("nine_months", values.get("mama_hei_due_test"));
             assertEquals("2026-10-01", values.get("mama_hei_due_date"));

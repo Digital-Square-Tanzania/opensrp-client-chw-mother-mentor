@@ -150,6 +150,7 @@ public class MotherMentorMotherPregnancyUtilsTest {
         assertEquals("", value(form, MAMA_TAREHE_KUJIFUNGUA));
         assertFalse(complete(MotherMentorMotherPregnancyUtils.values(form)));
         field(form, MAMA_PRETERM_DELIVERY_DATE_INPUT).put("value", "02-11-2026");
+        field(form, MotherMentorDeliveryChildren.COUNT).put("value", "1");
         MotherMentorMotherPregnancyUtils.normalize(form);
         assertEquals("02-11-2026", value(form, MAMA_TAREHE_KUJIFUNGUA));
         assertTrue(complete(MotherMentorMotherPregnancyUtils.values(form)));

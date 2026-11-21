@@ -16,6 +16,7 @@ import android.widget.RadioGroup;
 import com.vijay.jsonwizard.activities.JsonFormActivity;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -165,8 +166,13 @@ public class MotherMentorMotherChildUiTest {
 
         Fixture(String directory, LocalDate dob, LocalDate date) throws Exception {
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(directory + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(directory + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
+            }
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            for (String key : new String[] {ATTENDANCE_TYPE, FOLLOW_UP_STATUS,
+                    MAMA_ENROLLMENT_PREGNANCY_STATUS, MAMA_TAREHE_KUJIFUNGUA}) {
+                fields.put(new JSONObject().put("key", key).put("type", "hidden").put("value", ""));
             }
             put(ATTENDANCE_TYPE, "repeat"); put(FOLLOW_UP_STATUS, "found");
             put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");

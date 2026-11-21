@@ -21,6 +21,7 @@ import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
@@ -144,6 +145,11 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             MotherMentorMotherPregnancyUtils.prepare(form, enrollment.getEnrollmentPregnancyStatus(),
                     previous.getOrDefault(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB,
                             enrollment.getEnrollmentChildDob()), previous, StringUtils.isNotBlank(currentVisitId));
+            Map<String, String> attendance = MotherMentorMotherVisitUtils.formValues(form);
+            if (StringUtils.isNotBlank(currentVisitId) && MotherMentorDeliveryChildren.recordsDelivery(attendance)
+                    && MotherMentorDeliveryChildren.count(attendance) == 0) {
+                MotherMentorMotherChildUtils.put(form, MotherMentorDeliveryChildren.COUNT, "1");
+            }
         } catch (Exception unavailable) {
             Timber.w(unavailable, "Unable to prepare the mother pregnancy assessment");
         }
@@ -282,12 +288,16 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     void normalizeChildAssessment(JSONObject form) {
+        normalizeChildAssessment(form, null);
+    }
+
+    void normalizeChildAssessment(JSONObject form, MotherMentorMotherChildRepository.State child) {
         if (MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_CHILD_STATUS) == null) return;
         String carried = "";
         Map<String, String> values = MotherMentorMotherChildUtils.values(form);
         if (member != null && canCarryWeaningDate(form)
                 && "not_breastfeeding".equals(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))) {
-            LocalDate weaningDate = loadChildState().getWeaningDate();
+            LocalDate weaningDate = (child == null ? loadChildState() : child).getWeaningDate();
             if (weaningDate != null) {
                 MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
                         MotherMentorMotherPregnancyUtils.displayDate(weaningDate));
@@ -308,7 +318,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         if (onEntryChanged != null) onEntryChanged.run();
     }
 
-    private boolean canCarryWeaningDate(JSONObject form) {
+    boolean canCarryWeaningDate(JSONObject form) {
         return StringUtils.isBlank(currentVisitId)
                 || "true".equals(MotherMentorMotherChildUtils.values(form)
                         .get(DBConstants.KEY.MAMA_CARRIED_WEANING_DATE));
@@ -326,15 +336,21 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         return completed(MotherMentorMotherVisitUtils.isEntryComplete(values)
                 && MotherMentorMotherPregnancyUtils.isComplete(values, loadServiceDate())
                 && (MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)
+                        || MotherMentorDeliveryChildren.hasSections(values)
                         || isChildAssessmentComplete(payload, values)));
     }
 
     boolean isChildAssessmentComplete(JSONObject form, Map<String, String> values) {
+        return isChildAssessmentComplete(form, values, null);
+    }
+
+    boolean isChildAssessmentComplete(JSONObject form, Map<String, String> values,
+            MotherMentorMotherChildRepository.State child) {
         try {
             boolean hasBreastfeedingHistory = MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(
                     values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
                     && MotherMentorMotherChildUtils.applies(values)
-                    && loadChildState().hasBreastfeedingHistory();
+                    && (child == null ? loadChildState() : child).hasBreastfeedingHistory();
             return MotherMentorMotherChildUtils.isComplete(values, childAssessmentDate(form), hasBreastfeedingHistory);
         } catch (Exception unavailable) {
             Timber.w(unavailable, "Unable to validate the mother child assessment");

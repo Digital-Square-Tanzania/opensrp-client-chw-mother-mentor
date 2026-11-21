@@ -13,6 +13,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
@@ -536,29 +537,48 @@ public final class MotherMentorChildEidRepository {
 
     /** A later missed test updates metadata, never the open episode's referral progress. */
     public static void rebuildForMother(SQLiteDatabase db, String motherId) {
-        EnrollmentPlan latest = enrollmentPlan(db, motherId, true);
-        if (latest == null || !MotherMentorChildEidDao.columns(db,
+        if (!MotherMentorChildEidDao.columns(db,
                 Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID).containsAll(COLUMNS)) return;
-        ContentValues values = new ContentValues();
-        values.put(DBConstants.KEY.MTOTO_MISSED_TEST, latest.getMissedStage().getMetadataCode());
-        values.put(DBConstants.KEY.MTOTO_MISSED_DUE, latest.getMissedDue().toString());
-        db.update(Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID, values,
-                DBConstants.KEY.BASE_ENTITY_ID + " = ?", new String[] {latest.getChildId()});
+        for (EnrollmentPlan latest : enrollmentPlans(db, motherId, true)) {
+            ContentValues values = new ContentValues();
+            values.put(DBConstants.KEY.MTOTO_MISSED_TEST, latest.getMissedStage().getMetadataCode());
+            values.put(DBConstants.KEY.MTOTO_MISSED_DUE, latest.getMissedDue().toString());
+            db.update(Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID, values,
+                    DBConstants.KEY.BASE_ENTITY_ID + " = ?", new String[] {latest.getChildId()});
+        }
     }
 
-    /** A single real identity and a qualifying saved Mama answer are required, including on sync. */
     public static EnrollmentPlan getPendingEnrollmentPlan(SQLiteDatabase db, String motherId) {
-        return enrollmentPlan(db, motherId, false);
+        return getPendingEnrollmentPlans(db, motherId).stream().findFirst().orElse(null);
     }
 
-    private static EnrollmentPlan enrollmentPlan(SQLiteDatabase db, String motherId, boolean updateOpen) {
+    public static List<EnrollmentPlan> getPendingEnrollmentPlans(SQLiteDatabase db, String motherId) {
+        return enrollmentPlans(db, motherId, false);
+    }
+
+    private static List<EnrollmentPlan> enrollmentPlans(SQLiteDatabase db, String motherId, boolean updateOpen) {
         Map<String, String> mother = MotherMentorChildEidDao.motherEnrollment(db, motherId);
-        if (mother.isEmpty() || "1".equals(mother.get(DBConstants.KEY.IS_CLOSED))) return null;
+        if (mother.isEmpty() || "1".equals(mother.get(DBConstants.KEY.IS_CLOSED))) return Collections.emptyList();
         MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, motherId);
         LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(context.getChildDob());
-        if (context.getEnrollmentId().isEmpty() || dob == null) return null;
-        String childId = MotherMentorChildEidDao.resolveChild(db, motherId, dob);
-        if (childId.isEmpty()) return null;
+        if (context.getEnrollmentId().isEmpty() || dob == null) return Collections.emptyList();
+        List<MotherMentorMotherChildRepository.State> children =
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, LocalDate.now());
+        List<EnrollmentPlan> plans = new ArrayList<>();
+        boolean multiple = children.size() > 1;
+        for (MotherMentorMotherChildRepository.State child : children) {
+            String childId = multiple ? child.getChildBaseEntityId()
+                    : MotherMentorChildEidDao.resolveChild(db, motherId, dob);
+            if (childId.isEmpty() || child.getTerminalServiceDate() != null) continue;
+            EnrollmentPlan plan = enrollmentPlan(db, motherId, context, childId, dob, child.getNumber(), multiple, updateOpen);
+            if (plan != null) plans.add(plan);
+        }
+        return plans;
+    }
+
+    private static EnrollmentPlan enrollmentPlan(SQLiteDatabase db, String motherId,
+            MotherMentorMotherVisitDao.Context context, String childId, LocalDate dob, int childNumber,
+            boolean multiple, boolean updateOpen) {
         Map<String, String> person = MotherMentorChildEidDao.person(db, childId);
         if (!MotherMentorChildEidDao.isActivePerson(person)) return null;
         Map<String, String> existing = MotherMentorChildEidDao.enrollment(db, childId);
@@ -577,14 +597,21 @@ public final class MotherMentorChildEidRepository {
         for (Visit visit : MotherMentorMotherVisitDao.getFinalizedVisits(db, motherId, null)) {
             LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
             if (day == null || day.isAfter(LocalDate.now()) || closed != null && !day.isAfter(closed)) continue;
-            Map<String, String> answers = new LinkedHashMap<>(MotherMentorVisitCompletion.observationValues(
-                    MotherMentorChildEidDao.json(visit).optJSONArray("obs")));
+            Map<String, String> answers = MotherMentorDeliveryChildren.childVisit(
+                    MotherMentorVisitCompletion.observationValues(
+                            MotherMentorChildEidDao.json(visit).optJSONArray("obs")), childNumber);
             if (!"no".equals(answers.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) continue;
-            MotherMentorMotherChildRepository.State clinical = MotherMentorMotherChildRepository.getStateForChildBeforeEvidence(
-                    db, childId, visit);
+            List<MotherMentorMotherChildRepository.State> before = multiple
+                    ? MotherMentorMotherChildRepository.getStatesBeforeMotherVisit(db, motherId, visit.getVisitId())
+                    : Collections.emptyList();
+            MotherMentorMotherChildRepository.State clinical = childNumber <= before.size()
+                    ? before.get(childNumber - 1)
+                    : MotherMentorMotherChildRepository.getStateForChildBeforeEvidence(db, childId, visit);
             answers.put(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
             answers.put(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
             answers.put(DBConstants.KEY.MAMA_HEI_TEST_HISTORY, MotherMentorMotherChildUtils.serializeTests(clinical.getSamplingHistory()));
+            answers.put(DBConstants.KEY.MAMA_BIRTH_TEST_ANSWERED_DOB, clinical.getBirthTestAnsweredDob() == null
+                    ? "" : clinical.getBirthTestAnsweredDob().toString());
             if (!MotherMentorMotherPregnancyUtils.isComplete(answers, day)
                     || !MotherMentorMotherChildUtils.applies(answers)
                     || !MotherMentorMotherChildUtils.isComplete(answers, day, clinical.hasBreastfeedingHistory())

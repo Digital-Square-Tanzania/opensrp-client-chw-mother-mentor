@@ -20,6 +20,8 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils.TerminalOutcome;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidResultOverdue;
@@ -58,21 +60,32 @@ public final class MotherMentorMotherResultEvent {
         private final Stage stage;
         private final LocalDate testDate;
         private final boolean awaitingConfirmation;
+        private final int childNumber;
+        private final boolean multiple;
 
         PendingTest(String sampleSource, Stage stage, LocalDate testDate, boolean awaitingConfirmation) {
+            this(sampleSource, stage, testDate, awaitingConfirmation, 1, false);
+        }
+
+        PendingTest(String sampleSource, Stage stage, LocalDate testDate, boolean awaitingConfirmation,
+                int childNumber, boolean multiple) {
             this.sampleSource = sampleSource;
+            this.childNumber = childNumber;
+            this.multiple = multiple;
             this.stage = stage;
             this.testDate = testDate;
             this.awaitingConfirmation = awaitingConfirmation;
         }
 
+        public int getChildNumber() { return childNumber; }
+        public boolean hasSiblings() { return multiple; }
         public Stage getStage() { return stage; }
         public LocalDate getTestDate() { return testDate; }
         public boolean isAwaitingConfirmation() { return awaitingConfirmation; }
         public String getState() { return awaitingConfirmation ? AWAITING_CONFIRM : AWAITING_RESULT; }
 
         public String getKey() {
-            return sampleSource + "/" + stage.getCode() + "/" + testDate + "/" + getState();
+            return sampleSource + (multiple ? "/child-" + childNumber : "") + "/" + stage.getCode() + "/" + testDate + "/" + getState();
         }
 
         public boolean isOverdue(LocalDate today) {
@@ -81,6 +94,8 @@ public final class MotherMentorMotherResultEvent {
 
         boolean matches(Map<String, String> values) {
             return sampleSource.equals(values.get(SAMPLE_SOURCE))
+                    && (multiple ? Integer.toString(childNumber).equals(values.get(MotherMentorDeliveryChildren.NUMBER))
+                            : !values.containsKey(MotherMentorDeliveryChildren.NUMBER))
                     && stage == Stage.fromCode(values.get(MTOTO_PENDING_TEST))
                     && testDate.equals(MotherMentorHeiSchedule.parseDate(values.get(MTOTO_PENDING_TEST_DATE)))
                     && getState().equals(values.get(MTOTO_RUFAA_STATE_BEFORE));
@@ -180,19 +195,23 @@ public final class MotherMentorMotherResultEvent {
     }
 
     public static List<Entry> history(SQLiteDatabase db, String motherId, LocalDate day) {
-        return MotherMentorMotherChildRepository.getState(db, motherId, null, day).testResultHistory();
+        List<Entry> history = new ArrayList<>();
+        for (MotherMentorMotherChildRepository.State child :
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, day)) {
+            history.addAll(child.testResultHistory());
+        }
+        return history;
     }
 
     public static List<Entry> visible(SQLiteDatabase db, String motherId, LocalDate day) {
-        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, motherId, null, day);
         List<Entry> entries = new ArrayList<>();
-        List<PendingTest> pending = state.getPendingMotherTests();
+        List<PendingTest> pending = pending(db, motherId, day);
         if (!pending.isEmpty() && !MotherMentorMotherClosureRepository.isClosed(db, motherId)) {
             for (PendingTest sample : pending) {
                 entries.add(new Entry(sample, sample.getKey(), null, null, 0, 0, "", false));
             }
         }
-        for (Entry entry : state.testResultHistory()) {
+        for (Entry entry : history(db, motherId, day)) {
             if (day.equals(entry.recordedDate)) entries.add(entry);
         }
         return entries;
@@ -216,7 +235,12 @@ public final class MotherMentorMotherResultEvent {
     }
 
     public static List<PendingTest> pending(SQLiteDatabase db, String motherId, LocalDate day) {
-        return MotherMentorMotherChildRepository.getState(db, motherId, null, day).getPendingMotherTests();
+        List<PendingTest> pending = new ArrayList<>();
+        for (MotherMentorMotherChildRepository.State child :
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, day)) {
+            pending.addAll(child.getPendingMotherTests());
+        }
+        return pending;
     }
 
     public static PendingTest pending(SQLiteDatabase db, String motherId, String key, LocalDate day) {
@@ -233,7 +257,18 @@ public final class MotherMentorMotherResultEvent {
     public static boolean closesCard(PendingTest pending, Map<String, String> answers, LocalDate day) {
         Outcome result = evaluate(pending, answers, day);
         return answers.containsKey(MTOTO_RESULT_RECEIVED_DATE) && result != null
-                && "positive".equals(result.confirmation);
+                && terminalOutcome(pending, result) != TerminalOutcome.NONE;
+    }
+
+    public static TerminalOutcome terminalOutcome(PendingTest pending, Answers answers, LocalDate day) {
+        return terminalOutcome(pending, evaluate(pending, answers.observations(pending), day));
+    }
+
+    private static TerminalOutcome terminalOutcome(PendingTest pending, Outcome result) {
+        if (result == null) return TerminalOutcome.NONE;
+        if ("positive".equals(result.confirmation)) return TerminalOutcome.CHILD_CONFIRMED_POSITIVE;
+        if (pending.stage == Stage.EIGHTEEN_MONTHS && "negative".equals(result.result)) return TerminalOutcome.GRADUATED;
+        return TerminalOutcome.NONE;
     }
 
     static Outcome evaluate(PendingTest pending, Map<String, String> values, LocalDate day) {
@@ -302,6 +337,7 @@ public final class MotherMentorMotherResultEvent {
         event.setVersion(Math.max(System.currentTimeMillis(), previous.revision + 1));
         observe(event, MAMA_ENROLLMENT_ID, enrollment);
         observe(event, SAMPLE_SOURCE, sample.sampleSource);
+        if (sample.multiple) observe(event, MotherMentorDeliveryChildren.NUMBER, Integer.toString(sample.childNumber));
         observe(event, MOTHERMENTOR_VISIT_DATE, day.toString());
         observe(event, MTOTO_PENDING_TEST, sample.stage.getCode());
         observe(event, MTOTO_PENDING_TEST_DATE, sample.testDate.toString());

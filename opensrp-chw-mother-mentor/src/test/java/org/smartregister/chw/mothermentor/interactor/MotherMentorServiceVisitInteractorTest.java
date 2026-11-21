@@ -72,7 +72,7 @@ public class MotherMentorServiceVisitInteractorTest {
                      + "processed INTEGER, visit_date TEXT)");
         data.execSQL("CREATE TABLE visit_details (visit_id TEXT, visit_key TEXT, details TEXT)");
         data.execSQL("CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, art_status "
-                     + "TEXT, art_start_date TEXT)");
+                     + "TEXT, art_start_date TEXT, last_interacted_with INTEGER)");
         Repository repository = mock(Repository.class);
         net.zetetic.database.sqlcipher.SQLiteDatabase cipher =
                 mock(net.zetetic.database.sqlcipher.SQLiteDatabase.class);
@@ -106,14 +106,14 @@ public class MotherMentorServiceVisitInteractorTest {
     @Test
     @Config(qualifiers = "en")
     public void englishActionsPreserveVisitFlow() throws Exception {
-        assertLocalizedVisitFlow("Visit Type", "Child 1", "Group Linkage", "Education Provided",
+        assertLocalizedVisitFlow("Visit Type", "Child 1", "Child 2", "Child 3", "Child 4", "Group Linkage", "Education Provided",
                 "Referral Provided", "Next Visit Date", "Comment");
     }
 
     @Test
     @Config(qualifiers = "sw")
     public void swahiliActionsPreserveVisitFlow() throws Exception {
-        assertLocalizedVisitFlow("Aina ya hudhurio", "Mtoto wa 1", "Uunganishaji wa vikundi", "Elimu iliyotolewa",
+        assertLocalizedVisitFlow("Aina ya hudhurio", "Mtoto wa 1", "Mtoto wa 2", "Mtoto wa 3", "Mtoto wa 4", "Uunganishaji wa vikundi", "Elimu iliyotolewa",
                 "Rufaa iliyotolewa", "Tarehe ya tembeleo lijalo", "Maoni");
     }
 

@@ -239,7 +239,8 @@ public final class MotherMentorMotherDeliveryRepository {
             Map<String, String> recorded = new HashMap<>();
             for (String key : new String[] {VISIT_PREGNANCY_STATUS, MAMA_PREGNANCY_OUTCOME,
                          MAMA_PREGNANCY_OUTCOME_OTHER, MAMA_TAREHE_KUJIFUNGUA,
-                         MAMA_PREGNANCY_LOSS_DATE, MAMA_ENROLLMENT_PREGNANCY_STATUS,
+                         MAMA_PREGNANCY_LOSS_DATE, org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren.COUNT,
+                         MAMA_ENROLLMENT_PREGNANCY_STATUS,
                          MAMA_ENROLLMENT_CHILD_DOB}) {
                 if (values.containsKey(key)) recorded.put(key, values.get(key));
             }

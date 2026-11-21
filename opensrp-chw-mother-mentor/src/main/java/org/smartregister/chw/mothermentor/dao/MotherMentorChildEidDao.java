@@ -79,7 +79,12 @@ public final class MotherMentorChildEidDao {
 
     /** Mother/DOB must agree with one explicit relationship and one registered person. */
     public static String resolveChild(SQLiteDatabase db, String motherId, LocalDate dob) {
-        if (StringUtils.isBlank(motherId) || dob == null || !hasTable(db, MEMBERS)) return "";
+        Set<String> matches = linkedChildren(db, motherId, dob);
+        return matches.size() == 1 ? matches.iterator().next() : "";
+    }
+
+    public static Set<String> linkedChildren(SQLiteDatabase db, String motherId, LocalDate dob) {
+        if (StringUtils.isBlank(motherId) || dob == null || !hasTable(db, MEMBERS)) return Collections.emptySet();
         Set<String> linked = new HashSet<>();
         collectLinks(db, ENROLLMENTS, DBConstants.KEY.MOTHER_BASE_ENTITY_ID, motherId, linked);
         collectLinks(db, DBConstants.KEY.CHILD, DBConstants.KEY.MOTHER_ENTITY_ID, motherId, linked);
@@ -89,7 +94,7 @@ public final class MotherMentorChildEidDao {
             if (!id.equals(motherId) && isActivePerson(person)
                     && dob.equals(MotherMentorHeiSchedule.parseBirthDate(person.get(DBConstants.KEY.DOB)))) matches.add(id);
         }
-        return matches.size() == 1 ? matches.iterator().next() : "";
+        return matches;
     }
 
     public static boolean isActivePerson(Map<String, String> person) {

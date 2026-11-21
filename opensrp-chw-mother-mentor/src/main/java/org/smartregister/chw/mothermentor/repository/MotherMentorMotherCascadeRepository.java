@@ -17,6 +17,7 @@ import org.smartregister.chw.mothermentor.processor.HouseholdEnrolmentEventProce
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorHouseholdClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidExit;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 
@@ -100,12 +101,24 @@ public final class MotherMentorMotherCascadeRepository {
                     MotherMentorMotherClosure.MOVED_FACILITY).contains(state.getStatus())) {
                 want(db, desired, IIT, motherId, claim);
             }
-            if (MotherMentorChildEidExit.fromMotherStatus(state.getStatus()) != null) {
-                LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(context.getChildDob());
-                String childId = MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
-                if (!childId.isEmpty() && !row(db, MEMBERS, childId).isEmpty()) {
-                    want(db, desired, CHILD, childId, claim);
+        }
+        List<MotherMentorMotherChildRepository.State> children =
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, LocalDate.now());
+        if (children.size() > 1) {
+            for (MotherMentorMotherChildRepository.State child : children) {
+                String childId = child.getChildBaseEntityId();
+                if (childId.isEmpty()) continue;
+                MotherMentorMotherClosure childExit = linkedChildExit(child, state);
+                if (childExit != null) {
+                    want(db, desired, CHILD, childId, new Claim(motherId, context.getEnrollmentId(), childExit));
                 }
+            }
+        } else if (state != null && state.isClosed() && MotherMentorChildEidExit.fromMotherStatus(state.getStatus()) != null
+                && !context.getEnrollmentId().isEmpty()) {
+            LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(context.getChildDob());
+            String childId = MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
+            if (!childId.isEmpty() && !row(db, MEMBERS, childId).isEmpty()) {
+                want(db, desired, CHILD, childId, new Claim(motherId, context.getEnrollmentId(), state));
             }
         }
         List<Owned> owned = ownership(db);
@@ -242,9 +255,31 @@ public final class MotherMentorMotherCascadeRepository {
         return children;
     }
 
+    private static MotherMentorMotherClosure linkedChildExit(MotherMentorMotherChildRepository.State child,
+            MotherMentorMotherClosure motherExit) {
+        if (motherExit != null && (MotherMentorMotherClosure.MOVED_AREA.equals(motherExit.getStatus())
+                || MotherMentorMotherClosure.MOVED_FACILITY.equals(motherExit.getStatus()))) {
+            return motherExit;
+        }
+        VisitOutcome outcome;
+        switch (child.getTerminalOutcome()) {
+            case CHILD_DECEASED: outcome = VisitOutcome.CHILD_DECEASED; break;
+            case CHILD_CONFIRMED_POSITIVE: outcome = VisitOutcome.CHILD_CONFIRMED_POSITIVE; break;
+            case GRADUATED: outcome = VisitOutcome.GRADUATED; break;
+            default: return null;
+        }
+        return MotherMentorMotherClosure.active().advance(outcome, child.getTerminalServiceDate().toString());
+    }
+
     private static boolean closesWithMother(SQLiteDatabase db, String childId, String motherId,
             MotherMentorMotherClosure exit) {
         if (exit == null || MotherMentorChildEidExit.fromMotherStatus(exit.getStatus()) == null) return false;
+        List<MotherMentorMotherChildRepository.State> children =
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, LocalDate.now());
+        if (children.size() > 1) {
+            return children.stream().anyMatch(child -> childId.equals(child.getChildBaseEntityId())
+                    && linkedChildExit(child, exit) != null);
+        }
         LocalDate dob = MotherMentorMotherPregnancyUtils.parseDate(
                 MotherMentorMotherVisitDao.getContext(db, motherId).getChildDob());
         return dob != null && childId.equals(MotherMentorMotherChildRepository.resolveChild(db, motherId, dob));
@@ -397,7 +432,10 @@ public final class MotherMentorMotherCascadeRepository {
                 LocalDate date = MotherMentorMotherPregnancyUtils.parseDate(first.date);
                 String deathDate = "";
                 if (exit == MotherMentorChildEidExit.E5) {
-                    LocalDate death = MotherMentorMotherChildRepository.getState(db, first.mother, null).getChildDeathDate();
+                    LocalDate death = MotherMentorMotherChildRepository.getStates(db, first.mother, null, LocalDate.now())
+                            .stream().filter(child -> current.id.equals(child.getChildBaseEntityId()))
+                            .map(MotherMentorMotherChildRepository.State::getChildDeathDate)
+                            .filter(java.util.Objects::nonNull).findFirst().orElse(null);
                     if (death != null) deathDate = death.toString();
                 }
                 for (Map.Entry<String, String> field : MotherMentorChildEidRepository.closureProjection(
