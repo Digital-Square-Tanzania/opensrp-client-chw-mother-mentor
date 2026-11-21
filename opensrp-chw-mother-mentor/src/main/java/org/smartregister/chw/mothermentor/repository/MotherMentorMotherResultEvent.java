@@ -49,7 +49,6 @@ import timber.log.Timber;
 public final class MotherMentorMotherResultEvent {
     public static final String EVENT_TYPE = "Mother Mentor HEI Test Result";
     private static final String SAMPLE_SOURCE = "mama_hei_sample_submission_id";
-    private static final String SAMPLE_CHILD = "mama_hei_sample_child_id";
     private static final String CORRECTED = "mama_hei_result_corrected";
 
     private MotherMentorMotherResultEvent() {}
@@ -192,7 +191,7 @@ public final class MotherMentorMotherResultEvent {
         Answers answers = sample.awaitingConfirmation
                 ? Answers.confirmation(StringUtils.defaultIfBlank(done, "yes"), result, receipt)
                 : new Answers(result, receipt, done, values.get(MTOTO_CONFIRMATORY_RESULT));
-        String childId = StringUtils.defaultIfBlank(values.get(SAMPLE_CHILD), sample.childId);
+        String childId = StringUtils.defaultIfBlank(values.get(MAMA_HEI_SAMPLE_CHILD_ID), sample.childId);
         PendingTest recordedSample = new PendingTest(sample.sampleSource, sample.stage, sample.testDate,
                 sample.awaitingConfirmation, childId);
         return new Entry(recordedSample, evidence.getVisitId(), answers, day, recordedAt,
@@ -343,7 +342,7 @@ public final class MotherMentorMotherResultEvent {
         event.setVersion(Math.max(System.currentTimeMillis(), previous.revision + 1));
         observe(event, MAMA_ENROLLMENT_ID, enrollment);
         observe(event, SAMPLE_SOURCE, sample.sampleSource);
-        observe(event, SAMPLE_CHILD, sample.childId);
+        observe(event, MAMA_HEI_SAMPLE_CHILD_ID, sample.childId);
         observe(event, MOTHERMENTOR_VISIT_DATE, day.toString());
         observe(event, MTOTO_PENDING_TEST, sample.stage.getCode());
         observe(event, MTOTO_PENDING_TEST_DATE, sample.testDate.toString());

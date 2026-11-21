@@ -203,6 +203,7 @@ public final class DBConstants {
         public static final String MAMA_HEI_TEST_TYPE = "mama_hei_test_type";
         public static final String MAMA_HEI_TEST_DATE = "mama_hei_test_date";
         public static final String MAMA_HEI_TEST_RESULT = "mama_hei_test_result";
+        public static final String MAMA_HEI_SAMPLE_CHILD_ID = "mama_hei_sample_child_id";
         public static final String MAMA_HEI_TEST_RECEIVED_DATE = "mama_hei_test_received_date";
         public static final String HEI_CHANYA_IMETHIBITISHWA = "hei_chanya_imethibitishwa";
         public static final String MAMA_HEI_TEST_HISTORY = "mama_hei_test_history";

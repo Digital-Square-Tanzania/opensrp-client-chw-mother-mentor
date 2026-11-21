@@ -131,17 +131,31 @@ public final class MotherMentorChildEidDao {
         return children;
     }
 
+    private static final String AMBIGUOUS_SAMPLE_CHILD = "ambiguous";
+
+    public static String captureMotherSampleChild(SQLiteDatabase db, String motherId,
+            MotherMentorMotherVisitDao.Context context, LocalDate dob) {
+        Set<String> followed = followedChildren(db, motherId, context, dob);
+        Set<String> matches = childrenBornOn(db, motherId, dob);
+        matches.retainAll(followed);
+        if (matches.size() == 1) return matches.iterator().next();
+        return followed.isEmpty() ? "" : AMBIGUOUS_SAMPLE_CHILD;
+    }
+
     /** Resolve legacy sample ownership from the original visit when a later link shares the birthday. */
     public static String childForMotherSample(SQLiteDatabase db, String motherId,
             MotherMentorMotherVisitDao.Context context, LocalDate dob, Visit visit) {
         Set<String> matches = childrenBornOn(db, motherId, dob);
         matches.retainAll(followedChildren(db, motherId, context, dob));
+        String captured = MotherMentorVisitCompletion.observationValues(json(visit).optJSONArray("obs"))
+                .get(DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID);
+        if (StringUtils.isNotBlank(captured)) {
+            return !AMBIGUOUS_SAMPLE_CHILD.equals(captured) && matches.contains(captured) ? captured : "";
+        }
         if (matches.size() < 2) return matches.isEmpty() ? "" : matches.iterator().next();
-        long recordedAt = eventTime(json(visit));
-        if (recordedAt == 0 && visit.getDate() != null) recordedAt = visit.getDate().getTime();
-        if (recordedAt == 0) return "";
-        final long sampleRecordedAt = recordedAt;
         LocalDate visitDay = MotherMentorMotherVisitDao.getServiceDate(visit);
+        long sampleRecordedAt = sampleRecordedAt(visit, visitDay);
+        if (sampleRecordedAt == 0) return "";
         String owner = "";
         for (String child : matches) {
             List<Enrollment> history = enrollmentHistory(db, child, LocalDate.now());
@@ -156,6 +170,17 @@ public final class MotherMentorChildEidDao {
             }
         }
         return owner;
+    }
+
+    private static long sampleRecordedAt(Visit visit, LocalDate visitDay) {
+        JSONObject visitEvent = json(visit);
+        String eventDate = visitEvent.optString(DBConstants.KEY.EVENT_DATE_TIMESTAMP);
+        long sourceTime = eventTime(visitEvent);
+        if (visit.getDate() == null || !visitDay.equals(new LocalDate(visit.getDate()))) return sourceTime;
+        long cacheTime = visit.getDate().getTime();
+        // Same-day local saves have an epoch timestamp. Legacy JSON can label local time as UTC.
+        // A later import's cache timestamp must never extend the original linkage cutoff.
+        return sourceTime == 0 || !eventDate.contains("T") ? cacheTime : Math.min(sourceTime, cacheTime);
     }
 
     private static boolean isManualLink(Enrollment link, String motherId) {

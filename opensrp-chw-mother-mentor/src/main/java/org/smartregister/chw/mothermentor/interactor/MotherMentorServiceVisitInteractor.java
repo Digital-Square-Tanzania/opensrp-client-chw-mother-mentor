@@ -29,6 +29,8 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
@@ -283,6 +285,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void assignVisitSource(Event event, Visit editedVisit) {
         if (editedVisit == null || StringUtils.isBlank(editedVisit.getFormSubmissionId())) {
             super.assignVisitSource(event, editedVisit);
+            if (editedVisit == null) captureSampleChild(event);
             return;
         }
         event.setFormSubmissionId(editedVisit.getFormSubmissionId());
@@ -293,9 +296,34 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
             if (StringUtils.isBlank(event.getEventId())) event.setEventId(previous.getEventId());
             event.setVersion(Math.max(event.getVersion(), previous.getVersion() + 1));
+            Map<String, String> originalAnswers = MotherMentorVisitCompletion.observationValues(
+                    MotherMentorChildEidDao.json(editedVisit).optJSONArray("obs"));
+            String originalChild = originalAnswers.get(DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID);
+            LocalDate birth = sampleChildBirth(clinicalValues());
+            if (StringUtils.isNotBlank(originalChild) && birth != null
+                    && birth.equals(sampleChildBirth(originalAnswers))) {
+                putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, originalChild);
+            }
         } catch (JsonParseException invalid) {
             Timber.w(invalid, "Unable to restore the original Mama Kadi visit metadata");
         }
+    }
+
+    private void captureSampleChild(Event event) {
+        Map<String, String> answers = clinicalValues();
+        if (StringUtils.isAllBlank(answers.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
+                answers.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) return;
+        LocalDate birth = sampleChildBirth(answers);
+        if (birth == null || StringUtils.isBlank(visitEnrollmentId)) return;
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        String childId = MotherMentorChildEidDao.captureMotherSampleChild(
+                database, event.getBaseEntityId(), enrollmentContext, birth);
+        if (StringUtils.isNotBlank(childId)) putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, childId);
+    }
+
+    private LocalDate sampleChildBirth(Map<String, String> answers) {
+        return MotherMentorHeiSchedule.parseBirthDate(StringUtils.defaultIfBlank(
+                answers.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA), enrollmentContext.getChildDob()));
     }
 
     @Override
