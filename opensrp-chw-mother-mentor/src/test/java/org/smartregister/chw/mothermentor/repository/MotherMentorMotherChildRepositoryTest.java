@@ -21,6 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
+import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
@@ -82,6 +83,33 @@ public class MotherMentorMotherChildRepositoryTest {
         data.delete("visits", null, null);
         MotherMentorMotherChildRepository.rebuild(db, "mother");
         assertEquals("", scalar("SELECT hei_test_wiki6_result FROM ec_mothermentor_enrollment"));
+    }
+
+    @Test
+    public void upgradeBackfillsOlderSingletonSamplesAndReturningOneKeepsTheOther() throws Exception {
+        LocalDate serviceDay = dob.plusDays(49);
+        LocalDate routineSample = dob.plusDays(44);
+        Map<String, String> saved = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", routineSample);
+        saved.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        saved.put(MAMA_BIRTH_TEST_DONE, "yes");
+        saved.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        saved.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        MotherMentorMotherChildRepository.upgrade(db);
+        visit("child-visit", "child-source", "mother", saved, serviceDay, 1, false);
+        // Alpha 46 left the already-existing pending-test column blank for singletons.
+        assertEquals("[]", scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET mama_child_pending_tests = ''");
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals("", scalar("SELECT mama_followed_child_count FROM ec_mothermentor_enrollment"));
+        assertEquals(new JSONArray().put(new JSONArray().put(1).put(Stage.AT_BIRTH.getCode()).put(dob.toString()))
+                        .put(new JSONArray().put(1).put(Stage.SIX_WEEKS.getCode()).put(routineSample.toString()))
+                        .toString(),
+                scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+        resultEvent("routine", "child-source", Stage.SIX_WEEKS, routineSample, serviceDay.plusDays(1),
+                "negative", "awaiting_result", null);
+        MotherMentorMotherChildRepository.rebuild(db, "mother");
+        assertEquals(new JSONArray().put(new JSONArray().put(1).put(Stage.AT_BIRTH.getCode()).put(dob.toString()))
+                .toString(), scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
     }
 
     @Test
@@ -169,6 +197,21 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals("female", states.get(0).getSex());
         assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE, states.get(1).getTerminalOutcome());
         assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+        Visit closingVisit = MotherMentorChildEidDao.findVisit(db, "delivery");
+        assertFalse(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(db, closingVisit, firstVisit));
+        assertTrue(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(
+                db, closingVisit, firstVisit.plusDays(1)));
+
+        data.delete("visits", "visit_id = ?", new String[] {"delivery"});
+        Map<String, String> corrected = new LinkedHashMap<>(delivery);
+        child(corrected, 1, MAMA_CHILD_STATUS, "alive");
+        child(corrected, 1, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        child(corrected, 1, MAMA_BIRTH_TEST_DONE, "no");
+        visit("delivery", "delivery", "mother", corrected, firstVisit, 2, false);
+        assertFalse(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(
+                db, MotherMentorChildEidDao.findVisit(db, "delivery"), firstVisit.plusDays(1)));
+        data.delete("visits", "visit_id = ?", new String[] {"delivery"});
+        visit("delivery", "delivery", "mother", delivery, firstVisit, 3, false);
 
         LocalDate finalDay = birth.plusMonths(18);
         Map<String, String> later = twinDelivery(birth);

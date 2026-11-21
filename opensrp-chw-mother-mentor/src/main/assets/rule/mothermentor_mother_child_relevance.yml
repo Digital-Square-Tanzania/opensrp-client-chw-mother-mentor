@@ -69,6 +69,13 @@ condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive
 actions:
   - "isRelevant = true"
 ---
+name: step1_mama_hei_test_pending_note
+description: Prompt to follow up the pending due test result
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_due_tests != '[]' && step1_mama_hei_test_result == 'pending' && step1_mama_hei_test_type != 'eighteen_months'"
+actions:
+  - "isRelevant = true"
+---
 name: step1_mama_hei_test_received_date
 description: Date the facility received the due test result
 priority: 1

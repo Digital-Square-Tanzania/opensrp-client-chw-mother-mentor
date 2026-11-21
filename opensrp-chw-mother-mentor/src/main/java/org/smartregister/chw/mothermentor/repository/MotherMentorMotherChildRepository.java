@@ -92,21 +92,19 @@ public final class MotherMentorMotherChildRepository {
             projection.put(entry.getKey().getResultKey(), entry.getValue().getResult());
             projection.put(entry.getKey().getDateKey(), iso(entry.getValue().getDate()));
         }
-        if (children.size() > 1) {
-            int following = 0;
-            JSONArray pending = new JSONArray();
-            for (State child : children) {
-                if (child.getTerminalServiceDate() == null) following++;
-                for (MotherMentorMotherResultEvent.PendingTest test : child.getPendingMotherTests()) {
-                    if (!test.isAwaitingConfirmation()) {
-                        pending.put(new JSONArray().put(child.getNumber()).put(test.getStage().getCode())
-                                .put(test.getTestDate().toString()));
-                    }
+        int following = 0;
+        JSONArray pending = new JSONArray();
+        for (State child : children) {
+            if (child.getTerminalServiceDate() == null) following++;
+            for (MotherMentorMotherResultEvent.PendingTest test : child.getPendingMotherTests()) {
+                if (!test.isAwaitingConfirmation()) {
+                    pending.put(new JSONArray().put(child.getNumber()).put(test.getStage().getCode())
+                            .put(test.getTestDate().toString()));
                 }
             }
-            projection.put(MotherMentorDeliveryChildren.FOLLOWED_COUNT, following);
-            projection.put(MotherMentorDeliveryChildren.PENDING_TESTS, pending.toString());
         }
+        if (children.size() > 1) projection.put(MotherMentorDeliveryChildren.FOLLOWED_COUNT, following);
+        projection.put(MotherMentorDeliveryChildren.PENDING_TESTS, pending.toString());
         db.update(table, projection, DBConstants.KEY.BASE_ENTITY_ID + " = ?",
                 new String[] {motherId});
     }
@@ -475,6 +473,29 @@ public final class MotherMentorMotherChildRepository {
             applyMother(state, MotherMentorDeliveryChildren.childVisit(values.get(i), 1), serviceDates.get(i), "");
         }
         return state;
+    }
+
+    /** A visit that ended one sibling's follow-up expires even if Mama's card stayed open. */
+    public static boolean isEarlierSiblingClosingVisit(SQLiteDatabase db, Visit visit, LocalDate today) {
+        if (visit == null || !Boolean.TRUE.equals(visit.getProcessed())
+                || !Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType())) return false;
+        LocalDate day = MotherMentorMotherVisitDao.getServiceDate(visit);
+        if (day == null || !day.isBefore(today)) return false;
+        Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
+                MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
+        int count = MotherMentorDeliveryChildren.count(answers);
+        if (count < 2 || !MotherMentorDeliveryChildren.hasSections(answers)
+                || !MotherMentorMotherVisitDao.belongsToCurrentEnrollment(db, visit.getBaseEntityId(),
+                        visit.getJson())) return false;
+        List<State> before = getStatesBeforeMotherVisit(db, visit.getBaseEntityId(), visit.getVisitId());
+        for (int i = 0; i < count; i++) {
+            State child = i < before.size() ? before.get(i) : new State(null);
+            if (child.getTerminalOutcome() != TerminalOutcome.NONE) continue;
+            applyMother(child, MotherMentorDeliveryChildren.childVisit(answers, i + 1), day,
+                    MotherMentorChildEidDao.sourceIdentity(visit));
+            if (child.getTerminalOutcome() != TerminalOutcome.NONE) return true;
+        }
+        return false;
     }
 
     public static boolean allChildrenFinished(List<State> children, Map<String, String> answers, LocalDate day) {
