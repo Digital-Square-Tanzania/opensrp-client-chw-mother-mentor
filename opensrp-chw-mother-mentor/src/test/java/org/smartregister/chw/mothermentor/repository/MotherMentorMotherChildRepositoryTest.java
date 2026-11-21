@@ -21,6 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
+import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
@@ -196,6 +197,21 @@ public class MotherMentorMotherChildRepositoryTest {
         assertEquals("female", states.get(0).getSex());
         assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE, states.get(1).getTerminalOutcome());
         assertFalse(MotherMentorMotherClosureRepository.getState(db, "mother", null).isClosed());
+        Visit closingVisit = MotherMentorChildEidDao.findVisit(db, "delivery");
+        assertFalse(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(db, closingVisit, firstVisit));
+        assertTrue(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(
+                db, closingVisit, firstVisit.plusDays(1)));
+
+        data.delete("visits", "visit_id = ?", new String[] {"delivery"});
+        Map<String, String> corrected = new LinkedHashMap<>(delivery);
+        child(corrected, 1, MAMA_CHILD_STATUS, "alive");
+        child(corrected, 1, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+        child(corrected, 1, MAMA_BIRTH_TEST_DONE, "no");
+        visit("delivery", "delivery", "mother", corrected, firstVisit, 2, false);
+        assertFalse(MotherMentorMotherChildRepository.isEarlierSiblingClosingVisit(
+                db, MotherMentorChildEidDao.findVisit(db, "delivery"), firstVisit.plusDays(1)));
+        data.delete("visits", "visit_id = ?", new String[] {"delivery"});
+        visit("delivery", "delivery", "mother", delivery, firstVisit, 3, false);
 
         LocalDate finalDay = birth.plusMonths(18);
         Map<String, String> later = twinDelivery(birth);
