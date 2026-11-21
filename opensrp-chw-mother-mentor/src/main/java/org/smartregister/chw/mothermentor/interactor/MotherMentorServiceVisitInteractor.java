@@ -1,5 +1,6 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
@@ -271,8 +272,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         db.beginTransaction();
         try {
             Visit latest = loadEditingVisit(memberId);
-            if (editing == null || latest == null || !editing.getVisitId().equals(latest.getVisitId())
-                    || !StringUtils.equals(editing.getJson(), latest.getJson())) return null;
+            if (!matchesEditingVisit(latest)) return null;
             if (MotherMentorMotherClosureRepository.isClosed(db, memberId)
                     && (historyVisitId == null || !MotherMentorMotherClosureRepository
                             .isSameDayClosingVisit(db, latest, LocalDate.now()))) return null;
@@ -290,6 +290,30 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             }
         }
         return saved;
+    }
+
+    private boolean matchesEditingVisit(Visit latest) {
+        if (editing == null || latest == null || !editing.getVisitId().equals(latest.getVisitId())) return false;
+        if (StringUtils.equals(editing.getJson(), latest.getJson())) return true;
+        if (!editingFinalizedVisit() || !Boolean.TRUE.equals(latest.getProcessed())
+                || !MotherMentorChildEidDao.sourceIdentity(editing)
+                        .equals(MotherMentorChildEidDao.sourceIdentity(latest))
+                || MotherMentorMotherVisitDao.getServiceDate(editing) == null
+                || MotherMentorMotherVisitDao.getServiceDate(latest) == null
+                || MotherMentorChildEidDao.compareChronology(editing, latest) != 0) return false;
+
+        // A sync acknowledgement can replace IDs and version metadata while the editor is open.
+        // Compare the full observations so a change to any saved answer still invalidates the edit.
+        if (MotherMentorChildEidDao.json(latest).optBoolean("voided")) return false;
+        try {
+            JsonObject opened = JsonFormUtils.gson.fromJson(editing.getJson(), JsonObject.class);
+            JsonObject current = JsonFormUtils.gson.fromJson(latest.getJson(), JsonObject.class);
+            return opened != null && current != null
+                    && opened.get("obs") != null && opened.get("obs").isJsonArray()
+                    && opened.get("obs").equals(current.get("obs"));
+        } catch (JsonParseException invalid) {
+            return false;
+        }
     }
 
     private boolean editingFinalizedVisit() {
