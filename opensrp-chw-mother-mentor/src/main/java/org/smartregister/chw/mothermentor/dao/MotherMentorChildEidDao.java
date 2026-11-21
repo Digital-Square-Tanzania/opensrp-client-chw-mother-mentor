@@ -109,16 +109,59 @@ public final class MotherMentorChildEidDao {
     public static Set<String> followedChildren(SQLiteDatabase db, String motherId,
             MotherMentorMotherVisitDao.Context context, LocalDate dob) {
         Set<String> children = childrenBornOn(db, motherId, dob);
+        if (context.getEnrollmentId().isEmpty()) return children;
         Set<String> enrolled = new HashSet<>();
         collectLinks(db, ENROLLMENTS, DBConstants.KEY.MOTHER_BASE_ENTITY_ID, motherId, enrolled);
         for (String child : enrolled) {
             String episode = enrollment(db, child).get(DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID);
-            if (StringUtils.isNotBlank(episode) && episode.equals(context.getEnrollmentId())) {
+            if (StringUtils.isNotBlank(episode)) {
+                if (episode.equals(context.getEnrollmentId())) children.add(child);
+                else children.remove(child);
+                continue;
+            }
+            // Manual links created through Link Child EID did not store a mother enrollment ID.
+            Enrollment link = latestEnrollment(db, child, LocalDate.now());
+            if (link.time >= context.getEnrollmentTime() && isManualLink(link, motherId)) {
                 children.add(child);
+            } else if (!link.id.isEmpty() && link.time < context.getEnrollmentTime()) {
+                children.remove(child);
             }
         }
         children.remove(motherId);
         return children;
+    }
+
+    /** Resolve legacy sample ownership from the original visit when a later link shares the birthday. */
+    public static String childForMotherSample(SQLiteDatabase db, String motherId,
+            MotherMentorMotherVisitDao.Context context, LocalDate dob, Visit visit) {
+        Set<String> matches = childrenBornOn(db, motherId, dob);
+        matches.retainAll(followedChildren(db, motherId, context, dob));
+        if (matches.size() < 2) return matches.isEmpty() ? "" : matches.iterator().next();
+        long recordedAt = eventTime(json(visit));
+        if (recordedAt == 0 && visit.getDate() != null) recordedAt = visit.getDate().getTime();
+        if (recordedAt == 0) return "";
+        final long sampleRecordedAt = recordedAt;
+        LocalDate visitDay = MotherMentorMotherVisitDao.getServiceDate(visit);
+        String owner = "";
+        for (String child : matches) {
+            List<Enrollment> history = enrollmentHistory(db, child, LocalDate.now());
+            // An undated link could also have existed when the sample was saved.
+            if (history.isEmpty()) return "";
+            boolean linkedAtSample = history.stream().anyMatch(link -> !link.day().isAfter(visitDay)
+                    && link.time <= sampleRecordedAt && motherId.equals(MotherMentorVisitCompletion.observationValues(
+                            link.json.optJSONArray("obs")).get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID)));
+            if (linkedAtSample) {
+                if (!owner.isEmpty()) return "";
+                owner = child;
+            }
+        }
+        return owner;
+    }
+
+    private static boolean isManualLink(Enrollment link, String motherId) {
+        Map<String, String> fields = MotherMentorVisitCompletion.observationValues(link.json.optJSONArray("obs"));
+        return motherId.equals(fields.get(DBConstants.KEY.MOTHER_BASE_ENTITY_ID))
+                && "yes".equals(fields.get(DBConstants.KEY.CHILD_LINKING));
     }
 
     public static boolean isActivePerson(Map<String, String> person) {

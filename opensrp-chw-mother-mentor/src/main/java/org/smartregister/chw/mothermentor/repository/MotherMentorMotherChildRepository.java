@@ -208,6 +208,10 @@ public final class MotherMentorMotherChildRepository {
             } else {
                 String source = MotherMentorChildEidDao.sourceIdentity(item.visit);
                 applyMother(state, item.values, item.date, source);
+                if (state.motherTestSources.containsValue(source)) {
+                    state.motherTestChildren.put(source, MotherMentorChildEidDao.childForMotherSample(
+                            db, motherId, context, state.childDob, item.visit));
+                }
                 replayedMotherVisits.add(source);
                 List<Evidence> waiting = deferredResults.remove(source);
                 if (waiting != null) {
@@ -290,12 +294,20 @@ public final class MotherMentorMotherChildRepository {
                 enrollment.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
             motherId = MotherMentorChildEidDao.motherId(db, childId);
         }
+        State shared = null;
         if (!motherId.isEmpty()) {
-            State shared = getState(db, motherId, excludedVisitId, assessmentDate, before);
             String motherEpisode = value(enrollment, DBConstants.KEY.MTOTO_MOTHER_ENROLLMENT_ID);
-            boolean sameEpisode = motherEpisode.isEmpty() || motherEpisode.equals(
-                    MotherMentorMotherVisitDao.getContext(db, motherId).getEnrollmentId());
-            if (sameEpisode && childId.equals(shared.getChildBaseEntityId()) && dob != null && dob.equals(shared.getChildDob())) {
+            if (motherEpisode.isEmpty() || motherEpisode.equals(
+                    MotherMentorMotherVisitDao.getContext(db, motherId).getEnrollmentId())) {
+                shared = getState(db, motherId, excludedVisitId, assessmentDate, before);
+            }
+        }
+        if (shared != null) {
+            boolean ownResult = childId.equals(shared.terminalResultChildId)
+                    && episode.time <= shared.terminalResultTime;
+            boolean ownsSharedHistory = shared.terminalResultTime == 0 || ownResult;
+            if (ownsSharedHistory && childId.equals(shared.getChildBaseEntityId())
+                    && dob != null && dob.equals(shared.getChildDob())) {
                 State lifetime = new State(dob);
                 for (Evidence item : childEvidence(db, childId, MotherMentorMotherVisitDao.Context.empty(),
                         excludedVisitId, assessmentDate, before)) applyChild(lifetime, item.values, item.date);
@@ -330,6 +342,12 @@ public final class MotherMentorMotherChildRepository {
             } else {
                 applyChild(state, item.values, item.date);
             }
+        }
+        if (shared != null && childId.equals(shared.terminalResultChildId)
+                && episode.time <= shared.terminalResultTime && state.terminalDate == null) {
+            state.terminal(shared.terminal, shared.terminalDate);
+            state.terminalResultTime = shared.terminalResultTime;
+            state.terminalResultChildId = childId;
         }
         return state;
     }
@@ -457,7 +475,11 @@ public final class MotherMentorMotherChildRepository {
                 : entry.getAnswers().getReceivedDate();
         record(state, stage, result.result, pending.getTestDate(), confirmed, day,
                 "negative".equals(result.confirmation), received);
-        if (confirmed) state.terminalResultTime = entry.getRecordedAt();
+        if (confirmed) {
+            state.terminalResultTime = entry.getRecordedAt();
+            state.terminalResultChildId = entry.getSample().getChildId();
+        }
+        state.motherTestChildren.put(MotherMentorMotherResultEvent.sampleSource(values), entry.getSample().getChildId());
     }
 
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
@@ -615,10 +637,12 @@ public final class MotherMentorMotherChildRepository {
         private LocalDate birthTestAnsweredDob;
         private final Map<Stage, TestRecord> tests = new LinkedHashMap<>();
         private final Map<Stage, String> motherTestSources = new LinkedHashMap<>();
+        private final Map<String, String> motherTestChildren = new LinkedHashMap<>();
         private final Map<Stage, TestRecord> knownPerformed = new LinkedHashMap<>();
         private MotherMentorMotherChildUtils.TerminalOutcome terminal = MotherMentorMotherChildUtils.TerminalOutcome.NONE;
         private LocalDate terminalDate;
         private long terminalResultTime;
+        private String terminalResultChildId = "";
         private final List<MotherMentorMotherResultEvent.Entry> resultHistory = new ArrayList<>();
 
         public State(LocalDate childDob) { this.childDob = childDob; this.enrollmentChildDob = childDob; }
@@ -642,6 +666,7 @@ public final class MotherMentorMotherChildRepository {
         public MotherMentorMotherChildUtils.TerminalOutcome getTerminalOutcome() { return terminal; }
         public LocalDate getTerminalServiceDate() { return terminalDate; }
         long getTerminalResultTime() { return terminalResultTime; }
+        String getTerminalResultChildId() { return terminalResultChildId; }
         List<MotherMentorMotherResultEvent.Entry> testResultHistory() {
             return Collections.unmodifiableList(resultHistory);
         }
@@ -672,7 +697,7 @@ public final class MotherMentorMotherChildRepository {
             if (source == null || test == null || !test.requiresFollowUp() || test.getDate() == null) return null;
             if (stage == Stage.EIGHTEEN_MONTHS && !"positive".equals(test.getResult())) return null;
             return new MotherMentorMotherResultEvent.PendingTest(source, stage, test.getDate(),
-                    "positive".equals(test.getResult()));
+                    "positive".equals(test.getResult()), motherTestChildren.getOrDefault(source, ""));
         }
 
         private void trackMotherTest(Stage stage, TestRecord previous, String source) {

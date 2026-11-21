@@ -213,8 +213,10 @@ public final class MotherMentorChildEidRepository {
                 && state.clinical.getTerminalOutcome()
                         == org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE
                 && !state.getMotherId().isEmpty() && before == null
-                && hasSibling(db, state.getMotherId(), state.clinical.getChildDob())) {
+                && (state.clinical.getTerminalResultTime() > 0
+                        || hasSibling(db, state.getMotherId(), state.clinical.getChildDob()))) {
             state.close(MotherMentorChildEidExit.E4, state.clinical.getTerminalServiceDate(), Collections.emptyMap());
+            state.exitTime = state.clinical.getTerminalResultTime();
         }
         return state;
     }
@@ -550,8 +552,9 @@ public final class MotherMentorChildEidRepository {
     public static void rebuildForMother(SQLiteDatabase db, String motherId) {
         MotherMentorMotherVisitDao.Context mother = MotherMentorMotherVisitDao.getContext(db, motherId);
         LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(mother.getChildDob());
-        String child = MotherMentorMotherChildRepository.resolveChild(db, motherId, dob);
-        if (!child.isEmpty() && hasSibling(db, motherId, dob)) rebuild(db, child);
+        for (String child : MotherMentorChildEidDao.followedChildren(db, motherId, mother, dob)) {
+            rebuild(db, child);
+        }
         EnrollmentPlan latest = enrollmentPlan(db, motherId, true);
         if (latest == null || !MotherMentorChildEidDao.columns(db,
                 Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID).containsAll(COLUMNS)) return;

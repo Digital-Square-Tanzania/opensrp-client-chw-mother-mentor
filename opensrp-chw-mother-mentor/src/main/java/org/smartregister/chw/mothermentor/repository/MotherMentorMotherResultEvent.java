@@ -49,6 +49,7 @@ import timber.log.Timber;
 public final class MotherMentorMotherResultEvent {
     public static final String EVENT_TYPE = "Mother Mentor HEI Test Result";
     private static final String SAMPLE_SOURCE = "mama_hei_sample_submission_id";
+    private static final String SAMPLE_CHILD = "mama_hei_sample_child_id";
     private static final String CORRECTED = "mama_hei_result_corrected";
 
     private MotherMentorMotherResultEvent() {}
@@ -58,15 +59,18 @@ public final class MotherMentorMotherResultEvent {
         private final Stage stage;
         private final LocalDate testDate;
         private final boolean awaitingConfirmation;
+        private final String childId;
 
-        PendingTest(String sampleSource, Stage stage, LocalDate testDate, boolean awaitingConfirmation) {
+        PendingTest(String sampleSource, Stage stage, LocalDate testDate, boolean awaitingConfirmation, String childId) {
             this.sampleSource = sampleSource;
             this.stage = stage;
             this.testDate = testDate;
             this.awaitingConfirmation = awaitingConfirmation;
+            this.childId = childId;
         }
 
         public Stage getStage() { return stage; }
+        public String getChildId() { return childId; }
         public LocalDate getTestDate() { return testDate; }
         public boolean isAwaitingConfirmation() { return awaitingConfirmation; }
         public String getState() { return awaitingConfirmation ? AWAITING_CONFIRM : AWAITING_RESULT; }
@@ -188,7 +192,10 @@ public final class MotherMentorMotherResultEvent {
         Answers answers = sample.awaitingConfirmation
                 ? Answers.confirmation(StringUtils.defaultIfBlank(done, "yes"), result, receipt)
                 : new Answers(result, receipt, done, values.get(MTOTO_CONFIRMATORY_RESULT));
-        return new Entry(sample, evidence.getVisitId(), answers, day, recordedAt,
+        String childId = StringUtils.defaultIfBlank(values.get(SAMPLE_CHILD), sample.childId);
+        PendingTest recordedSample = new PendingTest(sample.sampleSource, sample.stage, sample.testDate,
+                sample.awaitingConfirmation, childId);
+        return new Entry(recordedSample, evidence.getVisitId(), answers, day, recordedAt,
                 event.optLong(EVENT_VERSION), event.optString("eventId"), "true".equals(values.get(CORRECTED)));
     }
 
@@ -305,7 +312,8 @@ public final class MotherMentorMotherResultEvent {
             if (previous == null || previous.revision != expectedRevision) return false;
             PendingTest sample = previous.sample;
             Map<String, String> answers = form.apply(sample);
-            if (!isComplete(sample, answers, day)) return false;
+            if (!isComplete(sample, answers, day)
+                    || confirmsPositive(sample, answers, day) && needsChildIdentity(db, motherId, sample)) return false;
             persist(db, motherId, previous, answers, day);
             db.setTransactionSuccessful();
             return true;
@@ -335,6 +343,7 @@ public final class MotherMentorMotherResultEvent {
         event.setVersion(Math.max(System.currentTimeMillis(), previous.revision + 1));
         observe(event, MAMA_ENROLLMENT_ID, enrollment);
         observe(event, SAMPLE_SOURCE, sample.sampleSource);
+        observe(event, SAMPLE_CHILD, sample.childId);
         observe(event, MOTHERMENTOR_VISIT_DATE, day.toString());
         observe(event, MTOTO_PENDING_TEST, sample.stage.getCode());
         observe(event, MTOTO_PENDING_TEST_DATE, sample.testDate.toString());
@@ -372,6 +381,13 @@ public final class MotherMentorMotherResultEvent {
         } finally {
             if (ownsTransaction) db.endTransaction();
         }
+    }
+
+    public static boolean needsChildIdentity(SQLiteDatabase db, String motherId, PendingTest sample) {
+        MotherMentorMotherVisitDao.Context mother = MotherMentorMotherVisitDao.getContext(db, motherId);
+        LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(mother.getChildDob());
+        Set<String> followed = MotherMentorChildEidDao.followedChildren(db, motherId, mother, dob);
+        return sample.childId.isEmpty() ? !followed.isEmpty() : !followed.contains(sample.childId);
     }
 
     public static boolean processDeletion(SQLiteDatabase db, String submissionId) {

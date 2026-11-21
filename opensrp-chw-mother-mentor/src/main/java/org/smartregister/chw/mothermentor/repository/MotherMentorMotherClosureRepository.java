@@ -139,14 +139,11 @@ public final class MotherMentorMotherClosureRepository {
                 MotherMentorMotherChildRepository.getState(db, motherId, excludedVisitId);
         Set<String> children = MotherMentorChildEidDao.followedChildren(db, motherId, context, child.getChildDob());
         boolean multiple = children.size() > 1;
-        Evidence childEnding = multiple
+        boolean linkedStandaloneResult = child.getTerminalResultTime() > 0 && !children.isEmpty();
+        Evidence childEnding = multiple || linkedStandaloneResult
                 ? allChildrenFinished(db, motherId, context, children, child, evidence, excludedVisitId, preview)
                 : linkedChildEnding(db, motherId, context, child.getChildBaseEntityId(), child, excludedVisitId);
         if (childEnding != null) evidence.add(childEnding);
-        if (!multiple && childEnding != null && "~linked-child".equals(childEnding.id)
-                && child.getTerminalResultTime() > 0) {
-            evidence.add(motherTestEnding(child));
-        }
         if (includeIit && replayIit) {
             MotherMentorIitState iit = MotherMentorIitRepository.ownClosure(db, motherId);
             LocalDate iitDate = MotherMentorMotherPregnancyUtils.parseDate(iit.getClosedDate());
@@ -225,7 +222,9 @@ public final class MotherMentorMotherClosureRepository {
         VisitOutcome reason = null;
         for (String childId : children) {
             boolean primary = childId.equals(child.getChildBaseEntityId());
-            Evidence ending = linkedChildEnding(db, motherId, context, childId, primary ? child : null, excludedVisitId);
+            MotherMentorMotherChildRepository.State shared = primary && child.getTerminalResultTime() == 0
+                    ? child : null;
+            Evidence ending = linkedChildEnding(db, motherId, context, childId, shared, excludedVisitId);
             if (primary) {
                 for (Evidence item : visits) {
                     if (!duringEpisode(context, item.date) || ending != null && !item.date.isBefore(ending.date)) continue;
