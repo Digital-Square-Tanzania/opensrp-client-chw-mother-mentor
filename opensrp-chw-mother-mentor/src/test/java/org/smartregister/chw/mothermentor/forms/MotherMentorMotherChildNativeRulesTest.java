@@ -42,19 +42,24 @@ public class MotherMentorMotherChildNativeRulesTest {
                     MAMA_HEI_NEXT_TEST_NOTE, MAMA_BREASTFEEDING_STATUS,
                     MAMA_TAREHE_ACHA_KUNYONYESHA, MAMA_HEI_TEST_DONE,
                     MAMA_HEI_TEST_TYPE_CHOICE, MAMA_HEI_TEST_DATE,
-                    MAMA_HEI_TEST_RESULT, HEI_CHANYA_IMETHIBITISHWA}) {
+                    MAMA_HEI_TEST_RESULT, MAMA_HEI_CONFIRMATORY_TEST_DONE}) {
                 Facts facts = nativeForm.facts(key);
                 assertTrue(language + ":" + key + " missing path fact: " + facts.asMap().keySet(),
                         facts.asMap().containsKey("step1_" + MAMA_CHILD_PATH));
                 assertEquals("true", facts.get("step1_" + MAMA_CHILD_PATH));
                 assertTrue(language + ":" + key, nativeForm.relevant(key));
             }
-            Facts confirmation = nativeForm.facts(HEI_CHANYA_IMETHIBITISHWA);
+            Facts confirmation = nativeForm.facts(MAMA_HEI_CONFIRMATORY_TEST_DONE);
             assertEquals("alive", confirmation.get("step1_" + MAMA_CHILD_STATUS));
             assertEquals("yes", confirmation.get("step1_" + MAMA_HEI_TEST_DONE));
             assertEquals("positive", confirmation.get("step1_" + MAMA_HEI_TEST_RESULT));
             assertEquals("[\"nine_months\",\"three_months_after_weaning\"]",
                     confirmation.get("step1_" + MAMA_HEI_DUE_TESTS));
+            assertFalse(nativeForm.relevant(MAMA_HEI_CONFIRMATORY_RESULT));
+            nativeForm.answer(MAMA_HEI_CONFIRMATORY_TEST_DONE, "yes");
+            assertTrue(nativeForm.relevant(MAMA_HEI_CONFIRMATORY_RESULT));
+            nativeForm.answer(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+            assertFalse(nativeForm.relevant(MAMA_HEI_CONFIRMATORY_RESULT));
             assertFalse(nativeForm.relevant(MAMA_TAREHE_MTOTO_ALIFARIKI));
         }
     }
@@ -84,10 +89,10 @@ public class MotherMentorMotherChildNativeRulesTest {
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             nativeForm.answer(MAMA_HEI_TEST_RESULT, "positive");
             assertTrue(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
-            assertTrue(nativeForm.relevant(HEI_CHANYA_IMETHIBITISHWA));
+            assertTrue(nativeForm.relevant(MAMA_HEI_CONFIRMATORY_TEST_DONE));
             nativeForm.answer(MAMA_HEI_TEST_RESULT, "negative");
             assertTrue(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
-            assertFalse(nativeForm.relevant(HEI_CHANYA_IMETHIBITISHWA));
+            assertFalse(nativeForm.relevant(MAMA_HEI_CONFIRMATORY_TEST_DONE));
             nativeForm.answer(MAMA_HEI_TEST_RESULT, "pending");
             assertFalse(nativeForm.relevant(MAMA_HEI_TEST_RECEIVED_DATE));
             nativeForm.answer(MAMA_HEI_TEST_DONE, "no");
@@ -109,7 +114,7 @@ public class MotherMentorMotherChildNativeRulesTest {
 
         NativeForm(String language) throws Exception {
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(language + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(language + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
             activity = Robolectric.buildActivity(JsonFormActivity.class).get();

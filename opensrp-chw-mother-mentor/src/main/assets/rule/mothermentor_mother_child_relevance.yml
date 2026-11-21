@@ -76,10 +76,17 @@ condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive
 actions:
   - "isRelevant = true"
 ---
-name: step1_hei_chanya_imethibitishwa
-description: Mother child assessment relevance
+name: step1_mama_hei_confirmatory_test_done
+description: Ask whether the confirmatory test was done
 priority: 1
 condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_result == 'positive' && step1_mama_hei_due_tests != '[]'"
+actions:
+  - "isRelevant = true"
+---
+name: step1_mama_hei_confirmatory_result
+description: Ask for the performed confirmatory test result
+priority: 1
+condition: "step1_mama_child_path == 'true' && step1_mama_child_status == 'alive' && step1_mama_hei_test_done == 'yes' && step1_mama_hei_test_result == 'positive' && step1_mama_hei_due_tests != '[]' && step1_mama_hei_confirmatory_test_done == 'yes'"
 actions:
   - "isRelevant = true"
 ---

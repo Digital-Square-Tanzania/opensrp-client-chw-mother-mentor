@@ -16,6 +16,7 @@ import android.widget.RadioGroup;
 import com.vijay.jsonwizard.activities.JsonFormActivity;
 import org.joda.time.LocalDate;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -40,6 +41,35 @@ public class MotherMentorMotherChildUiTest {
             assertEquals(View.VISIBLE, fixture.option("nine_months").getVisibility());
             assertEquals(View.GONE, fixture.option("three_months_after_weaning").getVisibility());
             assertEquals(View.GONE, fixture.option("eighteen_months").getVisibility());
+        }
+    }
+
+    @Test
+    public void eighteenMonthsHidesAndClearsPendingInBothResultControls() throws Exception {
+        LocalDate day = LocalDate.now();
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            Fixture fixture = new Fixture(directory, day.minusMonths(18), day);
+            fixture.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+            fixture.put(MAMA_HEI_TEST_DONE, "yes");
+            fixture.put(MAMA_HEI_TEST_RESULT, "positive");
+            fixture.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "yes");
+            fixture.put(MAMA_HEI_CONFIRMATORY_RESULT, "pending");
+            RadioButton initialPending = fixture.addResultOption(MAMA_HEI_TEST_RESULT, "pending");
+            RadioButton confirmationPending = fixture.addResultOption(MAMA_HEI_CONFIRMATORY_RESULT, "pending");
+            RadioButton confirmationPositive = fixture.addResultOption(MAMA_HEI_CONFIRMATORY_RESULT, "positive");
+
+            fixture.refresh();
+            assertEquals("eighteen_months", fixture.value(MAMA_HEI_TEST_TYPE));
+            assertEquals(View.GONE, initialPending.getVisibility());
+            assertEquals(View.GONE, confirmationPending.getVisibility());
+            assertEquals(View.VISIBLE, confirmationPositive.getVisibility());
+            assertFalse(initialPending.isEnabled());
+            assertFalse(confirmationPending.isEnabled());
+            assertEquals("", fixture.value(MAMA_HEI_CONFIRMATORY_RESULT));
+
+            fixture.put(MAMA_HEI_TEST_RESULT, "pending");
+            fixture.refresh();
+            assertEquals("", fixture.value(MAMA_HEI_TEST_RESULT));
         }
     }
 
@@ -165,8 +195,13 @@ public class MotherMentorMotherChildUiTest {
 
         Fixture(String directory, LocalDate dob, LocalDate date) throws Exception {
             try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
-                    .open(directory + "/mothermentor_visit_type.json"), "UTF-8").useDelimiter("\\A")) {
+                    .open(directory + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
+            }
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            for (String key : new String[] {ATTENDANCE_TYPE, FOLLOW_UP_STATUS,
+                    MAMA_ENROLLMENT_PREGNANCY_STATUS, MAMA_TAREHE_KUJIFUNGUA}) {
+                fields.put(new JSONObject().put("key", key).put("type", "hidden").put("value", ""));
             }
             put(ATTENDANCE_TYPE, "repeat"); put(FOLLOW_UP_STATUS, "found");
             put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
@@ -206,6 +241,17 @@ public class MotherMentorMotherChildUiTest {
             input.setText(value);
             put(MAMA_HEI_TEST_RECEIVED_DATE, value);
             refresh();
+        }
+        RadioButton addResultOption(String key, String answer) {
+            LinearLayout root = (LinearLayout) activity.getWindow().getDecorView();
+            RadioGroup group = new RadioGroup(root.getContext());
+            RadioButton button = new RadioButton(root.getContext());
+            button.setId(View.generateViewId());
+            button.setTag(com.vijay.jsonwizard.R.id.key, key);
+            button.setTag(com.vijay.jsonwizard.R.id.childKey, answer);
+            group.addView(button);
+            root.addView(group);
+            return button;
         }
         RadioButton option(String code) {
             for (int i = 0; i < options.getChildCount(); i++) {

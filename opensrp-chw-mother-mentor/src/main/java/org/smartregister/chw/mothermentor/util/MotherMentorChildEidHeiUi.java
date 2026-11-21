@@ -97,7 +97,7 @@ public final class MotherMentorChildEidHeiUi {
         return !Objects.equals(previous.get(key), values.get(key));
     }
 
-    private static void showOption(RadioButton button, boolean visible) {
+    static void showOption(RadioButton button, boolean visible) {
         View container = button;
         while (container.getParent() instanceof View
                 && !(container.getParent() instanceof RadioGroup)) {

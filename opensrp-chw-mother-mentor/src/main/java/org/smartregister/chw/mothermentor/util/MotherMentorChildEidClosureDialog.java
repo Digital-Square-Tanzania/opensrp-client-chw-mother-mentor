@@ -16,11 +16,18 @@ public final class MotherMentorChildEidClosureDialog {
 
     public static void show(Context context, MotherMentorChildEidExit exit, boolean directEnrollment,
             Runnable confirm, Runnable cancel) {
+        show(context, exit, directEnrollment, false, confirm, cancel);
+    }
+
+    public static void show(Context context, MotherMentorChildEidExit exit, boolean directEnrollment,
+            boolean motherContinues, Runnable confirm, Runnable cancel) {
         String message = MotherMentorChildEidLabels.closedReason(context, exit.getStatus());
         if (exit == MotherMentorChildEidExit.E4) {
             message += "\n" + context.getString(R.string.mothermentor_eid_return_confirm_positive);
         }
-        if (directEnrollment) {
+        if (motherContinues) {
+            message += "\n\n" + context.getString(R.string.mothermentor_eid_exit_mother_continues);
+        } else if (directEnrollment) {
             int override = directMessage(exit);
             if (override != 0) message = context.getString(override);
         } else if (exit.getMotherOutcome() != null) {

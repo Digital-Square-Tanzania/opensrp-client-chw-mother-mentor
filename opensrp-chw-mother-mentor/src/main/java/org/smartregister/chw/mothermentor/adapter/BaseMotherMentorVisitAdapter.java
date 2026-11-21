@@ -78,7 +78,7 @@ public class BaseMotherMentorVisitAdapter extends RecyclerView.Adapter<BaseMothe
         }
 
         String title = MessageFormat.format("{0}<i>{1}</i>",
-                mothermentorVisitAction.getTitle(),
+                mothermentorVisitAction.getDisplayTitle(),
                 mothermentorVisitAction.isOptional() ? " - " + context.getString(R.string.optional) : ""
         );
         holder.titleText.setText(Html.fromHtml(title));

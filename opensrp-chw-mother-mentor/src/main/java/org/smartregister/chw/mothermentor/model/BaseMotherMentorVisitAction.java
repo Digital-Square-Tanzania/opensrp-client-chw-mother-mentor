@@ -23,6 +23,7 @@ public class BaseMotherMentorVisitAction {
     private String baseEntityID;
     private String title;
     private String subTitle;
+    private String displayTitle;
     private String disabledMessage;
     private Status actionStatus;
     private PayloadType payloadType;
@@ -147,6 +148,14 @@ public class BaseMotherMentorVisitAction {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getDisplayTitle() {
+        return displayTitle == null ? title : displayTitle;
+    }
+
+    public void setDisplayTitle(String displayTitle) {
+        this.displayTitle = displayTitle;
     }
 
     public void setTitle(String title) {

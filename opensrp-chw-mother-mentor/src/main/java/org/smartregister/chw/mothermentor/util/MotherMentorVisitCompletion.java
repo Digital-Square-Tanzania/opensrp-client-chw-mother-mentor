@@ -1,5 +1,6 @@
 package org.smartregister.chw.mothermentor.util;
 
+import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
@@ -23,8 +24,12 @@ public final class MotherMentorVisitCompletion {
     public static boolean isComplete(JSONArray observations) {
         Map<String, String> values = observationValues(observations);
         VisitOutcome outcome = MotherMentorMotherClosureRepository.outcome(values);
-        return outcome != null && (outcome != VisitOutcome.CONTINUE
-                || MotherMentorMotherVisitUtils.isComplete(values));
+        LocalDate day = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE));
+        if (day == null) day = LocalDate.now();
+        return outcome != null && MotherMentorDeliveryChildren.sectionsComplete(values, day)
+                && (outcome != VisitOutcome.CONTINUE
+                    || "true".equals(values.get(MotherMentorDeliveryChildren.ALL_FINISHED))
+                    || MotherMentorMotherVisitUtils.isComplete(values));
     }
 
     public static Map<String, String> observationValues(JSONArray observations) {

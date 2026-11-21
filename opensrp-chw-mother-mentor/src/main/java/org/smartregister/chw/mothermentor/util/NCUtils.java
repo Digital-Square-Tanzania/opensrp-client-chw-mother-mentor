@@ -28,6 +28,7 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.repository.MotherMentorPartnerClosureRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorHouseholdClosureRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorIitRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherDeliveryRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
 import org.smartregister.domain.db.EventClient;
@@ -377,7 +378,10 @@ public class NCUtils {
         visit.setCreatedAt(new Date());
         visit.setUpdatedAt(new Date());
         boolean iit = MotherMentorIitRepository.isIitVisit(visit);
-        visit.setDate(iit && event.getEventDate() != null ? event.getEventDate().toDate() : new Date());
+        boolean clinicalChronology = iit || MotherMentorMotherDeliveryRepository.isMotherVisit(visit)
+                || MotherMentorFollowUpType.CHILD_EID.getEventType().equals(visit.getVisitType());
+        visit.setDate(clinicalChronology && event.getEventDate() != null
+                ? event.getEventDate().toDate() : new Date());
         Map<String, String> eventDetails = event.getDetails();
         if (eventDetails != null) visit.setVisitGroup(eventDetails.get(JsonFormUtils.HOME_VISIT_GROUP));
 

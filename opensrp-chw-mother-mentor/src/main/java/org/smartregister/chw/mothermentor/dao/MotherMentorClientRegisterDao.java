@@ -4,6 +4,7 @@ import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.cursoradapter.SmartRegisterQueryBuilder;
 
 import java.util.ArrayList;
@@ -170,7 +171,8 @@ public final class MotherMentorClientRegisterDao {
         columns.add(ENROLLMENT + "." + DBConstants.KEY.CHILD_DOB);
         for (String field : new String[] {DBConstants.KEY.IS_CLOSED, DBConstants.KEY.MAMA_STATUS,
                 DBConstants.KEY.MAMA_TAREHE_YA_KUFUNGWA, DBConstants.KEY.MAMA_SABABU_YA_KUFUNGWA,
-                DBConstants.KEY.MAMA_BIRTH_TEST_DATE, DBConstants.KEY.MAMA_BIRTH_TEST_RESULT}) {
+                DBConstants.KEY.MAMA_BIRTH_TEST_DATE, DBConstants.KEY.MAMA_BIRTH_TEST_RESULT,
+                MotherMentorDeliveryChildren.FOLLOWED_COUNT, MotherMentorDeliveryChildren.PENDING_TESTS}) {
             columns.add(ENROLLMENT + "." + field);
         }
         columns.add(currentStatus() + " AS " + CURRENT_STATUS);

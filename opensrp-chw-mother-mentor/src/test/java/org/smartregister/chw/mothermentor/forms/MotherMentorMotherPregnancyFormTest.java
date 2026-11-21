@@ -21,7 +21,7 @@ import java.util.Scanner;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorMotherPregnancyFormTest {
     @Test
-    public void englishFormOffersTheFivePregnancyOutcomesAndStrictDateInputs() throws Exception {
+    public void englishFormOffersMotherOutcomesAndStrictDateInputs() throws Exception {
         verifyForm("json.form", "Pregnancy status", "Date of pregnancy loss");
     }
 
@@ -64,7 +64,7 @@ public class MotherMentorMotherPregnancyFormTest {
         JSONObject pregnancy = field(form, VISIT_PREGNANCY_STATUS);
         assertEquals(pregnancyLabel, pregnancy.getString("label"));
         assertEquals(Arrays.asList("pregnant", "not_pregnant"), optionKeys(pregnancy));
-        assertEquals(Arrays.asList("delivered", "preterm", "pregnancy_loss", "stillbirth", "other"),
+        assertEquals(Arrays.asList("delivered", "preterm", "pregnancy_loss", "other"),
                 optionKeys(field(form, MAMA_PREGNANCY_OUTCOME)));
         for (String key : Arrays.asList(MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,
                 MAMA_STILLBIRTH_DATE_INPUT, MAMA_PREGNANCY_LOSS_DATE)) {
@@ -74,6 +74,9 @@ public class MotherMentorMotherPregnancyFormTest {
             assertTrue(date.getJSONObject("v_required").getBoolean("value"));
             assertTrue(date.getJSONObject("relevance").has("rules-engine"));
         }
+        JSONObject count = field(form, "mama_delivery_child_count");
+        assertEquals(Arrays.asList("1", "2", "3", "4"), optionKeys(count));
+        assertTrue(count.getJSONObject("v_required").getBoolean("value"));
         assertEquals(lossLabel, field(form, MAMA_PREGNANCY_LOSS_DATE).getString("hint"));
         for (String key : Arrays.asList(MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,
                 MAMA_STILLBIRTH_DATE_INPUT, MAMA_ENROLLMENT_DELIVERY_DATE)) {

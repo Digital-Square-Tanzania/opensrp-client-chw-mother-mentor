@@ -6,8 +6,8 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.joda.time.LocalDate;
 import org.json.JSONArray;
+import org.joda.time.LocalDate;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorCommentActionHelper;
@@ -25,13 +25,17 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository.State;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
-import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -46,6 +50,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.text.SimpleDateFormat;
 
 public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceVisitInteractor {
@@ -67,8 +75,11 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     private String visitEnrollmentId;
     private String originalPregnancyStatus;
     private BaseMotherMentorVisitAction entryAction;
-    private BaseMotherMentorVisitAction childAction;
-    private MotherMentorVisitChildActionHelper childHelper;
+    private final Map<Integer, BaseMotherMentorVisitAction> childActions = new LinkedHashMap<>();
+    private final Map<Integer, MotherMentorVisitChildActionHelper> childHelpers = new LinkedHashMap<>();
+    private final Set<Integer> visibleChildren = new LinkedHashSet<>();
+    private List<State> savedChildren = Collections.emptyList();
+    private Map<String, String> editingValues = Collections.emptyMap();
     private final String historyVisitId;
     private Visit editing;
 
@@ -92,6 +103,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         memberObject = member;
         details = null;
         editing = null;
+        editingValues = Collections.emptyMap();
         serviceDate = new Date();
         enrollmentContext = loadMotherContext(member == null ? null : member.getBaseEntityId());
         visitEnrollmentId = enrollmentContext.getEnrollmentId();
@@ -108,6 +120,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             Map<String, String> values =
                     org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion
                             .observationValues(event.optJSONArray("obs"));
+            editingValues = values;
             visitEnrollmentId = StringUtils.defaultIfBlank(
                     values.get(DBConstants.KEY.MAMA_ENROLLMENT_ID), visitEnrollmentId);
             originalPregnancyStatus = StringUtils.defaultIfBlank(
@@ -141,27 +154,51 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected boolean shouldSubmitOnSave() {
         if (editingFinalizedVisit() || super.shouldSubmitOnSave()) return true;
         if (memberObject == null || serviceDate == null) return false;
+        LocalDate day = LocalDate.fromDateFields(serviceDate);
+        Map<String, String> values = clinicalValues();
+        if (MotherMentorMotherClosureRepository.classify(values, day) == VisitOutcome.CHILD_CONFIRMED_POSITIVE) {
+            return true;
+        }
         // A confirmed terminal visit must close the card and its Kaya even while offline.
         return MotherMentorMotherClosureRepository.preview(
                 MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                memberObject.getBaseEntityId(), null, clinicalValues(),
-                LocalDate.fromDateFields(serviceDate)).isClosed();
+                memberObject.getBaseEntityId(), null, values, day).isClosed();
     }
 
     @Override
     protected void populateActionList(BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         final Runnable runnable = () -> {
             motherMentorVisitActions.clear();
+            childActions.clear();
+            childHelpers.clear();
+            visibleChildren.clear();
             actionsReady = false;
             entrySaved = details != null && details.containsKey(DBConstants.KEY.ATTENDANCE_TYPE);
             try {
                 MotherMentorVisitTypeActionHelper entryHelper = createVisitTypeActionHelper();
                 entryAction = addVisitAction(context.getString(R.string.mothermentor_visit_type_section),
                         FORM_VISIT_TYPE, entryHelper, null);
-                childHelper = new MotherMentorVisitChildActionHelper(entryHelper, this::onChildChanged);
-                childAction = addVisitAction(context.getString(R.string.mothermentor_visit_child_section),
-                        FORM_CHILD, childHelper, new VisitFlowValidator(FORM_CHILD));
-                refreshChildSection(entrySaved);
+                savedChildren = loadSavedChildren();
+                for (int i = 1; i <= MotherMentorDeliveryChildren.MAX_COUNT; i++) {
+                    final int number = i;
+                    MotherMentorVisitChildActionHelper helper =
+                            new MotherMentorVisitChildActionHelper(entryHelper, this::onChildChanged, number);
+                    childHelpers.put(number, helper);
+                    childActions.put(number, addVisitAction(
+                            MotherMentorDeliveryChildren.label(context, number, ""), FORM_CHILD, helper,
+                            new BaseMotherMentorVisitAction.Validator() {
+                                @Override public boolean isValid(String key) {
+                                    return visibleChildren.contains(number);
+                                }
+
+                                @Override public boolean isEnabled(String key) {
+                                    return isValid(key);
+                                }
+
+                                @Override public void onChanged(String key) { }
+                            }));
+                }
+                refreshChildSections(entrySaved);
                 addVisitAction(context.getString(R.string.mothermentor_group_linkage_section),
                         FORM_GROUP_LINKAGE,
                         new MotherMentorGroupLinkageActionHelper(memberObject, this::entryValues),
@@ -198,7 +235,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             throws BaseMotherMentorVisitAction.ValidationException {
         BaseMotherMentorVisitAction action = getBuilder(title)
                                                      .withOptional(FORM_COMMENT.equals(formName))
-                                                     .withDetails(details)
+                                                     .withDetails(FORM_CHILD.equals(formName) ? null : details)
                                                      .withHelper(helper)
                                                      .withValidator(validator)
                                                      .withFormName(formName)
@@ -212,7 +249,8 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             Map<String, BaseMotherMentorVisitAction> map,
             BaseMotherMentorVisitContract.InteractorCallBack callBack) {
         Map<String, BaseMotherMentorVisitAction> visible = getVisibleVisitActions(map);
-        if (MotherMentorMotherVisitUtils.hasFirstVisitAssessment(entryValues())) {
+        if (MotherMentorDeliveryChildren.hasSections(entryValues())
+                || MotherMentorMotherVisitUtils.hasFirstVisitAssessment(entryValues())) {
             for (BaseMotherMentorVisitAction action : visible.values()) {
                 if (!action.isOptional()
                         && action.getActionStatus() != BaseMotherMentorVisitAction.Status.COMPLETED) {
@@ -279,6 +317,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void assignVisitSource(Event event, Visit editedVisit) {
         if (editedVisit == null || StringUtils.isBlank(editedVisit.getFormSubmissionId())) {
             super.assignVisitSource(event, editedVisit);
+            if (editedVisit == null) captureSampleChild(event);
             return;
         }
         event.setFormSubmissionId(editedVisit.getFormSubmissionId());
@@ -289,28 +328,46 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
             if (StringUtils.isBlank(event.getEventId())) event.setEventId(previous.getEventId());
             event.setVersion(Math.max(event.getVersion(), previous.getVersion() + 1));
+            Map<String, String> originalAnswers = MotherMentorVisitCompletion.observationValues(
+                    MotherMentorChildEidDao.json(editedVisit).optJSONArray("obs"));
+            String originalChild = originalAnswers.get(DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID);
+            LocalDate birth = sampleChildBirth(clinicalValues());
+            if (StringUtils.isNotBlank(originalChild) && birth != null
+                    && birth.equals(sampleChildBirth(originalAnswers))) {
+                putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, originalChild);
+            }
         } catch (JsonParseException invalid) {
             Timber.w(invalid, "Unable to restore the original Mama Kadi visit metadata");
         }
     }
 
+    private void captureSampleChild(Event event) {
+        Map<String, String> answers = clinicalValues();
+        if (MotherMentorDeliveryChildren.count(answers) > 1) return;
+        answers = MotherMentorDeliveryChildren.childVisit(answers, 1);
+        if (StringUtils.isAllBlank(answers.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
+                answers.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) return;
+        LocalDate birth = sampleChildBirth(answers);
+        if (birth == null || StringUtils.isBlank(visitEnrollmentId)) return;
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        String childId = MotherMentorChildEidDao.captureMotherSampleChild(
+                database, event.getBaseEntityId(), enrollmentContext, birth);
+        if (StringUtils.isNotBlank(childId)) putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, childId);
+    }
+
+    private LocalDate sampleChildBirth(Map<String, String> answers) {
+        return MotherMentorHeiSchedule.parseBirthDate(StringUtils.defaultIfBlank(
+                answers.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA), enrollmentContext.getChildDob()));
+    }
+
     @Override
     protected Visit saveVisit(boolean editMode, String memberID, String encounterType,
             Map<String, String> forms, String parentEventType) throws Exception {
-        if (MotherMentorMotherVisitUtils.hasFirstVisitAssessment(entryValues())) {
-            // Mpya submits the child answers from Mtoto wa 1. Attendance retains those controls for Marudio.
-            String title = entryAction.getTitle();
-            JSONObject entry = new JSONObject(forms.get(title));
-            JSONArray fields = entry.getJSONObject("step1").getJSONArray("fields");
-            for (int i = fields.length() - 1; i >= 0; i--) {
-                if (MotherMentorMotherChildUtils.isChildField(fields.getJSONObject(i).getString("key"))) {
-                    fields.remove(i);
-                }
-            }
-            forms = new LinkedHashMap<>(forms);
-            forms.put(title, entry.toString());
+        Map<String, String> maternalForms = new LinkedHashMap<>(forms);
+        for (BaseMotherMentorVisitAction child : childActions.values()) {
+            maternalForms.remove(child.getTitle());
         }
-        return super.saveVisit(editMode, memberID, encounterType, forms, parentEventType);
+        return super.saveVisit(editMode, memberID, encounterType, maternalForms, parentEventType);
     }
 
     @Override
@@ -330,38 +387,91 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private boolean shouldShowFullVisitActions() {
-        return entrySaved
-                && MotherMentorMotherClosureRepository.classify(
-                        clinicalValues(), LocalDate.fromDateFields(serviceDate)) == VisitOutcome.CONTINUE;
-    }
-
-    private boolean shouldShowChildSection() {
         if (!entrySaved) return false;
-        Map<String, String> values = entryValues();
-        return MotherMentorMotherVisitUtils.hasFirstVisitAssessment(values)
-                && MotherMentorMotherPregnancyUtils.isChildPath(values, LocalDate.fromDateFields(serviceDate))
-                && MotherMentorMotherChildUtils.applies(values);
+        Map<String, String> answers = clinicalValues();
+        LocalDate day = LocalDate.fromDateFields(serviceDate);
+        if (MotherMentorMotherClosureRepository.classify(answers, day) != VisitOutcome.CONTINUE) return false;
+        if (visibleChildren.isEmpty()) return true;
+        return !MotherMentorMotherChildRepository.allChildrenFinished(savedChildren, answers, day);
     }
 
-    private void refreshChildSection(boolean restoring) {
-        if (childAction == null) return;
-        if (!shouldShowChildSection()) {
-            childAction.setJsonPayload(null);
-            return;
+    protected List<State> loadSavedChildren() {
+        if (memberObject == null || StringUtils.isBlank(visitEnrollmentId)) return Collections.emptyList();
+        return MotherMentorMotherChildRepository.getStatesBeforeMotherVisit(
+                MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                memberObject.getBaseEntityId(), editing == null ? null : editing.getVisitId());
+    }
+
+    private void refreshChildSections(boolean restoring) {
+        visibleChildren.clear();
+        Map<String, String> values = entryValues();
+        LocalDate day = LocalDate.fromDateFields(serviceDate);
+        boolean childPath = entrySaved && MotherMentorMotherPregnancyUtils.isChildPath(values, day);
+        int count = MotherMentorDeliveryChildren.recordsDelivery(values)
+                ? MotherMentorDeliveryChildren.count(values) : Math.max(1, savedChildren.size());
+        if (restoring && count == 0 && !MotherMentorDeliveryChildren.hasSections(editingValues)) {
+            count = 1;
         }
-        try {
-            // Reopening and saving the same attendance section keeps the child's existing answers.
-            JSONObject entry = new JSONObject(entryAction.getJsonPayload());
-            String current = childAction.getJsonPayload();
-            if (!restoring && StringUtils.isNotBlank(current)
-                    && childHelper.matchesMother(new JSONObject(current), entry)) return;
-            String prepared = childHelper.prepare(entry, restoring);
-            childAction.setJsonPayload(restoring ? prepared : null);
-            if (!restoring) childAction.setProcessedJsonPayload(prepared);
-        } catch (Exception e) {
-            childAction.setJsonPayload(null);
-            Timber.e(e, "Unable to prepare the first-visit child section");
+        for (Map.Entry<Integer, BaseMotherMentorVisitAction> item : childActions.entrySet()) {
+            int number = item.getKey();
+            BaseMotherMentorVisitAction action = item.getValue();
+            State child = number <= savedChildren.size() ? savedChildren.get(number - 1) : new State(null);
+            if (!childPath || number > count || child.getTerminalServiceDate() != null) {
+                action.setJsonPayload(null);
+                action.setDisplayTitle(null);
+                continue;
+            }
+            visibleChildren.add(number);
+            try {
+                JSONObject entry = new JSONObject(entryAction.getJsonPayload());
+                MotherMentorVisitChildActionHelper helper = childHelpers.get(number);
+                Map<String, String> answers = restoring
+                        ? MotherMentorDeliveryChildren.section(editingValues, number)
+                        : Collections.emptyMap();
+                String current = action.getJsonPayload();
+                boolean matches = StringUtils.isNotBlank(current) && helper.matchesMother(new JSONObject(current), entry);
+                if (!restoring && matches && helper.hasSubmittedAnswers()) continue;
+                String prepared = helper.prepare(entry, answers, child, childCandidates(values, number, count));
+                String sex = answers.getOrDefault(MotherMentorDeliveryChildren.SEX, child.getSex());
+                action.setDisplayTitle(MotherMentorDeliveryChildren.label(context, number, sex));
+                if (restoring && !answers.isEmpty()) action.setJsonPayload(prepared);
+                else {
+                    action.setJsonPayload(null);
+                    action.setProcessedJsonPayload(prepared);
+                }
+            } catch (Exception e) {
+                action.setJsonPayload(null);
+                Timber.e(e, "Unable to prepare the mother visit child section");
+            }
         }
+    }
+
+    private Map<String, String> childCandidates(Map<String, String> attendance, int number, int count) {
+        Map<String, String> options = new LinkedHashMap<>();
+        if (count < 2 || memberObject == null || StringUtils.isBlank(visitEnrollmentId)) return options;
+        SQLiteDatabase db = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        LocalDate dob = MotherMentorHeiSchedule.parseDate(attendance.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA));
+        Set<String> unavailable = new HashSet<>();
+        for (int i = 0; i < savedChildren.size(); i++) {
+            if (i + 1 != number) unavailable.add(savedChildren.get(i).getExplicitLink());
+        }
+        childActions.forEach((other, action) -> {
+            if (other != number) {
+                unavailable.add(actionValues(action).get(MotherMentorDeliveryChildren.LINK));
+                unavailable.add(MotherMentorDeliveryChildren.section(editingValues, other)
+                        .get(MotherMentorDeliveryChildren.LINK));
+            }
+        });
+        Set<String> linked = new HashSet<>(MotherMentorChildEidDao.linkedChildren(db, memberObject.getBaseEntityId(), dob));
+        linked.removeAll(unavailable);
+        for (String id : linked) {
+            Map<String, String> person = MotherMentorChildEidDao.person(db, id);
+            String name = (person.getOrDefault(DBConstants.KEY.FIRST_NAME, "") + " "
+                    + person.getOrDefault(DBConstants.KEY.LAST_NAME, "")).trim();
+            String identifier = person.getOrDefault(DBConstants.KEY.UNIQUE_ID, "");
+            options.put(id, identifier.isEmpty() ? name : name + " (" + identifier + ")");
+        }
+        return options;
     }
 
     private Map<String, String> entryValues() {
@@ -369,11 +479,16 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private Map<String, String> clinicalValues() {
-        Map<String, String> values = entryValues();
-        if (shouldShowChildSection()) {
-            // Ignore inline fields carried from an edited visit until the child section supplies them.
-            values.keySet().removeIf(MotherMentorMotherChildUtils::isChildField);
-            values.putAll(actionValues(childAction));
+        Map<String, String> values = new LinkedHashMap<>(entryValues());
+        for (Integer number : visibleChildren) {
+            BaseMotherMentorVisitAction action = childActions.get(number);
+            if (childHelpers.get(number).evaluateStatusOnPayload()
+                    != BaseMotherMentorVisitAction.Status.COMPLETED) continue;
+            try {
+                values.putAll(MotherMentorDeliveryChildren.actionValues(new JSONObject(action.getJsonPayload())));
+            } catch (Exception error) {
+                Timber.e(error, "Unable to read the child section");
+            }
         }
         return values;
     }
@@ -390,7 +505,9 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     }
 
     private void onChildChanged() {
-        if (actionsReady) clearHiddenServices();
+        if (!actionsReady) return;
+        refreshChildSections(false);
+        clearHiddenServices();
     }
 
     protected void onEntryChanged() {
@@ -407,7 +524,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             }
         }
         attendanceContext = currentAttendance;
-        refreshChildSection(false);
+        refreshChildSections(false);
         for (BaseMotherMentorVisitAction action : motherMentorVisitActions.values()) {
             if (FORM_GROUP_LINKAGE.equals(action.getFormName())) {
                 action.setJsonPayload(action.getJsonPayload());
@@ -458,6 +575,20 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void prepareEvent(Event event) {
         if (event == null) return;
         event.setEventDate(serviceDate);
+        Map<String, String> values = clinicalValues();
+        if (MotherMentorDeliveryChildren.hasSections(values)) {
+            List<String> visited = new ArrayList<>();
+            for (Integer number : visibleChildren) visited.add(number.toString());
+            putObservation(event, MotherMentorDeliveryChildren.SECTIONS, "true");
+            putObservation(event, MotherMentorDeliveryChildren.COUNT, values.get(MotherMentorDeliveryChildren.COUNT));
+            putObservation(event, MotherMentorDeliveryChildren.VISITED, StringUtils.join(visited, ","));
+            boolean finished = !visibleChildren.isEmpty() && MotherMentorMotherChildRepository.allChildrenFinished(
+                    savedChildren, values, LocalDate.fromDateFields(serviceDate));
+            if (finished) putObservation(event, MotherMentorDeliveryChildren.ALL_FINISHED, "true");
+        }
+        for (String key : values.keySet()) {
+            if (key.matches("mama_child_[1-4]_.*")) putObservation(event, key, values.get(key));
+        }
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));
         putObservation(event, DBConstants.KEY.MAMA_ENROLLMENT_ID, visitEnrollmentId);
@@ -494,7 +625,6 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
 
         @Override
         public boolean isValid(String key) {
-            if (FORM_CHILD.equals(formName)) return shouldShowChildSection();
             return FORM_COMMENT.equals(formName) || shouldShowFullVisitActions();
         }
 

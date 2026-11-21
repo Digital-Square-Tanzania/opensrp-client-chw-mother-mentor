@@ -53,7 +53,7 @@ public class MotherMentorClientRegisterDaoTest {
                         + " ctc_number TEXT, pregnancy_status TEXT, child_dob TEXT,"
                         + " last_interacted_with INTEGER DEFAULT 0, mama_status TEXT,"
                         + " mama_tarehe_ya_kufungwa TEXT, mama_sababu_ya_kufungwa TEXT,"
-                        + " mama_birth_test_date TEXT, mama_birth_test_result TEXT)");
+                        + " mama_birth_test_date TEXT, mama_birth_test_result TEXT, mama_followed_child_count TEXT, mama_child_pending_tests TEXT)");
         database.execSQL(
                 "CREATE TABLE ec_family_member (base_entity_id TEXT, relational_id TEXT, first_name"
                     + " TEXT, middle_name TEXT, last_name TEXT, dob TEXT, gender TEXT, unique_id"

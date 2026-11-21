@@ -164,8 +164,8 @@ public final class MotherMentorChildEidResultEvent {
         values.put(MTOTO_RUFAA_STATE_BEFORE, sample.state);
         values.put(MTOTO_RETURN_FLOW, "1");
         values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
-        values.put(MTOTO_RESULT_RECEIVED_DATE, value(answers, MTOTO_RESULT_RECEIVED_DATE));
         if (AWAITING_RESULT.equals(sample.state)) {
+            values.put(MTOTO_RESULT_RECEIVED_DATE, value(answers, MTOTO_RESULT_RECEIVED_DATE));
             values.put(MTOTO_RESULT_RECEIVED, "yes");
             values.put(MTOTO_RECEIVED_RESULT, value(answers, MTOTO_RECEIVED_RESULT));
         }
@@ -174,8 +174,15 @@ public final class MotherMentorChildEidResultEvent {
             if ("yes".equals(value(answers, MTOTO_CONFIRMATORY_TEST_DONE))) {
                 values.put(MTOTO_CONFIRMATORY_RESULT, value(answers, MTOTO_CONFIRMATORY_RESULT));
             }
-            values.put(MTOTO_CONFIRMATION_RECEIVED,
-                    MotherMentorChildEidReturnVisit.confirmationReceived(values));
+            String received = MotherMentorChildEidReturnVisit.confirmationReceived(values);
+            values.put(MTOTO_CONFIRMATION_RECEIVED, received);
+            if (AWAITING_CONFIRM.equals(sample.state) && "yes".equals(received)) {
+                String date = value(answers, MTOTO_RESULT_RECEIVED_DATE);
+                if (!MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(date), sample.sampleDate, day)) {
+                    return null;
+                }
+                values.put(MTOTO_RESULT_RECEIVED_DATE, date);
+            }
         }
         return MotherMentorChildEidReturnVisit.evaluateStandalone(values, day) == null ? null : values;
     }

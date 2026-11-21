@@ -25,6 +25,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
@@ -111,6 +112,46 @@ public class MotherMentorChildEidEntryRepositoryTest {
         assertEquals(0, state.getVisitCount());
         assertNull(state.getPendingSample());
         assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test public void identicalBirthdaysUseExplicitChildLinksForDistinctMissedTestPlans() throws Exception {
+        person("twin", dob.toString(), "Zawadi");
+        data.execSQL("INSERT INTO ec_child VALUES ('twin','mother')");
+        data.delete("event", null, null);
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'pregnant',"
+                + " event_date = '2025-01-30', enrollment_date = '2025-01-30'");
+        rawEnrollment("mother", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLLMENT, "mother-epoch",
+                dob.minusDays(1), fields(PREGNANCY_STATUS, "pregnant"));
+        Map<String, String> delivery = fields(ATTENDANCE_TYPE, "repeat", FOLLOW_UP_STATUS, "found",
+                MAMA_ENROLLMENT_ID, "mother-epoch", MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant",
+                VISIT_PREGNANCY_STATUS, "not_pregnant", MAMA_PREGNANCY_OUTCOME, "delivered",
+                MAMA_TAREHE_KUJIFUNGUA, dob.toString(), MotherMentorDeliveryChildren.SECTIONS, "true",
+                MotherMentorDeliveryChildren.COUNT, "2");
+        for (int number = 1; number <= 2; number++) {
+            delivery.put(MotherMentorDeliveryChildren.observationKey(number, MAMA_CHILD_STATUS), "alive");
+            delivery.put(MotherMentorDeliveryChildren.observationKey(number, MAMA_BREASTFEEDING_STATUS), "breastfeeding");
+            delivery.put(MotherMentorDeliveryChildren.observationKey(number, MotherMentorDeliveryChildren.SEX), "male");
+            delivery.put(MotherMentorDeliveryChildren.observationKey(number, MAMA_BIRTH_TEST_DONE), "no");
+            delivery.put(MotherMentorDeliveryChildren.observationKey(number, MAMA_BIRTH_TEST_WORKFLOW), "true");
+        }
+        delivery.put(MotherMentorDeliveryChildren.observationKey(1, MotherMentorDeliveryChildren.LINK), "child");
+        delivery.put(MotherMentorDeliveryChildren.observationKey(2, MotherMentorDeliveryChildren.LINK), "twin");
+        visit("birth", "birth", "mother", delivery, dob, 1, true, false, 9);
+        Map<String, String> followUp = new LinkedHashMap<>(delivery);
+        followUp.put(MAMA_CARRIED_DELIVERY, "true");
+        LocalDate day = dob.plusMonths(9).plusDays(16);
+        followUp.put(MotherMentorDeliveryChildren.observationKey(2, MAMA_HEI_TEST_DONE), "no");
+        visit("missed", "missed", "mother", followUp, day, 1, true, false, 9);
+        assertEquals("twin", plan().getChildId());
+
+        followUp.put(MotherMentorDeliveryChildren.observationKey(1, MAMA_HEI_TEST_DONE), "no");
+        visit("both", "missed", "mother", followUp, day, 2, true, false, 9);
+        java.util.List<MotherMentorChildEidRepository.EnrollmentPlan> plans =
+                MotherMentorChildEidRepository.getPendingEnrollmentPlans(db, "mother");
+        assertEquals(2, plans.size());
+        assertEquals("child", plans.get(0).getChildId());
+        assertEquals("twin", plans.get(1).getChildId());
+        assertFalse(plans.get(0).getFormSubmissionId().equals(plans.get(1).getFormSubmissionId()));
     }
 
     @Test public void graceBoundaryUsesTheOriginalServiceDayNotTodaysSyncDate() throws Exception {
