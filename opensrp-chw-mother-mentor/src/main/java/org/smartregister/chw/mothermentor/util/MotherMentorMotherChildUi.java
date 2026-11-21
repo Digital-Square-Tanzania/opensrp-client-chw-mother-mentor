@@ -89,7 +89,7 @@ public final class MotherMentorMotherChildUi {
             set(form, root, DBConstants.KEY.MAMA_CHILD_AGE_NOTE, path ? age(activity, dob, assessment) : "");
             set(form, root, DBConstants.KEY.MAMA_HEI_NEXT_TEST_NOTE,
                     path ? next(activity, values, due, assessment) : "");
-            if (firstAlive) {
+            if (firstAlive && !MotherMentorAwaitedResults.enabled(values)) {
                 for (Map.Entry<Stage, TestRecord> entry : MotherMentorMotherChildUtils.parseTests(
                         values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY)).entrySet()) {
                     if (!entry.getValue().requiresFollowUp() || !due.contains(entry.getKey())) continue;

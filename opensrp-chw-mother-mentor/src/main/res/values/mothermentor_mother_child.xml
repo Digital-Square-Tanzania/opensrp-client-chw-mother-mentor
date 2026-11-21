@@ -19,4 +19,15 @@
     <string name="mothermentor_mother_result_list_item">%1$s · %2$s\n%3$s</string>
     <string name="mothermentor_mother_result_unavailable">This test no longer has a result awaiting entry.</string>
     <string name="mothermentor_mother_result_saved">Result saved</string>
+    <string name="mothermentor_awaited_test">Test awaiting its result: %1$s · Test date: %2$s</string>
+    <string name="mothermentor_awaited_confirmation_name">%1$s confirmation</string>
+    <string name="mothermentor_awaited_question">Has the %1$s result come back?</string>
+    <string name="mothermentor_awaited_required">Answer whether the awaited result has come back</string>
+    <string name="mothermentor_awaited_follow">Follow up at the facility.</string>
+    <string name="mothermentor_awaited_result">%1$s test result</string>
+    <string name="mothermentor_awaited_confirmation_done">Was a confirmatory test performed?</string>
+    <string name="mothermentor_awaited_confirmation_result">Confirmatory test result</string>
+    <string name="mothermentor_awaited_receipt">Date the result was received at the facility</string>
+    <string name="mothermentor_awaited_yes">Yes</string>
+    <string name="mothermentor_awaited_no">No</string>
 </resources>
