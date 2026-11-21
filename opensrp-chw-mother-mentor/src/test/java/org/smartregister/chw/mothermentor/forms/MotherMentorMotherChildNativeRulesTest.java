@@ -108,6 +108,32 @@ public class MotherMentorMotherChildNativeRulesTest {
         }
     }
 
+    @Test
+    public void pendingRoutineResultShowsTheFollowUpNoteExceptForMieziEighteen() throws Exception {
+        String note = "mama_hei_test_pending_note";
+        for (String language : new String[] {"json.form", "json.form-sw"}) {
+            NativeForm form = new NativeForm(language);
+            JSONObject field = FormUtils.getFieldFromForm(form.form, note);
+            assertEquals("ui_only", field.getString("openmrs_entity"));
+            assertEquals("json.form-sw".equals(language) ? "Fuatilia majibu kituoni."
+                    : "Follow up the results at the facility.", field.getString("text"));
+            form.answer(MAMA_CHILD_PATH, "true");
+            form.answer(MAMA_CHILD_STATUS, "alive");
+            form.answer(MAMA_HEI_DUE_TESTS, "[\"six_weeks\"]");
+            form.answer(MAMA_HEI_TEST_DONE, "yes");
+            form.answer(MAMA_HEI_TEST_TYPE, "six_weeks");
+            assertFalse(form.relevant(note));
+            form.answer(MAMA_HEI_TEST_RESULT, "pending");
+            assertTrue(form.relevant(note));
+            form.answer(MAMA_HEI_TEST_RESULT, "negative");
+            assertFalse(form.relevant(note));
+            form.answer(MAMA_HEI_DUE_TESTS, "[\"eighteen_months\"]");
+            form.answer(MAMA_HEI_TEST_TYPE, "eighteen_months");
+            form.answer(MAMA_HEI_TEST_RESULT, "pending");
+            assertFalse(form.relevant(note));
+        }
+    }
+
     private static final class NativeForm {
         private final JSONObject form;
         private final JsonFormActivity activity;

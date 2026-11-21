@@ -92,21 +92,19 @@ public final class MotherMentorMotherChildRepository {
             projection.put(entry.getKey().getResultKey(), entry.getValue().getResult());
             projection.put(entry.getKey().getDateKey(), iso(entry.getValue().getDate()));
         }
-        if (children.size() > 1) {
-            int following = 0;
-            JSONArray pending = new JSONArray();
-            for (State child : children) {
-                if (child.getTerminalServiceDate() == null) following++;
-                for (MotherMentorMotherResultEvent.PendingTest test : child.getPendingMotherTests()) {
-                    if (!test.isAwaitingConfirmation()) {
-                        pending.put(new JSONArray().put(child.getNumber()).put(test.getStage().getCode())
-                                .put(test.getTestDate().toString()));
-                    }
+        int following = 0;
+        JSONArray pending = new JSONArray();
+        for (State child : children) {
+            if (child.getTerminalServiceDate() == null) following++;
+            for (MotherMentorMotherResultEvent.PendingTest test : child.getPendingMotherTests()) {
+                if (!test.isAwaitingConfirmation()) {
+                    pending.put(new JSONArray().put(child.getNumber()).put(test.getStage().getCode())
+                            .put(test.getTestDate().toString()));
                 }
             }
-            projection.put(MotherMentorDeliveryChildren.FOLLOWED_COUNT, following);
-            projection.put(MotherMentorDeliveryChildren.PENDING_TESTS, pending.toString());
         }
+        if (children.size() > 1) projection.put(MotherMentorDeliveryChildren.FOLLOWED_COUNT, following);
+        projection.put(MotherMentorDeliveryChildren.PENDING_TESTS, pending.toString());
         db.update(table, projection, DBConstants.KEY.BASE_ENTITY_ID + " = ?",
                 new String[] {motherId});
     }

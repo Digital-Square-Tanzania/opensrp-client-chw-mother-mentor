@@ -707,6 +707,21 @@
         }
       },
       {
+        "key": "mama_hei_test_pending_note",
+        "type": "label",
+        "text": "Follow up the results at the facility.",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "mama_hei_test_pending_note",
+        "openmrs_entity_parent": "",
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "mama_hei_test_received_date",
         "type": "date_picker",
         "openmrs_entity_parent": "",

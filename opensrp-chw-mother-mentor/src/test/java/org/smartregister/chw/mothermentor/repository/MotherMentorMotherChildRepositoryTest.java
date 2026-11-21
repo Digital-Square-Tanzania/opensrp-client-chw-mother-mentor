@@ -85,6 +85,33 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void upgradeBackfillsOlderSingletonSamplesAndReturningOneKeepsTheOther() throws Exception {
+        LocalDate serviceDay = dob.plusDays(49);
+        LocalDate routineSample = dob.plusDays(44);
+        Map<String, String> saved = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", routineSample);
+        saved.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        saved.put(MAMA_BIRTH_TEST_DONE, "yes");
+        saved.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        saved.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        MotherMentorMotherChildRepository.upgrade(db);
+        visit("child-visit", "child-source", "mother", saved, serviceDay, 1, false);
+        // Alpha 46 left the already-existing pending-test column blank for singletons.
+        assertEquals("[]", scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET mama_child_pending_tests = ''");
+        MotherMentorMotherChildRepository.upgrade(db);
+        assertEquals("", scalar("SELECT mama_followed_child_count FROM ec_mothermentor_enrollment"));
+        assertEquals(new JSONArray().put(new JSONArray().put(1).put(Stage.AT_BIRTH.getCode()).put(dob.toString()))
+                        .put(new JSONArray().put(1).put(Stage.SIX_WEEKS.getCode()).put(routineSample.toString()))
+                        .toString(),
+                scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+        resultEvent("routine", "child-source", Stage.SIX_WEEKS, routineSample, serviceDay.plusDays(1),
+                "negative", "awaiting_result", null);
+        MotherMentorMotherChildRepository.rebuild(db, "mother");
+        assertEquals(new JSONArray().put(new JSONArray().put(1).put(Stage.AT_BIRTH.getCode()).put(dob.toString()))
+                .toString(), scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+    }
+
+    @Test
     public void aSavedNoSuppressesBirthAssessmentWithoutDisplacingWikiSix() throws Exception {
         LocalDate day = dob.plusDays(42);
         Map<String, String> first = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", day);
