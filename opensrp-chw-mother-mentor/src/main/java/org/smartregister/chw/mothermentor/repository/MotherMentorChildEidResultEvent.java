@@ -174,8 +174,15 @@ public final class MotherMentorChildEidResultEvent {
             if ("yes".equals(value(answers, MTOTO_CONFIRMATORY_TEST_DONE))) {
                 values.put(MTOTO_CONFIRMATORY_RESULT, value(answers, MTOTO_CONFIRMATORY_RESULT));
             }
-            values.put(MTOTO_CONFIRMATION_RECEIVED,
-                    MotherMentorChildEidReturnVisit.confirmationReceived(values));
+            String received = MotherMentorChildEidReturnVisit.confirmationReceived(values);
+            values.put(MTOTO_CONFIRMATION_RECEIVED, received);
+            if (AWAITING_CONFIRM.equals(sample.state) && "yes".equals(received)) {
+                String date = value(answers, MTOTO_RESULT_RECEIVED_DATE);
+                if (!MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(date), sample.sampleDate, day)) {
+                    return null;
+                }
+                values.put(MTOTO_RESULT_RECEIVED_DATE, date);
+            }
         }
         return MotherMentorChildEidReturnVisit.evaluateStandalone(values, day) == null ? null : values;
     }

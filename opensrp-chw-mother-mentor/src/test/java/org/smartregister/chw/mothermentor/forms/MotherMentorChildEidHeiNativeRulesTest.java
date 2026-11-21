@@ -90,6 +90,7 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             form.answer(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
             assertTrue(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             form.answer(MTOTO_RECEIVED_RESULT, "negative");
+            assertTrue(form.relevant(MTOTO_RESULT_RECEIVED_DATE));
             assertFalse(form.relevant(MTOTO_CONFIRMATORY_RESULT));
             NativeForm confirmation = new NativeForm(directory, MotherMentorChildEidResultForm.FORM_NAME, resultRules);
             MotherMentorChildEidResultForm.prepare(confirmation.form, RuntimeEnvironment.getApplication(),
@@ -101,6 +102,10 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             confirmation.answer(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
             assertTrue(confirmation.relevant(MTOTO_CONFIRMATORY_RESULT));
             assertEquals(3, confirmation.field(MTOTO_CONFIRMATORY_RESULT).getJSONArray("options").length());
+            confirmation.answer(MTOTO_CONFIRMATORY_RESULT, "pending");
+            assertFalse(confirmation.relevant(MTOTO_RESULT_RECEIVED_DATE));
+            confirmation.answer(MTOTO_CONFIRMATORY_RESULT, "negative");
+            assertTrue(confirmation.relevant(MTOTO_RESULT_RECEIVED_DATE));
 
             NativeForm finalResult = new NativeForm(directory, MotherMentorChildEidResultForm.FORM_NAME, resultRules);
             MotherMentorChildEidResultForm.prepare(finalResult.form, RuntimeEnvironment.getApplication(),

@@ -142,7 +142,9 @@ public final class MotherMentorChildEidReturnVisit {
         LocalDate date = date(values, MTOTO_PENDING_TEST_DATE);
         if (stage == null || date == null || day == null || date.isAfter(day)) return null;
         String state = value(values, MTOTO_RUFAA_STATE_BEFORE);
-        if (AWAITING_CONFIRM.equals(state)) return resolveConfirmation(stage, date, values);
+        if (AWAITING_CONFIRM.equals(state)) {
+            return validSavedReceivedDate(values, date, day) ? resolveConfirmation(stage, date, values) : null;
+        }
         if (!AWAITING_RESULT.equals(state) || stage == Stage.EIGHTEEN_MONTHS
                 || !MotherMentorHeiSchedule.validDate(date(values, MTOTO_RESULT_RECEIVED_DATE), date, day)) return null;
         String result = value(values, MTOTO_RECEIVED_RESULT);

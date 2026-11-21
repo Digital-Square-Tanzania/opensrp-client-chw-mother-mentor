@@ -9,6 +9,8 @@ import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,12 +24,21 @@ import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultEvent.Answers;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherResultEvent.Entry;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.domain.db.EventClient;
+import org.smartregister.repository.AllSharedPreferences;
+import org.smartregister.repository.BaseRepository;
 import org.smartregister.repository.Repository;
+import org.smartregister.sync.helper.ECSyncHelper;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
@@ -191,6 +202,246 @@ public class MotherMentorMotherClosureLifecycleTest {
         assertEquals("not_found_other_3", column(MAMA_STATUS));
     }
 
+    @Test
+    public void sameDayBirthResultReplaysAfterItsSampleVisitWithALegacyLocalTimestamp() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate birthSample = today.minusDays(42);
+        String episode = setupPostpartumEnrollment(birthSample);
+        Map<String, String> answers = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", today);
+        answers.put(MAMA_TAREHE_KUJIFUNGUA, birthSample.toString());
+        answers.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        answers.put(MAMA_BIRTH_TEST_DONE, "yes");
+        answers.put(MAMA_BIRTH_TEST_DATE, birthSample.toString());
+        answers.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        // Existing visit serialization can write the device's wall time as if it were UTC.
+        visit("sample", "sample-source", episode, today.toString(), 1, true, answers,
+                DateTime.now(DateTimeZone.UTC).plusHours(3).toString());
+        MotherMentorMotherClosureRepository.upgrade(db);
+        stubResultEventWrites();
+
+        List<Entry> before = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, before.size());
+        Entry birth = before.get(0);
+        assertEquals(Stage.AT_BIRTH, birth.getSample().getStage());
+        LocalDate receipt = today.minusDays(2);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", birth.getId(), birth.getRevision(),
+                new Answers("negative", receipt, "", "")));
+
+        List<Entry> after = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, after.size());
+        assertEquals(Stage.SIX_WEEKS, after.get(0).getSample().getStage());
+        assertFalse(after.get(0).isRecorded());
+        Entry recorded = after.get(1);
+        assertEquals(Stage.AT_BIRTH, recorded.getSample().getStage());
+        assertEquals(birthSample, recorded.getSample().getTestDate());
+        assertEquals(receipt, recorded.getAnswers().getReceivedDate());
+        assertEquals(1, count("visits"));
+        assertEquals(1, count("event"));
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
+                new Answers("negative", today.minusDays(1), "", "")));
+        MotherMentorMotherResultEvent.rebuild(db, "mother");
+        List<Entry> history = MotherMentorMotherResultEvent.history(db, "mother", today);
+        assertEquals(1, history.size());
+        assertEquals(recorded.getId(), history.get(0).getId());
+        assertEquals(recorded.getRecordedAt(), history.get(0).getRecordedAt());
+        assertEquals(today.minusDays(1), history.get(0).getAnswers().getReceivedDate());
+        assertTrue(history.get(0).isCorrected());
+        assertEquals(Stage.SIX_WEEKS, MotherMentorMotherResultEvent.pending(db, "mother", today).get(0).getStage());
+        assertEquals(1, count("visits"));
+        assertEquals(1, count("event"));
+    }
+
+    @Test
+    public void profileResultCorrectsTheSameEventAndReopensTheCardWithoutAddingAVisit() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate sampleDate = today.minusDays(16);
+        setupPendingProfileTest(sampleDate);
+        stubResultEventWrites();
+
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        String id = pending.getId();
+        assertEquals(Stage.SIX_WEEKS, pending.getSample().getStage());
+        assertFalse(pending.isRecorded());
+        assertFalse(pending.getSample().isOverdue(sampleDate.plusDays(14)));
+        assertTrue(pending.getSample().isOverdue(sampleDate.plusDays(15)));
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("negative", null, "", "")));
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("negative", sampleDate.minusDays(1), "", "")));
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("negative", today.plusDays(1), "", "")));
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("positive", today.minusDays(1), "yes", "positive")));
+        assertEquals("1", column(IS_CLOSED));
+        assertEquals(today.toString(), column(MAMA_TAREHE_YA_KUFUNGWA));
+        Entry recorded = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        assertNotNull(recorded);
+        assertTrue(recorded.isRecorded());
+        assertFalse(recorded.isCorrected());
+        assertNull(MotherMentorMotherResultEvent.editable(db, "mother", recorded.getId(), today.plusDays(1)));
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
+                new Answers("negative", today, "yes", "positive")));
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
+                new Answers("positive", today, "yes", "positive")));
+        assertEquals("0", column(IS_CLOSED));
+        assertEquals(1, count("visits"));
+        assertEquals(1, count("event"));
+        Entry corrected = MotherMentorMotherResultEvent.history(db, "mother", today).get(0);
+        assertTrue(corrected.isCorrected());
+        assertEquals(recorded.getId(), corrected.getId());
+        assertEquals("negative", corrected.getAnswers().getResult());
+        assertEquals(today, corrected.getAnswers().getReceivedDate());
+        assertEquals("", corrected.getAnswers().getConfirmationResult());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
+        assertEquals(1, MotherMentorMotherResultEvent.history(db, "mother", today.plusDays(1)).size());
+    }
+
+    @Test
+    public void aNegativeConfirmationResolvesFollowUpWithoutChangingTheOriginalPositiveResult() throws Exception {
+        LocalDate today = LocalDate.now();
+        setupPendingProfileTest(today.minusDays(2));
+        stubResultEventWrites();
+
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        String id = pending.getId();
+        assertFalse(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("positive", today, "yes", "")));
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", id, 0,
+                new Answers("positive", today, "no", "")));
+        assertEquals("0", column(IS_CLOSED));
+        Entry confirmation = MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).get(0);
+        assertTrue(confirmation.getSample().isAwaitingConfirmation());
+        assertNotEquals(id, confirmation.getId());
+
+        Entry recorded = MotherMentorMotherResultEvent.history(db, "mother", today).get(0);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", recorded.getId(), recorded.getRevision(),
+                new Answers("positive", today, "yes", "negative")));
+        MotherMentorMotherChildRepository.State state =
+                MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals("positive", state.getTests().get(Stage.SIX_WEEKS).getResult());
+        assertFalse(state.getTests().get(Stage.SIX_WEEKS).requiresFollowUp());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
+    }
+
+    @Test
+    public void separateConfirmationKeepsItsOwnDatesAndDoesNotReplaceScreeningInHistory() throws Exception {
+        LocalDate today = LocalDate.now();
+        LocalDate sampleDate = today.minusDays(3);
+        LocalDate screeningReceipt = today.minusDays(2);
+        setupPendingProfileTest(sampleDate);
+        stubResultEventWrites();
+
+        Entry pending = MotherMentorMotherResultEvent.visible(db, "mother", today).get(0);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", pending.getId(), pending.getRevision(),
+                new Answers("positive", screeningReceipt, "no", "")));
+
+        List<Entry> queue = MotherMentorMotherResultEvent.visible(db, "mother", today);
+        assertEquals(2, queue.size());
+        Entry confirmation = queue.get(0);
+        Entry screening = queue.get(1);
+        assertTrue(confirmation.getSample().isAwaitingConfirmation());
+        assertFalse(confirmation.isRecorded());
+        assertTrue(screening.isRecorded());
+        assertEquals(screeningReceipt, screening.getAnswers().getReceivedDate());
+        assertEquals(screening.getId(),
+                MotherMentorMotherResultEvent.editable(db, "mother", screening.getId(), today).getId());
+
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", confirmation.getId(), confirmation.getRevision(),
+                new Answers("positive", today, "", "")));
+        assertEquals("1", column(IS_CLOSED));
+        List<Entry> history = MotherMentorMotherResultEvent.history(db, "mother", today);
+        assertEquals(2, history.size());
+        Entry savedConfirmation = history.get(1);
+        assertNotEquals(screening.getId(), savedConfirmation.getId());
+        assertEquals(sampleDate, savedConfirmation.getSample().getTestDate());
+        assertEquals(today, savedConfirmation.getRecordedDate());
+        assertEquals(today, savedConfirmation.getAnswers().getReceivedDate());
+        assertEquals(2, MotherMentorMotherResultEvent.visible(db, "mother", today).size());
+
+        LocalDate correctedReceipt = today.minusDays(1);
+        assertTrue(MotherMentorMotherResultEvent.save(db, "mother", savedConfirmation.getId(),
+                savedConfirmation.getRevision(), new Answers("negative", correctedReceipt, "", "")));
+        assertEquals("0", column(IS_CLOSED));
+        assertEquals(1, count("visits"));
+        assertEquals(2, count("event"));
+        List<Entry> nextDay = MotherMentorMotherResultEvent.history(db, "mother", today.plusDays(1));
+        assertEquals(2, nextDay.size());
+        assertEquals(screening.getId(), nextDay.get(0).getId());
+        assertEquals(sampleDate, nextDay.get(0).getSample().getTestDate());
+        assertEquals(screeningReceipt, nextDay.get(0).getAnswers().getReceivedDate());
+        assertEquals("positive", nextDay.get(0).getAnswers().getResult());
+        assertFalse(nextDay.get(0).isCorrected());
+        Entry corrected = nextDay.get(1);
+        assertEquals(savedConfirmation.getId(), corrected.getId());
+        assertEquals(savedConfirmation.getRecordedAt(), corrected.getRecordedAt());
+        assertEquals(correctedReceipt, corrected.getAnswers().getReceivedDate());
+        assertEquals("negative", corrected.getAnswers().getResult());
+        assertTrue(corrected.isCorrected());
+        assertTrue(MotherMentorMotherResultEvent.visible(db, "mother", today.plusDays(1)).isEmpty());
+    }
+
+    @Test
+    public void aVisitThatClosedChildFollowUpIsEligibleForCorrectionOnlyOnTheVisitDate() throws Exception {
+        LocalDate today = LocalDate.now();
+        String episode = setupPostpartumEnrollment(today.minusMonths(2));
+        Map<String, String> answers = MotherMentorMotherChildUtilsTest.child(today.minusMonths(2));
+        answers.put(MAMA_CHILD_STATUS, "deceased");
+        answers.put(MAMA_TAREHE_MTOTO_ALIFARIKI, today.toString());
+        visit("closing", "closing-source", episode, today.toString(), 1, true, answers);
+        MotherMentorMotherClosureRepository.upgrade(db);
+        assertEquals(MotherMentorMotherClosure.CHILD_DECEASED, column(MAMA_STATUS));
+
+        Visit closing = new FixtureVisits().getVisitByVisitId("closing");
+        assertTrue(MotherMentorMotherClosureRepository.isSameDayClosingVisit(db, closing, today));
+        assertFalse(MotherMentorMotherClosureRepository.isSameDayClosingVisit(db, closing, today.plusDays(1)));
+        answers.put(MAMA_CHILD_STATUS, "alive");
+        answers.put(MAMA_HEI_TEST_DONE, "no");
+        answers.remove(MAMA_TAREHE_MTOTO_ALIFARIKI);
+        data.delete("visits", "visit_id = ?", new String[] {"closing"});
+        visit("closing", "closing-source", episode, today.toString(), 2, true, answers);
+        MotherMentorMotherClosureRepository.rebuild(db, "mother");
+        assertEquals("0", column(IS_CLOSED));
+        assertEquals(1, count("visits"));
+    }
+
+    private void setupPendingProfileTest(LocalDate sampleDate) throws Exception {
+        LocalDate dob = sampleDate.minusWeeks(6);
+        String episode = setupPostpartumEnrollment(dob);
+        Map<String, String> pending = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", sampleDate);
+        pending.put(MAMA_TAREHE_KUJIFUNGUA, dob.toString());
+        visit("sample", "sample-source", episode, sampleDate.toString(), 1, true, pending);
+        MotherMentorMotherClosureRepository.upgrade(db);
+    }
+
+    private String setupPostpartumEnrollment(LocalDate dob) {
+        data.delete("event", null, null);
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'breast_feeding', "
+                + "child_dob = ?, event_date = ?, enrollment_date = ?",
+                new Object[] {dob.toString(), dob.plusDays(1).toString(), dob.plusDays(1).toString()});
+        return MotherMentorMotherVisitDao.getContext(db, "mother").getEnrollmentId();
+    }
+
+    private void stubResultEventWrites() {
+        MotherMentorLibrary library = MotherMentorLibrary.getInstance();
+        org.smartregister.Context context = mock(org.smartregister.Context.class);
+        ECSyncHelper sync = mock(ECSyncHelper.class);
+        when(library.context()).thenReturn(context);
+        when(context.allSharedPreferences()).thenReturn(mock(AllSharedPreferences.class));
+        when(library.getEcSyncHelper()).thenReturn(sync);
+        doAnswer(call -> {
+            JSONObject event = call.getArgument(1);
+            String id = event.getString("formSubmissionId");
+            data.delete("event", "formSubmissionId = ?", new String[] {id});
+            data.execSQL("INSERT INTO event VALUES (?,?,?,?,?)", new Object[] {
+                    call.getArgument(0), event.getString("eventType"), event.getString("eventDate"), id,
+                    event.toString()});
+            return null;
+        }).when(sync).addEvent(eq("mother"), any(JSONObject.class), eq(BaseRepository.TYPE_Unsynced));
+    }
+
     private final class FixtureVisits extends VisitRepository {
         @Override
         public net.zetetic.database.sqlcipher.SQLiteDatabase getReadableDatabase() {
@@ -242,12 +493,17 @@ public class MotherMentorMotherClosureLifecycleTest {
     }
     private void visit(String id, String source, String episode, String date, int version,
             boolean processed, Map<String, String> values) throws Exception {
+        visit(id, source, episode, date, version, processed, values, date + "T14:00:00.000+03:00");
+    }
+
+    private void visit(String id, String source, String episode, String date, int version,
+            boolean processed, Map<String, String> values, String eventTime) throws Exception {
         Map<String, String> all = new HashMap<>(values);
         all.put(MAMA_ENROLLMENT_ID, episode);
         all.put(MOTHERMENTOR_VISIT_DATE, date);
         JSONObject event = new JSONObject()
                 .put("formSubmissionId", source)
-                .put("eventDate", date + "T14:00:00.000+03:00")
+                .put("eventDate", eventTime)
                 .put("version", version)
                 .put("obs", obs(all));
         data.execSQL(

@@ -130,6 +130,11 @@ public class MotherMentorMotherChildRepositoryTest {
         LocalDate confirmationDay = day.plusDays(3);
         assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
         confirmation.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, dob.minusDays(1).toString());
+        assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, confirmationDay.plusDays(1).toString());
+        assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_RESULT_RECEIVED_DATE, confirmationDay.toString());
         assertTrue(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
         resultEvent("confirm", "first-source", day.plusDays(3), null, "awaiting_confirm", "negative");
         pending = MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(3));

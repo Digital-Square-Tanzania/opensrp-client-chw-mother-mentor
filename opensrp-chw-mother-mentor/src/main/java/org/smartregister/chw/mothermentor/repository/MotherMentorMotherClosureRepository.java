@@ -143,6 +143,10 @@ public final class MotherMentorMotherClosureRepository {
                 ? allChildrenFinished(db, motherId, context, children, child, evidence, excludedVisitId, preview)
                 : linkedChildEnding(db, motherId, context, child.getChildBaseEntityId(), child, excludedVisitId);
         if (childEnding != null) evidence.add(childEnding);
+        if (!multiple && childEnding != null && "~linked-child".equals(childEnding.id)
+                && child.getTerminalResultTime() > 0) {
+            evidence.add(motherTestEnding(child));
+        }
         if (includeIit && replayIit) {
             MotherMentorIitState iit = MotherMentorIitRepository.ownClosure(db, motherId);
             LocalDate iitDate = MotherMentorMotherPregnancyUtils.parseDate(iit.getClosedDate());
@@ -200,9 +204,17 @@ public final class MotherMentorMotherClosureRepository {
             }
             if (clinical == null) clinical = tracing.getClinicalState();
         }
+        if (clinical != null && clinical.getTerminalResultTime() > 0) {
+            return motherTestEnding(clinical);
+        }
         VisitOutcome outcome = clinical == null ? null : childOutcome(clinical.getTerminalOutcome());
         return outcome != null && duringEpisode(context, clinical.getTerminalServiceDate())
                 ? new Evidence("~linked-child", outcome, clinical.getTerminalServiceDate(), "") : null;
+    }
+
+    private static Evidence motherTestEnding(MotherMentorMotherChildRepository.State clinical) {
+        return new Evidence("~mama-test-result", VisitOutcome.CHILD_CONFIRMED_POSITIVE,
+                clinical.getTerminalServiceDate(), clinical.getTerminalResultTime(), "", "");
     }
 
     private static Evidence allChildrenFinished(SQLiteDatabase db, String motherId,
@@ -375,6 +387,30 @@ public final class MotherMentorMotherClosureRepository {
     public static boolean isClosed(SQLiteDatabase db, String motherId) {
         return "1".equals(value(enrollment(db, motherId), IS_CLOSED))
                 || !sharedDeath(db, motherId).isEmpty() || getState(db, motherId, null).isClosed();
+    }
+
+    /** Only an editable child outcome in the same-day, current, finalized visit can bypass closure. */
+    public static boolean isSameDayClosingVisit(SQLiteDatabase db, Visit visit, LocalDate today) {
+        if (visit == null || !Boolean.TRUE.equals(visit.getProcessed())
+                || !Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES.equals(visit.getVisitType())
+                || !today.equals(MotherMentorMotherVisitDao.getServiceDate(visit))
+                || !MotherMentorMotherVisitDao.belongsToCurrentEnrollment(db,
+                        visit.getBaseEntityId(), visit.getJson())) return false;
+
+        MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, visit.getBaseEntityId());
+        Map<String, String> answers = MotherMentorVisitCompletion.observationValues(
+                MotherMentorChildEidDao.json(visit).optJSONArray("obs"));
+        answers.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, context.getEnrollmentPregnancyStatus());
+        answers.put(MAMA_ENROLLMENT_CHILD_DOB, context.getEnrollmentChildDob());
+        VisitOutcome outcome = classify(answers, today);
+        if (outcome != VisitOutcome.STILLBIRTH && outcome != VisitOutcome.CHILD_DECEASED
+                && outcome != VisitOutcome.CHILD_CONFIRMED_POSITIVE && outcome != VisitOutcome.GRADUATED) {
+            return false;
+        }
+        MotherMentorMotherClosure closure = getState(db, visit.getBaseEntityId(), null);
+        return today.toString().equals(closure.getClosedDate())
+                && closure.getStatus().equals(MotherMentorMotherClosure.active()
+                        .advance(outcome, today.toString()).getStatus());
     }
 
     /** An already-open linked follow-up must also respect a finalized mother cascade. */

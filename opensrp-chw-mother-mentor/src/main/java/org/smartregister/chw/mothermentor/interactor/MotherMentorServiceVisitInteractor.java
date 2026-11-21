@@ -1,5 +1,9 @@
 package org.smartregister.chw.mothermentor.interactor;
 
+import com.google.gson.JsonParseException;
+
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.joda.time.LocalDate;
@@ -14,6 +18,8 @@ import org.smartregister.chw.mothermentor.actionhelper.MotherMentorReferralProvi
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorVisitChildActionHelper;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorVisitTypeActionHelper;
 import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract;
+import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
+import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
@@ -22,9 +28,11 @@ import org.smartregister.chw.mothermentor.repository.MotherMentorMotherClosureRe
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOutcome;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.clientandeventmodel.Obs;
@@ -61,22 +69,37 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     private BaseMotherMentorVisitAction entryAction;
     private BaseMotherMentorVisitAction childAction;
     private MotherMentorVisitChildActionHelper childHelper;
+    private final String historyVisitId;
+    private Visit editing;
 
     public MotherMentorServiceVisitInteractor(String visitType) {
+        this(visitType, null);
+    }
+
+    public MotherMentorServiceVisitInteractor(String visitType, String historyVisitId) {
         super(visitType);
+        this.historyVisitId = historyVisitId;
+    }
+
+    @Override
+    public MemberObject getMemberClient(String memberId, String profileType) {
+        return historyVisitId == null ? super.getMemberClient(memberId, profileType)
+                : MotherMentorDao.getPrimaryMemberForHistory(memberId);
     }
 
     @Override
     protected void getDetailsOnEdit(BaseMotherMentorVisitContract.View view, MemberObject member) {
         memberObject = member;
         details = null;
+        editing = null;
         serviceDate = new Date();
         enrollmentContext = loadMotherContext(member == null ? null : member.getBaseEntityId());
         visitEnrollmentId = enrollmentContext.getEnrollmentId();
         originalPregnancyStatus = enrollmentContext.getEnrollmentPregnancyStatus();
         if (!Boolean.TRUE.equals(view.getEditMode()) || member == null) return;
         Visit visit = loadEditingVisit(member.getBaseEntityId());
-        if (visit == null) return;
+        if (visit == null || (historyVisitId != null && !historyVisitId.equals(visit.getVisitId()))) return;
+        editing = visit;
         details = VisitUtils.getVisitGroups(
                 MotherMentorLibrary.getInstance().visitDetailsRepository().getVisits(
                         visit.getVisitId()));
@@ -116,7 +139,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
 
     @Override
     protected boolean shouldSubmitOnSave() {
-        if (super.shouldSubmitOnSave()) return true;
+        if (editingFinalizedVisit() || super.shouldSubmitOnSave()) return true;
         if (memberObject == null || serviceDate == null) return false;
         LocalDate day = LocalDate.fromDateFields(serviceDate);
         Map<String, String> values = clinicalValues();
@@ -203,6 +226,76 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             }
         }
         super.submitVisit(editMode, memberID, visible, callBack);
+    }
+
+    @Override
+    protected String submitVisit(boolean editMode, String memberId,
+            Map<String, BaseMotherMentorVisitAction> actions, String parentEventType) throws Exception {
+        if (!editMode) return super.submitVisit(false, memberId, actions, parentEventType);
+        SQLiteDatabase db = MotherMentorLibrary.getInstance().getRepository().getWritableDatabase();
+        String saved;
+        db.beginTransaction();
+        try {
+            Visit latest = loadEditingVisit(memberId);
+            if (editing == null || latest == null || !editing.getVisitId().equals(latest.getVisitId())
+                    || !StringUtils.equals(editing.getJson(), latest.getJson())) return null;
+            if (MotherMentorMotherClosureRepository.isClosed(db, memberId)
+                    && (historyVisitId == null || !MotherMentorMotherClosureRepository
+                            .isSameDayClosingVisit(db, latest, LocalDate.now()))) return null;
+            saved = super.submitVisit(true, memberId, actions, parentEventType);
+            if (saved == null) return null;
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        if (editingFinalizedVisit()) {
+            try {
+                NCUtils.startClientProcessing();
+            } catch (Exception error) {
+                Timber.w(error, "The corrected Mama Kadi visit will be processed on the next sync");
+            }
+        }
+        return saved;
+    }
+
+    private boolean editingFinalizedVisit() {
+        return editing != null && Boolean.TRUE.equals(editing.getProcessed());
+    }
+
+    @Override
+    protected void processSavedVisit(Visit visit) throws Exception {
+        if (!editingFinalizedVisit()) {
+            super.processSavedVisit(visit);
+            return;
+        }
+        VisitUtils.persistVisitEvents(Collections.singletonList(visit), visitRepository());
+        SQLiteDatabase db = MotherMentorLibrary.getInstance().getRepository().getWritableDatabase();
+        JSONObject stored = MotherMentorChildEidDao.storedEvent(db, visit.getBaseEntityId(),
+                visit.getVisitType(), visit.getFormSubmissionId());
+        Visit updated = visitRepository().getVisitByVisitId(visit.getVisitId());
+        if (updated == null || !Boolean.TRUE.equals(updated.getProcessed()) || stored == null
+                || stored.optLong("version") != MotherMentorChildEidDao.json(visit).optLong("version")) {
+            throw new IllegalStateException("Unable to persist the corrected Mama Kadi visit");
+        }
+    }
+
+    @Override
+    protected void assignVisitSource(Event event, Visit editedVisit) {
+        if (editedVisit == null || StringUtils.isBlank(editedVisit.getFormSubmissionId())) {
+            super.assignVisitSource(event, editedVisit);
+            return;
+        }
+        event.setFormSubmissionId(editedVisit.getFormSubmissionId());
+        event.setEventId(editedVisit.getEventId());
+        try {
+            Event previous = JsonFormUtils.gson.fromJson(editedVisit.getJson(), Event.class);
+            if (previous == null) return;
+            if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
+            if (StringUtils.isBlank(event.getEventId())) event.setEventId(previous.getEventId());
+            event.setVersion(Math.max(event.getVersion(), previous.getVersion() + 1));
+        } catch (JsonParseException invalid) {
+            Timber.w(invalid, "Unable to restore the original Mama Kadi visit metadata");
+        }
     }
 
     @Override

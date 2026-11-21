@@ -27,6 +27,17 @@ public final class MotherMentorChildEidResultForm {
         JSONObject receipt = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE);
         receipt.put("min_date", sampleDate.toString("dd-MM-yyyy"));
 
+        if (MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(state)) {
+            JSONObject step = form.getJSONObject("step1");
+            JSONArray fields = step.getJSONArray("fields");
+            JSONArray ordered = new JSONArray();
+            for (int index = 0; index < fields.length(); index++) {
+                JSONObject field = fields.getJSONObject(index);
+                if (field != receipt) ordered.put(field);
+            }
+            step.put("fields", ordered.put(receipt));
+        }
+
         if (MotherMentorHeiSchedule.Stage.fromCode(stageCode)
                 == MotherMentorHeiSchedule.Stage.EIGHTEEN_MONTHS) {
             JSONArray options = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MTOTO_CONFIRMATORY_RESULT)
@@ -42,7 +53,11 @@ public final class MotherMentorChildEidResultForm {
 
     public static int receiptDateError(Map<String, String> answers, LocalDate sampleDate) {
         if (MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(
-                answers.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) return 0;
+                answers.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE))) {
+            String result = answers.get(DBConstants.KEY.MTOTO_CONFIRMATORY_RESULT);
+            if (!"yes".equals(answers.get(DBConstants.KEY.MTOTO_CONFIRMATORY_TEST_DONE))
+                    || !("positive".equals(result) || "negative".equals(result))) return 0;
+        }
         return receiptDateError(answers.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE), sampleDate, LocalDate.now());
     }
 

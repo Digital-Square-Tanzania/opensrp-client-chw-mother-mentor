@@ -176,6 +176,8 @@ public final class MotherMentorMotherChildRepository {
             seedLegacyTest(state, enrollment, null);
         }
         evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
+        Set<String> replayedMotherVisits = new HashSet<>();
+        Map<String, List<Evidence>> deferredResults = new LinkedHashMap<>();
         for (Evidence item : evidence) {
             if (item.enrollmentSample) {
                 if (context.getEnrollmentTime() == 0
@@ -196,9 +198,23 @@ public final class MotherMentorMotherChildRepository {
                 state.knownPerformed.putAll(past.tests);
             } else if (item.child) applyChild(state, item.values, item.date);
             else if (MotherMentorMotherResultEvent.EVENT_TYPE.equals(item.visit.getVisitType())) {
-                applyMotherResult(state, item.values, item.date);
+                String source = MotherMentorMotherResultEvent.sampleSource(item.values);
+                if (replayedMotherVisits.contains(source)) {
+                    applyMotherResult(state, item);
+                } else if (StringUtils.isNotBlank(source)) {
+                    // A legacy visit timestamp can sort after a result recorded from that visit.
+                    deferredResults.computeIfAbsent(source, ignored -> new ArrayList<>()).add(item);
+                }
             } else {
-                applyMother(state, item.values, item.date, MotherMentorChildEidDao.sourceIdentity(item.visit));
+                String source = MotherMentorChildEidDao.sourceIdentity(item.visit);
+                applyMother(state, item.values, item.date, source);
+                replayedMotherVisits.add(source);
+                List<Evidence> waiting = deferredResults.remove(source);
+                if (waiting != null) {
+                    for (Evidence result : waiting) {
+                        if (item.date.equals(result.date)) applyMotherResult(state, result);
+                    }
+                }
             }
         }
         return state;
@@ -425,16 +441,23 @@ public final class MotherMentorMotherChildRepository {
         state.trackMotherTest(Stage.AT_BIRTH, null, sourceId);
     }
 
-    private static void applyMotherResult(State state, Map<String, String> values, LocalDate day) {
+    private static void applyMotherResult(State state, Evidence item) {
+        Map<String, String> values = item.values;
+        LocalDate day = item.date;
         Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_PENDING_TEST));
         MotherMentorMotherResultEvent.PendingTest pending = state.pendingMotherTest(stage);
         if (pending == null || !pending.matches(values)) return;
         MotherMentorMotherResultEvent.Outcome result = MotherMentorMotherResultEvent.evaluate(pending, values, day);
         if (result == null) return;
+        MotherMentorMotherResultEvent.Entry entry = MotherMentorMotherResultEvent.readEntry(item.visit, pending, values, day);
+        state.resultHistory.add(entry);
+        if (state.terminalDate != null) return;
+        boolean confirmed = "positive".equals(result.confirmation);
         LocalDate received = pending.isAwaitingConfirmation() ? state.tests.get(stage).getReceivedDate()
-                : MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MTOTO_RESULT_RECEIVED_DATE));
-        record(state, stage, result.result, pending.getTestDate(), "positive".equals(result.confirmation), day,
+                : entry.getAnswers().getReceivedDate();
+        record(state, stage, result.result, pending.getTestDate(), confirmed, day,
                 "negative".equals(result.confirmation), received);
+        if (confirmed) state.terminalResultTime = entry.getRecordedAt();
     }
 
     private static void applyChild(State state, Map<String, String> values, LocalDate date) {
@@ -595,6 +618,8 @@ public final class MotherMentorMotherChildRepository {
         private final Map<Stage, TestRecord> knownPerformed = new LinkedHashMap<>();
         private MotherMentorMotherChildUtils.TerminalOutcome terminal = MotherMentorMotherChildUtils.TerminalOutcome.NONE;
         private LocalDate terminalDate;
+        private long terminalResultTime;
+        private final List<MotherMentorMotherResultEvent.Entry> resultHistory = new ArrayList<>();
 
         public State(LocalDate childDob) { this.childDob = childDob; this.enrollmentChildDob = childDob; }
         public LocalDate getChildDob() { return childDob; }
@@ -616,6 +641,10 @@ public final class MotherMentorMotherChildRepository {
         }
         public MotherMentorMotherChildUtils.TerminalOutcome getTerminalOutcome() { return terminal; }
         public LocalDate getTerminalServiceDate() { return terminalDate; }
+        long getTerminalResultTime() { return terminalResultTime; }
+        List<MotherMentorMotherResultEvent.Entry> testResultHistory() {
+            return Collections.unmodifiableList(resultHistory);
+        }
         public boolean hasConfirmedPositive() {
             for (TestRecord test : tests.values()) if ("positive".equals(test.getResult()) && test.isConfirmed()) return true;
             return false;
@@ -626,6 +655,7 @@ public final class MotherMentorMotherChildRepository {
         }
 
         public List<MotherMentorMotherResultEvent.PendingTest> getPendingMotherTests() {
+            if (terminalDate != null) return Collections.emptyList();
             List<MotherMentorMotherResultEvent.PendingTest> result = new ArrayList<>();
             for (Stage stage : Stage.values()) {
                 if (tracingExcludedTests.contains(stage)) continue;
