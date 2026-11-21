@@ -54,6 +54,14 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
                 MotherMentorMotherChildUtils.put(form, answer.getKey(), answer.getValue());
             }
         }
+        String legacyConfirmation = answers.get(HEI_CHANYA_IMETHIBITISHWA);
+        if (!answers.containsKey(MAMA_HEI_CONFIRMATORY_TEST_DONE)
+                && "positive".equals(answers.get(MAMA_HEI_TEST_RESULT))
+                && ("yes".equals(legacyConfirmation) || "no".equals(legacyConfirmation))) {
+            MotherMentorMotherChildUtils.put(form, MAMA_HEI_CONFIRMATORY_TEST_DONE, legacyConfirmation);
+            MotherMentorMotherChildUtils.put(form, MAMA_HEI_CONFIRMATORY_RESULT,
+                    "yes".equals(legacyConfirmation) ? "positive" : "");
+        }
         if (MotherMentorDeliveryChildren.validSex(child.getSex())) {
             JSONObject sex = MotherMentorMotherChildUtils.field(form, MotherMentorDeliveryChildren.SEX);
             sex.put("type", "hidden").put("value", child.getSex());

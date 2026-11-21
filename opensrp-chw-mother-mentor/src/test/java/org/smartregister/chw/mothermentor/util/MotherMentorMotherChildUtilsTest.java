@@ -80,6 +80,54 @@ public class MotherMentorMotherChildUtilsTest {
     }
 
     @Test
+    public void requiresBothConfirmationAnswersAndExcludesPendingAtEighteenMonths() {
+        LocalDate day = dob.plusMonths(19);
+        Map<String, String> values = test("eighteen_months", "pending", dob.plusMonths(18));
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_HEI_TEST_RESULT, "positive");
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "yes");
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_HEI_CONFIRMATORY_RESULT, "pending");
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        assertTrue(MotherMentorMotherChildUtils.isComplete(values, day));
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE,
+                MotherMentorMotherChildUtils.terminalOutcome(values, day));
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "yes");
+        values.put(MAMA_HEI_CONFIRMATORY_RESULT, "negative");
+        assertTrue(MotherMentorMotherChildUtils.isComplete(values, day));
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE,
+                MotherMentorMotherChildUtils.terminalOutcome(values, day));
+        values.put(MAMA_HEI_CONFIRMATORY_RESULT, "positive");
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE,
+                MotherMentorMotherChildUtils.terminalOutcome(values, day));
+    }
+
+    @Test
+    public void birthTestOnlyEndsFollowUpWithAnExplicitPositiveConfirmation() {
+        LocalDate day = dob.plusDays(6);
+        Map<String, String> values = child(dob);
+        values.put(ATTENDANCE_TYPE, "new");
+        values.put(MAMA_FIRST_VISIT_ASSESSMENT, "true");
+        values.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        values.put(MAMA_BIRTH_TEST_DONE, "yes");
+        values.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        values.put(MAMA_BIRTH_TEST_RECEIVED_DATE, day.toString());
+        values.put(MAMA_BIRTH_TEST_RESULT, "positive");
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_BIRTH_TEST_CONFIRMATION_DONE, "yes");
+        assertFalse(MotherMentorMotherChildUtils.isComplete(values, day));
+        values.put(MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "pending");
+        assertTrue(MotherMentorMotherChildUtils.isComplete(values, day));
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.NONE,
+                MotherMentorMotherChildUtils.terminalOutcome(values, day));
+        values.put(MAMA_BIRTH_TEST_CONFIRMATION_RESULT, "positive");
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE,
+                MotherMentorMotherChildUtils.terminalOutcome(values, day));
+    }
+
+    @Test
     public void childDeathNeedsAValidDateAndDoesNotRequireTheHiddenTestBranch() {
         Map<String, String> values = child(dob);
         values.put(MAMA_CHILD_STATUS, "deceased"); values.remove(MAMA_BREASTFEEDING_STATUS);

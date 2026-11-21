@@ -27,7 +27,7 @@ public class MotherMentorMotherChildFormTest {
                 JSONObject form = new JSONObject(scanner.useDelimiter("\\A").next());
                 for (String key : new String[] {"mama_child_status", "mama_breastfeeding_status",
                         "mama_hei_test_done", "mama_hei_test_type", "mama_hei_test_result",
-                        "hei_chanya_imethibitishwa"}) {
+                        "mama_hei_confirmatory_test_done", "mama_hei_confirmatory_result"}) {
                     assertEquals(directory + ":" + key, key, FormUtils.getFieldFromForm(form, key).optString("key"));
                 }
             }

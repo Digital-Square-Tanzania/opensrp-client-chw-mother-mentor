@@ -70,13 +70,8 @@ public final class MotherMentorMotherBirthTest {
         if (!"true".equals(values.get(MAMA_BIRTH_TEST_WORKFLOW))) {
             return Arrays.asList("yes", "no").contains(values.get(MAMA_BIRTH_TEST_CONFIRMED));
         }
-        return validConfirmation(values.get(MAMA_BIRTH_TEST_CONFIRMATION_DONE),
-                values.get(MAMA_BIRTH_TEST_CONFIRMATION_RESULT));
-    }
-
-    public static boolean validConfirmation(String done, String result) {
-        return "no".equals(done) || ("yes".equals(done)
-                && Arrays.asList("negative", "positive", "pending").contains(result));
+        return MotherMentorHeiConfirmation.resolve(Stage.AT_BIRTH, values.get(MAMA_BIRTH_TEST_CONFIRMATION_DONE),
+                values.get(MAMA_BIRTH_TEST_CONFIRMATION_RESULT)) != null;
     }
 
     /** A null confirmation result means that the confirmatory result still needs follow-up. */

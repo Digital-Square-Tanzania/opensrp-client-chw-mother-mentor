@@ -729,26 +729,68 @@
         }
       },
       {
-        "key": "hei_chanya_imethibitishwa",
-        "type": "native_radio",
+        "key": "mama_hei_confirmatory_test_done",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
-        "openmrs_entity_id": "hei_chanya_imethibitishwa",
-        "label": "Majibu ya uthibitisho yamepatikana?",
+        "openmrs_entity_id": "mama_hei_confirmatory_test_done",
+        "label": "Kipimo cha uthibitisho kimefanyika?",
+        "type": "native_radio",
         "options": [
           {
             "key": "yes",
             "text": "Ndiyo",
+            "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "yes",
-            "openmrs_entity_parent": ""
+            "openmrs_entity_id": "yes"
           },
           {
             "key": "no",
             "text": "Hapana",
+            "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
-            "openmrs_entity_id": "no",
-            "openmrs_entity_parent": ""
+            "openmrs_entity_id": "no"
+          }
+        ],
+        "v_required": {
+          "value": true,
+          "err": "Tafadhali jaza sehemu hii"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_child_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "mama_hei_confirmatory_result",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_hei_confirmatory_result",
+        "label": "Majibu ya kipimo cha uthibitisho",
+        "type": "native_radio",
+        "options": [
+          {
+            "key": "negative",
+            "text": "Hasi",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "negative"
+          },
+          {
+            "key": "positive",
+            "text": "Chanya",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "positive"
+          },
+          {
+            "key": "pending",
+            "text": "Inasubiri majibu",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "pending"
           }
         ],
         "v_required": {

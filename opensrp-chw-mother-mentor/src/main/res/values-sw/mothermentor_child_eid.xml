@@ -11,4 +11,5 @@
     <string name="mothermentor_child_eid_eligibility">Mtoto lazima awe na umri chini ya miezi 18 na tarehe ya kuzaliwa inayojulikana.</string>
     <string name="mothermentor_child_eid_age_error">Weka tarehe ya kuzaliwa ya mtoto mwenye umri chini ya miezi 18</string>
     <string name="mothermentor_child_eid_enrollment_unavailable">Usajili wa mtoto wa ufuatiliaji wa ukusanyaji wa DBS unahitaji mtoto mwenye umri chini ya miezi 18, tarehe ya kuzaliwa inayojulikana, na ambaye hajasajiliwa tayari.</string>
+    <string name="mothermentor_eid_exit_mother_continues">Kadi ya Mama inaendelea kwa ajili ya mtoto/watoto wengine.</string>
 </resources>

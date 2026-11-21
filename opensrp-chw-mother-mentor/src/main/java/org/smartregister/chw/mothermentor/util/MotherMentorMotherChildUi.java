@@ -100,7 +100,6 @@ public final class MotherMentorMotherChildUi {
                     set(form, root, MAMA_HEI_TEST_RESULT, entry.getValue().getResult());
                     LocalDate received = entry.getValue().getReceivedDate();
                     set(form, root, MAMA_HEI_TEST_RECEIVED_DATE, received == null ? "" : received.toString("dd-MM-yyyy"));
-                    if ("positive".equals(entry.getValue().getResult())) set(form, root, DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA, "no");
                     break;
                 }
                 values = MotherMentorMotherChildUtils.values(form);
@@ -126,6 +125,17 @@ public final class MotherMentorMotherChildUi {
             String canonical = "yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))
                     ? (due.size() == 1 ? due.get(0).getCode() : choice == null ? "" : choice.getCode()) : "";
             set(form, root, DBConstants.KEY.MAMA_HEI_TEST_TYPE, canonical);
+            boolean finalStage = Stage.EIGHTEEN_MONTHS.getCode().equals(canonical);
+            for (String key : Arrays.asList(MAMA_HEI_TEST_RESULT, MAMA_HEI_CONFIRMATORY_RESULT)) {
+                if (finalStage && "pending".equals(values.get(key))) set(form, root, key, "");
+                for (View view : controls(root, key)) {
+                    if (view instanceof RadioButton
+                            && "pending".equals(view.getTag(com.vijay.jsonwizard.R.id.childKey))) {
+                        MotherMentorChildEidHeiUi.showOption((RadioButton) view, !finalStage);
+                    }
+                }
+            }
+            values = MotherMentorMotherChildUtils.values(form);
             if (path) {
                 updateReceiptDate(activity, form, root, MAMA_HEI_TEST_RECEIVED_DATE,
                         values.get(MAMA_HEI_TEST_RESULT), values.get(MAMA_HEI_TEST_DATE), assessment);
@@ -161,7 +171,11 @@ public final class MotherMentorMotherChildUi {
                 || changed(now, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE)) {
             clearTests(form, root, false);
         } else if (changed(now, MAMA_HEI_TEST_RESULT)) {
-            clear(form, root, Arrays.asList(DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+            set(form, root, MAMA_HEI_CONFIRMATORY_TEST_DONE, "");
+            set(form, root, MAMA_HEI_CONFIRMATORY_RESULT, "");
+        } else if (changed(now, MAMA_HEI_CONFIRMATORY_TEST_DONE)
+                && !"yes".equals(now.get(MAMA_HEI_CONFIRMATORY_TEST_DONE))) {
+            set(form, root, MAMA_HEI_CONFIRMATORY_RESULT, "");
         }
         if (changed(now, MAMA_BIRTH_TEST_DONE) && !"yes".equals(now.get(MAMA_BIRTH_TEST_DONE))) {
             clear(form, root, MotherMentorMotherBirthTest.dependentAnswers());
@@ -240,7 +254,7 @@ public final class MotherMentorMotherChildUi {
         if (includeDone) set(form, root, DBConstants.KEY.MAMA_HEI_TEST_DONE, "");
         clear(form, root, Arrays.asList(DBConstants.KEY.MAMA_HEI_TEST_TYPE,
                 MAMA_HEI_TEST_DATE, MAMA_HEI_TEST_RESULT, MAMA_HEI_TEST_RECEIVED_DATE,
-                DBConstants.KEY.HEI_CHANYA_IMETHIBITISHWA));
+                MAMA_HEI_CONFIRMATORY_TEST_DONE, MAMA_HEI_CONFIRMATORY_RESULT));
         if (includeDone) set(form, root, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE, "");
     }
 

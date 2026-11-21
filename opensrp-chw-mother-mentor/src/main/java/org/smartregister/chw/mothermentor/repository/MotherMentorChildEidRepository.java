@@ -210,7 +210,41 @@ public final class MotherMentorChildEidRepository {
         state.visits = Collections.unmodifiableList(history);
         state.visitCount = history.size();
         replayReferrals(db, state, day, before);
+        if (before == null && !state.isClosed() && !state.getMotherId().isEmpty()) closeFromMother(db, state);
         return state;
+    }
+
+    private static void closeFromMother(SQLiteDatabase db, State state) {
+        MotherMentorMotherChildRepository.State clinical = state.clinical;
+        MotherMentorChildEidExit ending;
+        Map<String, String> details = Collections.emptyMap();
+        switch (clinical.getTerminalOutcome()) {
+            case CHILD_CONFIRMED_POSITIVE:
+                if (!clinical.isMultipleDelivery() && clinical.getTerminalResultTime() == 0
+                        && !hasSibling(db, state.getMotherId(), clinical.getChildDob())) return;
+                ending = MotherMentorChildEidExit.E4;
+                break;
+            case GRADUATED:
+                if (!clinical.isMultipleDelivery()) return;
+                ending = MotherMentorChildEidExit.E3;
+                break;
+            case CHILD_DECEASED:
+                if (!clinical.isMultipleDelivery()) return;
+                ending = MotherMentorChildEidExit.E5;
+                if (clinical.getChildDeathDate() != null) {
+                    details = Collections.singletonMap(DBConstants.KEY.MAMA_TAREHE_MTOTO_ALIFARIKI,
+                            clinical.getChildDeathDate().toString());
+                }
+                break;
+            default: return;
+        }
+        state.close(ending, clinical.getTerminalServiceDate(), details);
+        state.exitTime = clinical.getTerminalResultTime();
+    }
+
+    private static boolean hasSibling(SQLiteDatabase db, String motherId, LocalDate dob) {
+        MotherMentorMotherVisitDao.Context mother = MotherMentorMotherVisitDao.getContext(db, motherId);
+        return MotherMentorChildEidDao.followedChildren(db, motherId, mother, dob).size() > 1;
     }
 
     private static void seedDirectEnrollment(State state, Map<String, String> original) {
@@ -539,6 +573,18 @@ public final class MotherMentorChildEidRepository {
     public static void rebuildForMother(SQLiteDatabase db, String motherId) {
         if (!MotherMentorChildEidDao.columns(db,
                 Constants.TABLES.MOTHERMENTOR_ENROLL_CHILD_EID).containsAll(COLUMNS)) return;
+        MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(db, motherId);
+        List<MotherMentorMotherChildRepository.State> children =
+                MotherMentorMotherChildRepository.getStates(db, motherId, null, LocalDate.now());
+        if (children.size() > 1) {
+            for (MotherMentorMotherChildRepository.State child : children) {
+                if (!child.getChildBaseEntityId().isEmpty()) rebuild(db, child.getChildBaseEntityId());
+            }
+        } else {
+            for (String childId : MotherMentorChildEidDao.followedChildren(db, motherId, context, children.get(0).getChildDob())) {
+                rebuild(db, childId);
+            }
+        }
         for (EnrollmentPlan latest : enrollmentPlans(db, motherId, true)) {
             ContentValues values = new ContentValues();
             values.put(DBConstants.KEY.MTOTO_MISSED_TEST, latest.getMissedStage().getMetadataCode());

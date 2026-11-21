@@ -19,6 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.smartregister.chw.mothermentor.dao.MotherMentorChildEidDao;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
@@ -26,6 +28,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtilsTest;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -131,6 +134,7 @@ public class MotherMentorMotherChildRepositoryTest {
         confirmation.put(MTOTO_CONFIRMATORY_RESULT, "negative");
         LocalDate confirmationDay = day.plusDays(3);
         assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
+        confirmation.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
         confirmation.put(MTOTO_RESULT_RECEIVED_DATE, dob.minusDays(1).toString());
         assertFalse(MotherMentorMotherResultEvent.isComplete(pending.get(0), confirmation, confirmationDay));
         confirmation.put(MTOTO_RESULT_RECEIVED_DATE, confirmationDay.plusDays(1).toString());
@@ -203,23 +207,282 @@ public class MotherMentorMotherChildRepositoryTest {
 
     private void resultEvent(String id, String source, LocalDate day, String result,
             String phase, String confirmation) throws Exception {
+        resultEvent(id, source, Stage.AT_BIRTH, dob, day, result, phase, confirmation);
+    }
+
+    private void resultEvent(String id, String source, Stage stage, LocalDate sampleDay, LocalDate day,
+            String result, String phase, String confirmation) throws Exception {
         Map<String, String> values = new LinkedHashMap<>();
         values.put(MAMA_ENROLLMENT_ID, "episode-one");
         values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
         values.put("mama_hei_sample_submission_id", source);
-        values.put(MTOTO_PENDING_TEST, "at_birth");
-        values.put(MTOTO_PENDING_TEST_DATE, dob.toString());
+        values.put(MTOTO_PENDING_TEST, stage.getCode());
+        values.put(MTOTO_PENDING_TEST_DATE, sampleDay.toString());
         values.put(MTOTO_RUFAA_STATE_BEFORE, phase);
         if (result != null) {
             values.put(MTOTO_RECEIVED_RESULT, result);
             values.put(MTOTO_RESULT_RECEIVED_DATE, day.toString());
             values.put(MTOTO_CONFIRMATORY_TEST_DONE, "no");
         }
-        if (confirmation != null) values.put(MTOTO_CONFIRMATORY_RESULT, confirmation);
+        if (confirmation != null) {
+            values.put(MTOTO_CONFIRMATORY_TEST_DONE, "yes");
+            values.put(MTOTO_CONFIRMATORY_RESULT, confirmation);
+        }
         JSONObject event = new JSONObject().put("formSubmissionId", id).put("eventDate", day.toString())
                 .put("version", 1).put("obs", observations(values));
         data.execSQL("INSERT INTO event VALUES ('mother', ?, ?, ?, ?)",
                 new Object[] {MotherMentorMotherResultEvent.EVENT_TYPE, day.toString(), id, event.toString()});
+    }
+
+    @Test
+    public void profileConfirmationFollowsTheOriginalSampleAndClosesOnlyForPositive() throws Exception {
+        LocalDate day = dob.plusDays(43);
+        Map<String, String> values = MotherMentorMotherChildUtilsTest.test("six_weeks", "positive", day);
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        values.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("first", "sample", "mother", values, day, 1, false);
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).isAwaitingConfirmation());
+
+        resultEvent("waiting", "sample", Stage.SIX_WEEKS, day, day.plusDays(1), null, "awaiting_confirm", "pending");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(1)).get(0).isAwaitingConfirmation());
+        resultEvent("unlinked", "other", Stage.SIX_WEEKS, day, day.plusDays(2), null, "awaiting_confirm", "positive");
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+        resultEvent("final", "sample", Stage.SIX_WEEKS, day, day.plusDays(3), null, "awaiting_confirm", "positive");
+        assertEquals(MotherMentorMotherClosure.CHILD_CONFIRMED_POSITIVE,
+                MotherMentorMotherClosureRepository.getState(db, "mother", null).getStatus());
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(3)).isEmpty());
+        assertEquals("1", scalar("SELECT COUNT(*) FROM visits"));
+    }
+
+    @Test
+    public void eighteenMonthConfirmatoryNegativeClearsPendingWithoutGraduation() throws Exception {
+        LocalDate day = dob.plusMonths(18);
+        Map<String, String> values = MotherMentorMotherChildUtilsTest.test("eighteen_months", "positive", day);
+        values.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        values.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("first", "sample", "mother", values, day, 1, false);
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).isAwaitingConfirmation());
+
+        resultEvent("invalid", "sample", Stage.EIGHTEEN_MONTHS, day, day.plusDays(1), null, "awaiting_confirm", "pending");
+        assertEquals(1, MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(1)).size());
+        resultEvent("final", "sample", Stage.EIGHTEEN_MONTHS, day, day.plusDays(2), null, "awaiting_confirm", "negative");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day.plusDays(2)).isEmpty());
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertTrue(state.getTests().get(Stage.EIGHTEEN_MONTHS).isConfirmationNegative());
+        assertFalse(state.hasFinalNegative());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test
+    public void twinsKeepTheirOwnOutcomeAndTheMotherCardClosesAfterTheLastChild() throws Exception {
+        link("child", dob);
+        link("twin", dob);
+        Map<String, String> positive = childResult("positive");
+        positive.put(HEI_CHANYA_IMETHIBITISHWA, "yes");
+        visit("positive", "positive", "child", positive, dob.plusMonths(18), 1, false);
+        assertTrue(MotherMentorMotherChildRepository.getStateForChild(db, "child", null).hasConfirmedPositive());
+        assertFalse(MotherMentorMotherChildRepository.getStateForChild(db, "twin", null).hasConfirmedPositive());
+        assertTrue(MotherMentorMotherClosureRepository.hasOpenSibling(db, "mother", "child"));
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+
+        LocalDate last = dob.plusMonths(19);
+        visit("negative", "negative", "twin", childResult("negative"), last, 1, false);
+        MotherMentorMotherClosure closure = MotherMentorMotherClosureRepository.getState(db, "mother", null);
+        assertEquals(MotherMentorMotherClosure.GRADUATED, closure.getStatus());
+        assertEquals(last.toString(), closure.getClosedDate());
+    }
+
+    @Test
+    public void manualSiblingLinkedAfterSampleKeepsMamaOpenUntilTheLastChildFinishes() throws Exception {
+        enableChildClosureProjections();
+        LocalDate sampleDay = dob.plusMonths(18);
+        LocalDate resultDay = sampleDay.plusDays(2);
+        LocalDate siblingDob = dob.plusDays(3);
+        manualLink("child", dob, sampleDay.minusDays(1));
+        mamaPositiveSample(sampleDay);
+        manualLink("sibling", siblingDob, sampleDay.plusDays(1));
+
+        assertTrue(MotherMentorMotherClosureRepository.hasOpenSibling(db, "mother", "child"));
+        resultEvent("result", "mama-sample", Stage.EIGHTEEN_MONTHS, sampleDay, resultDay,
+                null, "awaiting_confirm", "positive");
+        MotherMentorChildEidRepository.rebuildForMother(db, "mother");
+        assertEquals("1", scalar("SELECT is_closed FROM ec_mothermentor_enroll_child_eid WHERE base_entity_id='child'"));
+        assertEquals("0", scalar("SELECT is_closed FROM ec_mothermentor_enroll_child_eid WHERE base_entity_id='sibling'"));
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+
+        LocalDate last = siblingDob.plusMonths(18);
+        Map<String, String> siblingResult = childResult("negative");
+        siblingResult.put(CHILD_EID_FACILITY_ARRIVAL_DATE, last.toString());
+        siblingResult.put(CHILD_EID_FINAL_HIV_TEST_DATE, last.toString());
+        visit("sibling-result", "sibling-result", "sibling", siblingResult, last, 1, false);
+        assertEquals(last.toString(), MotherMentorMotherClosureRepository.getState(db, "mother", null).getClosedDate());
+    }
+
+    @Test
+    public void birthConfirmationClosesTheOnlyLinkedChildAndCorrectionReopensIt() throws Exception {
+        enableChildClosureProjections();
+        LocalDate visitDay = dob.plusDays(43);
+        manualLink("child", dob, visitDay.minusDays(1));
+        Map<String, String> birth = MotherMentorMotherChildUtilsTest.child(dob);
+        birth.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        birth.put(MAMA_BIRTH_TEST_DONE, "yes");
+        birth.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        birth.put(MAMA_BIRTH_TEST_RESULT, "positive");
+        birth.put(MAMA_BIRTH_TEST_RECEIVED_DATE, visitDay.toString());
+        birth.put(MAMA_BIRTH_TEST_CONFIRMATION_DONE, "no");
+        birth.put(MAMA_HEI_TEST_DONE, "no");
+        visit("visit", "birth-sample", "mother", birth, visitDay, 1, false);
+        LocalDate resultDay = visitDay.plusDays(1);
+        resultEvent("result", "birth-sample", resultDay, null, "awaiting_confirm", "positive");
+        MotherMentorChildEidRepository.rebuildForMother(db, "mother");
+        assertTrue(MotherMentorChildEidRepository.getState(db, "child", null).isClosed());
+        assertEquals("E4", scalar("SELECT mtoto_eid_status FROM ec_mothermentor_enroll_child_eid"));
+        assertTrue(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+
+        data.delete("event", "formSubmissionId = ?", new String[] {"result"});
+        resultEvent("result", "birth-sample", resultDay, null, "awaiting_confirm", "negative");
+        MotherMentorChildEidRepository.rebuildForMother(db, "mother");
+        assertFalse(MotherMentorChildEidRepository.getState(db, "child", null).isClosed());
+        assertEquals("0", scalar("SELECT is_closed FROM ec_mothermentor_enroll_child_eid"));
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test
+    public void laterSameBirthdayLinkDoesNotTakeOwnershipOfTheOriginalSample() throws Exception {
+        enableChildClosureProjections();
+        LocalDate sampleDay = dob.plusMonths(18);
+        manualLink("child", dob, sampleDay.minusDays(1));
+        mamaPositiveSample(sampleDay);
+        manualLink("sibling", dob, sampleDay.plusDays(1));
+        resultEvent("result", "mama-sample", Stage.EIGHTEEN_MONTHS, sampleDay, sampleDay.plusDays(2),
+                null, "awaiting_confirm", "positive");
+        MotherMentorChildEidRepository.rebuildForMother(db, "mother");
+        assertTrue(MotherMentorChildEidRepository.getState(db, "child", null).isClosed());
+        assertFalse(MotherMentorChildEidRepository.getState(db, "sibling", null).isClosed());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test
+    public void sameDayLinkAfterCorrectionKeepsTheLegacySampleWithItsOriginalChild() throws Exception {
+        enableChildClosureProjections();
+        LocalDate day = dob.plusMonths(18);
+        manualLink("child", dob, day + "T09:00:00+03:00");
+        mamaPositiveSample(day);
+        JSONObject sample = new JSONObject(scalar("SELECT visit_json FROM visits WHERE visit_id='mama-visit'"));
+        // The legacy JSON clock is ahead of the timestamp from the local visit save.
+        sample.put(EVENT_DATE_TIMESTAMP, day + "T13:00:00+03:00");
+        ContentValues visit = new ContentValues();
+        visit.put(VISIT_JSON, sample.toString());
+        visit.put(VISIT_DATE, org.joda.time.DateTime.parse(day + "T10:00:00+03:00").getMillis());
+        data.update("visits", visit, "visit_id = ?", new String[] {"mama-visit"});
+
+        sameDayConfirmation("waiting", day, "T10:30:00+03:00", 1, null);
+        assertEquals(1, MotherMentorMotherResultEvent.pending(db, "mother", day).size());
+        sameDayConfirmation("second", day, "T11:00:00+03:00", 1, "negative");
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", day).isEmpty());
+        sameDayConfirmation("second", day, "T11:00:00+03:00", 2, null);
+        assertEquals(1, MotherMentorMotherResultEvent.pending(db, "mother", day).size());
+
+        manualLink("sibling", dob, day + "T12:00:00+03:00");
+        assertEquals("child", MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).getChildId());
+        sameDayConfirmation("positive", day, "T12:30:00+03:00", 1, "positive");
+        MotherMentorChildEidRepository.rebuildForMother(db, "mother");
+        assertTrue(MotherMentorChildEidRepository.getState(db, "child", null).isClosed());
+        assertFalse(MotherMentorChildEidRepository.getState(db, "sibling", null).isClosed());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+
+        visit("sibling-result", "sibling-result", "sibling", childResult("negative"), day, 1, false);
+        assertTrue(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    @Test
+    public void capturedChildSurvivesSameBirthdayLinkAndReplay() throws Exception {
+        LocalDate day = dob.plusMonths(18);
+        manualLink("child", dob, day + "T09:00:00+03:00");
+        Map<String, String> positive = MotherMentorMotherChildUtilsTest.test("eighteen_months", "positive", day);
+        positive.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        positive.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        positive.put(MAMA_HEI_SAMPLE_CHILD_ID, MotherMentorChildEidDao.captureMotherSampleChild(
+                db, "mother", MotherMentorMotherVisitDao.getContext(db, "mother"), dob));
+        visit("mama-visit", "mama-sample", "mother", positive, day, 1, false);
+
+        manualLink("sibling", dob, day + "T11:00:00+03:00");
+        assertEquals("child", MotherMentorMotherResultEvent.pending(db, "mother", day).get(0).getChildId());
+        assertTrue(MotherMentorMotherClosureRepository.hasOpenSibling(db, "mother", "child"));
+    }
+
+    private void sameDayConfirmation(String id, LocalDate day, String time, int version, String result)
+            throws Exception {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(MAMA_ENROLLMENT_ID, "episode-one");
+        values.put(MOTHERMENTOR_VISIT_DATE, day.toString());
+        values.put("mama_hei_sample_submission_id", "mama-sample");
+        values.put(MTOTO_PENDING_TEST, Stage.EIGHTEEN_MONTHS.getCode());
+        values.put(MTOTO_PENDING_TEST_DATE, day.toString());
+        values.put(MTOTO_RUFAA_STATE_BEFORE, "awaiting_confirm");
+        values.put(MTOTO_CONFIRMATORY_TEST_DONE, result == null ? "no" : "yes");
+        if (result != null) {
+            values.put(MTOTO_CONFIRMATORY_RESULT, result);
+            values.put(MTOTO_RESULT_RECEIVED_DATE, day.toString());
+        }
+        String date = day + time;
+        JSONObject event = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, id)
+                .put(EVENT_DATE_TIMESTAMP, date).put(EVENT_VERSION, version).put("obs", observations(values));
+        data.execSQL("INSERT INTO event VALUES ('mother', ?, ?, ?, ?)",
+                new Object[] {MotherMentorMotherResultEvent.EVENT_TYPE, date, id, event.toString()});
+    }
+
+    @Test
+    public void simultaneousSameBirthdayLinksDoNotCloseAnUnidentifiedChild() throws Exception {
+        LocalDate sampleDay = dob.plusMonths(18);
+        manualLink("child", dob, sampleDay + "T08:00:00+03:00");
+        manualLink("sibling", dob, sampleDay + "T09:00:00+03:00");
+        mamaPositiveSample(sampleDay);
+        JSONObject visitEvent = new JSONObject(scalar("SELECT visit_json FROM visits WHERE visit_id='mama-visit'"));
+        visitEvent.put(EVENT_DATE_TIMESTAMP, sampleDay + "T10:00:00+03:00");
+        ContentValues visit = new ContentValues();
+        visit.put(VISIT_JSON, visitEvent.toString());
+        visit.put(VISIT_DATE, org.joda.time.DateTime.parse(sampleDay + "T10:01:00+03:00").getMillis());
+        data.update("visits", visit, "visit_id = ?", new String[] {"mama-visit"});
+        MotherMentorMotherResultEvent.PendingTest sample =
+                MotherMentorMotherResultEvent.pending(db, "mother", sampleDay).get(0);
+        assertTrue(MotherMentorMotherResultEvent.needsChildIdentity(db, "mother", sample));
+        resultEvent("old-unassigned", "mama-sample", Stage.EIGHTEEN_MONTHS, sampleDay, sampleDay.plusDays(1),
+                null, "awaiting_confirm", "positive");
+        assertFalse(MotherMentorChildEidRepository.getState(db, "child", null).isClosed());
+        assertFalse(MotherMentorChildEidRepository.getState(db, "sibling", null).isClosed());
+        assertFalse(MotherMentorMotherClosureRepository.isClosed(db, "mother"));
+    }
+
+    private void enableChildClosureProjections() {
+        data.execSQL("ALTER TABLE ec_mothermentor_enroll_child_eid ADD COLUMN is_closed INTEGER DEFAULT 0");
+        MotherMentorChildEidRepository.upgrade(db);
+        MotherMentorChildEidRepository.upgradeExitSchema(db);
+    }
+
+    private void mamaPositiveSample(LocalDate day) throws Exception {
+        Map<String, String> positive = MotherMentorMotherChildUtilsTest.test("eighteen_months", "positive", day);
+        positive.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        positive.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("mama-visit", "mama-sample", "mother", positive, day, 1, false);
+    }
+
+    private void manualLink(String child, LocalDate birth, LocalDate day) throws Exception {
+        manualLink(child, birth, day + "T10:00:00.000+03:00");
+    }
+
+    private void manualLink(String child, LocalDate birth, String eventDate) throws Exception {
+        data.execSQL("INSERT INTO ec_mothermentor_enroll_child_eid (base_entity_id, mother_base_entity_id, child_dob)"
+                + " VALUES (?, 'mother', ?)", new Object[] {child, birth.toString()});
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(MOTHER_BASE_ENTITY_ID, "mother");
+        values.put(CHILD_LINKING, "yes");
+        values.put(CHILD_DOB, birth.toString());
+        String id = child + "-manual";
+        JSONObject event = new JSONObject().put(EVENT_FORM_SUBMISSION_ID, id)
+                .put(EVENT_DATE_TIMESTAMP, eventDate).put("obs", observations(values));
+        data.execSQL("INSERT INTO event VALUES (?, ?, ?, ?, ?)", new Object[] {child,
+                Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID, eventDate, id, event.toString()});
     }
 
     @Test

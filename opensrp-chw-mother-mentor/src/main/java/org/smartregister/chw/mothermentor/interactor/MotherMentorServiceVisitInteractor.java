@@ -35,6 +35,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure.VisitOu
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.chw.mothermentor.util.NCUtils;
 import org.smartregister.chw.mothermentor.util.VisitUtils;
 import org.smartregister.clientandeventmodel.Event;
@@ -153,11 +154,15 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected boolean shouldSubmitOnSave() {
         if (editingFinalizedVisit() || super.shouldSubmitOnSave()) return true;
         if (memberObject == null || serviceDate == null) return false;
+        LocalDate day = LocalDate.fromDateFields(serviceDate);
+        Map<String, String> values = clinicalValues();
+        if (MotherMentorMotherClosureRepository.classify(values, day) == VisitOutcome.CHILD_CONFIRMED_POSITIVE) {
+            return true;
+        }
         // A confirmed terminal visit must close the card and its Kaya even while offline.
         return MotherMentorMotherClosureRepository.preview(
                 MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                memberObject.getBaseEntityId(), null, clinicalValues(),
-                LocalDate.fromDateFields(serviceDate)).isClosed();
+                memberObject.getBaseEntityId(), null, values, day).isClosed();
     }
 
     @Override
@@ -312,6 +317,7 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
     protected void assignVisitSource(Event event, Visit editedVisit) {
         if (editedVisit == null || StringUtils.isBlank(editedVisit.getFormSubmissionId())) {
             super.assignVisitSource(event, editedVisit);
+            if (editedVisit == null) captureSampleChild(event);
             return;
         }
         event.setFormSubmissionId(editedVisit.getFormSubmissionId());
@@ -322,9 +328,36 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             if (previous.getEventDate() != null) event.setEventDate(previous.getEventDate());
             if (StringUtils.isBlank(event.getEventId())) event.setEventId(previous.getEventId());
             event.setVersion(Math.max(event.getVersion(), previous.getVersion() + 1));
+            Map<String, String> originalAnswers = MotherMentorVisitCompletion.observationValues(
+                    MotherMentorChildEidDao.json(editedVisit).optJSONArray("obs"));
+            String originalChild = originalAnswers.get(DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID);
+            LocalDate birth = sampleChildBirth(clinicalValues());
+            if (StringUtils.isNotBlank(originalChild) && birth != null
+                    && birth.equals(sampleChildBirth(originalAnswers))) {
+                putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, originalChild);
+            }
         } catch (JsonParseException invalid) {
             Timber.w(invalid, "Unable to restore the original Mama Kadi visit metadata");
         }
+    }
+
+    private void captureSampleChild(Event event) {
+        Map<String, String> answers = clinicalValues();
+        if (MotherMentorDeliveryChildren.count(answers) > 1) return;
+        answers = MotherMentorDeliveryChildren.childVisit(answers, 1);
+        if (StringUtils.isAllBlank(answers.get(DBConstants.KEY.MAMA_BIRTH_TEST_RESULT),
+                answers.get(DBConstants.KEY.MAMA_HEI_TEST_RESULT))) return;
+        LocalDate birth = sampleChildBirth(answers);
+        if (birth == null || StringUtils.isBlank(visitEnrollmentId)) return;
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        String childId = MotherMentorChildEidDao.captureMotherSampleChild(
+                database, event.getBaseEntityId(), enrollmentContext, birth);
+        if (StringUtils.isNotBlank(childId)) putObservation(event, DBConstants.KEY.MAMA_HEI_SAMPLE_CHILD_ID, childId);
+    }
+
+    private LocalDate sampleChildBirth(Map<String, String> answers) {
+        return MotherMentorHeiSchedule.parseBirthDate(StringUtils.defaultIfBlank(
+                answers.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA), enrollmentContext.getChildDob()));
     }
 
     @Override
