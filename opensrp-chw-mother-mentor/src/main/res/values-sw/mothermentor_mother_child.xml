@@ -19,4 +19,15 @@
     <string name="mothermentor_mother_result_list_item">%1$s · %2$s\n%3$s</string>
     <string name="mothermentor_mother_result_unavailable">Kipimo hiki hakina majibu yanayosubiri kurekodiwa.</string>
     <string name="mothermentor_mother_result_saved">Majibu yamehifadhiwa</string>
+    <string name="mothermentor_awaited_test">Kipimo kinachosubiri majibu: %1$s · Tarehe ya kipimo: %2$s</string>
+    <string name="mothermentor_awaited_confirmation_name">uthibitisho wa %1$s</string>
+    <string name="mothermentor_awaited_question">Majibu ya %1$s yamepatikana?</string>
+    <string name="mothermentor_awaited_required">Jibu kama majibu ya kipimo kinachosubiriwa yamepatikana</string>
+    <string name="mothermentor_awaited_follow">Fuatilia majibu kituoni.</string>
+    <string name="mothermentor_awaited_result">Majibu ya kipimo cha %1$s</string>
+    <string name="mothermentor_awaited_confirmation_done">Kipimo cha uthibitisho kimefanyika?</string>
+    <string name="mothermentor_awaited_confirmation_result">Majibu ya kipimo cha uthibitisho</string>
+    <string name="mothermentor_awaited_receipt">Tarehe majibu yalipopokelewa kituoni</string>
+    <string name="mothermentor_awaited_yes">Ndiyo</string>
+    <string name="mothermentor_awaited_no">Hapana</string>
 </resources>

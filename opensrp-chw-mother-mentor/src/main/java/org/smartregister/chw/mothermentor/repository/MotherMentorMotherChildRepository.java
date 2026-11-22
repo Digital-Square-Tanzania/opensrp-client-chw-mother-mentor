@@ -27,6 +27,7 @@ import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils.TerminalOutcome;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorAwaitedResults;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 
@@ -560,7 +561,8 @@ public final class MotherMentorMotherChildRepository {
         state.childDeathDate = null;
         state.recordBreastfeeding(value(values, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS),
                 MotherMentorChildEidHeiUtils.cessation(values));
-        if (!"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
+        applyAwaitedResults(state, values, date);
+        if (state.terminalDate != null || !"yes".equals(values.get(DBConstants.KEY.MAMA_HEI_TEST_DONE))) return;
         Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MAMA_HEI_TEST_TYPE));
         TestRecord before = state.tests.get(stage);
         MotherMentorHeiConfirmation.Outcome confirmation = MotherMentorHeiConfirmation.fromRoutineVisit(stage, values);
@@ -571,6 +573,21 @@ public final class MotherMentorMotherChildRepository {
                 confirmation == MotherMentorHeiConfirmation.Outcome.NEGATIVE,
                 MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_TEST_RECEIVED_DATE)));
         state.trackMotherTest(stage, before, sourceId);
+    }
+
+    private static void applyAwaitedResults(State state, Map<String, String> values, LocalDate day) {
+        if (!MotherMentorAwaitedResults.enabled(values)) return;
+        for (MotherMentorMotherResultEvent.PendingTest sample : state.getPendingMotherTests()) {
+            MotherMentorMotherResultEvent.Answers answers = MotherMentorAwaitedResults.received(sample, values, day);
+            if (answers == null) continue;
+            Stage stage = sample.getStage();
+            String confirmation = answers.getConfirmationResult();
+            String result = sample.isAwaitingConfirmation() ? "positive" : answers.getResult();
+            LocalDate receipt = sample.isAwaitingConfirmation() ? state.tests.get(stage).getReceivedDate()
+                    : answers.getReceivedDate();
+            record(state, stage, result, sample.getTestDate(), "positive".equals(confirmation), day,
+                    "negative".equals(confirmation), receipt);
+        }
     }
 
     private static void applyBirthAssessment(State state, Map<String, String> values,

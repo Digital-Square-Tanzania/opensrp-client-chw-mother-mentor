@@ -45,7 +45,7 @@ public final class MotherMentorMotherChildUtils {
 
     public static boolean isChildField(String key) {
         return MotherMentorDeliveryChildren.SEX.equals(key) || MotherMentorDeliveryChildren.LINK.equals(key)
-                || CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key) || MotherMentorMotherBirthTest.isField(key);
+                || MotherMentorAwaitedResults.isField(key) || CHILD_FIELDS.contains(key) || ANSWER_FIELDS.contains(key) || MotherMentorMotherBirthTest.isField(key);
     }
 
     public static boolean applies(Map<String, String> values) {
@@ -64,8 +64,10 @@ public final class MotherMentorMotherChildUtils {
 
     public static List<Stage> due(Map<String, String> values, LocalDate assessment) {
         LocalDate stop = MotherMentorChildEidHeiUtils.cessation(values);
-        List<Stage> due = new ArrayList<>(MotherMentorHeiSchedule.due(birth(values), stop,
-                parseTests(values.get(DBConstants.KEY.MAMA_HEI_TEST_HISTORY)), assessment));
+        Map<Stage, TestRecord> history = parseTests(values.get(MAMA_HEI_TEST_HISTORY));
+        List<Stage> due = new ArrayList<>(MotherMentorAwaitedResults.enabled(values)
+                ? MotherMentorHeiSchedule.eligibleForSampling(birth(values), stop, history, assessment)
+                : MotherMentorHeiSchedule.due(birth(values), stop, history, assessment));
         due.removeAll(MotherMentorChildEidRepository.suppressedTests(values.get(DBConstants.KEY.MTOTO_SUPPRESSED_TESTS)));
         return due;
     }
@@ -120,7 +122,11 @@ public final class MotherMentorMotherChildUtils {
     }
 
     public static TerminalOutcome terminalOutcome(Map<String, String> values, LocalDate assessment) {
-        if (!applies(values) || !isComplete(values, assessment)) return TerminalOutcome.NONE;
+        if (!applies(values)) return TerminalOutcome.NONE;
+        if (MotherMentorAwaitedResults.confirmsPositive(values, assessment)) {
+            return TerminalOutcome.CHILD_CONFIRMED_POSITIVE;
+        }
+        if (!isComplete(values, assessment)) return TerminalOutcome.NONE;
         if ("stillbirth".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.STILLBIRTH;
         if ("deceased".equals(values.get(MAMA_CHILD_STATUS))) return TerminalOutcome.CHILD_DECEASED;
         if (MotherMentorMotherBirthTest.isRequired(values, assessment)
@@ -209,7 +215,8 @@ public final class MotherMentorMotherChildUtils {
         fill(form, DBConstants.KEY.MAMA_HEI_TEST_TYPE_CHOICE,
                 values(form).getOrDefault(DBConstants.KEY.MAMA_HEI_TEST_TYPE, ""));
         fill(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA, date(state.getWeaningDate()));
-        // Existing pending/positive-unconfirmed tests were already performed; ask for their result again.
+        if (MotherMentorAwaitedResults.enabled(values(form))) return;
+        // Preserve the visit entry behavior for older forms without separate child sections.
         for (Map.Entry<Stage, TestRecord> entry : state.getSamplingHistory().entrySet()) {
             TestRecord record = entry.getValue();
             if (entry.getKey() == Stage.AT_BIRTH || !record.requiresFollowUp()

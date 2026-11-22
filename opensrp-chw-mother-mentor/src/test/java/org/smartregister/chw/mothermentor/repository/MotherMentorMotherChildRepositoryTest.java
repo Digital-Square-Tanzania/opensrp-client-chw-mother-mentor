@@ -24,6 +24,7 @@ import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorAwaitedResults;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherClosure;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
@@ -110,6 +111,94 @@ public class MotherMentorMotherChildRepositoryTest {
         MotherMentorMotherChildRepository.rebuild(db, "mother");
         assertEquals(new JSONArray().put(new JSONArray().put(1).put(Stage.AT_BIRTH.getCode()).put(dob.toString()))
                 .toString(), scalar("SELECT mama_child_pending_tests FROM ec_mothermentor_enrollment"));
+    }
+
+    @Test
+    public void followUpVisitRequiresEachAnswerAndReopensWithOnlyTheUnreceivedSample() throws Exception {
+        LocalDate day = dob.plusDays(49);
+        LocalDate routineSample = dob.plusDays(43);
+        Map<String, String> first = MotherMentorMotherChildUtilsTest.test("six_weeks", "pending", routineSample);
+        first.put(MAMA_BIRTH_TEST_WORKFLOW, "true");
+        first.put(MAMA_BIRTH_TEST_DONE, "yes");
+        first.put(MAMA_BIRTH_TEST_DATE, dob.toString());
+        first.put(MAMA_BIRTH_TEST_RESULT, "pending");
+        visit("first", "sample-source", "mother", first, day, 1, false);
+
+        LocalDate followUp = day.plusDays(1);
+        List<MotherMentorMotherResultEvent.PendingTest> samples =
+                MotherMentorMotherResultEvent.pending(db, "mother", followUp);
+        assertEquals(2, samples.size());
+        assertTrue(samples.get(0).isOverdue(followUp));
+        assertFalse(samples.get(1).isOverdue(followUp));
+        Map<String, String> answers = awaitedFollowUp(first);
+        for (MotherMentorMotherResultEvent.PendingTest sample : samples) {
+            awaited(answers, sample.getStage(), MotherMentorAwaitedResults.SAMPLE, sample.getKey());
+        }
+        awaited(answers, Stage.AT_BIRTH, MotherMentorAwaitedResults.RECEIVED, "no");
+        assertFalse(MotherMentorAwaitedResults.isComplete(samples, MotherMentorDeliveryChildren.childVisit(answers, 1), followUp));
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RECEIVED, "yes");
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RESULT, "negative");
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RECEIPT, routineSample.minusDays(1).toString());
+        assertFalse(MotherMentorAwaitedResults.isComplete(samples, MotherMentorDeliveryChildren.childVisit(answers, 1), followUp));
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RECEIPT, followUp.toString());
+        assertTrue(MotherMentorAwaitedResults.isComplete(samples, MotherMentorDeliveryChildren.childVisit(answers, 1), followUp));
+        visit("follow-up", "follow-up-source", "mother", answers, followUp, 1, false);
+
+        MotherMentorMotherChildRepository.State reopened =
+                MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals(1, reopened.getPendingMotherTests().size());
+        assertEquals(Stage.AT_BIRTH, reopened.getPendingMotherTests().get(0).getStage());
+        assertEquals("negative", reopened.getTests().get(Stage.SIX_WEEKS).getResult());
+        assertEquals(routineSample, reopened.getTests().get(Stage.SIX_WEEKS).getDate());
+        assertEquals(followUp, reopened.getTests().get(Stage.SIX_WEEKS).getReceivedDate());
+
+        resultEvent("profile-result", "sample-source", followUp.plusDays(1), "negative", "awaiting_result", null);
+        assertTrue(MotherMentorMotherResultEvent.pending(db, "mother", followUp.plusDays(1)).isEmpty());
+    }
+
+    @Test
+    public void receivedConfirmationClosesTheChildAgainstTheOriginalSample() throws Exception {
+        LocalDate day = dob.plusDays(44);
+        Map<String, String> first = MotherMentorMotherChildUtilsTest.test("six_weeks", "positive", day);
+        first.put(MAMA_HEI_CONFIRMATORY_TEST_DONE, "no");
+        first.put(MAMA_HEI_TEST_RECEIVED_DATE, day.toString());
+        visit("first", "sample-source", "mother", first, day, 1, false);
+
+        LocalDate next = day.plusDays(2);
+        MotherMentorMotherResultEvent.PendingTest pending =
+                MotherMentorMotherResultEvent.pending(db, "mother", next).get(0);
+        assertTrue(pending.isAwaitingConfirmation());
+        Map<String, String> answers = awaitedFollowUp(first);
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.SAMPLE, pending.getKey());
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RECEIVED, "yes");
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.CONFIRMATION, "positive");
+        awaited(answers, Stage.SIX_WEEKS, MotherMentorAwaitedResults.RECEIPT, next.toString());
+        visit("follow-up", "follow-up-source", "mother", answers, next, 1, false);
+
+        MotherMentorMotherChildRepository.State reopened =
+                MotherMentorMotherChildRepository.getState(db, "mother", null);
+        assertEquals(MotherMentorMotherChildUtils.TerminalOutcome.CHILD_CONFIRMED_POSITIVE,
+                reopened.getTerminalOutcome());
+        assertEquals(day, reopened.getTests().get(Stage.SIX_WEEKS).getReceivedDate());
+        assertTrue(reopened.getPendingMotherTests().isEmpty());
+    }
+
+    private static Map<String, String> awaitedFollowUp(Map<String, String> first) {
+        Map<String, String> answers = new LinkedHashMap<>(first);
+        answers.keySet().removeIf(key -> key.startsWith("mama_birth_test_")
+                || key.startsWith("mama_hei_test_") || key.startsWith("mama_hei_confirmatory_"));
+        answers.put(MotherMentorDeliveryChildren.SECTIONS, "true");
+        answers.put(MotherMentorDeliveryChildren.COUNT, "1");
+        for (String field : Arrays.asList(MAMA_CHILD_STATUS, MAMA_BREASTFEEDING_STATUS)) {
+            child(answers, 1, field, answers.remove(field));
+        }
+        child(answers, 1, MotherMentorDeliveryChildren.SEX, "female");
+        child(answers, 1, MotherMentorAwaitedResults.WORKFLOW, "true");
+        return answers;
+    }
+
+    private static void awaited(Map<String, String> answers, Stage stage, String field, String value) {
+        child(answers, 1, MotherMentorAwaitedResults.key(stage, field), value);
     }
 
     @Test

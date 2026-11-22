@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.R;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository.State;
+import org.smartregister.chw.mothermentor.util.MotherMentorAwaitedResults;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
@@ -94,6 +95,7 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
         step.put("title", MotherMentorDeliveryChildren.label(context, number, child.getSex()));
         LocalDate assessment = entryHelper.childAssessmentDate(form);
         MotherMentorMotherChildUtils.put(form, MAMA_CHILD_PATH, "true");
+        MotherMentorAwaitedResults.append(context, form, child.getPendingMotherTests(), answers, assessment);
         MotherMentorMotherChildUtils.prepare(form, child, assessment);
         MotherMentorMotherBirthTest.prepare(form, MotherMentorMotherChildUtils.values(form), assessment);
         JSONObject cessation = MotherMentorMotherChildUtils.field(form, MAMA_TAREHE_ACHA_KUNYONYESHA);
@@ -139,6 +141,7 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
             MotherMentorMotherChildUtils.put(payload, MotherMentorDeliveryChildren.LINK, child.getExplicitLink());
         }
         entryHelper.normalizeChildAssessment(payload, child);
+        MotherMentorAwaitedResults.normalize(payload, child.getPendingMotherTests());
         try {
             payload.getJSONObject("step1").put("title", MotherMentorDeliveryChildren.label(context, number,
                     getValue(MotherMentorDeliveryChildren.SEX)));
@@ -158,7 +161,9 @@ public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorAc
         Map<String, String> values = MotherMentorMotherChildUtils.values(payload);
         return completed(MotherMentorDeliveryChildren.validSex(values.get(MotherMentorDeliveryChildren.SEX))
                 && MotherMentorMotherChildUtils.applies(values)
-                && entryHelper.isChildAssessmentComplete(payload, values, child));
+                && entryHelper.isChildAssessmentComplete(payload, values, child)
+                && MotherMentorAwaitedResults.isComplete(child.getPendingMotherTests(), values,
+                        entryHelper.childAssessmentDate(payload)));
     }
 
     @Override
