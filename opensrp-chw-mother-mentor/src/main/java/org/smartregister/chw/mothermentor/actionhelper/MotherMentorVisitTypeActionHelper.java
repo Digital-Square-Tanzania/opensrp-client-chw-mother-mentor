@@ -243,8 +243,8 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     private void prepareEnrollmentDelivery(JSONObject form, MotherMentorMotherVisitDao.Context enrollment)
             throws JSONException {
         boolean eligible = StringUtils.isNotBlank(enrollment.getEnrollmentId())
-                && "not_pregnant".equals(MotherMentorMotherPregnancyUtils.normalizeStatus(
-                        enrollment.getEnrollmentPregnancyStatus()))
+                && MotherMentorMotherPregnancyUtils.hasEnrollmentDelivery(
+                        enrollment.getEnrollmentPregnancyStatus())
                 && canAssessEnrollmentDelivery(enrollment);
         MotherMentorMotherPregnancyUtils.prepareEnrollmentDelivery(form, eligible);
     }

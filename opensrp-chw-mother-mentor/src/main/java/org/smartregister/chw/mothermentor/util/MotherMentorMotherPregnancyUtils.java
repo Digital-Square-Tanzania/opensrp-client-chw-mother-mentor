@@ -29,7 +29,7 @@ public final class MotherMentorMotherPregnancyUtils {
     public static boolean isComplete(Map<String, String> values, LocalDate serviceDate) {
         if (!values.containsKey(MAMA_ENROLLMENT_PREGNANCY_STATUS) || !isFound(values)) return true;
         String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
-        if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) {
+        if (hasEnrollmentDelivery(original)) {
             LocalDate enrollmentDob = parseDate(values.get(MAMA_ENROLLMENT_CHILD_DOB));
             return valid(enrollmentDob, serviceDate) && enrollmentDob.equals(deliveryDate(values))
                     && (!isEnrollmentDeliveryAssessment(values)
@@ -64,8 +64,7 @@ public final class MotherMentorMotherPregnancyUtils {
 
     public static boolean isChildPath(Map<String, String> values, LocalDate serviceDate) {
         if (!isFound(values) || !isComplete(values, serviceDate)) return false;
-        String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
-        return "breast_feeding".equals(original) || "not_pregnant".equals(original)
+        return hasEnrollmentDelivery(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS))
                 || isLiveBirth(values);
     }
 
@@ -87,7 +86,12 @@ public final class MotherMentorMotherPregnancyUtils {
 
     public static boolean isEnrollmentDeliveryAssessment(Map<String, String> values) {
         return "true".equals(values.get(MAMA_FIRST_ENROLLMENT_DELIVERY))
-                && "not_pregnant".equals(normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS)));
+                && hasEnrollmentDelivery(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
+    }
+
+    public static boolean hasEnrollmentDelivery(String status) {
+        String original = normalizeStatus(status);
+        return "breast_feeding".equals(original) || "not_pregnant".equals(original);
     }
 
     public static boolean continues(Map<String, String> values, LocalDate serviceDate) {
@@ -114,8 +118,7 @@ public final class MotherMentorMotherPregnancyUtils {
     public static JSONObject prepare(JSONObject form, String originalStatus, String enrollmentDob,
             Map<String, String> previous, boolean savedVisit) throws JSONException {
         restoreContext(form, originalStatus, enrollmentDob);
-        String original = normalizeStatus(originalStatus);
-        if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) return form;
+        if (hasEnrollmentDelivery(originalStatus)) return form;
         if (restoreRecordedDelivery(form, previous, savedVisit)) return form;
         if (!savedVisit && previous != null) {
             for (String key : Arrays.asList(MAMA_PREGNANCY_OUTCOME, MAMA_PREGNANCY_OUTCOME_OTHER,
@@ -180,7 +183,7 @@ public final class MotherMentorMotherPregnancyUtils {
         String original = normalizeStatus(originalStatus);
         put(form, MAMA_ENROLLMENT_PREGNANCY_STATUS, original);
         put(form, MAMA_ENROLLMENT_CHILD_DOB, displayDate(parseDate(enrollmentDob)));
-        if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) {
+        if (hasEnrollmentDelivery(original)) {
             hideQuestion(form, VISIT_PREGNANCY_STATUS);
             put(form, VISIT_PREGNANCY_STATUS, original);
             put(form, MAMA_ENROLLMENT_DELIVERY_DATE, displayDate(parseDate(enrollmentDob)));
@@ -293,8 +296,7 @@ public final class MotherMentorMotherPregnancyUtils {
     }
 
     private static String dateAlias(Map<String, String> values) {
-        String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
-        if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) {
+        if (hasEnrollmentDelivery(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS))) {
             return MAMA_ENROLLMENT_DELIVERY_DATE;
         }
         switch (StringUtils.defaultString(values.get(MAMA_PREGNANCY_OUTCOME))) {
