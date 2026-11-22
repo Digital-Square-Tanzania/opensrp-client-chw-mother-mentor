@@ -228,6 +228,14 @@
         "value": ""
       },
       {
+        "key": "mama_first_enrollment_delivery",
+        "type": "hidden",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mama_first_enrollment_delivery",
+        "openmrs_entity_parent": "",
+        "value": ""
+      },
+      {
         "key": "mama_enrollment_child_dob",
         "type": "hidden",
         "openmrs_entity": "concept",
@@ -389,6 +397,32 @@
         }
       },
       {
+        "key": "mama_enrollment_delivery_date",
+        "type": "date_picker",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "",
+        "openmrs_entity_parent": "",
+        "value": "",
+        "hint": "Tarehe ya kujifungua (kutoka usajili)",
+        "max_date": "today",
+        "expanded": false,
+        "read_only": true,
+        "calculation": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
+            }
+          }
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
+            }
+          }
+        }
+      },
+      {
         "key": "mama_delivery_child_count",
         "type": "native_radio",
         "openmrs_entity": "concept",
@@ -459,32 +493,6 @@
         "v_required": {
           "value": true,
           "err": "Tafadhali chagua tarehe isiyo ya baadaye"
-        },
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "mama_enrollment_delivery_date",
-        "type": "date_picker",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "",
-        "openmrs_entity_parent": "",
-        "value": "",
-        "hint": "Tarehe ya kujifungua (kutoka usajili)",
-        "max_date": "today",
-        "expanded": false,
-        "read_only": true,
-        "calculation": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_mother_pregnancy_calculation.yml"
-            }
-          }
         },
         "relevance": {
           "rules-engine": {

@@ -31,7 +31,9 @@ public final class MotherMentorMotherPregnancyUtils {
         String original = normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
         if ("breast_feeding".equals(original) || "not_pregnant".equals(original)) {
             LocalDate enrollmentDob = parseDate(values.get(MAMA_ENROLLMENT_CHILD_DOB));
-            return valid(enrollmentDob, serviceDate) && enrollmentDob.equals(deliveryDate(values));
+            return valid(enrollmentDob, serviceDate) && enrollmentDob.equals(deliveryDate(values))
+                    && (!isEnrollmentDeliveryAssessment(values)
+                            || MotherMentorDeliveryChildren.count(values) > 0);
         }
         if (!"pregnant".equals(original)) return false;
         String status = values.get(VISIT_PREGNANCY_STATUS);
@@ -81,6 +83,11 @@ public final class MotherMentorMotherPregnancyUtils {
         String outcome = values.get(MAMA_PREGNANCY_OUTCOME);
         return "pregnancy_loss".equals(outcome) || "stillbirth".equals(outcome)
                 || "other".equals(outcome) ? outcome : "";
+    }
+
+    public static boolean isEnrollmentDeliveryAssessment(Map<String, String> values) {
+        return "true".equals(values.get(MAMA_FIRST_ENROLLMENT_DELIVERY))
+                && "not_pregnant".equals(normalizeStatus(values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS)));
     }
 
     public static boolean continues(Map<String, String> values, LocalDate serviceDate) {
@@ -186,6 +193,18 @@ public final class MotherMentorMotherPregnancyUtils {
         return form;
     }
 
+    public static void prepareEnrollmentDelivery(JSONObject form, boolean eligible) throws JSONException {
+        JSONObject marker = field(form, MAMA_FIRST_ENROLLMENT_DELIVERY);
+        if (marker == null) return;
+        marker.put("value", eligible ? "true" : "");
+        JSONObject outcome = field(form, MAMA_PREGNANCY_OUTCOME);
+        if (outcome == null || !eligible) return;
+        outcome.put("value", "delivered");
+        outcome.put("read_only", true);
+        // Restore the fixed selection when the wizard reveals it after a change in attendance.
+        outcome.put("calculation", field(form, MAMA_ENROLLMENT_DELIVERY_DATE).getJSONObject("calculation"));
+    }
+
     private static void hideQuestion(JSONObject form, String key) throws JSONException {
         JSONObject field = field(form, key);
         if (field == null) return;
@@ -209,9 +228,12 @@ public final class MotherMentorMotherPregnancyUtils {
             put(form, MAMA_TAREHE_KUJIFUNGUA, value(form, MAMA_ENROLLMENT_CHILD_DOB));
             put(form, MAMA_ENROLLMENT_DELIVERY_DATE, value(form, MAMA_ENROLLMENT_CHILD_DOB));
             put(form, VISIT_PREGNANCY_STATUS, original);
-            for (String key : Arrays.asList(MAMA_PREGNANCY_OUTCOME, MAMA_PREGNANCY_OUTCOME_OTHER,
-                    MAMA_PREGNANCY_LOSS_DATE, MAMA_DELIVERY_DATE_INPUT,
-                    MAMA_PRETERM_DELIVERY_DATE_INPUT, MAMA_STILLBIRTH_DATE_INPUT)) put(form, key, "");
+            boolean enrollmentDelivery = isEnrollmentDeliveryAssessment(values);
+            put(form, MAMA_PREGNANCY_OUTCOME, enrollmentDelivery ? "delivered" : "");
+            if (!enrollmentDelivery) put(form, MotherMentorDeliveryChildren.COUNT, "");
+            for (String key : Arrays.asList(MAMA_PREGNANCY_OUTCOME_OTHER, MAMA_PREGNANCY_LOSS_DATE,
+                    MAMA_DELIVERY_DATE_INPUT, MAMA_PRETERM_DELIVERY_DATE_INPUT,
+                    MAMA_STILLBIRTH_DATE_INPUT)) put(form, key, "");
             return form;
         }
         String outcome = "not_pregnant".equals(values.get(VISIT_PREGNANCY_STATUS))

@@ -18,6 +18,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
@@ -121,6 +123,39 @@ public class MotherMentorMotherPregnancyRulesTest {
                 assertEquals("01-08-2026", calculated(activity, form, MAMA_TAREHE_KUJIFUNGUA));
                 assertEquals("01-08-2026", field(form, MAMA_ENROLLMENT_CHILD_DOB).getString("value"));
             }
+        }
+    }
+
+    @Test
+    public void enrollmentDeliveryQuestionsFollowFirstNewAndReturnFoundOnly() throws Exception {
+        for (String language : LANGUAGES) {
+            JSONObject form = foundPregnant(language);
+            MotherMentorMotherPregnancyUtils.restoreContext(form, "not_pregnant", "01-08-2026");
+            MotherMentorMotherPregnancyUtils.prepareEnrollmentDelivery(form, true);
+            JsonFormActivity activity = nativeActivity(form);
+            Facts selection = nativeFacts(activity, form, MAMA_PREGNANCY_OUTCOME, "calculation");
+            assertTrue(selection.asMap().containsKey("step1_" + ATTENDANCE_TYPE));
+            assertTrue(selection.asMap().containsKey("step1_" + FOLLOW_UP_STATUS));
+            for (String attendance : new String[] {"new", "repeat"}) {
+                set(form, ATTENDANCE_TYPE, attendance);
+                set(form, FOLLOW_UP_STATUS, "repeat".equals(attendance) ? "found" : "");
+                assertTrue(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+                assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+                assertTrue(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+                assertEquals("delivered", calculated(activity, form, MAMA_PREGNANCY_OUTCOME));
+                assertEquals("01-08-2026", calculated(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+            }
+            set(form, FOLLOW_UP_STATUS, "not_found");
+            assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+            assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+            clearHidden(activity, form, MAMA_PREGNANCY_OUTCOME);
+            assertFalse(field(form, MAMA_PREGNANCY_OUTCOME).has("value"));
+            set(form, FOLLOW_UP_STATUS, "found");
+            assertEquals("delivered", calculated(activity, form, MAMA_PREGNANCY_OUTCOME));
+            set(form, MAMA_FIRST_ENROLLMENT_DELIVERY, "");
+            assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+            assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+            assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
         }
     }
 

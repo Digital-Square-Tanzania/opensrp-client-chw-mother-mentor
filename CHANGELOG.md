@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.50-SNAPSHOT — 2026-11-22
+
+### Fixed
+
+- Show Delivered and the enrollment delivery date on the first New or Return (Found) visit after Not pregnant enrollment. Save the editable baby count and use it to open the corresponding child sections (UCSW-92).
+
 ## 0.1.49-SNAPSHOT — 2026-11-22
 
 ### Added

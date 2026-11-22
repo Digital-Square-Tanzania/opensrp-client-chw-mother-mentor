@@ -9,7 +9,7 @@ actions:
 name: step1_mama_pregnancy_outcome
 description: Mother pregnancy branch
 priority: 1
-condition: "(((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant')"
+condition: "(((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && step1_mama_enrollment_pregnancy_status == 'pregnant') && step1_visit_pregnancy_status == 'not_pregnant') || ((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'found')) && step1_mama_enrollment_pregnancy_status == 'not_pregnant' && step1_mama_first_enrollment_delivery == 'true')"
 actions:
   - "isRelevant = true"
 ---
@@ -58,6 +58,6 @@ actions:
 name: step1_mama_delivery_child_count
 description: Record the number of babies when delivery is first recorded
 priority: 1
-condition: "((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'found')) && step1_mama_enrollment_pregnancy_status == 'pregnant' && step1_visit_pregnancy_status == 'not_pregnant' && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm'))"
+condition: "((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'found')) && step1_mama_enrollment_pregnancy_status == 'pregnant' && step1_visit_pregnancy_status == 'not_pregnant' && (step1_mama_pregnancy_outcome == 'delivered' || step1_mama_pregnancy_outcome == 'preterm')) || ((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'found')) && step1_mama_enrollment_pregnancy_status == 'not_pregnant' && step1_mama_first_enrollment_delivery == 'true')"
 actions:
   - "isRelevant = true"

@@ -10,6 +10,7 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
@@ -145,8 +146,11 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
             MotherMentorMotherPregnancyUtils.prepare(form, enrollment.getEnrollmentPregnancyStatus(),
                     previous.getOrDefault(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB,
                             enrollment.getEnrollmentChildDob()), previous, StringUtils.isNotBlank(currentVisitId));
+            prepareEnrollmentDelivery(form, enrollment);
             Map<String, String> attendance = MotherMentorMotherVisitUtils.formValues(form);
-            if (StringUtils.isNotBlank(currentVisitId) && MotherMentorDeliveryChildren.recordsDelivery(attendance)
+            if (StringUtils.isNotBlank(currentVisitId)
+                    && !MotherMentorMotherPregnancyUtils.isEnrollmentDeliveryAssessment(attendance)
+                    && MotherMentorDeliveryChildren.recordsDelivery(attendance)
                     && MotherMentorDeliveryChildren.count(attendance) == 0) {
                 MotherMentorMotherChildUtils.put(form, MotherMentorDeliveryChildren.COUNT, "1");
             }
@@ -229,6 +233,22 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                         member.getBaseEntityId(), currentVisitId).getAnswers();
     }
 
+    protected boolean canAssessEnrollmentDelivery(MotherMentorMotherVisitDao.Context enrollment) {
+        return member != null && StringUtils.isNotBlank(member.getBaseEntityId())
+                && MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(
+                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                        member.getBaseEntityId(), currentVisitId, enrollment);
+    }
+
+    private void prepareEnrollmentDelivery(JSONObject form, MotherMentorMotherVisitDao.Context enrollment)
+            throws JSONException {
+        boolean eligible = StringUtils.isNotBlank(enrollment.getEnrollmentId())
+                && "not_pregnant".equals(MotherMentorMotherPregnancyUtils.normalizeStatus(
+                        enrollment.getEnrollmentPregnancyStatus()))
+                && canAssessEnrollmentDelivery(enrollment);
+        MotherMentorMotherPregnancyUtils.prepareEnrollmentDelivery(form, eligible);
+    }
+
     protected LocalDate loadServiceDate() {
         return StringUtils.isBlank(currentVisitId) ? LocalDate.now()
                 : MotherMentorMotherVisitDao.getServiceDate(MotherMentorLibrary.getInstance()
@@ -265,6 +285,7 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
                 MotherMentorMotherPregnancyUtils.restoreContext(payload, original.getEnrollmentPregnancyStatus(),
                         previous.getOrDefault(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB,
                                 original.getEnrollmentChildDob()));
+                prepareEnrollmentDelivery(payload, original);
                 updateFirstVisitAssessment(payload);
                 MotherMentorMotherPregnancyUtils.restoreRecordedDelivery(payload, previous,
                         StringUtils.isNotBlank(currentVisitId));

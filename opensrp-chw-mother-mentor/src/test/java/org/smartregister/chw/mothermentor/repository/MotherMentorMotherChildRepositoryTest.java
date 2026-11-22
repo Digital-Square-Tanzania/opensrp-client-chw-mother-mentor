@@ -267,6 +267,43 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void enrollmentDeliveryCountReplaysIntoChildSectionsForNewAndReturnFound() throws Exception {
+        LocalDate firstVisit = dob.plusDays(4);
+        String enrolled = dob.plusDays(1) + "T08:00:00.000+03:00";
+        data.delete("event", null, null);
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'not_pregnant', event_date = ?",
+                new Object[] {enrolled});
+        enrollment("episode-one", enrolled, "not_pregnant");
+        for (String attendance : new String[] {"new", "repeat"}) {
+            data.delete("visits", null, null);
+            Map<String, String> delivery = twinDelivery(dob);
+            delivery.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "not_pregnant");
+            delivery.put(MAMA_ENROLLMENT_CHILD_DOB, dob.toString());
+            delivery.put(MAMA_FIRST_ENROLLMENT_DELIVERY, "true");
+            delivery.put(ATTENDANCE_TYPE, attendance);
+            delivery.put(MAMA_FIRST_VISIT_ASSESSMENT, "new".equals(attendance) ? "true" : "");
+            if ("repeat".equals(attendance)) delivery.put(FOLLOW_UP_STATUS, "found");
+            for (int number = 1; number <= 2; number++) {
+                child(delivery, number, MAMA_CHILD_STATUS, "alive");
+                child(delivery, number, MAMA_BREASTFEEDING_STATUS, "breastfeeding");
+                child(delivery, number, MAMA_BIRTH_TEST_DONE, "no");
+            }
+            assertTrue(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(
+                    db, "mother", null, MotherMentorMotherVisitDao.getContext(db, "mother")));
+            visit("first", "first-form", "mother", delivery, firstVisit, 1, false);
+            List<MotherMentorMotherChildRepository.State> children =
+                    MotherMentorMotherChildRepository.getStates(db, "mother", null, firstVisit.plusDays(1));
+            assertEquals(2, children.size());
+            assertEquals("female", children.get(0).getSex());
+            assertEquals("male", children.get(1).getSex());
+            assertEquals(dob, children.get(1).getChildDob());
+            MotherMentorMotherVisitDao.Context enrollment = MotherMentorMotherVisitDao.getContext(db, "mother");
+            assertTrue(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", "first", enrollment));
+            assertFalse(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", null, enrollment));
+        }
+    }
+
+    @Test
     public void keepsStillbornTwinOutOfFollowUpAndClosesOnTheLastChild() throws Exception {
         data.delete("event", null, null);
         data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'pregnant', child_dob = ''");
