@@ -48,46 +48,57 @@ public class MotherMentorMotherPregnancyHelperTest {
     }
 
     @Test
-    public void firstNotPregnantVisitLocksDeliveredAndSavesTheEnteredCountInBothLanguages()
+    public void firstPostDeliveryVisitsSaveAndReopenBothEnrollmentChoicesInBothLanguages()
             throws Exception {
         for (String locale : new String[] {"json.form", "json.form-sw"}) {
             for (String attendance : new String[] {"new", "repeat"}) {
-                MotherMentorVisitTypeActionHelper helper = helper("not_pregnant", "01-08-2026", true);
-                JSONObject form = form(locale);
-                set(form, ATTENDANCE_TYPE, attendance);
-                if ("repeat".equals(attendance)) set(form, FOLLOW_UP_STATUS, "found");
-                helper.onJsonFormLoaded(form.toString(), RuntimeEnvironment.getApplication(),
-                        Collections.emptyMap());
-                JSONObject prepared = new JSONObject(helper.getPreProcessed());
-                JSONObject status = FormUtils.getFieldFromForm(prepared, MAMA_PREGNANCY_OUTCOME);
-                assertTrue(status.getBoolean("read_only"));
-                assertEquals("delivered", status.getString("value"));
-                assertEquals("01-08-2026", FormUtils.getFieldFromForm(prepared,
-                        MAMA_ENROLLMENT_DELIVERY_DATE).getString("value"));
-                assertFalse(FormUtils.getFieldFromForm(prepared, MotherMentorDeliveryChildren.COUNT)
-                        .optBoolean("read_only"));
-                helper.onPayloadReceived(prepared.toString());
-                assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
-
-                set(prepared, MotherMentorDeliveryChildren.COUNT, "2");
-                set(prepared, MAMA_PREGNANCY_OUTCOME, "other");
-                helper.onPayloadReceived(prepared.toString());
-                JSONObject saved = new JSONObject(helper.postProcess(prepared.toString()));
-                Map<String, String> values = MotherMentorMotherPregnancyUtils.values(saved);
-                assertEquals("delivered", values.get(MAMA_PREGNANCY_OUTCOME));
-                assertEquals("01-08-2026", values.get(MAMA_TAREHE_KUJIFUNGUA));
-                assertEquals(2, MotherMentorDeliveryChildren.count(values));
-                assertTrue(MotherMentorDeliveryChildren.recordsDelivery(values));
-                assertTrue(MotherMentorMotherPregnancyUtils.isChildPath(values, new LocalDate(2026, 10, 20)));
-                assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
-
-                helper.onJsonFormLoaded(saved.toString(), RuntimeEnvironment.getApplication(),
-                        Collections.emptyMap());
-                JSONObject reopened = new JSONObject(helper.getPreProcessed());
-                assertEquals("2", FormUtils.getFieldFromForm(reopened,
-                        MotherMentorDeliveryChildren.COUNT).getString("value"));
+                verifyFirstEnrollmentDelivery(locale, attendance, "not_pregnant");
+                verifyFirstEnrollmentDelivery(locale, attendance, "breast_feeding");
             }
         }
+    }
+
+    private void verifyFirstEnrollmentDelivery(String locale, String attendance, String enrollmentStatus)
+            throws Exception {
+        MotherMentorVisitTypeActionHelper helper = helper(enrollmentStatus, "01-08-2026", true);
+        JSONObject form = form(locale);
+        set(form, ATTENDANCE_TYPE, attendance);
+        if ("repeat".equals(attendance)) set(form, FOLLOW_UP_STATUS, "found");
+        helper.onJsonFormLoaded(form.toString(), RuntimeEnvironment.getApplication(),
+                Collections.emptyMap());
+        JSONObject prepared = new JSONObject(helper.getPreProcessed());
+        JSONObject status = FormUtils.getFieldFromForm(prepared, MAMA_PREGNANCY_OUTCOME);
+        assertTrue(status.getBoolean("read_only"));
+        assertEquals("delivered", status.getString("value"));
+        assertEquals("01-08-2026", FormUtils.getFieldFromForm(prepared,
+                MAMA_ENROLLMENT_DELIVERY_DATE).getString("value"));
+        assertFalse(FormUtils.getFieldFromForm(prepared, MotherMentorDeliveryChildren.COUNT)
+                .optBoolean("read_only"));
+        helper.onPayloadReceived(prepared.toString());
+        assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+
+        set(prepared, MotherMentorDeliveryChildren.COUNT, "2");
+        set(prepared, MAMA_PREGNANCY_OUTCOME, "other");
+        helper.onPayloadReceived(prepared.toString());
+        JSONObject saved = new JSONObject(helper.postProcess(prepared.toString()));
+        Map<String, String> values = MotherMentorMotherPregnancyUtils.values(saved);
+        assertEquals("delivered", values.get(MAMA_PREGNANCY_OUTCOME));
+        assertEquals(enrollmentStatus, values.get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
+        assertEquals(enrollmentStatus, values.get(VISIT_PREGNANCY_STATUS));
+        assertEquals(enrollmentStatus, MotherMentorMotherPregnancyUtils.currentStatus(values));
+        assertEquals("01-08-2026", values.get(MAMA_TAREHE_KUJIFUNGUA));
+        assertEquals(2, MotherMentorDeliveryChildren.count(values));
+        assertTrue(MotherMentorDeliveryChildren.recordsDelivery(values));
+        assertTrue(MotherMentorMotherPregnancyUtils.isChildPath(values, new LocalDate(2026, 10, 20)));
+        assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
+
+        helper.onJsonFormLoaded(saved.toString(), RuntimeEnvironment.getApplication(),
+                Collections.emptyMap());
+        JSONObject reopened = new JSONObject(helper.getPreProcessed());
+        assertEquals("2", FormUtils.getFieldFromForm(reopened,
+                MotherMentorDeliveryChildren.COUNT).getString("value"));
+        assertEquals(enrollmentStatus, MotherMentorMotherPregnancyUtils.values(reopened)
+                .get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
     }
 
     @Test

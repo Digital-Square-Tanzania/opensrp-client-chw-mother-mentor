@@ -268,16 +268,22 @@ public class MotherMentorMotherChildRepositoryTest {
 
     @Test
     public void enrollmentDeliveryCountReplaysIntoChildSectionsForNewAndReturnFound() throws Exception {
+        verifyEnrollmentDeliveryReplay("not_pregnant");
+        verifyEnrollmentDeliveryReplay("breast_feeding");
+    }
+
+    private void verifyEnrollmentDeliveryReplay(String enrollmentStatus) throws Exception {
         LocalDate firstVisit = dob.plusDays(4);
         String enrolled = dob.plusDays(1) + "T08:00:00.000+03:00";
         data.delete("event", null, null);
-        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = 'not_pregnant', event_date = ?",
-                new Object[] {enrolled});
-        enrollment("episode-one", enrolled, "not_pregnant");
+        data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = ?, event_date = ?",
+                new Object[] {enrollmentStatus, enrolled});
+        enrollment("episode-one", enrolled, enrollmentStatus);
         for (String attendance : new String[] {"new", "repeat"}) {
             data.delete("visits", null, null);
             Map<String, String> delivery = twinDelivery(dob);
-            delivery.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "not_pregnant");
+            delivery.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, enrollmentStatus);
+            delivery.put(VISIT_PREGNANCY_STATUS, enrollmentStatus);
             delivery.put(MAMA_ENROLLMENT_CHILD_DOB, dob.toString());
             delivery.put(MAMA_FIRST_ENROLLMENT_DELIVERY, "true");
             delivery.put(ATTENDANCE_TYPE, attendance);
@@ -297,10 +303,28 @@ public class MotherMentorMotherChildRepositoryTest {
             assertEquals("female", children.get(0).getSex());
             assertEquals("male", children.get(1).getSex());
             assertEquals(dob, children.get(1).getChildDob());
+            assertEquals(enrollmentStatus, MotherMentorMotherDeliveryRepository.getState(db, "mother", null)
+                    .getAnswers().get(MAMA_ENROLLMENT_PREGNANCY_STATUS));
             MotherMentorMotherVisitDao.Context enrollment = MotherMentorMotherVisitDao.getContext(db, "mother");
             assertTrue(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", "first", enrollment));
             assertFalse(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", null, enrollment));
         }
+    }
+
+    @Test
+    public void finalizedLegacyBreastfeedingVisitKeepsItsSingleChildPath() throws Exception {
+        LocalDate visitDay = new LocalDate(2025, 3, 2);
+        Map<String, String> delivery = new LinkedHashMap<>();
+        delivery.put(ATTENDANCE_TYPE, "repeat");
+        delivery.put(FOLLOW_UP_STATUS, "found");
+        delivery.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
+        delivery.put(MAMA_ENROLLMENT_CHILD_DOB, dob.toString());
+        delivery.put(MAMA_TAREHE_KUJIFUNGUA, dob.toString());
+        visit("legacy", "legacy-form", "mother", delivery, visitDay, 1, false);
+        MotherMentorMotherVisitDao.Context enrollment = MotherMentorMotherVisitDao.getContext(db, "mother");
+        assertFalse(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", "legacy", enrollment));
+        assertFalse(MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(db, "mother", null, enrollment));
+        assertEquals(1, MotherMentorMotherChildRepository.getStates(db, "mother", null, visitDay).size());
     }
 
     @Test

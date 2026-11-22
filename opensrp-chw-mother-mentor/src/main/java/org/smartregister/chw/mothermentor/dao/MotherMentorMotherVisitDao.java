@@ -124,6 +124,7 @@ public final class MotherMentorMotherVisitDao {
 
     public static boolean canAssessEnrollmentDelivery(
             SQLiteDatabase db, String motherId, String visitId, Context context) {
+        if (db == null) return false;
         List<Visit> visits = getFinalizedVisits(db, motherId, null, context);
         if (visits.isEmpty()) return true;
         Visit first = visits.get(0);
@@ -309,6 +310,7 @@ public final class MotherMentorMotherVisitDao {
     }
 
     private static boolean hasTable(SQLiteDatabase db, String table) {
+        if (db == null) return false;
         try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + table + ")", new String[0])) {
             return cursor.moveToFirst();
         }

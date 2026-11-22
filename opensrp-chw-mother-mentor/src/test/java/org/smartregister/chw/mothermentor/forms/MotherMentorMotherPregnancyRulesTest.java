@@ -127,36 +127,58 @@ public class MotherMentorMotherPregnancyRulesTest {
     }
 
     @Test
-    public void enrollmentDeliveryQuestionsFollowFirstNewAndReturnFoundOnly() throws Exception {
+    public void enrollmentDeliveryQuestionsFollowFirstNewAndReturnFoundForBothEnrollmentChoices()
+            throws Exception {
         for (String language : LANGUAGES) {
-            JSONObject form = foundPregnant(language);
-            MotherMentorMotherPregnancyUtils.restoreContext(form, "not_pregnant", "01-08-2026");
-            MotherMentorMotherPregnancyUtils.prepareEnrollmentDelivery(form, true);
-            JsonFormActivity activity = nativeActivity(form);
-            Facts selection = nativeFacts(activity, form, MAMA_PREGNANCY_OUTCOME, "calculation");
-            assertTrue(selection.asMap().containsKey("step1_" + ATTENDANCE_TYPE));
-            assertTrue(selection.asMap().containsKey("step1_" + FOLLOW_UP_STATUS));
-            for (String attendance : new String[] {"new", "repeat"}) {
-                set(form, ATTENDANCE_TYPE, attendance);
-                set(form, FOLLOW_UP_STATUS, "repeat".equals(attendance) ? "found" : "");
-                assertTrue(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
-                assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
-                assertTrue(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
-                assertEquals("delivered", calculated(activity, form, MAMA_PREGNANCY_OUTCOME));
-                assertEquals("01-08-2026", calculated(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
-            }
-            set(form, FOLLOW_UP_STATUS, "not_found");
-            assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
-            assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
-            clearHidden(activity, form, MAMA_PREGNANCY_OUTCOME);
-            assertFalse(field(form, MAMA_PREGNANCY_OUTCOME).has("value"));
-            set(form, FOLLOW_UP_STATUS, "found");
-            assertEquals("delivered", calculated(activity, form, MAMA_PREGNANCY_OUTCOME));
-            set(form, MAMA_FIRST_ENROLLMENT_DELIVERY, "");
-            assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
-            assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
-            assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+            verifyEnrollmentDeliveryRules(language, "not_pregnant");
+            verifyEnrollmentDeliveryRules(language, "breast_feeding");
         }
+    }
+
+    private void verifyEnrollmentDeliveryRules(String language, String enrollmentStatus) throws Exception {
+        JSONObject form = foundPregnant(language);
+        MotherMentorMotherPregnancyUtils.restoreContext(form, enrollmentStatus, "01-08-2026");
+        MotherMentorMotherPregnancyUtils.prepareEnrollmentDelivery(form, true);
+        JsonFormActivity activity = nativeActivity(form);
+        Facts selection = nativeFacts(activity, form, MAMA_PREGNANCY_OUTCOME, "calculation");
+        assertTrue(selection.asMap().containsKey("step1_" + ATTENDANCE_TYPE));
+        assertTrue(selection.asMap().containsKey("step1_" + FOLLOW_UP_STATUS));
+
+        set(form, ATTENDANCE_TYPE, "new");
+        set(form, FOLLOW_UP_STATUS, "");
+        assertEnrollmentDeliveryVisible(activity, form);
+
+        set(form, ATTENDANCE_TYPE, "repeat");
+        assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+        assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+        clearHidden(activity, form, MAMA_PREGNANCY_OUTCOME);
+        set(form, FOLLOW_UP_STATUS, "found");
+        assertEnrollmentDeliveryVisible(activity, form);
+
+        set(form, FOLLOW_UP_STATUS, "not_found");
+        assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+        assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+        assertFalse(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+        clearHidden(activity, form, MAMA_PREGNANCY_OUTCOME);
+        assertFalse(field(form, MAMA_PREGNANCY_OUTCOME).has("value"));
+        set(form, FOLLOW_UP_STATUS, "found");
+        assertEnrollmentDeliveryVisible(activity, form);
+
+        set(form, ATTENDANCE_TYPE, "new");
+        set(form, FOLLOW_UP_STATUS, "");
+        assertEnrollmentDeliveryVisible(activity, form);
+        set(form, MAMA_FIRST_ENROLLMENT_DELIVERY, "");
+        assertFalse(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+        assertFalse(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+        assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+    }
+
+    private void assertEnrollmentDeliveryVisible(JsonFormActivity activity, JSONObject form) throws Exception {
+        assertTrue(relevant(activity, form, MAMA_PREGNANCY_OUTCOME));
+        assertTrue(relevant(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
+        assertTrue(relevant(activity, form, MotherMentorDeliveryChildren.COUNT));
+        assertEquals("delivered", calculated(activity, form, MAMA_PREGNANCY_OUTCOME));
+        assertEquals("01-08-2026", calculated(activity, form, MAMA_ENROLLMENT_DELIVERY_DATE));
     }
 
     @Test

@@ -6,6 +6,18 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.53-UCSW-92-ENTRY-INTEGRATION-SNAPSHOT — 2026-11-22
+
+### Fixed
+
+- Handle an unavailable enrollment database at Mother Mentor service visit entry and preserve saved visit context when editing. Keep the first-visit delivery assessment for both feeding choices (UCSW-91 and UCSW-92).
+
+## 0.1.51-UCSW-92-LOCAL-SNAPSHOT — 2026-11-22
+
+### Fixed
+
+- Show the first-visit delivery assessment and save the baby count for clients enrolled as Not pregnant and Breastfeeding. Retain the breastfeeding enrollment status and use the count to reopen the matching child sections (UCSW-92).
+
 ## 0.1.50-SNAPSHOT — 2026-11-22
 
 ### Fixed

@@ -127,6 +127,14 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
             originalPregnancyStatus = StringUtils.defaultIfBlank(
                     values.get(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS),
                     originalPregnancyStatus);
+            if (StringUtils.isBlank(enrollmentContext.getEnrollmentId())
+                    && StringUtils.isNotBlank(visitEnrollmentId)) {
+                enrollmentContext = new MotherMentorMotherVisitDao.Context(
+                        visitEnrollmentId, "", originalPregnancyStatus,
+                        StringUtils.defaultString(values.get(DBConstants.KEY.MAMA_TAREHE_KUJIFUNGUA)),
+                        StringUtils.defaultString(values.get(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB)),
+                        "", 0);
+            }
             org.joda.time.LocalDate recorded = MotherMentorMotherVisitDao.getServiceDate(visit);
             if (recorded != null) serviceDate = recorded.toDate();
             else if (visit.getDate() != null) serviceDate = visit.getDate();
