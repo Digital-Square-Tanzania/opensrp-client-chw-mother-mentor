@@ -63,6 +63,15 @@ public class MotherMentorMotherVisitDaoTest {
     }
 
     @Test
+    public void unavailableDatabaseReturnsEmptyEnrollmentContext() {
+        MotherMentorMotherVisitDao.Context context = MotherMentorMotherVisitDao.getContext(null, MOTHER);
+
+        assertEquals("", context.getEnrollmentId());
+        assertEquals("", context.getEnrollmentPregnancyStatus());
+        assertTrue(MotherMentorMotherVisitDao.getFinalizedVisits(null, MOTHER, null).isEmpty());
+    }
+
+    @Test
     public void originalEnrollmentSurvivesMutableProjectionAndClosedState() {
         data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status='breast_feeding',"
                 + " child_dob='20-10-2026', is_closed=1");

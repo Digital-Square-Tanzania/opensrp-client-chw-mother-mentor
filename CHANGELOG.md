@@ -6,6 +6,10 @@ Android version code.
 
 ## Unreleased
 
+### Fixed
+
+- Handle an unavailable database when loading the enrollment context for a saved service visit (UCSW-91, local candidate `0.1.50-UCSW-91-LOCAL-SNAPSHOT`, version code 50).
+
 ## 0.1.49-SNAPSHOT — 2026-11-22
 
 ### Added

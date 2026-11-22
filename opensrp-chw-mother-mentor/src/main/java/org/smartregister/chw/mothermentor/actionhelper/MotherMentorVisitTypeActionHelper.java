@@ -222,11 +222,11 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     protected Map<String, String> loadDeliveryAnswers() {
-        return member == null || StringUtils.isBlank(member.getBaseEntityId())
-                ? Collections.emptyMap()
+        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) return Collections.emptyMap();
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        return database == null ? Collections.emptyMap()
                 : MotherMentorMotherDeliveryRepository.getState(
-                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                        member.getBaseEntityId(), currentVisitId).getAnswers();
+                        database, member.getBaseEntityId(), currentVisitId).getAnswers();
     }
 
     protected LocalDate loadServiceDate() {

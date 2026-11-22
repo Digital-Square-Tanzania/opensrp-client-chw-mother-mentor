@@ -293,6 +293,7 @@ public final class MotherMentorMotherVisitDao {
     }
 
     private static boolean hasTable(SQLiteDatabase db, String table) {
+        if (db == null) return false;
         try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + table + ")", new String[0])) {
             return cursor.moveToFirst();
         }
