@@ -25,6 +25,7 @@ import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorJsonFormUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherBirthTest;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherPregnancyUtils;
@@ -41,6 +42,7 @@ import java.util.Map;
 public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHelper {
     private final MemberObject member;
     private String currentVisitId;
+    private boolean savedEnrollmentDelivery;
     private final Runnable onEntryChanged;
     private final MotherMentorMotherVisitDao.Context enrollmentContext;
 
@@ -65,7 +67,12 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
         super.onJsonFormLoaded(jsonPayload, context, details);
         payload = null;
         currentVisitId = null;
+        savedEnrollmentDelivery = false;
         if (details == null) return;
+        List<VisitDetail> delivery = details.get(DBConstants.KEY.MAMA_FIRST_ENROLLMENT_DELIVERY);
+        if (delivery != null && !delivery.isEmpty() && delivery.get(0) != null) {
+            savedEnrollmentDelivery = "true".equals(MotherMentorJsonFormUtils.getValue(delivery.get(0)));
+        }
         for (List<VisitDetail> group : details.values()) {
             if (group == null) continue;
             for (VisitDetail detail : group) {
@@ -226,18 +233,19 @@ public class MotherMentorVisitTypeActionHelper extends BaseMotherMentorActionHel
     }
 
     protected Map<String, String> loadDeliveryAnswers() {
-        return member == null || StringUtils.isBlank(member.getBaseEntityId())
-                ? Collections.emptyMap()
+        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) return Collections.emptyMap();
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        return database == null ? Collections.emptyMap()
                 : MotherMentorMotherDeliveryRepository.getState(
-                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                        member.getBaseEntityId(), currentVisitId).getAnswers();
+                        database, member.getBaseEntityId(), currentVisitId).getAnswers();
     }
 
     protected boolean canAssessEnrollmentDelivery(MotherMentorMotherVisitDao.Context enrollment) {
-        return member != null && StringUtils.isNotBlank(member.getBaseEntityId())
-                && MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(
-                        MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
-                        member.getBaseEntityId(), currentVisitId, enrollment);
+        if (member == null || StringUtils.isBlank(member.getBaseEntityId())) return false;
+        SQLiteDatabase database = MotherMentorLibrary.getInstance().getRepository().getReadableDatabase();
+        if (database == null) return StringUtils.isNotBlank(currentVisitId) && savedEnrollmentDelivery;
+        return MotherMentorMotherVisitDao.canAssessEnrollmentDelivery(
+                database, member.getBaseEntityId(), currentVisitId, enrollment);
     }
 
     private void prepareEnrollmentDelivery(JSONObject form, MotherMentorMotherVisitDao.Context enrollment)

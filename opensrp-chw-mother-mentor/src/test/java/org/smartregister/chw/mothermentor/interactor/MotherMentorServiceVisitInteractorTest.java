@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorVisitTypeActionHelper;
+import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.repository.Repository;
 import org.smartregister.chw.mothermentor.activity.BaseMotherMentorVisitActivity;
 import org.smartregister.chw.mothermentor.adapter.BaseMotherMentorVisitAdapter;
@@ -34,13 +35,14 @@ import org.smartregister.chw.mothermentor.contract.BaseMotherMentorVisitContract
 import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
-import org.smartregister.chw.mothermentor.dao.MotherMentorMotherVisitDao;
 import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
+import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.clientandeventmodel.Event;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.util.FormUtils;
 
 import java.util.ArrayList;
@@ -72,7 +74,8 @@ public class MotherMentorServiceVisitInteractorTest {
                      + "processed INTEGER, visit_date TEXT)");
         data.execSQL("CREATE TABLE visit_details (visit_id TEXT, visit_key TEXT, details TEXT)");
         data.execSQL("CREATE TABLE ec_mothermentor_enrollment (base_entity_id TEXT, art_status "
-                     + "TEXT, art_start_date TEXT, last_interacted_with INTEGER)");
+                     + "TEXT, art_start_date TEXT, last_interacted_with INTEGER, pregnancy_status TEXT, "
+                     + "enrollment_date TEXT, child_dob TEXT)");
         Repository repository = mock(Repository.class);
         net.zetetic.database.sqlcipher.SQLiteDatabase cipher =
                 mock(net.zetetic.database.sqlcipher.SQLiteDatabase.class);
@@ -174,15 +177,125 @@ public class MotherMentorServiceVisitInteractorTest {
     }
 
     @Test
+    public void recordVisitEntryToleratesAnUnavailableDatabase() throws Exception {
+        when(MotherMentorLibrary.getInstance().getRepository().getReadableDatabase()).thenReturn(null);
+        TestInteractor interactor = storedEnrollmentInteractor();
+
+        BaseMotherMentorVisitAction entry = byForm(start(interactor, false), "mothermentor_visit_type");
+
+        assertEquals("", interactor.enrollmentContext.getEnrollmentId());
+        assertEquals("", field(entry, DBConstants.KEY.MAMA_FIRST_ENROLLMENT_DELIVERY).optString("value"));
+    }
+
+    @Test
+    public void firstRecordVisitLoadsFreshEnrollmentAndOpensTwoChildSections() throws Exception {
+        String deliveryDate = "02-10-2026";
+        String[] options = {"breast_feeding", "not_pregnant"};
+        data.execSQL("INSERT INTO ec_mothermentor_enrollment "
+                + "(base_entity_id, last_interacted_with, pregnancy_status, enrollment_date, child_dob) "
+                + "VALUES ('mother', 1, ?, '2026-10-03', ?)", new Object[] {options[0], deliveryDate});
+        for (String enrollmentStatus : options) {
+            data.execSQL("UPDATE ec_mothermentor_enrollment SET pregnancy_status = ? WHERE base_entity_id = 'mother'",
+                    new Object[] {enrollmentStatus});
+            for (String attendance : Arrays.asList("new", "repeat")) {
+                TestInteractor interactor = storedEnrollmentInteractor();
+                Map<String, BaseMotherMentorVisitAction> actions = start(interactor, false);
+                BaseMotherMentorVisitAction entry = byForm(actions, "mothermentor_visit_type");
+                assertEquals(enrollmentStatus, interactor.enrollmentContext.getEnrollmentPregnancyStatus());
+                JSONObject outcome = field(entry, DBConstants.KEY.MAMA_PREGNANCY_OUTCOME);
+                assertEquals("delivered", outcome.getString("value"));
+                assertTrue(outcome.getBoolean("read_only"));
+                assertEquals(deliveryDate,
+                        field(entry, DBConstants.KEY.MAMA_ENROLLMENT_DELIVERY_DATE).getString("value"));
+
+                answer(entry, DBConstants.KEY.ATTENDANCE_TYPE, attendance,
+                        DBConstants.KEY.FOLLOW_UP_STATUS, "repeat".equals(attendance) ? "found" : "",
+                        MotherMentorDeliveryChildren.COUNT, "2");
+
+                assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, entry.getActionStatus());
+                assertEquals(2, actions.values().stream()
+                        .filter(action -> "mothermentor_visit_child".equals(action.getFormName()))
+                        .filter(BaseMotherMentorVisitAction::isValid)
+                        .count());
+            }
+        }
+    }
+
+    @Test
     public void resumedVisitUsesSavedEntryAndRetainsOriginalServiceDayAndEnrollment() throws Exception {
-        TestInteractor interactor = new TestInteractor();
+        data.execSQL("INSERT INTO ec_mothermentor_enrollment "
+                     + "(base_entity_id, last_interacted_with, pregnancy_status, enrollment_date) "
+                     + "VALUES ('mother', 1, 'pregnant', '2026-10-01')");
+        assertResumedVisit("legacy:mother:2026-10-01");
+    }
+
+    @Test
+    public void resumedVisitKeepsSavedValuesWhenEnrollmentDatabaseIsUnavailable() throws Exception {
+        when(MotherMentorLibrary.getInstance().getRepository().getReadableDatabase()).thenReturn(null);
+        assertResumedVisit("enrollment-one");
+    }
+
+    @Test
+    public void unavailableHistoryPreservesOnlyTheRecordedFirstVisitBabyCount() throws Exception {
+        when(MotherMentorLibrary.getInstance().getRepository().getReadableDatabase()).thenReturn(null);
+        for (String firstDelivery : Arrays.asList("true", "")) {
+            String count = "true".equals(firstDelivery) ? "2" : "";
+            String deliveryDate = "02-10-2026";
+            List<VisitDetail> saved = new ArrayList<>();
+            addDetail(saved, DBConstants.KEY.ATTENDANCE_TYPE, "repeat");
+            addDetail(saved, DBConstants.KEY.FOLLOW_UP_STATUS, "found");
+            addDetail(saved, DBConstants.KEY.MAMA_FIRST_ENROLLMENT_DELIVERY, firstDelivery);
+            addDetail(saved, MotherMentorDeliveryChildren.COUNT, count);
+            JSONArray observations = new JSONArray()
+                    .put(observation(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "15-10-2026"))
+                    .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_ID, "enrollment-one"))
+                    .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, "not_pregnant"))
+                    .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_CHILD_DOB, deliveryDate));
+
+            BaseMotherMentorVisitAction entry = byForm(start(savedVisitInteractor(saved, observations), true),
+                    "mothermentor_visit_type");
+
+            assertEquals(firstDelivery,
+                    field(entry, DBConstants.KEY.MAMA_FIRST_ENROLLMENT_DELIVERY).optString("value"));
+            assertEquals(count, field(entry, MotherMentorDeliveryChildren.COUNT).optString("value"));
+            assertEquals(deliveryDate,
+                    field(entry, DBConstants.KEY.MAMA_ENROLLMENT_DELIVERY_DATE).optString("value"));
+        }
+    }
+
+    private void assertResumedVisit(String currentEnrollment) throws Exception {
         JSONArray observations = new JSONArray()
                 .put(observation(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "15-10-2026"))
-                .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_ID, "enrollment-one"));
+                .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_ID, "enrollment-one"))
+                .put(observation(DBConstants.KEY.MAMA_ENROLLMENT_PREGNANCY_STATUS, "pregnant"));
         List<VisitDetail> saved = new ArrayList<>();
         addDetail(saved, DBConstants.KEY.ATTENDANCE_TYPE, "repeat");
         addDetail(saved, DBConstants.KEY.FOLLOW_UP_STATUS, "found");
         addDetail(saved, DBConstants.KEY.VISIT_PREGNANCY_STATUS, "pregnant");
+        addDetail(saved, DBConstants.KEY.COMMENTS, "Original comment");
+        TestInteractor interactor = savedVisitInteractor(saved, observations);
+        LinkedHashMap<String, BaseMotherMentorVisitAction> actions = start(interactor, true);
+        assertEquals(currentEnrollment, interactor.enrollmentContext.getEnrollmentId());
+        assertEquals(6, visible(actions));
+        BaseMotherMentorVisitAction entry = byForm(actions, "mothermentor_visit_type");
+        assertEquals("found", field(entry, DBConstants.KEY.FOLLOW_UP_STATUS).optString("value"));
+        BaseMotherMentorVisitAction comment = byForm(actions, "mothermentor_visit_comment");
+        assertEquals("Original comment", field(comment, DBConstants.KEY.COMMENTS).optString("value"));
+        answer(comment, DBConstants.KEY.COMMENTS, "Updated comment");
+        assertEquals("found", field(entry, DBConstants.KEY.FOLLOW_UP_STATUS).optString("value"));
+        Event event = new Event();
+        interactor.prepareEvent(event);
+        assertEquals("15-10-2026",
+                new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.US)
+                        .format(event.getEventDate()));
+        assertTrue(event.getObs().stream().anyMatch(obs ->
+                DBConstants.KEY.MAMA_ENROLLMENT_ID.equals(obs.getFieldCode())
+                        && obs.getValues().contains("enrollment-one")));
+    }
+
+    private TestInteractor savedVisitInteractor(List<VisitDetail> saved, JSONArray observations)
+            throws Exception {
+        TestInteractor interactor = storedEnrollmentInteractor();
         Visit visit = new Visit();
         visit.setVisitId("saved-visit");
         visit.setDate(new Date());
@@ -194,19 +307,19 @@ public class MotherMentorServiceVisitInteractorTest {
         VisitDetailsRepository repository = mock(VisitDetailsRepository.class);
         when(repository.getVisits("saved-visit")).thenReturn(saved);
         when(MotherMentorLibrary.getInstance().visitDetailsRepository()).thenReturn(repository);
+        VisitRepository visits = mock(VisitRepository.class);
+        when(visits.getVisitByVisitId("saved-visit")).thenReturn(visit);
+        when(MotherMentorLibrary.getInstance().visitRepository()).thenReturn(visits);
+        return interactor;
+    }
 
-        LinkedHashMap<String, BaseMotherMentorVisitAction> actions = start(interactor, true);
-        assertEquals(6, visible(actions));
-        BaseMotherMentorVisitAction entry = byForm(actions, "mothermentor_visit_type");
-        assertEquals("found", field(entry, DBConstants.KEY.FOLLOW_UP_STATUS).optString("value"));
-        Event event = new Event();
-        interactor.prepareEvent(event);
-        assertEquals("15-10-2026",
-                new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.US)
-                        .format(event.getEventDate()));
-        assertTrue(event.getObs().stream().anyMatch(obs ->
-                DBConstants.KEY.MAMA_ENROLLMENT_ID.equals(obs.getFieldCode())
-                        && obs.getValues().contains("enrollment-one")));
+    private TestInteractor storedEnrollmentInteractor() {
+        return new TestInteractor() {
+            @Override
+            protected MotherMentorMotherVisitDao.Context loadMotherContext(String memberId) {
+                return MotherMentorMotherVisitDao.getContext(memberId);
+            }
+        };
     }
 
     private LinkedHashMap<String, BaseMotherMentorVisitAction> start(
@@ -264,7 +377,7 @@ public class MotherMentorServiceVisitInteractorTest {
         details.add(detail);
     }
 
-    private static final class TestInteractor extends MotherMentorServiceVisitInteractor {
+    private static class TestInteractor extends MotherMentorServiceVisitInteractor {
         Visit editing;
         TestInteractor() {
             super(Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES);
