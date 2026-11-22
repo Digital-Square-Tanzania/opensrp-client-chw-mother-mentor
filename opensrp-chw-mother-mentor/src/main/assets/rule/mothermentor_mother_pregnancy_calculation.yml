@@ -12,3 +12,10 @@ priority: 1
 condition: "true"
 actions:
   - "calculation = ((step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && (step1_follow_up_status == 'found' || step1_follow_up_status == 'continuing_services'))) && (step1_mama_enrollment_pregnancy_status == 'breast_feeding' || step1_mama_enrollment_pregnancy_status == 'not_pregnant')) ? step1_mama_enrollment_child_dob : ''"
+---
+name: step1_mama_pregnancy_outcome
+description: Preselect Delivered for the first assessment of a delivery recorded at enrollment
+priority: 1
+condition: "step1_mama_first_enrollment_delivery == 'true' && (step1_attendance_type == 'new' || (step1_attendance_type == 'repeat' && step1_follow_up_status == 'found'))"
+actions:
+  - "calculation = 'delivered'"

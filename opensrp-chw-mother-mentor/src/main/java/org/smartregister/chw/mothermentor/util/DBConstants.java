@@ -354,6 +354,7 @@ public final class DBConstants {
         public static final String MAMA_CARRIED_DELIVERY = "mama_carried_delivery";
         public static final String MAMA_CARRIED_WEANING_DATE = "mama_carried_weaning_date";
         public static final String MAMA_FIRST_VISIT_ASSESSMENT = "mama_first_visit_assessment";
+        public static final String MAMA_FIRST_ENROLLMENT_DELIVERY = "mama_first_enrollment_delivery";
         public static final String MAMA_BIRTH_TEST_REQUIRED = "mama_birth_test_required";
         public static final String MAMA_BIRTH_TEST_WORKFLOW = "mama_birth_test_workflow";
         public static final String MAMA_BIRTH_TEST_ANSWERED_DOB = "mama_birth_test_answered_dob";

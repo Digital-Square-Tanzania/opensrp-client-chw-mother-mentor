@@ -122,6 +122,22 @@ public final class MotherMentorMotherVisitDao {
         return getFinalizedVisits(db, motherId, excludedVisitId, getContext(db, motherId));
     }
 
+    public static boolean canAssessEnrollmentDelivery(
+            SQLiteDatabase db, String motherId, String visitId, Context context) {
+        List<Visit> visits = getFinalizedVisits(db, motherId, null, context);
+        if (visits.isEmpty()) return true;
+        Visit first = visits.get(0);
+        if (!StringUtils.equals(visitId, first.getVisitId())) return false;
+        // Keep finalized legacy visits editable without requiring a new clinical answer.
+        try {
+            Map<String, String> values = MotherMentorVisitCompletion.observationValues(
+                    new JSONObject(first.getJson()).optJSONArray("obs"));
+            return "true".equals(values.get(DBConstants.KEY.MAMA_FIRST_ENROLLMENT_DELIVERY));
+        } catch (JSONException ignored) {
+            return false;
+        }
+    }
+
     private static List<Visit> getFinalizedVisits(
             SQLiteDatabase db, String motherId, String excludedVisitId, Context context) {
         if (context.getEnrollmentId().isEmpty() || !hasTable(db, VisitRepository.VISIT_TABLE)) {

@@ -34,7 +34,8 @@ public final class MotherMentorDeliveryChildren {
 
     public static boolean recordsDelivery(Map<String, String> values) {
         return MotherMentorMotherPregnancyUtils.isFound(values)
-                && MotherMentorMotherPregnancyUtils.isLiveBirth(values)
+                && (MotherMentorMotherPregnancyUtils.isLiveBirth(values)
+                        || MotherMentorMotherPregnancyUtils.isEnrollmentDeliveryAssessment(values))
                 && !"true".equals(values.get(MAMA_CARRIED_DELIVERY));
     }
 

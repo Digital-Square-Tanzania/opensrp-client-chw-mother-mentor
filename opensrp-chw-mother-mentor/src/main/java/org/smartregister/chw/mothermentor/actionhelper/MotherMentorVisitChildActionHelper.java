@@ -22,7 +22,8 @@ import java.util.Objects;
 
 public final class MotherMentorVisitChildActionHelper extends BaseMotherMentorActionHelper {
     private static final List<String> MATERNAL_CONTEXT = Arrays.asList(ATTENDANCE_TYPE,
-            FOLLOW_UP_STATUS, MAMA_FIRST_VISIT_ASSESSMENT, MAMA_ENROLLMENT_PREGNANCY_STATUS,
+            FOLLOW_UP_STATUS, MAMA_FIRST_VISIT_ASSESSMENT, MAMA_FIRST_ENROLLMENT_DELIVERY,
+            MAMA_ENROLLMENT_PREGNANCY_STATUS,
             VISIT_PREGNANCY_STATUS, MAMA_PREGNANCY_OUTCOME, MAMA_TAREHE_KUJIFUNGUA,
             MAMA_CARRIED_DELIVERY, MotherMentorDeliveryChildren.COUNT);
 
