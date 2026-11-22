@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.49-SNAPSHOT — 2026-11-22
+
+### Added
+
+- Ask about each awaited HEI test result during Mama Kadi follow-up. Save the result and receipt date against the original sample and keep asking on later visits while the result is still pending. [CHW #1209](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1209)
+
 ## 0.1.31-SNAPSHOT — 2026-11-18
 
 ### Added
