@@ -147,4 +147,10 @@ public final class MotherMentorIitState {
     public boolean requiresConfirmation() {
         return DECEASED.equals(status) || MOVED_AREA.equals(status) || MOVED_FACILITY.equals(status);
     }
+
+    public boolean isConsecutiveClosure() {
+        return REFUSED_THREE_TIMES.equals(status) || NOT_RETURNED_THREE_TIMES.equals(status)
+                || TRAVELLED_THREE_TIMES.equals(status) || OTHER_THREE_TIMES.equals(status)
+                || LOST_TO_FOLLOW_UP.equals(status);
+    }
 }

@@ -127,6 +127,12 @@ public final class MotherMentorPartnerClosure {
         return !ACTIVE.equals(status);
     }
 
+    public boolean isConsecutiveClosure() {
+        return REFUSED_3.equals(status) || NOT_ATTENDED_3.equals(status)
+                || TRAVELLED_3.equals(status) || OTHER_3.equals(status)
+                || LOST_TO_FOLLOW_UP.equals(status);
+    }
+
     public String getStatus() {
         return status;
     }

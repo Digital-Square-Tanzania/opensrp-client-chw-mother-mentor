@@ -15,6 +15,10 @@ public enum MotherMentorChildEidExit {
     E9("nonattendance_3", false, false, null),
     E10("not_found_other_3", false, false, null);
 
+    public boolean isConsecutiveClosure() {
+        return this == E8 || this == E9 || this == E10;
+    }
+
     public static final String CHILD_VISIT = "child_visit";
     public static final String MOTHER_VISIT = "mother_visit";
 
