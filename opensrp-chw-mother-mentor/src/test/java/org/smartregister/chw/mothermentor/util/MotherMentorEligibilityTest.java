@@ -9,6 +9,29 @@ public class MotherMentorEligibilityTest {
     private final LocalDate today = new LocalDate(2026, 11, 4);
 
     @Test
+    public void newEnrollmentAndLinkingIncludeTheNineteenMonthAnniversary() {
+        assertTrue(MotherMentorEligibility.isWithinChildEnrollmentAge(new LocalDate(2025, 4, 5), today));
+        assertTrue(MotherMentorEligibility.isWithinChildEnrollmentAge(new LocalDate(2025, 4, 4), today));
+        assertFalse(MotherMentorEligibility.isWithinChildEnrollmentAge(new LocalDate(2025, 4, 3), today));
+        assertFalse(MotherMentorEligibility.isWithinChildEnrollmentAge(new LocalDate(2024, 11, 4), today));
+        assertFalse(MotherMentorEligibility.isWithinChildEnrollmentAge(today.plusDays(1), today));
+        assertFalse(MotherMentorEligibility.isWithinChildEnrollmentAge(null, today));
+    }
+
+    @Test
+    public void nineteenMonthAnniversaryClampsAtTheEndOfShorterMonths() {
+        LocalDate julyBirth = new LocalDate(2024, 7, 31);
+        assertTrue(MotherMentorEligibility.isWithinChildEnrollmentAge(julyBirth, new LocalDate(2026, 2, 28)));
+        assertFalse(MotherMentorEligibility.isWithinChildEnrollmentAge(julyBirth, new LocalDate(2026, 3, 1)));
+        assertEquals(new LocalDate(2025, 9, 30),
+                MotherMentorEligibility.earliestEligibleChildBirthDate(new LocalDate(2027, 4, 30)));
+        assertEquals(new LocalDate(2025, 10, 1),
+                MotherMentorEligibility.earliestEligibleChildBirthDate(new LocalDate(2027, 5, 1)));
+        assertEquals(new LocalDate(2025, 3, 1),
+                MotherMentorEligibility.earliestEligibleChildBirthDate(new LocalDate(2026, 9, 30)));
+    }
+
+    @Test
     public void pregnancyAndBreastfeedingAreEligibleWithoutAChildDob() {
         for (String status : new String[] {"pregnant", "breast_feeding", "bf"}) {
             assertTrue(MotherMentorEligibility.isEligibleMother(status, null, today));

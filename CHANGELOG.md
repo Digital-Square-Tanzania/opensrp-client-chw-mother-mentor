@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.54-UCSW-127-19-MONTH-CUTOFF-SNAPSHOT — 2026-11-24
+
+### Fixed
+
+- Provide a shared inclusive 19-month cutoff for Mama Kinara enrollment and Mtoto EID linking, with English and Kiswahili save feedback. [CHW #1236](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1236)
+
 ## 0.1.53-UCSW-92-ENTRY-INTEGRATION-SNAPSHOT — 2026-11-22
 
 ### Fixed
