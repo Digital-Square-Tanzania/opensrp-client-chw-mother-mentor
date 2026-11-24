@@ -1,14 +1,10 @@
 package org.smartregister.chw.mothermentor.util;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.smartregister.chw.mothermentor.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** Localized labels shared by the IIT register, profile, and tracing form. */
 public final class MotherMentorIitText {
@@ -30,18 +26,11 @@ public final class MotherMentorIitText {
     }
 
     public static String returnState(Context context, MotherMentorIitState state) {
-        return context.getString(MotherMentorIitState.REFERRED.equals(state.getReturnState())
-                ? R.string.mothermentor_iit_agreed_pending : R.string.mothermentor_iit_not_agreed);
-    }
-
-    public static String counters(Context context, MotherMentorIitState state) {
-        List<String> labels = new ArrayList<>();
-        addCounter(labels, context, R.string.mothermentor_iit_refused_count, state.getRefusedCount());
-        addCounter(labels, context, R.string.mothermentor_iit_not_returned_count, state.getNotReturnedCount());
-        addCounter(labels, context, R.string.mothermentor_iit_travelled_count, state.getTravelledCount());
-        addCounter(labels, context, R.string.mothermentor_iit_other_count, state.getOtherCount());
-        addCounter(labels, context, R.string.mothermentor_iit_not_found_count, state.getNotFoundCount());
-        return TextUtils.join(" · ", labels);
+        if (MotherMentorIitState.REFERRED.equals(state.getReturnState())) {
+            return context.getString(R.string.mothermentor_iit_agreed_pending);
+        }
+        return context.getString(state.getRefusedCount() > 0
+                ? R.string.mothermentor_iit_exit_refused : R.string.mothermentor_iit_not_agreed);
     }
 
     public static String reason(Context context, String status) {
@@ -59,9 +48,5 @@ public final class MotherMentorIitText {
             default: label = R.string.mothermentor_iit_closed; break;
         }
         return context.getString(label);
-    }
-
-    private static void addCounter(List<String> labels, Context context, int label, int value) {
-        if (value > 0) labels.add(context.getString(label, value));
     }
 }

@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.56-UCSW-130-HIDE-DEVELOPER-NOTES-SNAPSHOT — 2026-11-24
+
+### Fixed
+
+- Remove developer guidance and visible strike counts from Mother Mentor follow-up forms and statuses. Keep follow-up outcomes and HEI test scheduling. [CHW #1239](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1239)
+
 ## 0.1.55-UCSW-129-HOUSEHOLD-DEATH-STATUS-SNAPSHOT — 2026-11-24
 
 ### Fixed

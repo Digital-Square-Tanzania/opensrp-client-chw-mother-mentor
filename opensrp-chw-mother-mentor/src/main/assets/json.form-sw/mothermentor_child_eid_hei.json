@@ -199,24 +199,6 @@
         }
       },
       {
-        "key": "child_eid_weaning_hint",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_weaning_hint",
-        "value": "",
-        "text": "Kipimo cha miezi 15 hufanyika miezi 3 baada ya kuacha kunyonyeshwa.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "mama_child_age_note",
         "type": "edit_text",
         "openmrs_entity_parent": "",
@@ -266,42 +248,6 @@
           "value": true,
           "err": "Tafadhali jaza sehemu hii"
         },
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "child_eid_referral_agreed_note",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_referral_agreed_note",
-        "value": "",
-        "text": "Hifadhi; mtoto anabaki kwenye orodha. Ziara ijayo itaanza kwa kuuliza kama mtoto alifika kituoni.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "child_eid_referral_refused_note",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_referral_refused_note",
-        "value": "",
-        "text": "Hifadhi. Ufuatiliaji utafungwa baada ya mlezi kukataa katika ziara tatu mfululizo.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
         "relevance": {
           "rules-engine": {
             "ex-rules": {

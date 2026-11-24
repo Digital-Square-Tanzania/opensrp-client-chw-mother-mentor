@@ -33,17 +33,13 @@ import timber.log.Timber;
 public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHelper {
     private final String returnState;
     private final String missedDate;
-    private final int refusedCount;
-    private final int notReturnedCount;
     private final LocalDate serviceDate;
 
     public MotherMentorIitReturnActionHelper(String returnState, String missedDate,
-            int refusedCount, int notReturnedCount, LocalDate serviceDate) {
+            LocalDate serviceDate) {
         this.returnState = MotherMentorIitState.REFERRED.equals(returnState)
                 ? MotherMentorIitState.REFERRED : MotherMentorIitState.NONE;
         this.missedDate = missedDate;
-        this.refusedCount = refusedCount;
-        this.notReturnedCount = notReturnedCount;
         this.serviceDate = serviceDate == null ? LocalDate.now() : serviceDate;
     }
 
@@ -63,12 +59,6 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
                 setField(form, FACILITY_RETURN_DATE, "min_date", missed.toString("dd-MM-yyyy"));
             }
             setField(form, FACILITY_RETURN_DATE, "max_date", serviceDate.toString("dd-MM-yyyy"));
-            applyCounterNote(form, "iit_refused_note", refusedCount,
-                    R.string.mothermentor_iit_refusal_strike,
-                    R.string.mothermentor_iit_refusal_close);
-            applyCounterNote(form, "iit_not_returned_note", notReturnedCount,
-                    R.string.mothermentor_iit_not_returned_strike,
-                    R.string.mothermentor_iit_not_returned_close);
             return form.toString();
         } catch (JSONException e) {
             Timber.e(e, "Unable to prepare the Mother IIT return form");
@@ -120,13 +110,6 @@ public class MotherMentorIitReturnActionHelper extends BaseMotherMentorActionHel
             Timber.e(e, "Unable to clear inactive Mother IIT return answers");
             return null;
         }
-    }
-
-    private void applyCounterNote(JSONObject form, String key, int count, int strike, int close)
-            throws JSONException {
-        setField(form, key, "text", count >= 2 ? context.getString(close)
-                : context.getString(strike, count));
-        if (count >= 2) setField(form, key, "toaster_type", "problem");
     }
 
     private static void clear(JSONObject form, String... keys) throws JSONException {

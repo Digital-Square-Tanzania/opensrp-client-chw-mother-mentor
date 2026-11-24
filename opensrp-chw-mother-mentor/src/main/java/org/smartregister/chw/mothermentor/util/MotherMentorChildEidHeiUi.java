@@ -300,7 +300,7 @@ public final class MotherMentorChildEidHeiUi {
                 values, dob, day, tests, values.get(DBConstants.KEY.MTOTO_RUFAA_STATE_BEFORE));
         if (result == null) return "";
         switch (result.outcome) {
-            case TESTED_NEGATIVE: return context.getString(R.string.mothermentor_eid_return_negative);
+            case TESTED_NEGATIVE: return context.getString(R.string.mothermentor_eid_negative);
             case CONFIRMATORY_NEGATIVE: return context.getString(R.string.mothermentor_eid_return_confirm_negative);
             case GRADUATED: return context.getString(R.string.mothermentor_eid_return_graduation);
             case CONFIRMED_POSITIVE: return context.getString(R.string.mothermentor_eid_return_confirm_positive);
@@ -309,10 +309,9 @@ public final class MotherMentorChildEidHeiUi {
                     return context.getString(R.string.mothermentor_eid_return_wait_result);
                 }
                 if (MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(result.nextState)) {
-                    return context.getString(R.string.mothermentor_eid_return_wait_confirm);
+                    return context.getString(R.string.mothermentor_eid_awaiting_confirmation);
                 }
-                return context.getString("no".equals(values.get(DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY))
-                        ? R.string.mothermentor_eid_return_nonattendance : R.string.mothermentor_eid_return_attendance);
+                return "";
         }
     }
 

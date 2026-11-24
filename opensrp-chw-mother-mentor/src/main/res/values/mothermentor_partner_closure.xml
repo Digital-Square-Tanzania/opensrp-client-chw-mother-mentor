@@ -13,10 +13,10 @@
     <string name="mothermentor_partner_closure_attended_tested">Attended and tested</string>
     <string name="mothermentor_partner_closure_deceased">Deceased</string>
     <string name="mothermentor_partner_closure_moved">Moved from area</string>
-    <string name="mothermentor_partner_closure_refused_3">Refused (3+ visits)</string>
-    <string name="mothermentor_partner_closure_not_attended_3">Agreed but did not attend (3+ visits)</string>
-    <string name="mothermentor_partner_closure_travelled_3">Travelled (3+ visits)</string>
-    <string name="mothermentor_partner_closure_other_3">Not found — Other (3+ visits)</string>
+    <string name="mothermentor_partner_closure_refused_3">Refused</string>
+    <string name="mothermentor_partner_closure_not_attended_3">Agreed but did not attend</string>
+    <string name="mothermentor_partner_closure_travelled_3">Travelled</string>
+    <string name="mothermentor_partner_closure_other_3">Not found — Other</string>
     <string name="mothermentor_partner_closure_lost_to_follow_up">Lost to Follow-up</string>
     <string name="mothermentor_partner_closure_completed">Follow-up completed</string>
     <item name="action_mothermentor_partner_history" type="id" />
