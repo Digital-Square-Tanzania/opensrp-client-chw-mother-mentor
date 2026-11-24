@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.dao;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 
 import android.app.Application;
 import android.content.ContentValues;
@@ -9,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +22,14 @@ import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
 import org.smartregister.repository.Repository;
 
 import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
@@ -61,7 +67,7 @@ public class MotherMentorDeceasedClientTest {
         when(library.getRepository()).thenReturn(repository);
         when(repository.getReadableDatabase()).thenReturn(cipher);
         when(repository.getWritableDatabase()).thenReturn(cipher);
-        when(cipher.rawQuery(anyString(), any(String[].class)))
+        when(cipher.rawQuery(anyString(), nullable(String[].class)))
                 .thenAnswer(call -> data.rawQuery(call.getArgument(0), call.getArgument(1)));
         when(cipher.update(anyString(), any(ContentValues.class), anyString(), any(String[].class)))
                 .thenAnswer(call -> data.update(call.getArgument(0), call.getArgument(1),
@@ -134,6 +140,61 @@ public class MotherMentorDeceasedClientTest {
         insertVisit(CLIENT, Constants.EVENT_TYPE.MOTHER_MENTOR_SERVICES, 1,
                 event("mama_child_status", "deceased"), "9");
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+    }
+
+    @Test
+    public void childEidFoundAndDeceasedUsesExplicitDateAndIgnoresVoidedVisit() throws Exception {
+        JSONObject child = new JSONObject(event(FOLLOW_UP_STATUS, "found"))
+                .put("eventType", MotherMentorFollowUpType.CHILD_EID.getEventType());
+        appendAnswer(child, MAMA_CHILD_STATUS, "deceased");
+        appendAnswer(child, MTOTO_TAREHE_ALIFARIKI, "23-10-2026");
+        assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(child.toString()));
+        assertEquals(date("2026-10-23"), MotherMentorDeceasedVisitUtils.getRecordedDate(child.toString(), null));
+        child.put("voided", true);
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(child.toString()));
+    }
+
+    @Test
+    public void schemaTwoIitNotFoundDeathIsRecognized() throws Exception {
+        JSONObject iit = new JSONObject(event(FOLLOW_UP_STATUS, "not_found"))
+                .put("eventType", MotherMentorFollowUpType.MOTHER_IIT.getEventType());
+        appendAnswer(iit, IIT_NOT_FOUND_REASON, "deceased");
+        assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(iit.toString()));
+    }
+
+    @Test
+    public void maternalDeathTargetsOnlyTheVisitedLinkedTwin() {
+        data.execSQL("ALTER TABLE ec_family_member ADD COLUMN dob TEXT");
+        data.execSQL("CREATE TABLE ec_child (base_entity_id TEXT, mother_entity_id TEXT)");
+        data.execSQL("INSERT INTO ec_family_member VALUES ('first-twin', NULL, '2026-10-01'),"
+                + " ('second-twin', NULL, '2026-10-01'), ('unrelated', NULL, '2026-10-01')");
+        data.execSQL("INSERT INTO ec_child VALUES ('first-twin', 'mother'),"
+                + " ('second-twin', 'mother'), ('unrelated', 'other-mother')");
+        Map<String, String> visit = new HashMap<>();
+        visit.put(ATTENDANCE_TYPE, "repeat");
+        visit.put(FOLLOW_UP_STATUS, "found");
+        visit.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
+        visit.put(MAMA_TAREHE_KUJIFUNGUA, "2026-10-01");
+        visit.put(MotherMentorDeliveryChildren.SECTIONS, "true");
+        visit.put(MotherMentorDeliveryChildren.VISITED, "2");
+        visit.put(MotherMentorDeliveryChildren.observationKey(2, MAMA_CHILD_STATUS), "deceased");
+        visit.put(MotherMentorDeliveryChildren.observationKey(2, MAMA_TAREHE_MTOTO_ALIFARIKI), "2026-10-20");
+        LocalDate service = LocalDate.parse("2026-10-25");
+        String link = MotherMentorDeliveryChildren.observationKey(2, MotherMentorDeliveryChildren.LINK);
+
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+        visit.put(link, "unrelated");
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+        visit.put(link, "second-twin");
+        assertEquals(Collections.singletonMap("second-twin", LocalDate.parse("2026-10-20")),
+                MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service));
+        visit.put(MotherMentorDeliveryChildren.VISITED, "1");
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+    }
+
+    private static void appendAnswer(JSONObject event, String key, String value) throws Exception {
+        event.getJSONArray("obs").put(new JSONObject().put("fieldCode", key)
+                .put("values", new JSONArray().put(value)));
     }
 
     @Test

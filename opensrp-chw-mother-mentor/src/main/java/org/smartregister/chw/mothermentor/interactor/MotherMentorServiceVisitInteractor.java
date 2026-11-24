@@ -165,6 +165,12 @@ public class MotherMentorServiceVisitInteractor extends BaseMotherMentorServiceV
         if (memberObject == null || serviceDate == null) return false;
         LocalDate day = LocalDate.fromDateFields(serviceDate);
         Map<String, String> values = clinicalValues();
+        for (Integer number : visibleChildren) {
+            if (org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils
+                    .maternalChildDeathDate(MotherMentorDeliveryChildren.childVisit(values, number), day) != null) {
+                return true;
+            }
+        }
         if (MotherMentorMotherClosureRepository.classify(values, day) == VisitOutcome.CHILD_CONFIRMED_POSITIVE) {
             return true;
         }

@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.55-UCSW-129-HOUSEHOLD-DEATH-STATUS-SNAPSHOT — 2026-11-24
+
+### Fixed
+
+- Finalize saved death visits and identify the affected person in maternal, Mama IIT, partner, and Mtoto EID follow-ups. [CHW #1238](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1238)
+
 ## 0.1.54-UCSW-127-19-MONTH-CUTOFF-SNAPSHOT — 2026-11-24
 
 ### Fixed
