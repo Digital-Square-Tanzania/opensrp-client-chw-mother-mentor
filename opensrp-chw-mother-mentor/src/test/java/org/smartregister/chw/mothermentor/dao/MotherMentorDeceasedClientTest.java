@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
@@ -30,6 +31,7 @@ import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
@@ -147,7 +149,20 @@ public class MotherMentorDeceasedClientTest {
         JSONObject child = new JSONObject(event(FOLLOW_UP_STATUS, "found"))
                 .put("eventType", MotherMentorFollowUpType.CHILD_EID.getEventType());
         appendAnswer(child, MAMA_CHILD_STATUS, "deceased");
-        appendAnswer(child, MTOTO_TAREHE_ALIFARIKI, "23-10-2026");
+        try (Scanner source = new Scanner(RuntimeEnvironment.getApplication().getAssets()
+                .open("json.form/mothermentor_child_eid_follow_up_status.json"), "UTF-8")) {
+            JSONObject form = new JSONObject(source.useDelimiter("\\A").next());
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            String observedDateField = "";
+            for (int i = 0; i < fields.length(); i++) {
+                JSONObject field = fields.getJSONObject(i);
+                if ("Date the child died".equals(field.optString("hint"))) {
+                    observedDateField = field.getString("openmrs_entity_id");
+                }
+            }
+            assertEquals(MAMA_TAREHE_MTOTO_ALIFARIKI, observedDateField);
+            appendAnswer(child, observedDateField, "23-10-2026");
+        }
         assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(child.toString()));
         assertEquals(date("2026-10-23"), MotherMentorDeceasedVisitUtils.getRecordedDate(child.toString(), null));
         child.put("voided", true);

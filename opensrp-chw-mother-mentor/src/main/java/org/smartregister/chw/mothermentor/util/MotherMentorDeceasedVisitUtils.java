@@ -40,7 +40,7 @@ public final class MotherMentorDeceasedVisitUtils {
                     || (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(event.optString("eventType"))
                             && "found".equals(values.get(FOLLOW_UP_STATUS))
                             && "deceased".equals(values.get(MAMA_CHILD_STATUS))
-                            && parseDate(values.get(MTOTO_TAREHE_ALIFARIKI)) != null)
+                            && parseDate(values.get(MAMA_TAREHE_MTOTO_ALIFARIKI)) != null)
                     || (MotherMentorFollowUpType.MOTHER_IIT.getEventType().equals(event.optString("eventType"))
                             && "not_found".equals(values.get(FOLLOW_UP_STATUS))
                             && "deceased".equals(values.get(IIT_NOT_FOUND_REASON)))
@@ -99,8 +99,13 @@ public final class MotherMentorDeceasedVisitUtils {
             JSONObject event = new JSONObject(json);
             Map<String, String> values = MotherMentorVisitCompletion.observationValues(
                     event.optJSONArray("obs"));
+            if (MotherMentorFollowUpType.CHILD_EID.getEventType().equals(event.optString("eventType"))
+                    && "found".equals(values.get(FOLLOW_UP_STATUS))
+                    && "deceased".equals(values.get(MAMA_CHILD_STATUS))) {
+                Date childDeathDate = parseDate(values.get(MAMA_TAREHE_MTOTO_ALIFARIKI));
+                if (childDeathDate != null) return childDeathDate;
+            }
             for (String key : new String[] {
-                MTOTO_TAREHE_ALIFARIKI,
                 DBConstants.KEY.DOD, DBConstants.KEY.DATE_DIED,
                 DBConstants.KEY.MOTHERMENTOR_VISIT_DATE
             }) {
