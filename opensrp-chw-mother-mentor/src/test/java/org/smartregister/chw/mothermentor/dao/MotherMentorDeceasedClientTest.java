@@ -282,6 +282,13 @@ public class MotherMentorDeceasedClientTest {
                 new String[] {MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
         assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
         assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET partner_follow_up_phase = 'attendance'");
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+        assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET partner_follow_up_schema = '2'");
+        assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET partner_follow_up_schema = ?",
+                new String[] {MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
         assertFalse(MotherMentorDao.isClientDeceased("living-relative"));
         data.execSQL("UPDATE ec_mothermentor_followup_visit SET follow_up_category = 'CHILD_EID'");
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));

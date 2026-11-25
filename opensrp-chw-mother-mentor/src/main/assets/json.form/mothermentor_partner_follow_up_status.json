@@ -144,7 +144,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_not_found_reason",
         "type": "native_radio",
-        "label": "Reason",
+        "label": "Reason not found",
         "v_required": {
           "value": true,
           "err": "Please select an answer"
@@ -163,6 +163,13 @@
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "moved"
+          },
+          {
+            "key": "transferred_facility",
+            "text": "Transferred to another facility",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transferred_facility"
           },
           {
             "key": "travelled",

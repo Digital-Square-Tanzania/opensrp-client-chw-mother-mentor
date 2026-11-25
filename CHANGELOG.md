@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.64-UCSW-139-MWENZI-EXIT-ALIGNMENT-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Record found and not-found outcomes on open post-acceptance Mwenzi visits. Apply existing confirmations and household death projection. Use the Travel or Other closure when its streak reaches three, with lost to follow-up for mixed not-found exits. [CHW #1242](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1242)
+
 ## 0.1.62-UCSW-142-WEANING-DATE-RECONCILED-SNAPSHOT — 2026-11-25
 
 ### Fixed

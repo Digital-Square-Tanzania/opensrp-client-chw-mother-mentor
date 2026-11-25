@@ -30,6 +30,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.interactor.BaseMotherMentorVisitInteractor;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.presenter.BaseMotherMentorVisitPresenter;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerClosure;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.JsonFormUtils;
@@ -354,7 +355,8 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
 
     private BaseMotherMentorVisitAction immediatePartnerClosureAction() {
         for (BaseMotherMentorVisitAction action : actionList.values()) {
-            if (!"mothermentor_partner_follow_up_status".equals(action.getFormName())
+            if (!("mothermentor_partner_follow_up_status".equals(action.getFormName())
+                        || "mothermentor_partner_arrival".equals(action.getFormName()))
                     || !action.isValid()
                     || action.getActionStatus() != BaseMotherMentorVisitAction.Status.COMPLETED
                     || StringUtils.isBlank(action.getJsonPayload())) continue;
@@ -363,7 +365,7 @@ public class BaseMotherMentorVisitActivity extends SecuredActivity implements Ba
                 String status = JsonFormUtils.getValue(form, DBConstants.KEY.FOLLOW_UP_STATUS);
                 String reason = JsonFormUtils.getValue(form, DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
                 if ("not_found".equals(status)
-                        && ("deceased".equals(reason) || "moved".equals(reason))) return action;
+                        && MotherMentorPartnerClosure.isImmediateNotFoundReason(reason)) return action;
             } catch (Exception e) {
                 Timber.e(e, "Unable to read partner closure outcome");
             }

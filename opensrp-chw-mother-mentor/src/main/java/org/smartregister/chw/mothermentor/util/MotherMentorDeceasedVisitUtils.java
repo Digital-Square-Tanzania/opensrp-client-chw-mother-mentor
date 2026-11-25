@@ -48,11 +48,7 @@ public final class MotherMentorDeceasedVisitUtils {
                     || "client_deceased".equalsIgnoreCase(
                             values.get(DBConstants.KEY.FOLLOW_UP_OUTCOME))
                     || ("PARTNER".equals(values.get(DBConstants.KEY.FOLLOW_UP_CATEGORY))
-                            && MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)
-                            && "tracing".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
-                            && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
-                            && "deceased".equals(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON))
-                            && "deceased".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END)));
+                            && MotherMentorPartnerFollowUpVisitUtils.isWorkflowDeath(values));
         } catch (Exception e) {
             return false;
         }

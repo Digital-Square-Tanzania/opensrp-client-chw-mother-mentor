@@ -199,6 +199,74 @@ public class MotherMentorPartnerClosureRepositoryTest {
     }
 
     @Test
+    public void postAcceptanceReplaysThreeFinalizedDistinctNotFoundVisits() throws Exception {
+        Map<String, String> travel = notFound("travelled");
+        travel.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        travel.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        Map<String, String> other = new LinkedHashMap<>(travel);
+        other.put(PARTNER_NOT_FOUND_REASON, "other");
+        rawVisit("third", "third", "03-10-2026", 1, travel, true);
+        rawVisit("draft", "draft", "02-10-2026", 1, travel, false);
+        rawVisit("copy", "second", "02-10-2026", 1, other, true);
+        rawVisit("second", "second", "02-10-2026", 1, other, true);
+        rawVisit("first", "first", "01-10-2026", 1, travel, true);
+        insert(FOLLOWUPS, map(BASE_ENTITY_ID, "third", ENTITY_ID, "partner"));
+        MotherMentorPartnerClosureRepository.upgrade(cipher);
+        assertEquals("lost_to_follow_up", state().getStatus());
+        assertEquals("lost_to_follow_up", stored(FOLLOWUPS, "third", MWENZI_SABABU_YA_KUFUNGWA));
+        assertEquals("2026-10-03", state().getClosedDate());
+        assertEquals(3, state().getNotFoundCount());
+        MotherMentorPartnerClosure beforeThird = MotherMentorPartnerClosureRepository.getState(
+                cipher, "partner", "third");
+        assertFalse(beforeThird.isClosed());
+        assertEquals(2, beforeThird.getNotFoundCount());
+    }
+
+    @Test
+    public void postAcceptancePersistsTheTravelClosureReason() throws Exception {
+        assertPostAcceptanceSameReasonProjection("travelled", MotherMentorPartnerClosure.TRAVELLED_3);
+    }
+
+    @Test
+    public void postAcceptancePersistsTheOtherClosureReason() throws Exception {
+        assertPostAcceptanceSameReasonProjection("other", MotherMentorPartnerClosure.OTHER_3);
+    }
+
+    @Test
+    public void postAcceptanceProjectsTransferOnlyFromTheConfirmedVisit() throws Exception {
+        Map<String, String> transfer = notFound("transferred_facility");
+        transfer.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        transfer.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        rawVisit("draft", "draft", "01-10-2026", 1, transfer, false);
+        MotherMentorPartnerClosureRepository.upgrade(cipher);
+        assertFalse(state().isClosed());
+
+        rawVisit("confirmed", "confirmed", "02-10-2026", 1, transfer, true);
+        insert(FOLLOWUPS, map(BASE_ENTITY_ID, "confirmed", ENTITY_ID, "partner"));
+        MotherMentorPartnerClosureRepository.upgrade(cipher);
+        assertEquals("transferred_facility", state().getStatus());
+        assertEquals("transferred_facility", stored(FOLLOWUPS, "confirmed", MWENZI_SABABU_YA_KUFUNGWA));
+        assertEquals("2026-10-02", stored(FOLLOWUPS, "confirmed", MWENZI_TAREHE_YA_KUFUNGWA));
+    }
+
+    private void assertPostAcceptanceSameReasonProjection(String reason, String closureReason)
+            throws Exception {
+        Map<String, String> outcome = notFound(reason);
+        outcome.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        outcome.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        for (int day = 1; day <= 3; day++) {
+            String id = "visit-" + day;
+            rawVisit(id, id, "0" + day + "-10-2026", 1, outcome, true);
+            insert(FOLLOWUPS, map(BASE_ENTITY_ID, id, ENTITY_ID, "partner"));
+        }
+        MotherMentorPartnerClosureRepository.upgrade(cipher);
+        assertEquals(closureReason, stored(PARTNERS, "partner", MWENZI_SABABU_YA_KUFUNGWA));
+        assertEquals("", stored(FOLLOWUPS, "visit-2", MWENZI_SABABU_YA_KUFUNGWA));
+        assertEquals(closureReason, stored(FOLLOWUPS, "visit-3", MWENZI_SABABU_YA_KUFUNGWA));
+        assertEquals("2026-10-03", stored(FOLLOWUPS, "visit-3", MWENZI_TAREHE_YA_KUFUNGWA));
+    }
+
+    @Test
     public void rejectsDraftOtherLinkageWrongCategoryFutureAndImpossibleServiceDate() throws Exception {
         rawVisit("one", "one", "01-10-2026", 1, refused(), true);
         rawVisit("draft", "draft", "02-10-2026", 1, refused(), false);
@@ -247,6 +315,27 @@ public class MotherMentorPartnerClosureRepositoryTest {
         MotherMentorPartnerClosureRepository.rebuild(cipher, "partner");
         assertFalse(state().isClosed());
         assertEquals("active", stored(PARTNERS, "partner", MWENZI_STATUS));
+    }
+
+    @Test
+    public void anOpenPriorAttendanceAcceptsLaterNotFoundAfterReferral() throws Exception {
+        Map<String, String> prior = attendedAllNo();
+        prior.put(MWENZI_STATUS, "active");
+        rawVisit("prior", "prior", "01-10-2026", 1, prior, true);
+        MotherMentorPartnerClosureRepository.upgrade(cipher);
+        assertFalse(state().isClosed());
+        assertEquals("referral", state().getNextPhase());
+        rawVisit("referral", "referral", "02-10-2026", 1, map(PARTNER_FOLLOW_UP_SCHEMA, "3",
+                PARTNER_FOLLOW_UP_PHASE, "referral", PARTNER_TESTING_REFERRAL_GIVEN, "yes"), true);
+        assertEquals("attendance", state().getNextPhase());
+
+        Map<String, String> later = notFound("travelled");
+        later.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        later.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        rawVisit("later", "later", "03-10-2026", 1, later, true);
+        assertEquals(1, state().getNotFoundCount());
+        assertEquals(0, state().getNonAttendanceCount());
+        assertFalse(state().isClosed());
     }
 
     @Test

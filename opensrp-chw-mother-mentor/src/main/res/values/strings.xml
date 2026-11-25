@@ -238,6 +238,7 @@
     <string name="mothermentor_partner_agreement_refused">Refused to attend facility</string>
     <string name="mothermentor_partner_missing_deceased">Deceased</string>
     <string name="mothermentor_partner_missing_moved">Moved from area</string>
+    <string name="mothermentor_partner_missing_transferred_facility">Transferred to another facility</string>
     <string name="mothermentor_partner_missing_travelled">Travelled</string>
     <string name="mothermentor_partner_missing_other">Other</string>
     <string name="mothermentor_partner_result_positive">Positive</string>

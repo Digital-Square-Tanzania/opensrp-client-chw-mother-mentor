@@ -207,7 +207,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertNoTestActions();
         assertVisible("mothermentor_partner_arrival", true);
         assertVisible("mothermentor_partner_testing_referral", false);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes");
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "yes");
         assertVisitCanBeSubmitted(false);
         answer("mothermentor_partner_arrival", "partner_facility_arrival_date", "01-02-2025");
         assertVisitCanBeSubmitted(true);
@@ -256,7 +257,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
         assertVisible("mothermentor_partner_arrival", true);
         assertVisible("mothermentor_partner_education", false);
         assertVisible("mothermentor_partner_follow_up_comment", false);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "no");
         assertStatus("mothermentor_partner_arrival", true);
         assertVisible("mothermentor_partner_follow_up_comment", true);
         assertVisible("mothermentor_partner_education", false);
@@ -272,9 +274,54 @@ public class PartnerFollowUpWorkflowInteractorTest {
     }
 
     @Test
+    @Config(qualifiers = "en")
+    public void attendanceNotFoundRequiresAReasonAndStaleAttendanceIsDropped() throws Exception {
+        checkAttendanceNotFound();
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliAttendanceNotFoundRequiresAReasonAndStaleAttendanceIsDropped() throws Exception {
+        checkAttendanceNotFound();
+    }
+
+    private void checkAttendanceNotFound() throws Exception {
+        start(true);
+        String form = "mothermentor_partner_arrival";
+        answer(form, "partner_arrived_at_facility", "no");
+        assertVisitCanBeSubmitted(false);
+        answer(form, "follow_up_status", "found", "partner_arrived_at_facility", "yes",
+                "partner_facility_arrival_date", "01-02-2025");
+        assertVisible("mothermentor_partner_education", true);
+        answer(form, "follow_up_status", "not_found");
+        assertVisitCanBeSubmitted(false);
+        assertVisible("mothermentor_partner_education", false);
+        assertVisible("mothermentor_partner_follow_up_comment", false);
+        assertEquals("", value(form, "partner_arrived_at_facility"));
+        assertEquals("", value(form, "partner_facility_arrival_date"));
+
+        answer(form, "partner_not_found_reason", "other",
+                "partner_not_found_reason_other", "   ");
+        assertVisitCanBeSubmitted(false);
+        answer(form, "partner_not_found_reason_other", "Return tomorrow");
+        assertVisitCanBeSubmitted(true);
+        Event event = aggregateNativeEvent();
+        assertEquals("not_found", observation(event, DBConstants.KEY.FOLLOW_UP_STATUS));
+        assertEquals("other", observation(event, DBConstants.KEY.PARTNER_NOT_FOUND_REASON));
+        assertEquals("Return tomorrow", observation(event, DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER));
+        assertEquals("attendance", interactor.previewClosure().getNextPhase());
+
+        answer(form, "follow_up_status", "found", "partner_arrived_at_facility", "no");
+        assertVisitCanBeSubmitted(true);
+        assertEquals("", value(form, "partner_not_found_reason"));
+        assertEquals("", value(form, "partner_not_found_reason_other"));
+    }
+
+    @Test
     public void malformedAttendanceDateCannotAdvanceToEducation() throws Exception {
         start(true);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "31-02-2026");
         assertStatus("mothermentor_partner_arrival", false);
         assertVisible("mothermentor_partner_education", false);
@@ -327,7 +374,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
 
     private Event nativeCompletedEvent() throws Exception {
         start(true);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "01-02-2025");
         answer("mothermentor_partner_education", "partner_education_provided", "yes",
                 "partner_education_topics", new JSONArray().put("hiv").put("syphilis").put("hepatitis_b"));
@@ -412,6 +460,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
         Event original = historicalNonAttendanceEvent();
         Map<String, String> education = rawEducation(original);
         editNativeEvent(original);
+        assertEquals("found", value("mothermentor_partner_arrival", "follow_up_status"));
+        assertEquals("no", value("mothermentor_partner_arrival", "partner_arrived_at_facility"));
         assertVisible("mothermentor_partner_education", false);
         assertNull(action("mothermentor_partner_education").getJsonPayload());
         Event saved = aggregateNativeEvent();
@@ -422,7 +472,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
     @Test
     public void correctingHistoricalNonAttendanceUsesNewEducationAnswers() throws Exception {
         editNativeEvent(historicalNonAttendanceEvent());
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "yes",
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "yes",
                 "partner_facility_arrival_date", "01-02-2025");
         assertVisible("mothermentor_partner_education", true);
         assertStatus("mothermentor_partner_education", false);
@@ -442,15 +493,18 @@ public class PartnerFollowUpWorkflowInteractorTest {
     @Test
     public void correctingOriginalAttendanceToNoDoesNotRestoreHiddenEducation() throws Exception {
         editNativeEvent(nativeCompletedEvent());
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "no");
         assertTrue(rawEducation(aggregateNativeEvent()).isEmpty());
     }
 
     private Event historicalNonAttendanceEvent() throws Exception {
         Event attended = nativeCompletedEvent();
         start(true);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "no");
         Event event = aggregateNativeEvent();
+        event.getObs().removeIf(obs -> DBConstants.KEY.FOLLOW_UP_STATUS.equals(obs.getFieldCode()));
         for (Obs obs : attended.getObs()) {
             if (educationObservation(obs)) event.addObs(obs);
         }
@@ -561,7 +615,8 @@ public class PartnerFollowUpWorkflowInteractorTest {
         interactor.editing = savedVisit(true);
         interactor.forbidContextRead = true;
         calculate(true);
-        answer("mothermentor_partner_arrival", "partner_arrived_at_facility", "no");
+        answer("mothermentor_partner_arrival", "follow_up_status", "found",
+                "partner_arrived_at_facility", "no");
         BaseMotherMentorVisitContract.InteractorCallBack callback =
                 mock(BaseMotherMentorVisitContract.InteractorCallBack.class);
         interactor.submitVisit(true, "partner", actions, callback);

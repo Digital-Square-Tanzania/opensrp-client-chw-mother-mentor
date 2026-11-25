@@ -13,6 +13,7 @@
     <string name="mothermentor_partner_closure_attended_tested">Amehudhuria na kupimwa</string>
     <string name="mothermentor_partner_closure_deceased">Amefariki</string>
     <string name="mothermentor_partner_closure_moved">Amehama eneo</string>
+    <string name="mothermentor_partner_closure_transferred_facility">Amehamia kituo kingine</string>
     <string name="mothermentor_partner_closure_refused_3">Amekataa</string>
     <string name="mothermentor_partner_closure_not_attended_3">Hajahudhuria baada ya kukubali</string>
     <string name="mothermentor_partner_closure_travelled_3">Amesafiri</string>

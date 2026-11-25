@@ -235,6 +235,7 @@
     <string name="mothermentor_partner_agreement_refused">Amekataa kwenda kituoni</string>
     <string name="mothermentor_partner_missing_deceased">Amefariki</string>
     <string name="mothermentor_partner_missing_moved">Amehama eneo</string>
+    <string name="mothermentor_partner_missing_transferred_facility">Amehamia kituo kingine</string>
     <string name="mothermentor_partner_missing_travelled">Amesafiri</string>
     <string name="mothermentor_partner_missing_other">Nyingine</string>
     <string name="mothermentor_partner_result_positive">Chanya</string>

@@ -23,6 +23,7 @@ public final class MotherMentorPartnerClosure {
     public static final String ATTENDED_TESTED = "attended_tested";
     public static final String DECEASED = "deceased";
     public static final String MOVED = "moved";
+    public static final String TRANSFERRED_FACILITY = "transferred_facility";
     public static final String REFUSED_3 = "refused_3";
     public static final String NOT_ATTENDED_3 = "not_attended_3";
     public static final String TRAVELLED_3 = "travelled_3";
@@ -65,16 +66,19 @@ public final class MotherMentorPartnerClosure {
         if (isClosed()) return this;
         boolean tracing = "tracing".equals(values.get(PARTNER_FOLLOW_UP_PHASE));
         boolean attendance = "attendance".equals(values.get(PARTNER_FOLLOW_UP_PHASE));
+        boolean referralSchema = REFERRAL_SCHEMA.equals(values.get(PARTNER_FOLLOW_UP_SCHEMA));
         boolean found = tracing && "found".equals(values.get(FOLLOW_UP_STATUS));
-        boolean notFound = tracing && "not_found".equals(values.get(FOLLOW_UP_STATUS));
+        boolean notFound = (tracing || (attendance && referralSchema))
+                && "not_found".equals(values.get(FOLLOW_UP_STATUS));
         String agreement = found ? values.get(PARTNER_FACILITY_AGREEMENT) : "";
         String reason = notFound ? values.get(PARTNER_NOT_FOUND_REASON) : "";
-        String attended = attendance ? values.get(PARTNER_ARRIVED_AT_FACILITY) : "";
+        String attended = attendance && !notFound ? values.get(PARTNER_ARRIVED_AT_FACILITY) : "";
         boolean referral = MotherMentorPartnerFollowUpVisitUtils.REFERRAL.equals(
                 values.get(PARTNER_FOLLOW_UP_PHASE));
         if (!(referral && MotherMentorPartnerFollowUpVisitUtils.hasReferralAnswer(values))
                 && !(found && matches(agreement, "agreed", "refused"))
-                && !(notFound && matches(reason, "deceased", "moved", "travelled", "other"))
+                && !(notFound && (isImmediateNotFoundReason(reason)
+                        || matches(reason, "travelled", "other")))
                 && !(attendance && matches(attended, "yes", "no"))) return this;
 
         int refused = "refused".equals(agreement) ? refusedCount + 1 : 0;
@@ -83,14 +87,12 @@ public final class MotherMentorPartnerClosure {
         int other = "other".equals(reason) ? otherCount + 1 : 0;
         int missing = notFound ? notFoundCount + 1 : 0;
         String nextStatus = ACTIVE;
-        if ("yes".equals(attended) && REFERRAL_SCHEMA.equals(values.get(PARTNER_FOLLOW_UP_SCHEMA))) {
+        if ("yes".equals(attended) && referralSchema) {
             nextStatus = ATTENDED;
         } else if ("yes".equals(attended) && hasTestResult(values)) {
             nextStatus = ATTENDED_TESTED;
-        } else if ("deceased".equals(reason)) {
-            nextStatus = DECEASED;
-        } else if ("moved".equals(reason)) {
-            nextStatus = MOVED;
+        } else if (isImmediateNotFoundReason(reason)) {
+            nextStatus = reason;
         } else if (refused >= 3) {
             nextStatus = REFUSED_3;
         } else if (nonAttendance >= 3) {
@@ -121,6 +123,10 @@ public final class MotherMentorPartnerClosure {
     private static boolean matches(String value, String... choices) {
         for (String choice : choices) if (choice.equals(value)) return true;
         return false;
+    }
+
+    public static boolean isImmediateNotFoundReason(String reason) {
+        return matches(reason, DECEASED, MOVED, TRANSFERRED_FACILITY);
     }
 
     public boolean isClosed() {
