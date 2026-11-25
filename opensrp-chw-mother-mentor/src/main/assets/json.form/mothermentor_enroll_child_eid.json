@@ -261,7 +261,7 @@
           },
           {
             "key": "not_breast_feeding",
-            "text": "Not breastfeeding",
+            "text": "Never breastfed",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breast_feeding"

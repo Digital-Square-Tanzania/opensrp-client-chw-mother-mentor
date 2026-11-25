@@ -6,6 +6,12 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.69-UCSW-149-HEI-BREASTFEEDING-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Use the same breastfeeding questions and answers on both Mtoto EID enrolment routes. [CHW #1252](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1252)
+
 ## 0.1.68-UCSW-147-CONFIRMATION-RESULT-SNAPSHOT — 2026-11-25
 
 ### Fixed
