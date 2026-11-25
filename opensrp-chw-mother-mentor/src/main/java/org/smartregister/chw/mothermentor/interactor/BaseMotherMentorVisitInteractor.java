@@ -237,7 +237,10 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         saveVisitDetails(visit, payloadType, payloadDetails);
         processExternalVisits(visit, externalVisits, memberID);
 
-        if (shouldSubmitOnSave()) processSavedVisit(visit);
+        if (shouldSubmitOnSave() || org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils
+                .isDeceased(visit.getPreProcessedJson())) {
+            processSavedVisit(visit);
+        }
         return visit.getJson();
     }
 

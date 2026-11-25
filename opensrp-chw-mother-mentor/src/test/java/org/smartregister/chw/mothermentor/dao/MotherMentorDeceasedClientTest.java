@@ -2,6 +2,7 @@ package org.smartregister.chw.mothermentor.dao;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 
 import android.app.Application;
 import android.content.ContentValues;
@@ -9,21 +10,29 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 import org.smartregister.repository.Repository;
 
 import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
@@ -61,7 +70,7 @@ public class MotherMentorDeceasedClientTest {
         when(library.getRepository()).thenReturn(repository);
         when(repository.getReadableDatabase()).thenReturn(cipher);
         when(repository.getWritableDatabase()).thenReturn(cipher);
-        when(cipher.rawQuery(anyString(), any(String[].class)))
+        when(cipher.rawQuery(anyString(), nullable(String[].class)))
                 .thenAnswer(call -> data.rawQuery(call.getArgument(0), call.getArgument(1)));
         when(cipher.update(anyString(), any(ContentValues.class), anyString(), any(String[].class)))
                 .thenAnswer(call -> data.update(call.getArgument(0), call.getArgument(1),
@@ -137,6 +146,74 @@ public class MotherMentorDeceasedClientTest {
     }
 
     @Test
+    public void childEidFoundAndDeceasedUsesExplicitDateAndIgnoresVoidedVisit() throws Exception {
+        JSONObject child = new JSONObject(event(FOLLOW_UP_STATUS, "found"))
+                .put("eventType", MotherMentorFollowUpType.CHILD_EID.getEventType());
+        appendAnswer(child, MAMA_CHILD_STATUS, "deceased");
+        try (Scanner source = new Scanner(RuntimeEnvironment.getApplication().getAssets()
+                .open("json.form/mothermentor_child_eid_follow_up_status.json"), "UTF-8")) {
+            JSONObject form = new JSONObject(source.useDelimiter("\\A").next());
+            JSONArray fields = form.getJSONObject("step1").getJSONArray("fields");
+            String observedDateField = "";
+            for (int i = 0; i < fields.length(); i++) {
+                JSONObject field = fields.getJSONObject(i);
+                if ("Date the child died".equals(field.optString("hint"))) {
+                    observedDateField = field.getString("openmrs_entity_id");
+                }
+            }
+            assertEquals(MAMA_TAREHE_MTOTO_ALIFARIKI, observedDateField);
+            appendAnswer(child, observedDateField, "23-10-2026");
+        }
+        assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(child.toString()));
+        assertEquals(date("2026-10-23"), MotherMentorDeceasedVisitUtils.getRecordedDate(child.toString(), null));
+        child.put("voided", true);
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(child.toString()));
+    }
+
+    @Test
+    public void schemaTwoIitNotFoundDeathIsRecognized() throws Exception {
+        JSONObject iit = new JSONObject(event(FOLLOW_UP_STATUS, "not_found"))
+                .put("eventType", MotherMentorFollowUpType.MOTHER_IIT.getEventType());
+        appendAnswer(iit, IIT_NOT_FOUND_REASON, "deceased");
+        assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(iit.toString()));
+    }
+
+    @Test
+    public void maternalDeathTargetsOnlyTheVisitedLinkedTwin() {
+        data.execSQL("ALTER TABLE ec_family_member ADD COLUMN dob TEXT");
+        data.execSQL("CREATE TABLE ec_child (base_entity_id TEXT, mother_entity_id TEXT)");
+        data.execSQL("INSERT INTO ec_family_member VALUES ('first-twin', NULL, '2026-10-01'),"
+                + " ('second-twin', NULL, '2026-10-01'), ('unrelated', NULL, '2026-10-01')");
+        data.execSQL("INSERT INTO ec_child VALUES ('first-twin', 'mother'),"
+                + " ('second-twin', 'mother'), ('unrelated', 'other-mother')");
+        Map<String, String> visit = new HashMap<>();
+        visit.put(ATTENDANCE_TYPE, "repeat");
+        visit.put(FOLLOW_UP_STATUS, "found");
+        visit.put(MAMA_ENROLLMENT_PREGNANCY_STATUS, "breast_feeding");
+        visit.put(MAMA_TAREHE_KUJIFUNGUA, "2026-10-01");
+        visit.put(MotherMentorDeliveryChildren.SECTIONS, "true");
+        visit.put(MotherMentorDeliveryChildren.VISITED, "2");
+        visit.put(MotherMentorDeliveryChildren.observationKey(2, MAMA_CHILD_STATUS), "deceased");
+        visit.put(MotherMentorDeliveryChildren.observationKey(2, MAMA_TAREHE_MTOTO_ALIFARIKI), "2026-10-20");
+        LocalDate service = LocalDate.parse("2026-10-25");
+        String link = MotherMentorDeliveryChildren.observationKey(2, MotherMentorDeliveryChildren.LINK);
+
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+        visit.put(link, "unrelated");
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+        visit.put(link, "second-twin");
+        assertEquals(Collections.singletonMap("second-twin", LocalDate.parse("2026-10-20")),
+                MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service));
+        visit.put(MotherMentorDeliveryChildren.VISITED, "1");
+        assertTrue(MotherMentorDeceasedVisitUtils.linkedChildDeaths(cipher, "mother", visit, service).isEmpty());
+    }
+
+    private static void appendAnswer(JSONObject event, String key, String value) throws Exception {
+        event.getJSONArray("obs").put(new JSONObject().put("fieldCode", key)
+                .put("values", new JSONArray().put(value)));
+    }
+
+    @Test
     public void draftsAndOtherModulesCannotMarkTheClientDeceased() throws Exception {
         insertVisit(CLIENT, MotherMentorFollowUpType.PARTNER.getEventType(), 0,
                 event(DBConstants.KEY.FOLLOW_UP_STATUS, "deceased"), "9");
@@ -190,7 +267,7 @@ public class MotherMentorDeceasedClientTest {
     }
 
     @Test
-    public void synchronizedSchemaTwoPartnerDeathIsRecognizedWithoutLocalVisit() throws Exception {
+    public void synchronizedPartnerDeathIsRecognizedWithoutLocalVisit() throws Exception {
         data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
                         + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
                         + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
@@ -201,16 +278,21 @@ public class MotherMentorDeceasedClientTest {
             "synced-schema-two-death", event(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "25-10-2026")});
         assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
         assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET partner_follow_up_schema = ?",
+                new String[] {MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+        assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        assertFalse(MotherMentorDao.isClientDeceased("living-relative"));
         data.execSQL("UPDATE ec_mothermentor_followup_visit SET follow_up_category = 'CHILD_EID'");
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
     }
 
     @Test
-    public void schemaTwoPartnerDraftCannotTriggerSharedDeathBeforeFinalization() throws Exception {
+    public void currentPartnerDraftCannotTriggerSharedDeathBeforeFinalization() throws Exception {
         JSONObject event = new JSONObject(event(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"));
         for (String[] pair : new String[][] {
             {DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"},
-            {DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"},
+            {DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA},
             {DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"},
             {DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"},
             {DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased"}
@@ -218,13 +300,14 @@ public class MotherMentorDeceasedClientTest {
                 .put("values", new JSONArray().put(pair[1])));
         insertVisit(CLIENT, MotherMentorFollowUpType.PARTNER.getEventType(), 0,
                 event.toString(), "9");
-        data.execSQL("UPDATE visits SET form_submission_id = 'schema-two-draft'");
+        data.execSQL("UPDATE visits SET form_submission_id = 'partner-death-draft'");
         data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
                         + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
                         + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
-                        + " partner_follow_up_end) VALUES ('schema-two-draft', ?, 'PARTNER', '2',"
-                        + " 'tracing', 'not_found', 'deceased', 'deceased')", new Object[] {CLIENT});
-        data.execSQL("INSERT INTO event VALUES ('schema-two-draft', ?)", new Object[] {event.toString()});
+                        + " partner_follow_up_end) VALUES ('partner-death-draft', ?, 'PARTNER', ?,"
+                        + " 'tracing', 'not_found', 'deceased', 'deceased')",
+                new Object[] {CLIENT, MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
+        data.execSQL("INSERT INTO event VALUES ('partner-death-draft', ?)", new Object[] {event.toString()});
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
         data.execSQL("UPDATE visits SET processed = 1");
         assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
