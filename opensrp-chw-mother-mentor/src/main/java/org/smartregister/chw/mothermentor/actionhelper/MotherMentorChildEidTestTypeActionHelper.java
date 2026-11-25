@@ -1,5 +1,7 @@
 package org.smartregister.chw.mothermentor.actionhelper;
 
+import android.content.Context;
+
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.utils.FormUtils;
 
@@ -9,16 +11,22 @@ import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.R;
+import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.dao.MotherMentorDao;
 import org.smartregister.chw.mothermentor.domain.MemberObject;
+import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
 
 import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +39,7 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
     static final String TEST_NOT_APPLICABLE = "not_applicable";
     private final MemberObject memberObject;
     private final Runnable onTestChanged;
+    private boolean savedPostWeaningTest;
 
     public MotherMentorChildEidTestTypeActionHelper(MemberObject memberObject) {
         this(memberObject, null);
@@ -47,10 +56,27 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
         if (onTestChanged != null) onTestChanged.run();
     }
 
+    @Override
+    public void onJsonFormLoaded(String source, Context context, Map<String, List<VisitDetail>> details) {
+        super.onJsonFormLoaded(source, context, details);
+        List<VisitDetail> saved = details == null ? null : details.get(DBConstants.KEY.CHILD_EID_TEST_TYPE);
+        savedPostWeaningTest = saved != null && saved.stream()
+                .anyMatch(detail -> Stage.fromCode(detail.getDetails()) == Stage.AFTER_WEANING);
+    }
+
     protected Map<String, String> loadEnrollmentValues() {
-        return memberObject == null || StringUtils.isBlank(memberObject.getBaseEntityId())
-                ? Collections.emptyMap()
-                : MotherMentorDao.getChildEidTestEnrollmentValues(memberObject.getBaseEntityId());
+        if (memberObject == null || StringUtils.isBlank(memberObject.getBaseEntityId())) {
+            return Collections.emptyMap();
+        }
+        String childId = memberObject.getBaseEntityId();
+        Map<String, String> values = new HashMap<>(MotherMentorDao.getChildEidTestEnrollmentValues(childId));
+        if (!values.isEmpty()) {
+            LocalDate stop = MotherMentorMotherChildRepository.getStateForChild(
+                    MotherMentorLibrary.getInstance().getRepository().getReadableDatabase(),
+                    childId, null, currentTime().toLocalDate()).getChildEidWeaningDate();
+            values.put(DBConstants.KEY.WEANING_DATE, stop == null ? null : stop.toString());
+        }
+        return values;
     }
 
     protected DateTime currentTime() {
@@ -60,14 +86,18 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
     @Override
     public String evaluateSubTitle() {
         if (evaluateStatusOnPayload() != BaseMotherMentorVisitAction.Status.COMPLETED) return "";
-        return translate(
-                "mothermentor_child_eid_test_", getValue(DBConstants.KEY.CHILD_EID_TEST_TYPE));
+        String selected = getValue(DBConstants.KEY.CHILD_EID_TEST_TYPE);
+        return translate("mothermentor_child_eid_test_",
+                Stage.fromCode(selected) == Stage.AFTER_WEANING ? TEST_POST_WEANING : selected);
     }
 
     @Override
     public BaseMotherMentorVisitAction.Status evaluateStatusOnPayload() {
         String selected = getValue(DBConstants.KEY.CHILD_EID_TEST_TYPE);
         if (StringUtils.isBlank(selected)) return BaseMotherMentorVisitAction.Status.PENDING;
+        if (savedPostWeaningTest && Stage.fromCode(selected) == Stage.AFTER_WEANING) {
+            return BaseMotherMentorVisitAction.Status.COMPLETED;
+        }
         Map<String, String> enrollment = enrollmentValues();
         return completed(
                 eligibleTests(
@@ -121,14 +151,18 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
                     JSONArray allowed = new JSONArray();
                     for (int i = 0; i < options.length(); i++) {
                         JSONObject option = options.getJSONObject(i);
-                        if (eligible.contains(option.optString(JsonFormConstants.KEY))) {
+                        String code = option.optString(JsonFormConstants.KEY);
+                        if (eligible.contains(code) || savedPostWeaningTest && TEST_POST_WEANING.equals(code)) {
                             allowed.put(option);
                         }
                     }
                     testField.put(JsonFormConstants.OPTIONS_FIELD_NAME, allowed);
                 }
                 String selected = testField.optString(JsonFormConstants.VALUE);
-                if (!eligible.contains(selected)) testField.put(JsonFormConstants.VALUE, "");
+                boolean retained = savedPostWeaningTest && Stage.fromCode(selected) == Stage.AFTER_WEANING;
+                if (!eligible.contains(selected) && !retained) {
+                    testField.put(JsonFormConstants.VALUE, "");
+                }
                 if (prefill && StringUtils.isBlank(testField.optString(JsonFormConstants.VALUE))) {
                     if (eligible.contains(TEST_NOT_APPLICABLE)) {
                         testField.put(JsonFormConstants.VALUE, TEST_NOT_APPLICABLE);
@@ -193,11 +227,10 @@ public class MotherMentorChildEidTestTypeActionHelper extends BaseMotherMentorAc
         if (!birth.plusWeeks(4).isAfter(today)) eligible.add(TEST_6_WEEKS);
         if (!birth.plusMonths(9).isAfter(today)) eligible.add(TEST_9_MONTHS);
         DateTime parsedWeaning = parseDate(weaningDate);
-        if (parsedWeaning != null) {
-            LocalDate weaning = parsedWeaning.toLocalDate();
-            if (!weaning.isBefore(birth) && !weaning.plusMonths(3).isAfter(today)) {
-                eligible.add(TEST_POST_WEANING);
-            }
+        LocalDate due = MotherMentorHeiSchedule.dueDate(Stage.AFTER_WEANING, birth,
+                parsedWeaning == null ? null : parsedWeaning.toLocalDate());
+        if (due != null && !due.isAfter(today)) {
+            eligible.add(TEST_POST_WEANING);
         }
         if (!birth.plusMonths(18).isAfter(today)) eligible.add(TEST_18_MONTHS);
         if (eligible.isEmpty()) eligible.add(TEST_NOT_APPLICABLE);

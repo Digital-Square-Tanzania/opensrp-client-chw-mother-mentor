@@ -192,13 +192,14 @@ public class MotherMentorChildEidHeiUiTest {
 
             f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-10-2026");
             f.refresh();
-            assertEquals(swahili ? "hakuna\nKipimo kinachofuata: Miezi 15 — 01-01-2027"
-                    : "none\nNext test: 15 months — 01-01-2027", f.banner.getText().toString());
+            assertEquals(swahili ? "hakuna\nKipimo kinachofuata: Miezi 3 baada ya kuacha kunyonya — 01-01-2027"
+                    : "none\nNext test: 3 months after stopping breastfeeding — 01-01-2027", f.banner.getText().toString());
             assertEquals("", f.value(MTOTO_RUFAA_TEST));
 
             f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-08-2026");
             f.refresh();
-            assertEquals(swahili ? "Miezi 15" : "15 months", f.banner.getText().toString());
+            assertEquals(swahili ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding", f.banner.getText().toString());
             assertEquals("miezi15", f.value(MTOTO_RUFAA_TEST));
             assertEquals("2026-11-01", f.value(MTOTO_RUFAA_DUE));
 
@@ -214,8 +215,37 @@ public class MotherMentorChildEidHeiUiTest {
     }
 
     @Test
+    public void mtotoEidShowsPostWeaningOnlyBeforeTheEighteenMonthCutoffInBothLanguages() throws Exception {
+        LocalDate cutoff = new LocalDate(2026, 7, 15);
+        for (String language : new String[] {"en", "sw"}) {
+            String postWeaning = "sw".equals(language) ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding";
+            for (int offset : new int[]{-1, 0, 1}) {
+                LocalDate wouldBeDue = cutoff.plusDays(offset);
+                Fixture f = new Fixture(language, "none");
+                f.put(CHILD_DOB, "2025-01-15");
+                f.put(MAMA_HEI_ASSESSMENT_DATE, cutoff.minusDays(2).toString());
+                f.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\"}}");
+                f.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+                f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, wouldBeDue.minusMonths(3).toString());
+                f.refresh();
+                String next = f.banner.getText().toString();
+                assertEquals(next, offset < 0, next.contains(postWeaning));
+                assertTrue(next, next.endsWith(offset < 0 ? "14-07-2026" : "15-07-2026"));
+
+                f.put(MAMA_HEI_ASSESSMENT_DATE, wouldBeDue.toString());
+                f.refresh();
+                String due = f.banner.getText().toString();
+                assertEquals(due, offset < 0, due.contains(postWeaning));
+                assertEquals(offset < 0 ? "miezi15" : "miezi18", f.value(MTOTO_RUFAA_TEST));
+            }
+        }
+    }
+
+    @Test
     public void breastfeedingCorrectionsRecomputeTestsAndRequireReferralReconfirmation() throws Exception {
         Fixture f = new Fixture("en", "none");
+        f.put(CHILD_DOB, "2025-09-01");
         f.refresh();
         f.put(MTOTO_REFERRAL_AGREEMENT, "agreed");
         f.refresh();
@@ -226,7 +256,7 @@ public class MotherMentorChildEidHeiUiTest {
         f.refresh();
         assertEquals("[\"nine_months\",\"three_months_after_weaning\"]", f.value(MAMA_HEI_DUE_TESTS));
         assertEquals("miezi9", f.value(MTOTO_RUFAA_TEST));
-        assertEquals("9 months / 15 months", f.value(MAMA_HEI_NEXT_TEST_NOTE));
+        assertEquals("9 months / 3 months after stopping breastfeeding", f.value(MAMA_HEI_NEXT_TEST_NOTE));
         f.put(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
         f.refresh();
         assertEquals("", f.value(MAMA_TAREHE_ACHA_KUNYONYESHA));
@@ -236,6 +266,7 @@ public class MotherMentorChildEidHeiUiTest {
     @Test
     public void returnOptionsExcludeSupersededAndNotYetEligibleStages() throws Exception {
         Fixture f = new Fixture("en", "referred");
+        f.put(CHILD_DOB, "2025-09-01");
         f.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
         f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "2026-07-01");
         f.put(CHILD_EID_TEST_TYPE, "eighteen_months");

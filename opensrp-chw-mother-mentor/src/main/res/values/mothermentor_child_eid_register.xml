@@ -11,7 +11,7 @@
     </plurals>
     <string name="mothermentor_eid_test_six_weeks">6 weeks</string>
     <string name="mothermentor_eid_test_nine_months">9 months</string>
-    <string name="mothermentor_eid_test_after_weaning">15 months</string>
+    <string name="mothermentor_eid_test_after_weaning">@string/mothermentor_child_eid_test_three_months_after_weaning</string>
     <string name="mothermentor_eid_test_eighteen_months">18 months</string>
     <string name="mothermentor_eid_missed_test">Missed test</string>
     <string name="mothermentor_eid_to_refer">To be referred</string>

@@ -375,12 +375,9 @@ public final class MotherMentorMotherChildUi {
         for (Stage stage : MotherMentorHeiSchedule.routineStages()) {
             if (tests.containsKey(stage)) continue;
             if (stage == Stage.SIX_WEEKS && !day.isBefore(dob.plusMonths(9))) continue;
-            if (stage == Stage.NINE_MONTHS && !day.isBefore(dob.plusMonths(18))) continue;
-            if (stage == Stage.AFTER_WEANING && (!day.isBefore(dob.plusMonths(18))
-                    || MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(
-                            values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS)))) continue;
+            if ((stage == Stage.NINE_MONTHS || stage == Stage.AFTER_WEANING)
+                    && !day.isBefore(dob.plusMonths(18))) continue;
             LocalDate date = MotherMentorHeiSchedule.dueDate(stage, dob, stop);
-            if (stage == Stage.AFTER_WEANING && date == null) return context.getString(R.string.mothermentor_mother_hei_wait_weaning);
             if (date != null) return context.getString(R.string.mothermentor_mother_hei_next,
                     label(context, stage), MotherMentorMotherPregnancyUtils.displayDate(date));
         }

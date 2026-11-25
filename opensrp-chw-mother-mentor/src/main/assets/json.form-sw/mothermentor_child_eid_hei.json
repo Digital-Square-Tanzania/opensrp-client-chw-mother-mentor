@@ -526,7 +526,7 @@
           },
           {
             "key": "three_months_after_weaning",
-            "text": "Miezi 3 baada ya kuacha kunyonyeshwa",
+            "text": "Miezi 3 baada ya kuacha kunyonya",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "three_months_after_weaning"

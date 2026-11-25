@@ -165,7 +165,7 @@
     <string name="mothermentor_child_eid_weaning_recommendation">Automatically selected from the recorded breastfeeding cessation date: %1$s. You can change it if it is not appropriate.</string>
     <string name="mothermentor_child_eid_test_six_weeks">6 Weeks</string>
     <string name="mothermentor_child_eid_test_nine_months">9 Months</string>
-    <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after breastfeeding stopped</string>
+    <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after stopping breastfeeding</string>
     <string name="mothermentor_child_eid_test_eighteen_months">18 Months</string>
     <string name="mothermentor_child_eid_test_not_applicable">Not applicable</string>
     <string name="mothermentor_child_eid_dob_required">A valid date of birth is required to determine eligible tests.</string>

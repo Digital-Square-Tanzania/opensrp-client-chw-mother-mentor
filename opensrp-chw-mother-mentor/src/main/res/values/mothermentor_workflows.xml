@@ -94,7 +94,8 @@
     <string name="mothermentor_history_child_eid_facility_arrival_date">Arrival date</string>
     <string name="mothermentor_history_six_weeks">6 Weeks</string>
     <string name="mothermentor_history_nine_months">9 Months</string>
-    <string name="mothermentor_history_three_months_after_weaning">3 months after breastfeeding stopped</string>
+    <string name="mothermentor_history_three_months_after_weaning">@string/mothermentor_child_eid_test_three_months_after_weaning</string>
+    <string name="mothermentor_history_miezi15">@string/mothermentor_child_eid_test_three_months_after_weaning</string>
     <string name="mothermentor_history_eighteen_months">18 Months</string>
     <string name="mothermentor_history_visit_number">Visit number</string>
     <string name="mothermentor_history_visit_completion_state">Visit state</string>

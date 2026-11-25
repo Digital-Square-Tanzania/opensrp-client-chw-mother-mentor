@@ -6,6 +6,15 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.66-UCSW-146-POST-WEANING-CUTOFF-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Show one post-weaning test label in both languages and schedule it three
+  calendar months after weaning when the child stopped breastfeeding after
+  nine months of age and the calculated due date falls before the 18-month
+  birthday. [CHW #1246](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1246)
+
 ## 0.1.65-UCSW-140-MTOTO-EID-DUE-TEST-SNAPSHOT — 2026-11-25
 
 ### Fixed

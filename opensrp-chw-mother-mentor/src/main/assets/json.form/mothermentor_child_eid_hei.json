@@ -526,7 +526,7 @@
           },
           {
             "key": "three_months_after_weaning",
-            "text": "3 months after breastfeeding stopped",
+            "text": "3 months after stopping breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "three_months_after_weaning"

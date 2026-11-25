@@ -85,6 +85,8 @@ public class MotherMentorChildEidAgeEligibilityTest {
     @Test
     public void postWeaningRequiresARealDateAndThreeCalendarMonths() throws Exception {
         for (String language : languages()) {
+            assertChoices(language, "2025-08-28", "2026-01-28", null, SIX_WEEKS, NINE_MONTHS);
+            assertChoices(language, "2025-08-28", "2026-05-28", null, SIX_WEEKS, NINE_MONTHS);
             assertChoices(language, "2025-08-28", "2026-07-29", null, SIX_WEEKS, NINE_MONTHS);
             assertChoices(language, "2025-08-28", "2026-07-28", null,
                     SIX_WEEKS, NINE_MONTHS, POST_WEANING);
@@ -155,6 +157,21 @@ public class MotherMentorChildEidAgeEligibilityTest {
                     language, Collections.singletonMap(TEST_KEY, Collections.singletonList(saved)));
             assertEquals(SIX_WEEKS, JsonFormUtils.getValue(new JSONObject(action.getJsonPayload()), TEST_KEY));
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, action.getActionStatus());
+        }
+    }
+
+    @Test
+    public void recordedPostWeaningTestKeepsItsCodeButUsesTheNewLabel() throws Exception {
+        for (String language : languages()) {
+            VisitDetail saved = new VisitDetail();
+            saved.setVisitKey(TEST_KEY);
+            saved.setDetails(POST_WEANING);
+            BaseMotherMentorVisitAction action = action(helper("2025-08-28", "2026-01-28", null),
+                    language, Collections.singletonMap(TEST_KEY, Collections.singletonList(saved)));
+            assertEquals(POST_WEANING, JsonFormUtils.getValue(new JSONObject(action.getJsonPayload()), TEST_KEY));
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, action.getActionStatus());
+            assertEquals("json.form-sw".equals(language) ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding", action.getSubTitle());
         }
     }
 

@@ -29,20 +29,24 @@ public class MotherMentorHeiScheduleTest {
     }
 
     @Test
-    public void cessationPlusThreeMonthsHasNoFixedFifteenMonthAgeFloor() {
-        LocalDate cessation = dob.plusMonths(1);
-        assertEquals(Arrays.asList(MotherMentorHeiSchedule.Stage.SIX_WEEKS,
-                MotherMentorHeiSchedule.Stage.AFTER_WEANING),
-                due(cessation, cessation.plusMonths(3)));
-        assertEquals(Arrays.asList(MotherMentorHeiSchedule.Stage.NINE_MONTHS,
-                MotherMentorHeiSchedule.Stage.AFTER_WEANING),
-                due(cessation, dob.plusMonths(10)));
+    public void weaningMustBeStrictlyAfterTheNinthCalendarMonth() {
+        LocalDate nineMonths = dob.plusMonths(9);
+        for (LocalDate stop : Arrays.asList(dob.plusMonths(5), nineMonths.minusDays(1), nineMonths)) {
+            assertNull(MotherMentorHeiSchedule.dueDate(MotherMentorHeiSchedule.Stage.AFTER_WEANING, dob, stop));
+            assertEquals(Collections.singletonList(MotherMentorHeiSchedule.Stage.NINE_MONTHS),
+                    due(stop, nineMonths));
+            assertEquals(Collections.singletonList(MotherMentorHeiSchedule.Stage.EIGHTEEN_MONTHS),
+                    due(stop, dob.plusMonths(18)));
+        }
+        LocalDate stop = nineMonths.plusDays(1);
+        assertEquals(stop.plusMonths(3), MotherMentorHeiSchedule.dueDate(
+                MotherMentorHeiSchedule.Stage.AFTER_WEANING, dob, stop));
     }
 
     @Test
     public void calendarMonthAdditionClampsShorterMonths() {
-        assertEquals(new LocalDate(2025, 4, 30), MotherMentorHeiSchedule.dueDate(
-                MotherMentorHeiSchedule.Stage.AFTER_WEANING, dob, dob));
+        assertEquals(new LocalDate(2026, 4, 30), MotherMentorHeiSchedule.dueDate(
+                MotherMentorHeiSchedule.Stage.AFTER_WEANING, dob, new LocalDate(2026, 1, 31)));
         LocalDate end = new LocalDate(2024, 8, 31);
         assertEquals(new LocalDate(2026, 2, 28), MotherMentorHeiSchedule.dueDate(
                 MotherMentorHeiSchedule.Stage.EIGHTEEN_MONTHS, end, null));

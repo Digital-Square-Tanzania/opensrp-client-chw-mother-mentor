@@ -39,6 +39,7 @@ public class MotherMentorChildEidHeiActionHelperTest {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             LocalDate weaning = new LocalDate(2026, 7, 1);
             Helper helper = helper(directory, "none", "breastfeeding", null);
+            when(helper.clinical.getChildDob()).thenReturn(new LocalDate(2025, 9, 1));
             when(helper.clinical.getChildEidWeaningDate()).thenReturn(weaning);
             Map<Stage, TestRecord> history = new HashMap<>();
             history.put(Stage.AT_BIRTH, new TestRecord("negative", new LocalDate(2026, 1, 1), false, null));
@@ -53,13 +54,14 @@ public class MotherMentorChildEidHeiActionHelperTest {
             assertTrue(MotherMentorMotherChildUtils.field(form, MAMA_BREASTFEEDING_STATUS)
                     .getBoolean("read_only"));
             assertEquals("1", value(form, MTOTO_WEANING_CARRIED));
-            assertEquals("2026-01-01", value(form, CHILD_DOB));
+            assertEquals("2025-09-01", value(form, CHILD_DOB));
             assertEquals("2026-10-01", value(form, MAMA_HEI_ASSESSMENT_DATE));
             assertEquals("none", value(form, MTOTO_RUFAA_STATE_BEFORE));
             assertEquals("miezi15", value(form, MTOTO_RUFAA_TEST));
             assertEquals("2026-10-01", value(form, MTOTO_RUFAA_DUE));
             assertTrue(value(form, MAMA_HEI_DUE_TESTS).contains("three_months_after_weaning"));
-            assertEquals("json.form-sw".equals(directory) ? "Miezi 15" : "15 months",
+            assertEquals("json.form-sw".equals(directory) ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding",
                     value(form, MAMA_HEI_NEXT_TEST_NOTE));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
             MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, "15-07-2026");
@@ -100,6 +102,7 @@ public class MotherMentorChildEidHeiActionHelperTest {
         detail.setDetails("01-07-2026");
         Map<String, List<VisitDetail>> details = Collections.singletonMap(
                 MAMA_TAREHE_ACHA_KUNYONYESHA, Collections.singletonList(detail));
+        when(helper.clinical.getChildDob()).thenReturn(new LocalDate(2025, 9, 1));
         when(helper.clinical.getChildEidWeaningDate()).thenReturn(new LocalDate(2026, 7, 5));
         helper.onJsonFormLoaded(helper.sourceForm, RuntimeEnvironment.getApplication(), details);
         JSONObject form = new JSONObject(helper.getPreProcessed());
@@ -107,6 +110,7 @@ public class MotherMentorChildEidHeiActionHelperTest {
         MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, detail.getDetails());
         JSONObject saved = new JSONObject(helper.postProcess(form.toString()));
         assertEquals("05-07-2026", value(saved, MAMA_TAREHE_ACHA_KUNYONYESHA));
+        assertEquals("[\"nine_months\"]", value(saved, MAMA_HEI_DUE_TESTS));
         assertEquals("1", value(saved, MTOTO_WEANING_CARRIED));
     }
 

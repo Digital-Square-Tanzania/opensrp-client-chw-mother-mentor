@@ -34,6 +34,7 @@ public final class MotherMentorChildEidDirectEnrollment {
     private static final String EMPTY_HEI_NUMBER = "00-00-0000-000000-C00";
     private static final String NO_TEST = "no_test_has_been_done_yet";
     private static final String WEANED_LAST_TEST = "direct_enrollment_last_test_weaned";
+    private static final String FORM_CHILD_DOB = "mothermentor_direct_enrollment_child_dob";
     private static final String RULES = "mothermentor_child_eid_direct_enrollment.yml";
 
     private MotherMentorChildEidDirectEnrollment() {}
@@ -93,10 +94,6 @@ public final class MotherMentorChildEidDirectEnrollment {
         JSONObject weaned = new JSONObject(last.toString());
         weaned.put("key", WEANED_LAST_TEST).put("openmrs_entity_id", WEANED_LAST_TEST)
                 .put("relevance", answer(feedingAddress, "stop_breast_feeding"));
-        if (!today.isBefore(dob.plusMonths(4))) {
-            weaned.getJSONArray("options").put(option(Stage.AFTER_WEANING.getCode(),
-                    MotherMentorChildEidLabels.test(context, Stage.AFTER_WEANING.getCode())));
-        }
         fields = new JSONArray().put(last).put(weaned).put(result);
         fields.put(field(MTOTO_ENTRY_TEST_DATE, "date_picker")
                 .put("hint", context.getString(R.string.mothermentor_eid_direct_test_date))
@@ -107,7 +104,32 @@ public final class MotherMentorChildEidDirectEnrollment {
         tests.put("fields", fields);
         form.put("step4", tests);
         form.put("entity_id", value(child, BASE_ENTITY_ID));
+        form.put(FORM_CHILD_DOB, dob.toString());
         return form;
+    }
+
+    public static void refreshLastTestOptions(Context context, JSONObject form, LocalDate day) throws JSONException {
+        if (form == null) return;
+        LocalDate dob = MotherMentorHeiSchedule.parseDate(form.optString(FORM_CHILD_DOB));
+        if (dob == null) return;
+        JSONObject weaned = MotherMentorMotherChildUtils.field(form, WEANED_LAST_TEST);
+        if (weaned == null) return;
+        Map<String, String> values = MotherMentorMotherChildUtils.values(form);
+        LocalDate stop = MotherMentorHeiSchedule.parseDate(values.get(WEANING_DATE));
+        String code = Stage.AFTER_WEANING.getCode();
+        JSONArray options = weaned.getJSONArray("options");
+        boolean eligible = "stop_breast_feeding".equals(values.get(BREASTFEEDING_STATUS))
+                && eligibleLast(Stage.AFTER_WEANING, dob, stop, day);
+        if (eligible && indexOf(options, code) < 0) {
+            options.put(option(code, MotherMentorChildEidLabels.test(context, code)));
+        } else if (!eligible) {
+            remove(options, code);
+            if (code.equals(values.get(WEANED_LAST_TEST))) {
+                MotherMentorMotherChildUtils.put(form, WEANED_LAST_TEST, "");
+                MotherMentorMotherChildUtils.put(form, LAST_TEST_RESULT, "");
+                MotherMentorMotherChildUtils.put(form, MTOTO_ENTRY_TEST_DATE, "");
+            }
+        }
     }
 
     public static void prepareForEvent(Context context, SQLiteDatabase db, JSONObject form,

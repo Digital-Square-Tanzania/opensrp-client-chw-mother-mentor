@@ -162,8 +162,9 @@ public final class MotherMentorHeiSchedule {
             case SIX_WEEKS: return dob.plusDays(42);
             case NINE_MONTHS: return dob.plusMonths(9);
             case AFTER_WEANING:
-                return cessation == null || cessation.isBefore(dob)
-                        ? null : cessation.plusMonths(3);
+                if (cessation == null || !cessation.isAfter(dob.plusMonths(9))) return null;
+                LocalDate postWeaning = cessation.plusMonths(3);
+                return postWeaning.isBefore(dob.plusMonths(18)) ? postWeaning : null;
             case EIGHTEEN_MONTHS: return dob.plusMonths(18);
             default: return null;
         }
