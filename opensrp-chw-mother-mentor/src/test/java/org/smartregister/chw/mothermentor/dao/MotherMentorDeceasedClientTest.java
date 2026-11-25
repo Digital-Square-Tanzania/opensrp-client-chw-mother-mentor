@@ -25,6 +25,7 @@ import org.smartregister.chw.mothermentor.util.DBConstants;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeceasedVisitUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorDeliveryChildren;
 import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 import org.smartregister.repository.Repository;
 
 import java.util.Date;
@@ -266,7 +267,7 @@ public class MotherMentorDeceasedClientTest {
     }
 
     @Test
-    public void synchronizedSchemaTwoPartnerDeathIsRecognizedWithoutLocalVisit() throws Exception {
+    public void synchronizedPartnerDeathIsRecognizedWithoutLocalVisit() throws Exception {
         data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
                         + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
                         + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
@@ -277,16 +278,21 @@ public class MotherMentorDeceasedClientTest {
             "synced-schema-two-death", event(DBConstants.KEY.MOTHERMENTOR_VISIT_DATE, "25-10-2026")});
         assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
         assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        data.execSQL("UPDATE ec_mothermentor_followup_visit SET partner_follow_up_schema = ?",
+                new String[] {MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
+        assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
+        assertEquals(date("2026-10-25"), MotherMentorDao.getClientDeathDate(CLIENT));
+        assertFalse(MotherMentorDao.isClientDeceased("living-relative"));
         data.execSQL("UPDATE ec_mothermentor_followup_visit SET follow_up_category = 'CHILD_EID'");
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
     }
 
     @Test
-    public void schemaTwoPartnerDraftCannotTriggerSharedDeathBeforeFinalization() throws Exception {
+    public void currentPartnerDraftCannotTriggerSharedDeathBeforeFinalization() throws Exception {
         JSONObject event = new JSONObject(event(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"));
         for (String[] pair : new String[][] {
             {DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"},
-            {DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"},
+            {DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA},
             {DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"},
             {DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"},
             {DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased"}
@@ -294,13 +300,14 @@ public class MotherMentorDeceasedClientTest {
                 .put("values", new JSONArray().put(pair[1])));
         insertVisit(CLIENT, MotherMentorFollowUpType.PARTNER.getEventType(), 0,
                 event.toString(), "9");
-        data.execSQL("UPDATE visits SET form_submission_id = 'schema-two-draft'");
+        data.execSQL("UPDATE visits SET form_submission_id = 'partner-death-draft'");
         data.execSQL("INSERT INTO ec_mothermentor_followup_visit "
                         + "(base_entity_id, entity_id, follow_up_category, partner_follow_up_schema,"
                         + " partner_follow_up_phase, follow_up_status, partner_not_found_reason,"
-                        + " partner_follow_up_end) VALUES ('schema-two-draft', ?, 'PARTNER', '2',"
-                        + " 'tracing', 'not_found', 'deceased', 'deceased')", new Object[] {CLIENT});
-        data.execSQL("INSERT INTO event VALUES ('schema-two-draft', ?)", new Object[] {event.toString()});
+                        + " partner_follow_up_end) VALUES ('partner-death-draft', ?, 'PARTNER', ?,"
+                        + " 'tracing', 'not_found', 'deceased', 'deceased')",
+                new Object[] {CLIENT, MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA});
+        data.execSQL("INSERT INTO event VALUES ('partner-death-draft', ?)", new Object[] {event.toString()});
         assertFalse(MotherMentorDao.isClientDeceased(CLIENT));
         data.execSQL("UPDATE visits SET processed = 1");
         assertTrue(MotherMentorDao.isClientDeceased(CLIENT));
