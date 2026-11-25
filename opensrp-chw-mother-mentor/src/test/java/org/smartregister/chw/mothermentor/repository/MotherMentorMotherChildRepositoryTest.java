@@ -887,6 +887,73 @@ public class MotherMentorMotherChildRepositoryTest {
     }
 
     @Test
+    public void mtotoEidDoesNotAdoptAMamaKadiWeaningDate() throws Exception {
+        link("child", dob);
+        LocalDate weaning = dob.plusMonths(6);
+        Map<String, String> motherAnswer = MotherMentorMotherChildUtilsTest.test(
+                "nine_months", "negative", dob.plusMonths(9));
+        motherAnswer.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+        motherAnswer.put(MAMA_TAREHE_ACHA_KUNYONYESHA, weaning.toString());
+        visit("mother", "mother", "mother", motherAnswer, dob.plusMonths(10), 1, false);
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository
+                .getStateForChild(db, "child", null);
+        assertEquals(weaning, state.getWeaningDate());
+        assertNull(state.getChildEidWeaningDate());
+        assertNull(state.getChildEidWeaningVisitId());
+    }
+
+    @Test
+    public void mtotoEidCarriesTheFirstVisitDateAndUsesTheCorrectedOriginInLaterVisits() throws Exception {
+        link("child", dob);
+        LocalDate firstDay = dob.plusMonths(10);
+        LocalDate original = dob.plusMonths(6);
+        LocalDate corrected = dob.plusMonths(7);
+        visit("first", "first", "child", childBreastfeeding(original), firstDay, 1, false);
+        Map<String, String> copied = childBreastfeeding(original);
+        copied.put(MTOTO_WEANING_CARRIED, "1");
+        visit("second", "second", "child", copied, firstDay.plusDays(1), 1, false);
+        visit("third", "third", "child", copied, firstDay.plusDays(2), 1, false);
+
+        assertNull(MotherMentorMotherChildRepository.getStateForChildBeforeVisit(db, "child", "first")
+                .getChildEidWeaningDate());
+        data.delete("visits", "visit_id = ?", new String[] {"first"});
+        visit("first", "first", "child", childBreastfeeding(corrected), firstDay, 2, false);
+        for (String later : Arrays.asList("second", "third")) {
+            MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository
+                    .getStateForChildBeforeVisit(db, "child", later);
+            assertEquals(corrected, state.getChildEidWeaningDate());
+            assertEquals("first", state.getChildEidWeaningVisitId());
+        }
+        data.delete("visits", "visit_id = ?", new String[] {"first"});
+        assertNull(MotherMentorMotherChildRepository.getStateForChild(db, "child", null).getChildEidWeaningDate());
+    }
+
+    @Test
+    public void mtotoEidUsesTheLinkDateAndKeepsItWhenALaterOldClientRepeatsTheAnswer() throws Exception {
+        link("child", dob);
+        LocalDate weaning = dob.plusMonths(6);
+        String linkedOn = dob.plusMonths(7).toString();
+        Map<String, String> fields = new LinkedHashMap<>();
+        fields.put(BREASTFEEDING_STATUS, "stop_breast_feeding");
+        fields.put(WEANING_DATE, weaning.toString());
+        fields.put(CHILD_DOB, dob.toString());
+        JSONObject event = new JSONObject().put("formSubmissionId", "linked").put("eventDate", linkedOn)
+                .put("version", 1).put("obs", observations(fields));
+        ContentValues row = new ContentValues();
+        row.put("baseEntityId", "child");
+        row.put("eventType", Constants.EVENT_TYPE.MOTHER_MENTOR_ENROLL_CHILD_EID);
+        row.put("eventDate", linkedOn);
+        row.put("formSubmissionId", "linked");
+        row.put("json", event.toString());
+        data.insertOrThrow("event", null, row);
+        visit("repeat", "repeat", "child", childBreastfeeding(dob.plusMonths(8)), dob.plusMonths(9), 1, false);
+        MotherMentorMotherChildRepository.State state = MotherMentorMotherChildRepository
+                .getStateForChild(db, "child", null);
+        assertEquals(weaning, state.getChildEidWeaningDate());
+        assertNull(state.getChildEidWeaningVisitId());
+    }
+
+    @Test
     public void laterMotherAndChildAnswersShareChronologyAndBeforeEditContext() throws Exception {
         link("child", dob);
         LocalDate firstDay = dob.plusMonths(10);

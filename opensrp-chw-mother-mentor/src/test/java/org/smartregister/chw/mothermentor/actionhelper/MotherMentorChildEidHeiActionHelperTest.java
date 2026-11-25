@@ -13,6 +13,8 @@ import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.util.MotherMentorChildEidHeiUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.Stage;
+import org.smartregister.chw.mothermentor.util.MotherMentorHeiSchedule.TestRecord;
 import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 
 import java.util.Arrays;
@@ -30,22 +32,76 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorChildEidHeiActionHelperTest {
     @Test
-    public void bothFormsPrefillSharedBreastfeedingWithoutAutomaticallyCompletingTheAction() throws Exception {
+    public void bothFormsCarryTheChildEidDateAndCalculateTheDueTestOnOpen() throws Exception {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
-            Helper helper = helper(directory, "none", "not_breastfeeding", new LocalDate(2026, 7, 1));
+            LocalDate weaning = new LocalDate(2026, 7, 1);
+            Helper helper = helper(directory, "none", "breastfeeding", null);
+            when(helper.clinical.getChildEidWeaningDate()).thenReturn(weaning);
+            Map<Stage, TestRecord> history = new HashMap<>();
+            history.put(Stage.AT_BIRTH, new TestRecord("negative", new LocalDate(2026, 1, 1), false, null));
+            history.put(Stage.SIX_WEEKS, new TestRecord("negative", new LocalDate(2026, 2, 12), false, null));
+            history.put(Stage.NINE_MONTHS, new TestRecord("negative", new LocalDate(2026, 10, 1), false, null));
+            when(helper.clinical.getSamplingHistory()).thenReturn(history);
             JSONObject form = new JSONObject(helper.getPreProcessed());
             assertEquals("not_breastfeeding", value(form, MAMA_BREASTFEEDING_STATUS));
-            assertEquals("2026-07-01", value(form, MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertEquals("01-07-2026", value(form, MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertTrue(MotherMentorMotherChildUtils.field(form, MAMA_TAREHE_ACHA_KUNYONYESHA)
+                    .getBoolean("read_only"));
+            assertTrue(MotherMentorMotherChildUtils.field(form, MAMA_BREASTFEEDING_STATUS)
+                    .getBoolean("read_only"));
+            assertEquals("1", value(form, MTOTO_WEANING_CARRIED));
             assertEquals("2026-01-01", value(form, CHILD_DOB));
             assertEquals("2026-10-01", value(form, MAMA_HEI_ASSESSMENT_DATE));
             assertEquals("none", value(form, MTOTO_RUFAA_STATE_BEFORE));
-            assertEquals("miezi9", value(form, MTOTO_RUFAA_TEST));
+            assertEquals("miezi15", value(form, MTOTO_RUFAA_TEST));
             assertEquals("2026-10-01", value(form, MTOTO_RUFAA_DUE));
+            assertTrue(value(form, MAMA_HEI_DUE_TESTS).contains("three_months_after_weaning"));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+            MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, "15-07-2026");
             MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
-            helper.onPayloadReceived(helper.postProcess(form.toString()));
+            JSONObject saved = new JSONObject(helper.postProcess(form.toString()));
+            assertEquals("01-07-2026", value(saved, MAMA_TAREHE_ACHA_KUNYONYESHA));
             assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
         }
+    }
+
+    @Test
+    public void bothFormsKeepTheRequiredDateEmptyUntilMtotoEidRecordsIt() throws Exception {
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            Helper helper = helper(directory, "none", "not_breastfeeding", new LocalDate(2026, 7, 1));
+            JSONObject form = new JSONObject(helper.getPreProcessed());
+            JSONObject field = MotherMentorMotherChildUtils.field(form, MAMA_TAREHE_ACHA_KUNYONYESHA);
+            assertEquals("not_breastfeeding", value(form, MAMA_BREASTFEEDING_STATUS));
+            assertEquals("", field.getString("value"));
+            assertFalse(field.getBoolean("read_only"));
+            assertTrue(field.getJSONObject("v_required").getBoolean("value"));
+            MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
+            helper.postProcess(form.toString());
+            assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
+            field.put("value", "01-07-2026");
+            JSONObject saved = new JSONObject(helper.postProcess(form.toString()));
+            assertEquals("01-07-2026", value(saved, MAMA_TAREHE_ACHA_KUNYONYESHA));
+            assertEquals("", value(saved, MTOTO_WEANING_CARRIED));
+            assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, helper.evaluateStatusOnPayload());
+        }
+    }
+
+    @Test
+    public void editingALaterVisitUsesTheCorrectedSourceInsteadOfItsSavedCopy() throws Exception {
+        Helper helper = helper("json.form", "none", "not_breastfeeding", new LocalDate(2026, 7, 1));
+        VisitDetail detail = new VisitDetail();
+        detail.setVisitId("later-visit");
+        detail.setDetails("01-07-2026");
+        Map<String, List<VisitDetail>> details = Collections.singletonMap(
+                MAMA_TAREHE_ACHA_KUNYONYESHA, Collections.singletonList(detail));
+        when(helper.clinical.getChildEidWeaningDate()).thenReturn(new LocalDate(2026, 7, 5));
+        helper.onJsonFormLoaded(helper.sourceForm, RuntimeEnvironment.getApplication(), details);
+        JSONObject form = new JSONObject(helper.getPreProcessed());
+        // The action builder restores saved values after preprocessing.
+        MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, detail.getDetails());
+        JSONObject saved = new JSONObject(helper.postProcess(form.toString()));
+        assertEquals("05-07-2026", value(saved, MAMA_TAREHE_ACHA_KUNYONYESHA));
+        assertEquals("1", value(saved, MTOTO_WEANING_CARRIED));
     }
 
     @Test

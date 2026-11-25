@@ -7,6 +7,7 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -24,18 +25,25 @@ import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorChildEidHeiActionHelper;
-import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.MotherMentorChildEidRepository;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
+import org.smartregister.chw.mothermentor.repository.VisitDetailsRepository;
+import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.JsonFormUtils;
+import org.smartregister.chw.mothermentor.util.MotherMentorFollowUpType;
+import org.smartregister.chw.mothermentor.util.MotherMentorMotherChildUtils;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.clientandeventmodel.Event;
+import org.smartregister.repository.AllSharedPreferences;
 import org.smartregister.repository.Repository;
 import org.smartregister.util.FormUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +105,82 @@ public class ChildEidTracingWorkflowTest {
     @Test @Config(qualifiers = "en")
     public void englishChecklistRequiresSavedFoundAndAliveAndDiscardsHiddenHeiAnswers() throws Exception {
         checkChecklist();
+    }
+
+    @Test
+    public void historyLoadsAndSavesTheSelectedChildVisitWithoutFallingBackToTheLatest() {
+        String eventType = MotherMentorFollowUpType.CHILD_EID.getEventType();
+        VisitRepository visits = mock(VisitRepository.class);
+        ChildEidFollowUpVisitInteractor selected = new ChildEidFollowUpVisitInteractor(eventType, "first") {
+            @Override public VisitRepository visitRepository() { return visits; }
+        };
+        Visit first = new Visit();
+        first.setVisitId("first");
+        first.setBaseEntityId("child");
+        first.setVisitType(eventType);
+        when(visits.getVisitByVisitId("first")).thenReturn(first);
+        assertSame(first, selected.loadEditingVisit("child"));
+        assertSame(first, selected.findVisitForEdit("child"));
+        assertNull(selected.findVisitForEdit("other-child"));
+        when(visits.getVisitByVisitId("first")).thenReturn(null);
+        assertNull(selected.findVisitForEdit("child"));
+        verify(visits, never()).getLatestVisit(anyString(), anyString());
+    }
+
+    @Test
+    public void savingOlderChildEidVisitOnAnotherDayKeepsItsOccurrenceTimeAndIdentity() throws Exception {
+        String type = MotherMentorFollowUpType.CHILD_EID.getEventType();
+        LocalDate editDay = LocalDate.now();
+        Date originalTime = editDay.minusDays(2).toDateTime(new LocalTime(11, 42, 17)).toDate();
+        Date created = new Date(originalTime.getTime() + 150);
+        Event originalEvent = new Event();
+        originalEvent.setEventDate(originalTime);
+        originalEvent.setFormSubmissionId("first-submission");
+        originalEvent.setEventId("first-event");
+        originalEvent.setVersion(1);
+
+        Visit first = new Visit();
+        first.setVisitId("first");
+        first.setBaseEntityId("child");
+        first.setVisitType(type);
+        first.setProcessed(true);
+        first.setDate(originalTime);
+        first.setCreatedAt(created);
+        first.setFormSubmissionId("first-submission");
+        first.setJson(JsonFormUtils.gson.toJson(originalEvent));
+        Visit later = new Visit();
+        later.setVisitId("later");
+        later.setDate(editDay.minusDays(1).toDateTime(new LocalTime(9, 10)).toDate());
+
+        MotherMentorLibrary library = MotherMentorLibrary.getInstance();
+        VisitRepository visits = mock(VisitRepository.class);
+        when(library.visitRepository()).thenReturn(visits);
+        when(library.visitDetailsRepository()).thenReturn(mock(VisitDetailsRepository.class));
+        when(library.context().allSharedPreferences()).thenReturn(mock(AllSharedPreferences.class));
+        when(library.getSourceDateFormat()).thenReturn("dd-MM-yyyy");
+        when(library.getSaveDateFormat()).thenReturn("yyyy-MM-dd");
+        when(visits.getVisitByVisitId("first")).thenReturn(first);
+        when(visits.getLatestVisit("child", type)).thenReturn(later);
+
+        JSONObject status = forms.getFormJson("mothermentor_child_eid_follow_up_status");
+        MotherMentorMotherChildUtils.put(status, FOLLOW_UP_STATUS, "found");
+        MotherMentorMotherChildUtils.put(status, MAMA_CHILD_STATUS, "alive");
+        ChildEidFollowUpVisitInteractor selected = new ChildEidFollowUpVisitInteractor(type, "first");
+        Visit saved = selected.saveVisit(true, "child", type,
+                Collections.singletonMap("Follow-up status", status.toString()), "");
+
+        assertEquals("first", saved.getVisitId());
+        assertEquals("first-submission", saved.getFormSubmissionId());
+        assertEquals("first-event", saved.getEventId());
+        assertEquals(originalTime, saved.getDate());
+        assertEquals(created, saved.getCreatedAt());
+        Event revised = JsonFormUtils.gson.fromJson(saved.getJson(), Event.class);
+        assertEquals(originalTime, revised.getEventDate());
+        assertTrue(saved.getDate().before(later.getDate()));
+        verify(visits).deleteVisit("first");
+        verify(visits, never()).deleteVisit("later");
+        verify(visits, never()).getLatestVisit("child", type);
+        verify(visits).addVisit(saved);
     }
 
     @Test @Config(qualifiers = "sw")

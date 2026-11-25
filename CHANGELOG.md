@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.62-UCSW-142-WEANING-DATE-RECONCILED-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Carry the recorded Mtoto EID weaning date into later HEI forms and use it
+  to calculate the due test. Preserve the original visit date when correcting
+  the recording visit. [CHW #1241](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1241)
+
 ## 0.1.61-UCSW-151-MWENZI-DEATH-SNAPSHOT — 2026-11-25
 
 ### Fixed
