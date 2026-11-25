@@ -74,10 +74,10 @@ public class MotherMentorIitReturnFormTest {
     }
 
     @Test
-    public void preparationShowsMissedDateAndLocalizedCounterAndSetsPickerLimits() throws Exception {
+    public void preparationShowsMissedDateAndPickerLimitsWithoutDeveloperNotes() throws Exception {
         for (boolean swahili : new boolean[] {false, true}) {
             MotherMentorIitReturnActionHelper helper =
-                    new MotherMentorIitReturnActionHelper("referred", "2024-10-20", 1, 2, VISIT);
+                    new MotherMentorIitReturnActionHelper("referred", "2024-10-20", VISIT);
             helper.onJsonFormLoaded(form(swahili).toString(), context(swahili), Collections.emptyMap());
             JSONObject prepared = new JSONObject(helper.getPreProcessed());
             assertEquals("referred", field(prepared, IIT_RETURN_STATE).getString("value"));
@@ -90,17 +90,16 @@ public class MotherMentorIitReturnFormTest {
                     context(swahili), "20/10/2024", VISIT).contains("20-10-2024"));
             assertEquals("20-10-2024", field(prepared, FACILITY_RETURN_DATE).getString("min_date"));
             assertEquals("05-11-2024", field(prepared, FACILITY_RETURN_DATE).getString("max_date"));
-            assertTrue(field(prepared, "iit_refused_note").getString("text").contains("1/3"));
-            JSONObject warning = field(prepared, "iit_not_returned_note");
-            assertTrue(warning.getString("text").startsWith(swahili ? "Mara ya 3" : "3rd time"));
-            assertEquals("problem", warning.getString("toaster_type"));
+            for (String key : new String[] {"iit_agreed_note", "iit_refused_note", "iit_not_returned_note"}) {
+                assertFalse(key, FormUtils.getFieldFromForm(prepared, key).has("key"));
+            }
         }
     }
 
     @Test
     public void stagingAnAnswerClearsInactiveValuesAndPreservesTheCurrentPhase() throws Exception {
         MotherMentorIitReturnActionHelper helper =
-                new MotherMentorIitReturnActionHelper("referred", "2024-10-20", 0, 0, VISIT);
+                new MotherMentorIitReturnActionHelper("referred", "2024-10-20", VISIT);
         JSONObject response = form(false);
         helper.onJsonFormLoaded(response.toString(), context(false), Collections.emptyMap());
         field(response, RETURNED_TO_FACILITY).put("value", "no");

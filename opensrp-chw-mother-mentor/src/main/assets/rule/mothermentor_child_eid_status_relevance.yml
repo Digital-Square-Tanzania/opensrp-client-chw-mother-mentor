@@ -15,14 +15,6 @@ actions:
   - "isRelevant = true"
 
 ---
-name: step1_mtoto_alive_note
-description: Show the active Child EID tracing question
-priority: 1
-condition: "step1_follow_up_status == 'found' && step1_mama_child_status == 'alive'"
-actions:
-  - "isRelevant = true"
-
----
 name: step1_mtoto_not_found_reason
 description: Show the active Child EID tracing question
 priority: 1

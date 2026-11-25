@@ -166,32 +166,6 @@
         }
       },
       {
-        "key": "iit_agreed_note",
-        "type": "toaster_notes",
-        "text": "Hifadhi. Mama anabaki kwenye orodha. Ziara ijayo itaanza kwa kuuliza kama amerudi kituoni.",
-        "toaster_type": "positive",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "iit_refused_note",
-        "type": "toaster_notes",
-        "text": "",
-        "toaster_type": "warning",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "returned_to_facility",
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
@@ -342,19 +316,6 @@
           "value": "true",
           "err": "Jibu linahitajika"
         },
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_iit_return_to_facility_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "iit_not_returned_note",
-        "type": "toaster_notes",
-        "text": "",
-        "toaster_type": "warning",
         "relevance": {
           "rules-engine": {
             "ex-rules": {

@@ -199,24 +199,6 @@
         }
       },
       {
-        "key": "child_eid_weaning_hint",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_weaning_hint",
-        "value": "",
-        "text": "The 15-month test is done 3 months after breastfeeding stops.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
         "key": "mama_child_age_note",
         "type": "edit_text",
         "openmrs_entity_parent": "",
@@ -266,42 +248,6 @@
           "value": true,
           "err": "Please complete this field"
         },
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "child_eid_referral_agreed_note",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_referral_agreed_note",
-        "value": "",
-        "text": "Save; the child stays on the list. The next visit starts by asking whether the child attended the facility.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_hei_relevance.yml"
-            }
-          }
-        }
-      },
-      {
-        "key": "child_eid_referral_refused_note",
-        "type": "toaster_notes",
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "child_eid_referral_refused_note",
-        "value": "",
-        "text": "Save. The follow-up closes after three consecutive refusals.",
-        "text_color": "#2D2E2D",
-        "toaster_type": "info",
         "relevance": {
           "rules-engine": {
             "ex-rules": {

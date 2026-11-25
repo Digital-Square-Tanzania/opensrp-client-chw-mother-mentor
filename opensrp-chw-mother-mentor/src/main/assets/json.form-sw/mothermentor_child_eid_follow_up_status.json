@@ -129,21 +129,6 @@
         }
       },
       {
-        "key": "mtoto_alive_note",
-        "type": "toaster_notes",
-        "text": "Hifadhi; endelea na sehemu ya Kipimo cha HEI.",
-        "relevance": {
-          "rules-engine": {
-            "ex-rules": {
-              "rules-file": "mothermentor_child_eid_status_relevance.yml"
-            }
-          }
-        },
-        "openmrs_entity_parent": "",
-        "openmrs_entity": "ui_only",
-        "openmrs_entity_id": "mtoto_alive_note"
-      },
-      {
         "key": "mtoto_not_found_reason",
         "type": "native_radio",
         "openmrs_entity_parent": "",

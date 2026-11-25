@@ -34,8 +34,8 @@
     <string name="mothermentor_eid_child_deceased">Mtoto amefariki — rekodi imefungwa.</string>
     <string name="mothermentor_eid_moved_area">Amehama eneo — rekodi imefungwa.</string>
     <string name="mothermentor_eid_moved_facility">Amehama kituo</string>
-    <string name="mothermentor_eid_not_found_three">Hajapatikana — Nyingine mara 3+.</string>
-    <string name="mothermentor_eid_refused_three">Mlezi amekataa mara 3+.</string>
+    <string name="mothermentor_eid_not_found_three">Hajapatikana — Nyingine.</string>
+    <string name="mothermentor_eid_refused_three">Mlezi amekataa.</string>
     <string name="mothermentor_eid_graduated">Amehitimu — majibu hasi ya miezi 18</string>
     <string name="mothermentor_eid_confirmed_positive">Chanya — ameunganishwa CTC</string>
     <string name="mothermentor_eid_filter">Chuja</string>

@@ -41,6 +41,7 @@ public class MotherMentorChildEidStatusNativeRulesTest {
     public void childStatusAndDeathQuestionsReceiveActualNativeStatusFacts() throws Exception {
         for (String language : LANGUAGES) {
             JSONObject form = form(language, "mothermentor_child_eid_follow_up_status");
+            assertFalse(FormUtils.getFieldFromForm(form, MTOTO_ALIVE_NOTE).has("key"));
             JsonFormActivity activity = nativeActivity(form);
             for (String status : new String[] {"", "found", "not_found"}) {
                 set(form, FOLLOW_UP_STATUS, status);
@@ -54,8 +55,6 @@ public class MotherMentorChildEidStatusNativeRulesTest {
                     assertFact(deathFacts, MAMA_CHILD_STATUS, child);
                     assertEquals(language + ":" + status + ":" + child,
                             "found".equals(status) && "deceased".equals(child), relevant(activity, deathFacts));
-                    Facts noteFacts = nativeFacts(activity, field(form, MTOTO_ALIVE_NOTE));
-                    assertEquals("found".equals(status) && "alive".equals(child), relevant(activity, noteFacts));
                 }
             }
         }
@@ -71,12 +70,12 @@ public class MotherMentorChildEidStatusNativeRulesTest {
                 set(form, FOLLOW_UP_STATUS, status);
                 for (String child : new String[] {"", "alive", "deceased"}) {
                     set(form, MAMA_CHILD_STATUS, child);
-                    boolean aliveNote = relevant(activity, nativeFacts(activity, field(form, MTOTO_ALIVE_NOTE)));
+                    boolean childFoundAlive = "found".equals(status) && "alive".equals(child);
                     for (String key : new String[] {HEI_NUMBER, "direct_hei_help"}) {
                         Facts facts = nativeFacts(activity, field(form, key), DIRECT_RULES);
                         assertFact(facts, FOLLOW_UP_STATUS, status);
                         assertFact(facts, MAMA_CHILD_STATUS, child);
-                        assertEquals(aliveNote, activity.getRulesEngineFactory().getRelevance(facts, DIRECT_RULES));
+                        assertEquals(childFoundAlive, activity.getRulesEngineFactory().getRelevance(facts, DIRECT_RULES));
                     }
                 }
             }
@@ -137,7 +136,6 @@ public class MotherMentorChildEidStatusNativeRulesTest {
             set(form, MTOTO_NOT_FOUND_REASON, "moved_area");
             set(form, MTOTO_MOVED_AREA_FACILITY, "Test facility");
             set(form, CHILD_DOB, "2026-01-20");
-            set(form, MTOTO_ALIVE_NOTE, "private-ui-state");
             org.smartregister.chw.mothermentor.util.MotherMentorChildEidStatusUtils
                     .clearInactiveAnswers(form);
             org.smartregister.domain.tag.FormTag tag = new org.smartregister.domain.tag.FormTag();

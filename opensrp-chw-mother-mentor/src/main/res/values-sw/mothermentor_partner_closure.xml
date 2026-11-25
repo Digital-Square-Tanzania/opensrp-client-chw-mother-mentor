@@ -13,10 +13,10 @@
     <string name="mothermentor_partner_closure_attended_tested">Amehudhuria na kupimwa</string>
     <string name="mothermentor_partner_closure_deceased">Amefariki</string>
     <string name="mothermentor_partner_closure_moved">Amehama eneo</string>
-    <string name="mothermentor_partner_closure_refused_3">Amekataa mara 3+</string>
-    <string name="mothermentor_partner_closure_not_attended_3">Hajahudhuria baada ya kukubali mara 3+</string>
-    <string name="mothermentor_partner_closure_travelled_3">Amesafiri mara 3+</string>
-    <string name="mothermentor_partner_closure_other_3">Hajapatikana — Nyingine mara 3+</string>
+    <string name="mothermentor_partner_closure_refused_3">Amekataa</string>
+    <string name="mothermentor_partner_closure_not_attended_3">Hajahudhuria baada ya kukubali</string>
+    <string name="mothermentor_partner_closure_travelled_3">Amesafiri</string>
+    <string name="mothermentor_partner_closure_other_3">Hajapatikana — Nyingine</string>
     <string name="mothermentor_partner_closure_lost_to_follow_up">Lost to Follow-up (LTFU)</string>
     <string name="mothermentor_partner_closure_completed">Ufuatiliaji umekamilika</string>
     <string name="mothermentor_partner_referral_section">Rufaa ya upimaji imetolewa?</string>
