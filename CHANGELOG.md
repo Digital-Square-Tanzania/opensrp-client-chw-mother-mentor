@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.65-UCSW-140-MTOTO-EID-DUE-TEST-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Keep the Mtoto EID due-test display blank when breastfeeding has stopped and
+  the weaning date is missing. Show the calculated result as soon as a date is
+  entered or carried forward. [CHW #1245](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1245)
+
 ## 0.1.64-UCSW-139-MWENZI-EXIT-ALIGNMENT-SNAPSHOT — 2026-11-25
 
 ### Fixed

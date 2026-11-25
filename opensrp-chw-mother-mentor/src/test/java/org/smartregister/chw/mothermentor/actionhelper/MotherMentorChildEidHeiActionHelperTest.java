@@ -1,6 +1,8 @@
 package org.smartregister.chw.mothermentor.actionhelper;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.res.Configuration;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -56,6 +59,8 @@ public class MotherMentorChildEidHeiActionHelperTest {
             assertEquals("miezi15", value(form, MTOTO_RUFAA_TEST));
             assertEquals("2026-10-01", value(form, MTOTO_RUFAA_DUE));
             assertTrue(value(form, MAMA_HEI_DUE_TESTS).contains("three_months_after_weaning"));
+            assertEquals("json.form-sw".equals(directory) ? "Miezi 15" : "15 months",
+                    value(form, MAMA_HEI_NEXT_TEST_NOTE));
             assertEquals(BaseMotherMentorVisitAction.Status.PENDING, helper.evaluateStatusOnPayload());
             MotherMentorMotherChildUtils.put(form, MAMA_TAREHE_ACHA_KUNYONYESHA, "15-07-2026");
             MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
@@ -73,6 +78,7 @@ public class MotherMentorChildEidHeiActionHelperTest {
             JSONObject field = MotherMentorMotherChildUtils.field(form, MAMA_TAREHE_ACHA_KUNYONYESHA);
             assertEquals("not_breastfeeding", value(form, MAMA_BREASTFEEDING_STATUS));
             assertEquals("", field.getString("value"));
+            assertEquals("", value(form, MAMA_HEI_NEXT_TEST_NOTE));
             assertFalse(field.getBoolean("read_only"));
             assertTrue(field.getJSONObject("v_required").getBoolean("value"));
             MotherMentorMotherChildUtils.put(form, MTOTO_REFERRAL_AGREEMENT, "agreed");
@@ -220,9 +226,13 @@ public class MotherMentorChildEidHeiActionHelperTest {
         when(clinical.getWeaningDate()).thenReturn(weaning);
         when(clinical.getSamplingHistory()).thenReturn(Collections.emptyMap());
         Helper helper = new Helper(state, clinical);
-        try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
+        Context app = RuntimeEnvironment.getApplication();
+        Configuration configuration = new Configuration(app.getResources().getConfiguration());
+        configuration.setLocale(new Locale("json.form-sw".equals(directory) ? "sw" : "en"));
+        Context context = app.createConfigurationContext(configuration);
+        try (Scanner scanner = new Scanner(context.getAssets()
                 .open(directory + "/mothermentor_child_eid_hei.json"), "UTF-8").useDelimiter("\\A")) {
-            helper.onJsonFormLoaded(scanner.next(), RuntimeEnvironment.getApplication(), null);
+            helper.onJsonFormLoaded(scanner.next(), context, null);
         }
         return helper;
     }

@@ -172,6 +172,48 @@ public class MotherMentorChildEidHeiUiTest {
     }
 
     @Test
+    public void stoppedBreastfeedingBannerWaitsForTheDateAndClearsWhenItIsRemoved() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            boolean swahili = "sw".equals(language);
+            Fixture f = new Fixture(language, "none");
+            f.put(CHILD_DOB, "2025-09-01");
+            f.put(MAMA_HEI_ASSESSMENT_DATE, "2026-11-01");
+            f.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\","
+                    + "\"date\":\"2026-06-01\",\"confirmed\":false,\"service_date\":\"2026-06-01\"}}");
+            f.refresh();
+            assertEquals(swahili
+                    ? "hakuna\nKipimo kinachofuata: Miezi 18 (Uthibitisho) — 01-03-2027"
+                    : "none\nNext test: 18 months (confirmatory) — 01-03-2027", f.banner.getText().toString());
+
+            f.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+            f.refresh();
+            assertEquals(language, "", f.banner.getText().toString());
+            assertEquals("", f.value(MAMA_HEI_NEXT_TEST_NOTE));
+
+            f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-10-2026");
+            f.refresh();
+            assertEquals(swahili ? "hakuna\nKipimo kinachofuata: Miezi 15 — 01-01-2027"
+                    : "none\nNext test: 15 months — 01-01-2027", f.banner.getText().toString());
+            assertEquals("", f.value(MTOTO_RUFAA_TEST));
+
+            f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-08-2026");
+            f.refresh();
+            assertEquals(swahili ? "Miezi 15" : "15 months", f.banner.getText().toString());
+            assertEquals("miezi15", f.value(MTOTO_RUFAA_TEST));
+            assertEquals("2026-11-01", f.value(MTOTO_RUFAA_DUE));
+
+            f.put(MTOTO_REFERRAL_AGREEMENT, "agreed");
+            f.refresh();
+            assertEquals("agreed", f.value(MTOTO_REFERRAL_AGREEMENT));
+            f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "");
+            f.refresh();
+            assertEquals("", f.banner.getText().toString());
+            assertEquals("", f.value(MAMA_HEI_NEXT_TEST_NOTE));
+            assertEquals("", f.value(MTOTO_REFERRAL_AGREEMENT));
+        }
+    }
+
+    @Test
     public void breastfeedingCorrectionsRecomputeTestsAndRequireReferralReconfirmation() throws Exception {
         Fixture f = new Fixture("en", "none");
         f.refresh();
@@ -241,6 +283,7 @@ public class MotherMentorChildEidHeiUiTest {
         f.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "2025-12-31");
         f.refresh();
         assertEquals("", f.value(MAMA_TAREHE_ACHA_KUNYONYESHA));
+        assertEquals("", f.value(MAMA_HEI_NEXT_TEST_NOTE));
         JSONObject field = MotherMentorMotherChildUtils.field(f.form, MAMA_TAREHE_ACHA_KUNYONYESHA);
         assertEquals("01-01-2026", field.getString("min_date"));
         assertEquals("01-10-2026", field.getString("max_date"));
@@ -357,6 +400,7 @@ public class MotherMentorChildEidHeiUiTest {
         final RadioButton initialPending;
         final RadioButton confirmationPending;
         final EditText date;
+        final EditText banner;
         final MotherMentorChildEidHeiUi ui = new MotherMentorChildEidHeiUi();
 
         Fixture(String language, String state) throws Exception {
@@ -392,6 +436,9 @@ public class MotherMentorChildEidHeiUiTest {
             date = new EditText(context);
             date.setTag(com.vijay.jsonwizard.R.id.key, MAMA_TAREHE_ACHA_KUNYONYESHA);
             root.addView(date);
+            banner = new EditText(context);
+            banner.setTag(com.vijay.jsonwizard.R.id.key, MAMA_HEI_NEXT_TEST_NOTE);
+            root.addView(banner);
             activity = mock(JsonFormActivity.class);
             Window window = mock(Window.class);
             when(activity.getmJSONObject()).thenReturn(form);
