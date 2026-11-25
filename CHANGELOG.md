@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.67-UCSW-148-CHILD-SEX-CAPTIONS-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Use the approved child-sex captions in Mama Kadi and direct HEI enrolment
+  and follow-up while preserving saved values. [CHW #1247](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1247)
+
 ## 0.1.66-UCSW-146-POST-WEANING-CUTOFF-SNAPSHOT — 2026-11-25
 
 ### Fixed

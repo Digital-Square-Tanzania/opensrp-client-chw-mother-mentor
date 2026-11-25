@@ -249,7 +249,7 @@
     <string name="mothermentor_child_final_result_negative">Hana maambukizi</string>
     <string name="mothermentor_child_final_result_pending">Matokeo bado</string>
     <string name="mothermentor_delivery_child">Mtoto wa %1$d</string>
-    <string name="mothermentor_delivery_child_male">Me</string>
-    <string name="mothermentor_delivery_child_female">Ke</string>
+    <string name="mothermentor_delivery_child_male">Wa kiume</string>
+    <string name="mothermentor_delivery_child_female">Wa kike</string>
     <string name="mothermentor_delivery_child_link">Mtoto aliyesajiliwa</string>
 </resources>

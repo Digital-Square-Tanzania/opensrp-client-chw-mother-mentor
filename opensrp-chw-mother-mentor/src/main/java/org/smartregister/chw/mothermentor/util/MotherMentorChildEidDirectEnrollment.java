@@ -44,8 +44,9 @@ public final class MotherMentorChildEidDirectEnrollment {
         LocalDate today = LocalDate.now();
         LocalDate dob = birthDate(context, child, today);
         JSONArray registration = MotherMentorJsonFormUtils.fields(form, "step1");
-        remove(registration, MOTHER_CTC_NUMBER, HEI_FOLLOW_UP_NUMBER, CHILD_SEX);
+        remove(registration, MOTHER_CTC_NUMBER, HEI_FOLLOW_UP_NUMBER);
         readOnly(registration, CHILD_NAME, name(child));
+        readOnly(registration, CHILD_SEX, MotherMentorChildEidLabels.sex(context, value(child, GENDER)));
         readOnly(registration, CHILD_DOB, MotherMentorMotherPregnancyUtils.displayDate(dob));
         registration.put(readOnlyDisplay("direct_enrollment_age", context.getString(R.string.mothermentor_eid_direct_age),
                 MotherMentorChildEidLabels.age(context, dob.toString(), today)));

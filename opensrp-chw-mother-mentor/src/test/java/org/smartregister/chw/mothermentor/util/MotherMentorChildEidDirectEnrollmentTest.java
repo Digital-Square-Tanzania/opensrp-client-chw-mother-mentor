@@ -170,6 +170,41 @@ public class MotherMentorChildEidDirectEnrollmentTest {
                 MotherMentorChildEidDirectEnrollment.normalizeHeiNumber("01-00-0000-000000-C00"));
     }
 
+    @Test
+    @Config(qualifiers = "en")
+    public void englishRegistrationShowsSexAndSavesTheChildIdentityValue() throws Exception {
+        assertChildSex("", "Male", "Female");
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliRegistrationShowsSexAndSavesTheChildIdentityValue() throws Exception {
+        assertChildSex("-sw", "Wa kiume", "Wa kike");
+    }
+
+    private void assertChildSex(String directory, String male, String female) throws Exception {
+        String[] storedValues = {"male", "female", "Ke (Msichana)", "Me (Mvulana)"};
+        String[] captions = {male, female, female, male};
+        for (int i = 0; i < storedValues.length; i++) {
+            Map<String, String> child = child(day.minusWeeks(10));
+            child.put(GENDER, storedValues[i]);
+            JSONObject form = prepare(child, directory);
+            JSONObject sex = MotherMentorMotherChildUtils.field(form, CHILD_SEX);
+            assertEquals(captions[i], sex.getString("value"));
+            assertTrue(sex.getBoolean("read_only"));
+            assertFalse(sex.has("relevance"));
+            assertEquals("concept", sex.getString("openmrs_entity"));
+            assertEquals(CHILD_SEX, sex.getString("openmrs_entity_id"));
+            assertTrue(MotherMentorChildEidLabels.cardSummary(context, child).startsWith(captions[i]));
+
+            MotherMentorMotherChildUtils.put(form, LAST_TEST, "no_test_has_been_done_yet");
+            MotherMentorChildEidDirectEnrollment.prepareForEvent(context, null, form, child, "Family");
+            assertEquals(storedValues[i], sex.getString("value"));
+            assertEquals(storedValues[i], child.get(GENDER));
+            assertEquals(child.get(BASE_ENTITY_ID), form.getString("entity_id"));
+        }
+    }
+
     private JsonFormActivity nativeActivity(JSONObject form) throws Exception {
         JsonFormActivity activity = Robolectric.buildActivity(JsonFormActivity.class).get();
         ReflectionHelpers.setField(activity, "mJSONObject", form);

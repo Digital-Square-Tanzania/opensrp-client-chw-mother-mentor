@@ -252,7 +252,7 @@
     <string name="mothermentor_child_final_result_negative">Negative</string>
     <string name="mothermentor_child_final_result_pending">Pending</string>
     <string name="mothermentor_delivery_child">Child %1$d</string>
-    <string name="mothermentor_delivery_child_male">M</string>
-    <string name="mothermentor_delivery_child_female">F</string>
+    <string name="mothermentor_delivery_child_male">Male</string>
+    <string name="mothermentor_delivery_child_female">Female</string>
     <string name="mothermentor_delivery_child_link">Registered child</string>
 </resources>

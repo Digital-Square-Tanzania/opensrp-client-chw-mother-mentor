@@ -49,9 +49,8 @@ public final class MotherMentorDeliveryChildren {
 
     public static String label(Context context, int number, String sex) {
         String child = context.getString(R.string.mothermentor_delivery_child, number);
-        if (!validSex(sex)) return child;
-        return child + " (" + context.getString("male".equals(sex)
-                ? R.string.mothermentor_delivery_child_male : R.string.mothermentor_delivery_child_female) + ")";
+        String caption = MotherMentorChildEidLabels.sex(context, sex);
+        return caption.isEmpty() ? child : child + " (" + caption + ")";
     }
 
     public static Map<String, String> section(Map<String, String> visit, int number) {

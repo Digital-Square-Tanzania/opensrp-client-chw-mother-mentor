@@ -7,11 +7,38 @@ import org.joda.time.LocalDate;
 import org.joda.time.Months;
 import org.smartregister.chw.mothermentor.R;
 
+import java.util.Locale;
 import java.util.Map;
 
 /** Localized child-card and register text; stored clinical codes are never displayed as labels. */
 public final class MotherMentorChildEidLabels {
     private MotherMentorChildEidLabels() {}
+
+    public static String sex(Context context, String stored) {
+        if (stored == null) return "";
+        switch (stored.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ")) {
+            case "male":
+            case "m":
+            case "me":
+            case "boy":
+            case "mvulana":
+            case "male (boy)":
+            case "me (mvulana)":
+            case "wa kiume":
+                return context.getString(R.string.mothermentor_delivery_child_male);
+            case "female":
+            case "f":
+            case "ke":
+            case "girl":
+            case "msichana":
+            case "female (girl)":
+            case "ke (msichana)":
+            case "wa kike":
+                return context.getString(R.string.mothermentor_delivery_child_female);
+            default:
+                return "";
+        }
+    }
 
     public static String age(Context context, String dob, LocalDate day) {
         LocalDate birth = MotherMentorHeiSchedule.parseBirthDate(dob);
@@ -128,6 +155,8 @@ public final class MotherMentorChildEidLabels {
 
     public static String cardSummary(Context context, Map<String, String> values) {
         StringBuilder summary = new StringBuilder();
+        String sex = sex(context, values.get(DBConstants.KEY.GENDER));
+        if (!sex.isEmpty()) append(summary, sex);
         appendContact(context, values, summary);
         for (String key : new String[] {DBConstants.KEY.VILLAGE_TOWN, DBConstants.KEY.HEI_NUMBER}) {
             String text = values.get(key);

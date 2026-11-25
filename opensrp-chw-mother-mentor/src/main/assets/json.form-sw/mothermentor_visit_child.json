@@ -156,14 +156,14 @@
         "options": [
           {
             "key": "male",
-            "text": "Me (Mvulana)",
+            "text": "Wa kiume",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "male",
             "openmrs_entity_parent": ""
           },
           {
             "key": "female",
-            "text": "Ke (Msichana)",
+            "text": "Wa kike",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "female",
             "openmrs_entity_parent": ""
