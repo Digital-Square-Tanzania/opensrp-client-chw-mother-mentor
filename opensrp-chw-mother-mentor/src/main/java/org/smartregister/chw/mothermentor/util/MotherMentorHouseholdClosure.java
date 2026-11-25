@@ -75,6 +75,11 @@ public final class MotherMentorHouseholdClosure {
         return !ACTIVE.equals(status);
     }
 
+    public boolean isConsecutiveClosure() {
+        return HOUSE_CLOSED_3.equals(status) || OTHER_3.equals(status)
+                || LOST_TO_FOLLOW_UP.equals(status);
+    }
+
     public String getStatus() {
         return status;
     }

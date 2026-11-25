@@ -3,6 +3,7 @@ package org.smartregister.chw.mothermentor.interactor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
@@ -57,6 +58,28 @@ public class MotherMentorHouseholdClosureInteractorTest {
     @After
     public void tearDown() {
         ReflectionHelpers.setStaticField(MotherMentorLibrary.class, "instance", previousLibrary);
+    }
+
+    @Test
+    public void onlyConsecutiveClosureFinalizesOnSaveAndMatchesTheStoredReason() throws Exception {
+        initialize(false);
+        status("repeat", "not_found", "house_closed");
+        for (int strike = 1; strike <= 2; strike++) {
+            assertFalse(interactor.previewClosure().isClosed());
+            assertFalse(interactor.shouldSubmitOnSave());
+            interactor.state = interactor.state.advance("repeat", "not_found", "house_closed", "2026-10-01");
+        }
+        assertEquals(MotherMentorHouseholdClosure.HOUSE_CLOSED_3, interactor.previewClosure().getClosureReason());
+        assertTrue(interactor.shouldSubmitOnSave());
+        assertFalse(interactor.state.isClosed());
+        Event event = new Event();
+        interactor.prepareEvent(event);
+        assertEquals(interactor.previewClosure().getClosureReason(), values(event).get(KAYA_SABABU_YA_KUFUNGWA));
+        assertFalse(interactor.state.isClosed());
+
+        status("repeat", "not_found", "moved");
+        assertEquals(MotherMentorHouseholdClosure.MOVED, interactor.previewClosure().getClosureReason());
+        assertFalse(interactor.shouldSubmitOnSave());
     }
 
     @Test

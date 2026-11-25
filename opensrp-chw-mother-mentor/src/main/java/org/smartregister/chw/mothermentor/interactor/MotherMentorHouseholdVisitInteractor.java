@@ -251,20 +251,32 @@ public class MotherMentorHouseholdVisitInteractor extends BaseMotherMentorServic
         if (!legacyVisit) putObservation(event, DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA, "2");
         if (legacyVisit) return;
         putObservation(event, DBConstants.KEY.HOUSEHOLD_ENROLLMENT_ID, closureEnrollmentId);
+        MotherMentorHouseholdClosure state = previewClosure();
+        for (Map.Entry<String, String> value :
+                MotherMentorHouseholdClosureRepository.observationValues(state).entrySet()) {
+            putObservation(event, value.getKey(), value.getValue());
+        }
+    }
+
+    /** Project the current form using the same episode and answers as the saved event. */
+    public MotherMentorHouseholdClosure previewClosure() {
+        if (legacyVisit || memberObject == null) return MotherMentorHouseholdClosure.active();
         Map<String, String> answers = currentClosureAnswers();
         answers.put(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_SCHEMA, "2");
         MotherMentorHouseholdClosure state = loadClosureState(
                 memberObject.getBaseEntityId(), closureEditedVisitId);
         if (MotherMentorHouseholdVisitUtils.isComplete(answers)) {
-            state = state.advance(answers.get(DBConstants.KEY.HOUSEHOLD_VISIT_TYPE),
+            return state.advance(answers.get(DBConstants.KEY.HOUSEHOLD_VISIT_TYPE),
                     answers.get(DBConstants.KEY.HOUSEHOLD_FOLLOW_UP_STATUS),
                     answers.get(DBConstants.KEY.HOUSEHOLD_NOT_FOUND_REASON),
                     new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
         }
-        for (Map.Entry<String, String> value :
-                MotherMentorHouseholdClosureRepository.observationValues(state).entrySet()) {
-            putObservation(event, value.getKey(), value.getValue());
-        }
+        return state;
+    }
+
+    @Override
+    protected boolean shouldSubmitOnSave() {
+        return super.shouldSubmitOnSave() || previewClosure().isConsecutiveClosure();
     }
 
     private Map<String, String> currentClosureAnswers() {

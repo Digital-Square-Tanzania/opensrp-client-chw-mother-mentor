@@ -6,6 +6,20 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.61-UCSW-151-MWENZI-DEATH-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Recognize finalized Mwenzi tracing deaths in the current and legacy workflow
+  schemas so the app can record the death on the linked household member.
+  [CHW #1238](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1238)
+
+## 0.1.57-UCSW-131-THIRD-EVENT-SAVE-CONFIRMATION-SNAPSHOT — 2026-11-24
+
+### Fixed
+
+- Expose the current Kaya and Mwenzi closure projections to the Save screen, and finalize confirmed third-event Kaya closures on Save. Classify the consecutive-event exits in all four follow-up workflows. [CHW #1240](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1240)
+
 ## 0.1.56-UCSW-130-HIDE-DEVELOPER-NOTES-SNAPSHOT — 2026-11-24
 
 ### Fixed

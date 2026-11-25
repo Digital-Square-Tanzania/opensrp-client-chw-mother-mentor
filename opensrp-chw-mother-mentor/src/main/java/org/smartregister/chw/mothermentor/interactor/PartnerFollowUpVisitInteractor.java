@@ -329,13 +329,7 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         for (Map.Entry<String, String> entry : snapshot.entrySet()) {
             putObservation(event, entry.getKey(), entry.getValue());
         }
-        Map<String, String> values = currentValues();
-        MotherMentorPartnerClosure closure = loadClosureState(
-                memberObject.getBaseEntityId(), editedVisitId);
-        if (MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values)) {
-            closure = closure.advance(values,
-                    new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
-        }
+        MotherMentorPartnerClosure closure = previewClosure();
         for (Map.Entry<String, String> entry :
                 MotherMentorPartnerClosureRepository.observationValues(closure).entrySet()) {
             putObservation(event, entry.getKey(), entry.getValue());
@@ -343,6 +337,19 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
         String end = MotherMentorPartnerClosure.ATTENDED.equals(closure.getStatus())
                 ? "completed" : (closure.isClosed() ? closure.getStatus() : "");
         putObservation(event, DBConstants.KEY.PARTNER_FOLLOW_UP_END, end);
+    }
+
+    /** Project the current form using the same linkage and answers as the saved event. */
+    public MotherMentorPartnerClosure previewClosure() {
+        if (memberObject == null) return MotherMentorPartnerClosure.active();
+        Map<String, String> values = currentValues();
+        MotherMentorPartnerClosure closure = loadClosureState(
+                memberObject.getBaseEntityId(), editedVisitId);
+        if (MotherMentorPartnerFollowUpVisitUtils.isWorkflowComplete(values)) {
+            return closure.advance(values,
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(serviceDate));
+        }
+        return closure;
     }
 
     private Map<String, String> currentValues() {
