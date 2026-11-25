@@ -36,8 +36,8 @@
     <string name="mothermentor_eid_child_deceased">Child has died — record closed.</string>
     <string name="mothermentor_eid_moved_area">Moved from area — record closed.</string>
     <string name="mothermentor_eid_moved_facility">Transferred to another facility — record closed.</string>
-    <string name="mothermentor_eid_not_found_three">Not found — Other (3+ visits).</string>
-    <string name="mothermentor_eid_refused_three">Caregiver refused (3+ visits).</string>
+    <string name="mothermentor_eid_not_found_three">Not found — Other.</string>
+    <string name="mothermentor_eid_refused_three">Caregiver refused.</string>
     <string name="mothermentor_eid_graduated">Graduated — negative at 18 months</string>
     <string name="mothermentor_eid_confirmed_positive">Positive — linked to CTC</string>
     <string name="mothermentor_eid_filter">Filter</string>

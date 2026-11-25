@@ -3,7 +3,7 @@
     <string name="mothermentor_mother_hei_question">Has the child had the %1$s test?</string>
     <string name="mothermentor_mother_hei_due">%1$s — due now</string>
     <string name="mothermentor_mother_hei_next">%1$s — %2$s</string>
-    <string name="mothermentor_mother_hei_wait_weaning">3 months after breastfeeding stops</string>
+    <string name="mothermentor_mother_hei_wait_weaning">15 months — date pending</string>
     <string name="mothermentor_mother_hei_none">No HEI test is due.</string>
     <string name="mothermentor_mother_child_newborn">Newborn today</string>
     <string name="mothermentor_mother_child_days">%1$d days</string>

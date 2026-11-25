@@ -6,31 +6,10 @@ condition: "step1_mama_breastfeeding_status == 'not_breastfeeding'"
 actions:
   - "isRelevant = true"
 ---
-name: step1_child_eid_weaning_hint
-description: Child EID HEI relevance
-priority: 1
-condition: "step1_mama_breastfeeding_status == 'not_breastfeeding'"
-actions:
-  - "isRelevant = true"
----
 name: step1_mtoto_referral_agreement
 description: Child EID HEI relevance
 priority: 1
 condition: "(step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]') || (step1_mtoto_rufaa_state_before == 'confirmation_needed' && step1_mtoto_rufaa_test != '')"
-actions:
-  - "isRelevant = true"
----
-name: step1_child_eid_referral_agreed_note
-description: Child EID HEI relevance
-priority: 1
-condition: "step1_mtoto_entry_source != 'direct' && step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'agreed'"
-actions:
-  - "isRelevant = true"
----
-name: step1_child_eid_referral_refused_note
-description: Child EID HEI relevance
-priority: 1
-condition: "step1_mtoto_entry_source != 'direct' && step1_mtoto_rufaa_state_before == 'none' && step1_mama_hei_due_tests != '[]' && step1_mtoto_referral_agreement == 'refused'"
 actions:
   - "isRelevant = true"
 ---

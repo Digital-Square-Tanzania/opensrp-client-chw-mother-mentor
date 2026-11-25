@@ -16,7 +16,6 @@
     <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">Miezi 15</string>
     <string name="mothermentor_child_eid_hei_stage_eighteen_months">Miezi 18 (Uthibitisho)</string>
     <string name="mothermentor_eid_return_named_result">Majibu ya kipimo cha %1$s yamepatikana?</string>
-    <string name="mothermentor_eid_return_negative">Majibu hasi. Mtoto anaendelea na ratiba ya HEI kupitia ziara za Mama.</string>
     <string name="mothermentor_eid_return_confirm_negative">Uthibitisho ni hasi. Fuata mwongozo wa kitaifa kurudia kipimo.</string>
     <string name="mothermentor_eid_return_graduation">Majibu hasi ya miezi 18. Mtoto amehitimu.</string>
     <string name="mothermentor_eid_return_confirm_positive">Majibu chanya yamethibitishwa. Hakikisha mtoto ameunganishwa na ART na CTC.</string>
@@ -26,12 +25,9 @@
     <string name="mothermentor_eid_confirmatory_sample_result">Majibu ya kipimo cha uthibitisho</string>
     <string name="mothermentor_eid_result_overdue">Majibu yamechelewa</string>
     <string name="mothermentor_eid_overdue_sample">Majibu yamechelewa · Tarehe ya kipimo: %1$s</string>
-    <string name="mothermentor_eid_return_wait_confirm">Hifadhi. Mtoto anabaki kwenye orodha akisubiri uthibitisho.</string>
-    <string name="mothermentor_eid_return_nonattendance">Hifadhi. Rufaa itafungwa baada ya ziara tatu mfululizo za kutofika kituoni.</string>
-    <string name="mothermentor_eid_return_attendance">Hifadhi. Rufaa inabaki wazi. Ziara ijayo itauliza tena kama mtoto alifika kituoni.</string>
     <string name="mothermentor_eid_exit_tested">Amepimwa — amerudi kwenye ratiba ya HEI</string>
     <string name="mothermentor_eid_exit_confirm_negative">Uthibitisho hasi — amerudi kwenye ratiba ya HEI</string>
-    <string name="mothermentor_eid_exit_nonattendance">Hajafika baada ya kukubali mara 3+</string>
+    <string name="mothermentor_eid_exit_nonattendance">Hajafika baada ya kukubali</string>
     <string name="mothermentor_eid_exit_confirm_title">Thibitisha kufunga rekodi</string>
     <string name="mothermentor_eid_exit_confirm_button">Ndiyo, Funga</string>
     <string name="mothermentor_eid_exit_cancel_button">Ghairi</string>

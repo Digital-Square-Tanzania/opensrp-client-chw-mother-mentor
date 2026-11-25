@@ -91,6 +91,33 @@ public class MotherMentorChildEidHeiUiTest {
     }
 
     @Test
+    public void missedAttendanceAndNegativeResultShowNoDeveloperMessageInEitherLanguage() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            Fixture missed = new Fixture(language, "referred");
+            missed.put(MTOTO_RETURN_FLOW, "1");
+            missed.put(CHILD_EID_ARRIVED_AT_FACILITY, "no");
+            missed.put(MTOTO_SABABU_KUTOFIKA, "forgot");
+            missed.refresh();
+            assertEquals("", missed.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals("forgot", missed.value(MTOTO_SABABU_KUTOFIKA));
+
+            Fixture tested = new Fixture(language, "referred");
+            tested.put(MTOTO_RETURN_FLOW, "1");
+            tested.put(CHILD_EID_ARRIVED_AT_FACILITY, "yes");
+            tested.put(CHILD_EID_FACILITY_ARRIVAL_DATE, "2026-10-01");
+            tested.put(MAMA_HEI_TEST_DONE, "yes");
+            tested.put(CHILD_EID_TEST_TYPE, "nine_months");
+            tested.put(MAMA_HEI_TEST_DATE, "2026-10-01");
+            tested.put(MAMA_HEI_TEST_RESULT, "negative");
+            tested.put(MTOTO_RESULT_RECEIVED_DATE, "2026-10-01");
+            tested.refresh();
+            assertEquals("sw".equals(language) ? "Hasi" : "Negative",
+                    tested.value(MTOTO_RETURN_RESULT_NOTE));
+            assertEquals("negative", tested.value(MAMA_HEI_TEST_RESULT));
+        }
+    }
+
+    @Test
     public void receivedDateUsesSampleDateAndClearsWhenTheResultBecomesPending() throws Exception {
         Fixture f = new Fixture("sw", "referred");
         f.put(MTOTO_RETURN_FLOW, "1");

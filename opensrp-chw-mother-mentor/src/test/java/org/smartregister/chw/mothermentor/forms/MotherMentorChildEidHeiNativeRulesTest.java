@@ -41,7 +41,6 @@ public class MotherMentorChildEidHeiNativeRulesTest {
             form.answer(MTOTO_RUFAA_TEST, "at_birth");
             assertTrue(form.relevant(MTOTO_REFERRAL_AGREEMENT));
             form.answer(MTOTO_REFERRAL_AGREEMENT, "agreed");
-            assertFalse(form.relevant("child_eid_referral_agreed_note"));
             assertFalse(form.relevant(CHILD_EID_ARRIVED_AT_FACILITY));
 
             form.answer(MTOTO_RETURN_FLOW, "1");
@@ -159,15 +158,11 @@ public class MotherMentorChildEidHeiNativeRulesTest {
                     CHILD_EID_FINAL_HIV_TEST_DATE, CHILD_EID_FINAL_HIV_RESULT}) {
                 assertFalse(directory + ":" + key, form.relevant(key));
             }
-            form.answer(MTOTO_REFERRAL_AGREEMENT, "agreed");
-            assertTrue(form.relevant("child_eid_referral_agreed_note"));
-            assertFalse(form.relevant("child_eid_referral_refused_note"));
-            form.answer(MTOTO_REFERRAL_AGREEMENT, "refused");
-            assertFalse(form.relevant("child_eid_referral_agreed_note"));
-            assertTrue(form.relevant("child_eid_referral_refused_note"));
+            for (String key : new String[] {"child_eid_referral_agreed_note", "child_eid_referral_refused_note"}) {
+                assertFalse(key, form.field(key).has("key"));
+            }
             form.answer(MAMA_HEI_DUE_TESTS, "[]");
             assertFalse(form.relevant(MTOTO_REFERRAL_AGREEMENT));
-            assertFalse(form.relevant("child_eid_referral_refused_note"));
         }
     }
 
@@ -204,19 +199,18 @@ public class MotherMentorChildEidHeiNativeRulesTest {
     }
 
     @Test
-    public void cessationDateAndHintTrackBreastfeedingWithoutHiddenRuleFacts() throws Exception {
+    public void cessationDateTracksBreastfeedingWithoutDeveloperHint() throws Exception {
         for (String directory : new String[] {"json.form", "json.form-sw"}) {
             NativeForm form = new NativeForm(directory);
             form.answer(MAMA_BREASTFEEDING_STATUS, "breastfeeding");
             assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
             form.answer(MAMA_BREASTFEEDING_STATUS, "never_breastfed");
             assertFalse(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
-            assertFalse(form.relevant("child_eid_weaning_hint"));
             form.answer(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
             assertEquals("not_breastfeeding", form.facts(MAMA_TAREHE_ACHA_KUNYONYESHA)
                     .get("step1_" + MAMA_BREASTFEEDING_STATUS));
             assertTrue(form.relevant(MAMA_TAREHE_ACHA_KUNYONYESHA));
-            assertTrue(form.relevant("child_eid_weaning_hint"));
+            assertFalse(form.field("child_eid_weaning_hint").has("key"));
         }
     }
 

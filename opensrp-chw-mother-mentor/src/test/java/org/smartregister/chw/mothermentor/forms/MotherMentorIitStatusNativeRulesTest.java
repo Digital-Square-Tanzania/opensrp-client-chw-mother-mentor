@@ -20,7 +20,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.smartregister.chw.mothermentor.actionhelper.MotherMentorIitStatusActionHelper;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
-import org.smartregister.chw.mothermentor.util.MotherMentorIitState;
 import org.smartregister.chw.mothermentor.util.MotherMentorVisitCompletion;
 import org.smartregister.domain.tag.FormTag;
 
@@ -61,7 +60,7 @@ public class MotherMentorIitStatusNativeRulesTest {
             answer(form, FOLLOW_UP_STATUS, "found");
             assertFalse(relevant(activity, form, IIT_NOT_FOUND_REASON));
             for (String reason : NOTE_REASONS) {
-                assertFalse(relevant(activity, form, "iit_note_" + reason));
+                assertFalse(FormUtils.getFieldFromForm(form, "iit_note_" + reason).has("key"));
             }
             answer(form, FOLLOW_UP_STATUS, "not_found");
             assertTrue(relevant(activity, form, IIT_NOT_FOUND_REASON));
@@ -70,9 +69,6 @@ public class MotherMentorIitStatusNativeRulesTest {
                 assertEquals(reason.equals("moved_area"), relevant(activity, form, OPTIONAL_FACILITY));
                 assertEquals(reason.equals("moved_facility"), relevant(activity, form, IIT_KITUO_KIPYA));
                 assertEquals(reason.equals("other"), relevant(activity, form, IIT_NOT_FOUND_OTHER));
-                for (String note : NOTE_REASONS) {
-                    assertEquals(reason.equals(note), relevant(activity, form, "iit_note_" + note));
-                }
             }
         }
     }
@@ -82,8 +78,7 @@ public class MotherMentorIitStatusNativeRulesTest {
             throws Exception {
         for (String language : LANGUAGES) {
             JSONObject form = form(language, "mothermentor_iit_follow_up_status");
-            MotherMentorIitStatusActionHelper helper = new MotherMentorIitStatusActionHelper(
-                    () -> {}, MotherMentorIitState.active(), values -> MotherMentorIitState.active());
+            MotherMentorIitStatusActionHelper helper = new MotherMentorIitStatusActionHelper(() -> {});
             answer(form, FOLLOW_UP_STATUS, "not_found");
             answer(form, IIT_NOT_FOUND_REASON, "moved_facility");
             helper.onPayloadReceived(form.toString());

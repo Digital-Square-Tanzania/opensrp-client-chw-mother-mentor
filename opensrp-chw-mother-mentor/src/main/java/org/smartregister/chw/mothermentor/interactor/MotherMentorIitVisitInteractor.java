@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 
 import timber.log.Timber;
 
@@ -79,15 +78,14 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
     @Override
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createStatusActionHelper(
             Runnable onStatusChanged) {
-        return new MotherMentorIitStatusActionHelper(onStatusChanged, state, this::preview);
+        return new MotherMentorIitStatusActionHelper(onStatusChanged);
     }
 
     @Override
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper createArrivalActionHelper() {
         MotherMentorIitState current = getIitState();
         return new MotherMentorIitReturnActionHelper(current.getReturnState(),
-                current.getMissedAppointmentDate(), current.getRefusedCount(),
-                current.getNotReturnedCount(), getIitServiceDate());
+                current.getMissedAppointmentDate(), getIitServiceDate());
     }
 
     @Override
@@ -133,11 +131,6 @@ public class MotherMentorIitVisitInteractor extends BaseMotherMentorFollowUpVisi
         } catch (JsonParseException invalid) {
             Timber.w(invalid, "Unable to restore the original Mother IIT event metadata");
         }
-    }
-
-    private MotherMentorIitState preview(Map<String, String> answers) {
-        return MotherMentorIitRepository.preview(database(), memberObject.getBaseEntityId(),
-                editedVisitId, answers, serviceDate);
     }
 
     private void putObservation(Event event, String key, String value) {
