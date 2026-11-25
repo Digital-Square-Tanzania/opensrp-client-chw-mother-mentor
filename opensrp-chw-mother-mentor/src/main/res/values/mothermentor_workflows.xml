@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mother_mentor_registration">Mother Mentor Registration</string>
+    <string name="mothermentor_enrollment_child_over_age">The child is over 19 months. The mother will not be enrolled in Mama Kinara.</string>
     <string name="mothermentor_household_record">Provision of Household Services</string>
     <string name="mama_kinara_household_already_enrolled">This household is already linked to Mama Kinara</string>
     <string name="mama_kinara_household_enrolled">Household linked to Mama Kinara services</string>

@@ -3,10 +3,25 @@ package org.smartregister.chw.mothermentor.util;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
-/** The PMTCT window shared by mother and household enrollment. */
+/** Age rules for Mother Mentor enrollment and linking. */
 public final class MotherMentorEligibility {
+    private static final int CHILD_ENROLLMENT_AGE_MONTHS = 19;
+
     private MotherMentorEligibility() {}
 
+    /** Inclusive through the child's 19-month calendar anniversary. */
+    public static boolean isWithinChildEnrollmentAge(LocalDate birthDate, LocalDate today) {
+        return birthDate != null && today != null && !birthDate.isAfter(today)
+                && !today.isAfter(birthDate.plusMonths(CHILD_ENROLLMENT_AGE_MONTHS));
+    }
+
+    public static LocalDate earliestEligibleChildBirthDate(LocalDate today) {
+        LocalDate birthDate = today.minusMonths(CHILD_ENROLLMENT_AGE_MONTHS);
+        // Subtraction can land on a shorter month that cannot reach today's day on add-back.
+        return isWithinChildEnrollmentAge(birthDate, today) ? birthDate : birthDate.plusDays(1);
+    }
+
+    /** Checks the current status of an already enrolled mother for household enrollment. */
     public static boolean isEligibleMother(String pregnancyStatus, String childDob, LocalDate today) {
         if ("pregnant".equals(pregnancyStatus)
                 || "breast_feeding".equals(pregnancyStatus)
