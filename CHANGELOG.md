@@ -6,6 +6,14 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.61-UCSW-151-MWENZI-DEATH-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Recognize finalized Mwenzi tracing deaths in the current and legacy workflow
+  schemas so the app can record the death on the linked household member.
+  [CHW #1238](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1238)
+
 ## 0.1.57-UCSW-131-THIRD-EVENT-SAVE-CONFIRMATION-SNAPSHOT — 2026-11-24
 
 ### Fixed

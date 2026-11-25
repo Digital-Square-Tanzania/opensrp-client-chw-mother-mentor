@@ -775,7 +775,7 @@ public class MotherMentorDao extends AbstractDao {
                         + " = ? AND (f." + DBConstants.KEY.FOLLOW_UP_OUTCOME + " = ? OR f."
                         + DBConstants.KEY.FOLLOW_UP_STATUS + " = ? OR (f."
                         + DBConstants.KEY.FOLLOW_UP_CATEGORY + " = 'PARTNER' AND f."
-                        + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA + " = '2' AND f."
+                        + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA + " IN ('2', ?) AND f."
                         + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' AND f."
                         + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'not_found' AND f."
                         + DBConstants.KEY.PARTNER_NOT_FOUND_REASON + " = 'deceased' AND f."
@@ -787,7 +787,8 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID + " AND ifnull(pending_death."
                         + DBConstants.KEY.PROCESSED + ", 0) <> 1)))";
         try (Cursor cursor = readableDatabase().rawQuery(
-                query, new String[] {baseEntityId, "client_deceased", "deceased"})) {
+                query, new String[] {baseEntityId, "client_deceased", "deceased",
+                    MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA})) {
             while (cursor.moveToNext()) {
                 Date date = MotherMentorDeceasedVisitUtils.getRecordedDate(
                         getCursorValue(cursor, DBConstants.KEY.EVENT_JSON, ""), null);

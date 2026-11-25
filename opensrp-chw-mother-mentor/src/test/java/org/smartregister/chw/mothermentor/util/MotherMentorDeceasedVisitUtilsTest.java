@@ -40,15 +40,22 @@ public class MotherMentorDeceasedVisitUtilsTest {
     }
 
     @Test
-    public void schemaTwoPartnerDeathRequiresTheCompletePartnerTracingOutcome() throws Exception {
+    public void supportedPartnerSchemasRequireTheCompletePartnerTracingDeathOutcome() throws Exception {
+        assertPartnerTracingDeath("2");
+        assertPartnerTracingDeath(MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA);
+    }
+
+    private static void assertPartnerTracingDeath(String schema) throws Exception {
         JSONObject death = new JSONObject().put("obs", new JSONArray()
                 .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"))
-                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "2"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, schema))
                 .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"))
                 .put(observation(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"))
                 .put(observation(DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"))
                 .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased")));
         assertTrue(MotherMentorDeceasedVisitUtils.isDeceased(death.toString()));
+        death.put("voided", true);
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(death.toString()));
         JSONArray observations = death.getJSONArray("obs");
         for (int index = 0; index < observations.length(); index++) {
             JSONArray incomplete = new JSONArray(observations.toString());
@@ -57,6 +64,19 @@ public class MotherMentorDeceasedVisitUtilsTest {
                     MotherMentorDeceasedVisitUtils.isDeceased(
                             new JSONObject().put("obs", incomplete).toString()));
         }
+    }
+
+    @Test
+    public void unknownPartnerSchemaDoesNotTriggerSharedDeath() throws Exception {
+        JSONArray observations = new JSONArray()
+                .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, "999"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"))
+                .put(observation(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"))
+                .put(observation(DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased"));
+        assertFalse(MotherMentorDeceasedVisitUtils.isDeceased(
+                new JSONObject().put("obs", observations).toString()));
     }
 
     @Test
