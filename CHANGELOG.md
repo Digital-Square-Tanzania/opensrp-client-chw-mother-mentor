@@ -6,6 +6,13 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.68-UCSW-147-CONFIRMATION-RESULT-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Resolve the documented confirmation sample date from the saved attendance
+  event and use it when recording the result. [CHW #1248](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1248)
+
 ## 0.1.67-UCSW-148-CHILD-SEX-CAPTIONS-SNAPSHOT — 2026-11-25
 
 ### Fixed

@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,23 +63,25 @@ public final class MotherMentorChildEidResultEvent {
         private final String enrollmentId;
         private final MotherMentorHeiSchedule.Stage stage;
         private final LocalDate sampleDate;
+        private final LocalDate confirmationSampleDate;
         private final String state;
 
         PendingSample(String childId, String parentSubmissionId, String sampleSubmissionId,
                 String enrollmentId, MotherMentorHeiSchedule.Stage stage, LocalDate sampleDate,
-                String state) {
+                String state, LocalDate confirmationSampleDate) {
             this.childId = childId;
             this.parentSubmissionId = parentSubmissionId;
             this.sampleSubmissionId = sampleSubmissionId;
             this.enrollmentId = enrollmentId;
             this.stage = stage;
             this.sampleDate = sampleDate;
+            this.confirmationSampleDate = confirmationSampleDate;
             this.state = state;
         }
 
         PendingSample advance(String nextState) {
             return new PendingSample(childId, parentSubmissionId, sampleSubmissionId, enrollmentId,
-                    stage, sampleDate, nextState);
+                    stage, sampleDate, nextState, confirmationSampleDate);
         }
 
         boolean matches(Map<String, String> values) {
@@ -96,6 +99,7 @@ public final class MotherMentorChildEidResultEvent {
         public MotherMentorHeiSchedule.Stage getStage() { return stage; }
         public LocalDate getSampleDate() { return sampleDate; }
         public String getState() { return state; }
+        public LocalDate getConfirmationSampleDate() { return confirmationSampleDate; }
     }
 
     public static PendingSample pending(SQLiteDatabase db, String childId) {
@@ -153,7 +157,8 @@ public final class MotherMentorChildEidResultEvent {
         if (current == null || !current.parentSubmissionId.equals(sample.parentSubmissionId)
                 || !current.sampleSubmissionId.equals(sample.sampleSubmissionId)
                 || !current.enrollmentId.equals(sample.enrollmentId) || !current.state.equals(sample.state)
-                || current.stage != sample.stage || !current.sampleDate.equals(sample.sampleDate)) return null;
+                || current.stage != sample.stage || !current.sampleDate.equals(sample.sampleDate)
+                || !Objects.equals(current.confirmationSampleDate, sample.confirmationSampleDate)) return null;
         Map<String, String> values = new LinkedHashMap<>();
         values.put(ENTRY, STANDALONE);
         values.put(PARENT_SUBMISSION_ID, sample.parentSubmissionId);
@@ -170,15 +175,20 @@ public final class MotherMentorChildEidResultEvent {
             values.put(MTOTO_RECEIVED_RESULT, value(answers, MTOTO_RECEIVED_RESULT));
         }
         if (AWAITING_CONFIRM.equals(sample.state) || "positive".equals(value(values, MTOTO_RECEIVED_RESULT))) {
-            values.put(MTOTO_CONFIRMATORY_TEST_DONE, value(answers, MTOTO_CONFIRMATORY_TEST_DONE));
-            if ("yes".equals(value(answers, MTOTO_CONFIRMATORY_TEST_DONE))) {
+            LocalDate confirmationDate = current.confirmationSampleDate;
+            boolean documented = AWAITING_CONFIRM.equals(current.state) && confirmationDate != null;
+            String tested = documented ? "yes" : value(answers, MTOTO_CONFIRMATORY_TEST_DONE);
+            values.put(MTOTO_CONFIRMATORY_TEST_DONE, tested);
+            if ("yes".equals(tested)) {
                 values.put(MTOTO_CONFIRMATORY_RESULT, value(answers, MTOTO_CONFIRMATORY_RESULT));
             }
             String received = MotherMentorChildEidReturnVisit.confirmationReceived(values);
+            if (documented && !"yes".equals(received)) return null;
             values.put(MTOTO_CONFIRMATION_RECEIVED, received);
-            if (AWAITING_CONFIRM.equals(sample.state) && "yes".equals(received)) {
+            if (AWAITING_CONFIRM.equals(current.state) && "yes".equals(received)) {
                 String date = value(answers, MTOTO_RESULT_RECEIVED_DATE);
-                if (!MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(date), sample.sampleDate, day)) {
+                LocalDate minimum = documented ? confirmationDate : current.sampleDate;
+                if (!MotherMentorHeiSchedule.validDate(MotherMentorHeiSchedule.parseDate(date), minimum, day)) {
                     return null;
                 }
                 values.put(MTOTO_RESULT_RECEIVED_DATE, date);

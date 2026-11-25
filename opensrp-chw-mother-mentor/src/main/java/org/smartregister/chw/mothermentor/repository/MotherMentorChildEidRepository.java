@@ -260,7 +260,7 @@ public final class MotherMentorChildEidRepository {
         state.enrollment.put(DBConstants.KEY.MTOTO_PENDING_TEST_DATE, sampleDate.toString());
         String source = state.getEnrollmentId();
         state.pendingSample = new MotherMentorChildEidResultEvent.PendingSample(
-                state.childId, source, source, source, stage, sampleDate, state.getReferralState());
+                state.childId, source, source, source, stage, sampleDate, state.getReferralState(), null);
     }
 
     private static void replayReferrals(SQLiteDatabase db, State state, LocalDate asOf, Visit before) {
@@ -311,8 +311,17 @@ public final class MotherMentorChildEidRepository {
             if (stage == null || date == null || StringUtils.isBlank(visit.getFormSubmissionId())) return;
             String sample = StringUtils.defaultIfBlank(
                     answers.get(DBConstants.KEY.CHILD_EID_SAMPLE_SUBMISSION_ID), parent);
+            // The accepted attendance transition supplies the dated confirmation sample.
+            // Screening results can reach the same pending state without this evidence.
+            boolean confirmationAttendance =
+                    MotherMentorChildEidDirectEnrollment.CONFIRMATION_REFERRED.equals(previousState)
+                    && MotherMentorChildEidReturnVisit.AWAITING_CONFIRM.equals(nextState)
+                    && "yes".equals(value(answers, DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY))
+                    && "yes".equals(value(answers, DBConstants.KEY.MAMA_HEI_TEST_DONE))
+                    && "pending".equals(value(answers, DBConstants.KEY.MAMA_HEI_TEST_RESULT));
             state.pendingSample = new MotherMentorChildEidResultEvent.PendingSample(
-                    state.childId, parent, sample, state.getEnrollmentId(), stage, date, nextState);
+                    state.childId, parent, sample, state.getEnrollmentId(), stage, date, nextState,
+                    confirmationAttendance ? date : null);
         } else if (state.pendingSample != null) {
             state.pendingSample = state.pendingSample.advance(nextState);
         }
