@@ -16,6 +16,7 @@ import org.smartregister.chw.mothermentor.domain.MemberObject;
 import org.smartregister.chw.mothermentor.domain.Visit;
 import org.smartregister.chw.mothermentor.domain.VisitDetail;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
+import org.smartregister.chw.mothermentor.repository.MotherMentorMotherChildRepository;
 import org.smartregister.chw.mothermentor.repository.VisitRepository;
 import org.smartregister.chw.mothermentor.util.AppExecutors;
 import org.smartregister.chw.mothermentor.util.Constants;
@@ -307,8 +308,7 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
         }
 
         if (baseEvent != null) {
-            Visit editedVisit = editMode
-                    ? visitRepository().getLatestVisit(memberID, getEncounterType()) : null;
+            Visit editedVisit = editMode ? findVisitForEdit(memberID) : null;
             if (editMode && editedVisit == null) return null;
             assignVisitSource(baseEvent, editedVisit);
             MotherMentorJsonFormUtils.tagEvent(allSharedPreferences, baseEvent);
@@ -323,6 +323,11 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             }
 
             Visit visit = NCUtils.eventToVisit(baseEvent, visitID);
+            if (editedVisit != null && MotherMentorMotherChildRepository.isChildEidVisit(visit)) {
+                // History orders the local rows by occurrence time, including after correction.
+                if (editedVisit.getDate() != null) visit.setDate(editedVisit.getDate());
+                if (editedVisit.getCreatedAt() != null) visit.setCreatedAt(editedVisit.getCreatedAt());
+            }
             visit.setPreProcessedJson(new Gson().toJson(baseEvent));
             visit.setParentVisitID(getParentVisitEventID(visit, parentEventType));
 
@@ -330,6 +335,10 @@ public class BaseMotherMentorVisitInteractor implements BaseMotherMentorVisitCon
             return visit;
         }
         return null;
+    }
+
+    protected Visit findVisitForEdit(String memberId) {
+        return visitRepository().getLatestVisit(memberId, getEncounterType());
     }
 
     protected void assignVisitSource(Event event, @Nullable Visit editedVisit) {

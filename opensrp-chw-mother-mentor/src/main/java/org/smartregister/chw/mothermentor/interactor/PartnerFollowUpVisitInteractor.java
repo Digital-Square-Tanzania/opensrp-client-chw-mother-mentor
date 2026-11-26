@@ -319,7 +319,9 @@ public class PartnerFollowUpVisitInteractor extends BaseMotherMentorServiceVisit
     protected void prepareEvent(Event event) {
         if (event == null) return;
         restoreHistoricalEducation(event);
-        for (Obs observation : historicalTests) event.addObs(observation);
+        if (!isPhase(ATTENDANCE) || !"not_found".equals(value(ARRIVAL, DBConstants.KEY.FOLLOW_UP_STATUS))) {
+            for (Obs observation : historicalTests) event.addObs(observation);
+        }
         event.setEventDate(serviceDate);
         putObservation(event, DBConstants.KEY.MOTHERMENTOR_VISIT_DATE,
                 new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(serviceDate));

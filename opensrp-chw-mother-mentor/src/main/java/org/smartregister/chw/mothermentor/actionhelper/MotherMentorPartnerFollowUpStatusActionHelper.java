@@ -3,6 +3,7 @@ package org.smartregister.chw.mothermentor.actionhelper;
 import org.apache.commons.lang3.StringUtils;
 import org.smartregister.chw.mothermentor.model.BaseMotherMentorVisitAction;
 import org.smartregister.chw.mothermentor.util.DBConstants;
+import org.smartregister.chw.mothermentor.util.MotherMentorPartnerFollowUpVisitUtils;
 
 public class MotherMentorPartnerFollowUpStatusActionHelper extends BaseMotherMentorActionHelper {
     private final Runnable onStatusChanged;
@@ -38,12 +39,10 @@ public class MotherMentorPartnerFollowUpStatusActionHelper extends BaseMotherMen
             return completed("refused".equals(agreement) || ("agreed".equals(agreement)
                     && ("yes".equals(referral) || "no".equals(referral))));
         }
-        String reason = getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
         return completed("not_found".equals(status)
-                && ("deceased".equals(reason) || "moved".equals(reason)
-                    || "travelled".equals(reason) || "other".equals(reason))
-                && (!"other".equals(reason)
-                    || StringUtils.isNotBlank(getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER))));
+                && MotherMentorPartnerFollowUpVisitUtils.isNotFoundComplete(
+                        getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON),
+                        getValue(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER)));
     }
 
     @Override

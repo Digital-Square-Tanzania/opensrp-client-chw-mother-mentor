@@ -165,7 +165,7 @@
     <string name="mothermentor_child_eid_weaning_recommendation">Automatically selected from the recorded breastfeeding cessation date: %1$s. You can change it if it is not appropriate.</string>
     <string name="mothermentor_child_eid_test_six_weeks">6 Weeks</string>
     <string name="mothermentor_child_eid_test_nine_months">9 Months</string>
-    <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after breastfeeding stopped</string>
+    <string name="mothermentor_child_eid_test_three_months_after_weaning">3 months after stopping breastfeeding</string>
     <string name="mothermentor_child_eid_test_eighteen_months">18 Months</string>
     <string name="mothermentor_child_eid_test_not_applicable">Not applicable</string>
     <string name="mothermentor_child_eid_dob_required">A valid date of birth is required to determine eligible tests.</string>
@@ -238,6 +238,7 @@
     <string name="mothermentor_partner_agreement_refused">Refused to attend facility</string>
     <string name="mothermentor_partner_missing_deceased">Deceased</string>
     <string name="mothermentor_partner_missing_moved">Moved from area</string>
+    <string name="mothermentor_partner_missing_transferred_facility">Transferred to another facility</string>
     <string name="mothermentor_partner_missing_travelled">Travelled</string>
     <string name="mothermentor_partner_missing_other">Other</string>
     <string name="mothermentor_partner_result_positive">Positive</string>
@@ -251,7 +252,7 @@
     <string name="mothermentor_child_final_result_negative">Negative</string>
     <string name="mothermentor_child_final_result_pending">Pending</string>
     <string name="mothermentor_delivery_child">Child %1$d</string>
-    <string name="mothermentor_delivery_child_male">M</string>
-    <string name="mothermentor_delivery_child_female">F</string>
+    <string name="mothermentor_delivery_child_male">Male</string>
+    <string name="mothermentor_delivery_child_female">Female</string>
     <string name="mothermentor_delivery_child_link">Registered child</string>
 </resources>

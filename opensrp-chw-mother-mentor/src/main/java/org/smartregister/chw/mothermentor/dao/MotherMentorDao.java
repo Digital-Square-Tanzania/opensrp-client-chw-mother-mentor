@@ -774,12 +774,8 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID + " WHERE f." + DBConstants.KEY.ENTITY_ID
                         + " = ? AND (f." + DBConstants.KEY.FOLLOW_UP_OUTCOME + " = ? OR f."
                         + DBConstants.KEY.FOLLOW_UP_STATUS + " = ? OR (f."
-                        + DBConstants.KEY.FOLLOW_UP_CATEGORY + " = 'PARTNER' AND f."
-                        + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA + " IN ('2', ?) AND f."
-                        + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' AND f."
-                        + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'not_found' AND f."
-                        + DBConstants.KEY.PARTNER_NOT_FOUND_REASON + " = 'deceased' AND f."
-                        + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'deceased' AND NOT EXISTS ("
+                        + DBConstants.KEY.FOLLOW_UP_CATEGORY + " = 'PARTNER' AND "
+                        + MotherMentorPartnerFollowUpDao.workflowDeathCondition("f") + " AND NOT EXISTS ("
                         + "SELECT 1 FROM " + VisitRepository.VISIT_TABLE + " pending_death WHERE "
                         + "pending_death." + DBConstants.KEY.BASE_ENTITY_ID + " = f."
                         + DBConstants.KEY.ENTITY_ID + " AND pending_death."
@@ -787,8 +783,7 @@ public class MotherMentorDao extends AbstractDao {
                         + DBConstants.KEY.BASE_ENTITY_ID + " AND ifnull(pending_death."
                         + DBConstants.KEY.PROCESSED + ", 0) <> 1)))";
         try (Cursor cursor = readableDatabase().rawQuery(
-                query, new String[] {baseEntityId, "client_deceased", "deceased",
-                    MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA})) {
+                query, new String[] {baseEntityId, "client_deceased", "deceased"})) {
             while (cursor.moveToNext()) {
                 Date date = MotherMentorDeceasedVisitUtils.getRecordedDate(
                         getCursorValue(cursor, DBConstants.KEY.EVENT_JSON, ""), null);

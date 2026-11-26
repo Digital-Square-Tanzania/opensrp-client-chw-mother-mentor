@@ -25,7 +25,7 @@
   },
   "global": {},
   "step1": {
-    "title": "Hali ya ufuatiliaji",
+    "title": "Hali ya Ufuatiliaji",
     "fields": [
       {
         "key": "follow_up_status",
@@ -33,7 +33,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "follow_up_status",
         "type": "native_radio",
-        "label": "Hali ya ufuatiliaji",
+        "label": "Hali ya Ufuatiliaji",
         "v_required": {
           "value": true,
           "err": "Tafadhali chagua jibu"
@@ -144,7 +144,7 @@
         "openmrs_entity": "concept",
         "openmrs_entity_id": "partner_not_found_reason",
         "type": "native_radio",
-        "label": "Sababu",
+        "label": "Sababu ya kutopatikana",
         "v_required": {
           "value": true,
           "err": "Tafadhali chagua jibu"
@@ -163,6 +163,13 @@
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "moved"
+          },
+          {
+            "key": "transferred_facility",
+            "text": "Amehamia kituo kingine",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transferred_facility"
           },
           {
             "key": "travelled",

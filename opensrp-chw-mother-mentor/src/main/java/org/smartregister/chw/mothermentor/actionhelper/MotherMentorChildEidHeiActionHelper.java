@@ -3,8 +3,11 @@ package org.smartregister.chw.mothermentor.actionhelper;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.vijay.jsonwizard.utils.FormUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.smartregister.chw.mothermentor.MotherMentorLibrary;
 import org.smartregister.chw.mothermentor.R;
@@ -32,6 +35,7 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
     private final MemberObject member;
     private final Runnable onHeiChanged;
     private final LocalDate suppliedServiceDate;
+    private final String editingVisitId;
     private String currentVisitId;
     private LocalDate serviceDate;
     private String referralState;
@@ -45,8 +49,14 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
 
     public MotherMentorChildEidHeiActionHelper(MemberObject member, LocalDate serviceDate,
             Runnable onHeiChanged) {
+        this(member, serviceDate, null, onHeiChanged);
+    }
+
+    public MotherMentorChildEidHeiActionHelper(MemberObject member, LocalDate serviceDate,
+            String editingVisitId, Runnable onHeiChanged) {
         this.member = member;
         this.suppliedServiceDate = serviceDate;
+        this.editingVisitId = editingVisitId;
         this.onHeiChanged = onHeiChanged;
     }
 
@@ -55,7 +65,7 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
             Map<String, List<VisitDetail>> details) {
         super.onJsonFormLoaded(jsonPayload, context, details);
         payload = null;
-        currentVisitId = null;
+        currentVisitId = editingVisitId;
         serviceDate = suppliedServiceDate == null ? LocalDate.now() : suppliedServiceDate;
         referralState = null;
         clinicalState = null;
@@ -75,6 +85,7 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
             LocalDate recorded = MotherMentorHeiSchedule.parseDate(dates.get(0).getDetails());
             if (recorded != null && suppliedServiceDate == null) serviceDate = recorded;
         }
+        if (currentVisitId != null) return;
         for (List<VisitDetail> group : details.values()) {
             if (group == null) continue;
             for (VisitDetail detail : group) {
@@ -173,11 +184,9 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
             }
             if (prefill) {
                 MotherMentorMotherChildUtils.prepareBreastfeeding(form, clinical);
-                putIfEmpty(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA,
-                        clinical.getWeaningDate() == null ? "" : clinical.getWeaningDate().toString());
                 if (currentVisitId != null) MotherMentorChildEidReturnVisit.restoreLegacyConfirmation(form);
             }
-            MotherMentorChildEidHeiUtils.clearInactiveAnswers(form);
+            prepareWeaning(form, clinical.getChildEidWeaningDate());
             MotherMentorChildEidHeiUi.prepare(form, context);
             return form.toString();
         } catch (Exception e) {
@@ -186,11 +195,22 @@ public class MotherMentorChildEidHeiActionHelper extends BaseMotherMentorActionH
         }
     }
 
-    private void putIfEmpty(JSONObject form, String key, String value) {
-        JSONObject field = MotherMentorMotherChildUtils.field(form, key);
-        if (field != null && field.optString("value").isEmpty()) {
-            MotherMentorMotherChildUtils.put(form, key, value == null ? "" : value);
+    private void prepareWeaning(JSONObject form, LocalDate recorded) throws JSONException {
+        JSONObject date = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_TAREHE_ACHA_KUNYONYESHA);
+        JSONObject feeding = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MAMA_BREASTFEEDING_STATUS);
+        if (date == null || feeding == null) return;
+        JSONObject carried = MotherMentorMotherChildUtils.field(form, DBConstants.KEY.MTOTO_WEANING_CARRIED);
+        boolean readOnly = recorded != null;
+        if (readOnly) {
+            feeding.put("value", "not_breastfeeding");
+        } else if (carried == null || !"1".equals(carried.optString("value"))) {
+            recorded = MotherMentorHeiSchedule.parseDate(date.optString("value"));
         }
+        date.put("value", recorded == null ? "" : recorded.toString(FormUtils.NATIIVE_FORM_DATE_FORMAT_PATTERN));
+        date.put("read_only", readOnly);
+        // Changing the feeding answer would hide the recorded weaning date.
+        feeding.put("read_only", readOnly);
+        if (carried != null) carried.put("value", readOnly ? "1" : "");
     }
 
     @Override

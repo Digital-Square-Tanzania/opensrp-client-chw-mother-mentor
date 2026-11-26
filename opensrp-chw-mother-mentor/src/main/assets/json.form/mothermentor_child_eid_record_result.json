@@ -52,6 +52,14 @@
         "value": ""
       },
       {
+        "key": "child_eid_confirmation_sample_documented",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "ui_only",
+        "openmrs_entity_id": "child_eid_confirmation_sample_documented",
+        "value": "no"
+      },
+      {
         "key": "child_eid_result_sample_label",
         "type": "edit_text",
         "openmrs_entity_parent": "",

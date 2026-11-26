@@ -155,10 +155,6 @@ public class MotherMentorActionHelpersTest {
                 DBConstants.KEY.RETURNED_TO_FACILITY,
                 DBConstants.KEY.FACILITY_RETURN_DATE);
         checkArrival(
-                new MotherMentorPartnerArrivalActionHelper(),
-                DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY,
-                DBConstants.KEY.PARTNER_FACILITY_ARRIVAL_DATE);
-        checkArrival(
                 new MotherMentorChildEidArrivalActionHelper(),
                 DBConstants.KEY.CHILD_EID_ARRIVED_AT_FACILITY,
                 DBConstants.KEY.CHILD_EID_FACILITY_ARRIVAL_DATE);

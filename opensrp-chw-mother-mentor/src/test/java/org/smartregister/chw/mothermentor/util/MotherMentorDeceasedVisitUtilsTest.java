@@ -41,15 +41,20 @@ public class MotherMentorDeceasedVisitUtilsTest {
 
     @Test
     public void supportedPartnerSchemasRequireTheCompletePartnerTracingDeathOutcome() throws Exception {
-        assertPartnerTracingDeath("2");
-        assertPartnerTracingDeath(MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA);
+        assertPartnerDeath("2", "tracing");
+        assertPartnerDeath(MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA, "tracing");
     }
 
-    private static void assertPartnerTracingDeath(String schema) throws Exception {
+    @Test
+    public void attendanceDeathUsesTheSameCompleteOutcomeAsTracing() throws Exception {
+        assertPartnerDeath(MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA, "attendance");
+    }
+
+    private static void assertPartnerDeath(String schema, String phase) throws Exception {
         JSONObject death = new JSONObject().put("obs", new JSONArray()
                 .put(observation(DBConstants.KEY.FOLLOW_UP_CATEGORY, "PARTNER"))
                 .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA, schema))
-                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, "tracing"))
+                .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE, phase))
                 .put(observation(DBConstants.KEY.FOLLOW_UP_STATUS, "not_found"))
                 .put(observation(DBConstants.KEY.PARTNER_NOT_FOUND_REASON, "deceased"))
                 .put(observation(DBConstants.KEY.PARTNER_FOLLOW_UP_END, "deceased")));

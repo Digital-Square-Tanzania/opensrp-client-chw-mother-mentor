@@ -445,6 +445,7 @@ public final class DBConstants {
         public static final String PARTNER_EDUCATION_PROVIDED = "partner_education_provided";
         public static final String PARTNER_EDUCATION_TOPICS = "partner_education_topics";
         public static final String CHILD_EID_FOLLOW_UP_SCHEMA = "child_eid_follow_up_schema";
+        public static final String MTOTO_WEANING_CARRIED = "mtoto_weaning_carried";
         public static final String CHILD_EID_INLINE_SUBMISSION_ID = "child_eid_inline_hei_submission_id";
         public static final String CHILD_EID_INLINE_REVISION = "child_eid_inline_hei_revision";
         public static final String CHILD_EID_PARENT_SUBMISSION_ID = "child_eid_parent_visit_submission_id";

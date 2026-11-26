@@ -13,7 +13,7 @@
     <string name="mothermentor_child_eid_hei_invalid_date">Enter a valid date within the child’s life and no later than this visit.</string>
     <string name="mothermentor_child_eid_hei_stage_six_weeks">6 weeks</string>
     <string name="mothermentor_child_eid_hei_stage_nine_months">9 months</string>
-    <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">15 months</string>
+    <string name="mothermentor_child_eid_hei_stage_three_months_after_weaning">@string/mothermentor_child_eid_test_three_months_after_weaning</string>
     <string name="mothermentor_child_eid_hei_stage_eighteen_months">18 months (confirmatory)</string>
     <string name="mothermentor_eid_return_named_result">Has the %1$s test result been received?</string>
     <string name="mothermentor_eid_return_confirm_negative">Confirmatory result is negative. Follow national guidelines for repeat testing.</string>

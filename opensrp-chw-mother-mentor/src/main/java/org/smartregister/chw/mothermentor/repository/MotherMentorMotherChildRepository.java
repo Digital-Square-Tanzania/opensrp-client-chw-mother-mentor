@@ -366,6 +366,15 @@ public final class MotherMentorMotherChildRepository {
         }
         LocalDate dob = MotherMentorHeiSchedule.parseBirthDate(person.get(DBConstants.KEY.DOB));
         if (dob == null) dob = MotherMentorHeiSchedule.parseBirthDate(enrollment.get(DBConstants.KEY.CHILD_DOB));
+        List<Evidence> childVisits = childEvidence(db, childId, MotherMentorMotherVisitDao.Context.empty(),
+                excludedVisitId, assessmentDate, before);
+        List<Evidence> enrollments = enrollmentEvidence(db, childId, dob, assessmentDate, before);
+        List<Evidence> evidence = new ArrayList<>(childVisits);
+        evidence.addAll(enrollments);
+        evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
+        boolean hasOnlyLegacyEnrollment = enrollments.isEmpty()
+                && MotherMentorChildEidDao.enrollmentHistory(db, childId, LocalDate.now()).isEmpty();
+        Map<String, String> legacyEnrollment = hasOnlyLegacyEnrollment ? enrollment : Collections.emptyMap();
         String motherId = value(enrollment, DBConstants.KEY.MOTHER_BASE_ENTITY_ID);
         if (motherId.isEmpty() && !MotherMentorChildEidDirectEnrollment.SOURCE.equals(
                 enrollment.get(DBConstants.KEY.MTOTO_ENTRY_SOURCE))) {
@@ -385,8 +394,7 @@ public final class MotherMentorMotherChildRepository {
                     && (shared.siblings > 1 || shared.terminalResultTime == 0
                         || childId.equals(shared.terminalResultChildId) && episode.time <= shared.terminalResultTime)) {
                 State lifetime = new State(dob);
-                for (Evidence item : childEvidence(db, childId, MotherMentorMotherVisitDao.Context.empty(),
-                        excludedVisitId, assessmentDate, before)) applyChild(lifetime, item.values, item.date);
+                for (Evidence item : childVisits) applyChild(lifetime, item.values, item.date);
                 shared.hasBreastfeedingHistory |= lifetime.hasBreastfeedingHistory;
                 for (Map.Entry<Stage, TestRecord> item : lifetime.tests.entrySet()) {
                     TestRecord current = shared.tests.get(item.getKey());
@@ -396,21 +404,16 @@ public final class MotherMentorMotherChildRepository {
                     }
                 }
                 if (lifetime.terminalDate != null) shared.terminal(lifetime.terminal, lifetime.terminalDate);
+                recordChildEidWeaning(shared, evidence, legacyEnrollment, assessmentDate);
                 return shared;
             }
         }
         State state = new State(dob);
         state.childBaseEntityId = childId;
-        List<Evidence> evidence = new ArrayList<>(childEvidence(db, childId,
-                MotherMentorMotherVisitDao.Context.empty(), excludedVisitId, assessmentDate, before));
-        List<Evidence> enrollments = enrollmentEvidence(db, childId, dob, assessmentDate, before);
         if (enrollments.isEmpty()) seedBreastfeeding(state, enrollment, assessmentDate);
-        evidence.addAll(enrollments);
-        if (before == null && assessmentDate.equals(LocalDate.now())
-                && MotherMentorChildEidDao.enrollmentHistory(db, childId, assessmentDate).isEmpty()) {
+        if (before == null && assessmentDate.equals(LocalDate.now()) && hasOnlyLegacyEnrollment) {
             seedLegacyTest(state, enrollment, null);
         }
-        evidence.sort((first, second) -> MotherMentorChildEidDao.compareChronology(first.visit, second.visit));
         for (Evidence item : evidence) {
             if (item.enrollmentSample) {
                 seedBreastfeeding(state, item.values, item.date);
@@ -425,7 +428,40 @@ public final class MotherMentorMotherChildRepository {
             state.terminalResultTime = shared.terminalResultTime;
             state.terminalResultChildId = childId;
         }
+        recordChildEidWeaning(state, evidence, legacyEnrollment, assessmentDate);
         return state;
+    }
+
+    private static void recordChildEidWeaning(State state, List<Evidence> evidence,
+            Map<String, String> legacyEnrollment, LocalDate assessmentDate) {
+        // The shared clinical state can also contain feeding answers from Mama Kadi.
+        state.childEidWeaningDate = enrollmentWeaning(legacyEnrollment, state.childDob, assessmentDate);
+        if (state.childEidWeaningDate != null) return;
+        for (Evidence item : evidence) {
+            if (item.enrollmentSample) {
+                state.childEidWeaningDate = enrollmentWeaning(item.values, state.childDob, item.date);
+                if (state.childEidWeaningDate != null) return;
+            } else if (MotherMentorChildEidStatusUtils.isSchema3(item.values)
+                    && MotherMentorChildEidStatusUtils.isFoundAlive(item.values)
+                    && MotherMentorChildEidStatusUtils.isStatusComplete(item.values, state.childDob, item.date)
+                    && !"1".equals(item.values.get(DBConstants.KEY.MTOTO_WEANING_CARRIED))) {
+                LocalDate cessation = MotherMentorChildEidHeiUtils.cessation(item.values);
+                LocalDate recordedDob = MotherMentorHeiSchedule.parseBirthDate(item.values.get(DBConstants.KEY.CHILD_DOB));
+                if ((recordedDob == null || recordedDob.equals(state.childDob))
+                        && MotherMentorHeiSchedule.validDate(cessation, state.childDob, item.date)) {
+                    state.childEidWeaningDate = cessation;
+                    state.childEidWeaningVisitId = item.visit.getVisitId();
+                    return;
+                }
+            }
+        }
+    }
+
+    private static LocalDate enrollmentWeaning(Map<String, String> enrollment, LocalDate dob, LocalDate day) {
+        String status = enrollment.get(DBConstants.KEY.BREASTFEEDING_STATUS);
+        if (!"not_breast_feeding".equals(status) && !"stop_breast_feeding".equals(status)) return null;
+        LocalDate cessation = MotherMentorHeiSchedule.parseDate(enrollment.get(DBConstants.KEY.WEANING_DATE));
+        return MotherMentorHeiSchedule.validDate(cessation, dob, day) ? cessation : null;
     }
 
     private static void seedBreastfeeding(State state, Map<String, String> enrollment, LocalDate day) {
@@ -435,8 +471,8 @@ public final class MotherMentorMotherChildRepository {
         } else if (MotherMentorChildEidHeiUtils.NEVER_BREASTFED.equals(status)) {
             if (!state.hasBreastfeedingHistory) state.recordBreastfeeding(status, null);
         } else if ("not_breast_feeding".equals(status) || "stop_breast_feeding".equals(status)) {
-            LocalDate cessation = MotherMentorHeiSchedule.parseDate(enrollment.get(DBConstants.KEY.WEANING_DATE));
-            if (MotherMentorHeiSchedule.validDate(cessation, state.childDob, day)) {
+            LocalDate cessation = enrollmentWeaning(enrollment, state.childDob, day);
+            if (cessation != null) {
                 state.recordBreastfeeding("not_breastfeeding", cessation);
             } else if ("stop_breast_feeding".equals(status) && !state.hasBreastfeedingHistory) {
                 state.recordBreastfeeding("not_breastfeeding", null);
@@ -783,6 +819,8 @@ public final class MotherMentorMotherChildRepository {
         private boolean hasBreastfeedingHistory;
         private LocalDate recordedDelivery;
         private LocalDate weaningDate;
+        private LocalDate childEidWeaningDate;
+        private String childEidWeaningVisitId;
         private LocalDate childDeathDate;
         private LocalDate birthTestAnsweredDob;
         private final Map<Stage, TestRecord> tests = new LinkedHashMap<>();
@@ -809,6 +847,8 @@ public final class MotherMentorMotherChildRepository {
         /** Whether this child has a recorded breastfeeding or cessation answer. */
         public boolean hasBreastfeedingHistory() { return hasBreastfeedingHistory; }
         public LocalDate getWeaningDate() { return weaningDate; }
+        public LocalDate getChildEidWeaningDate() { return childEidWeaningDate; }
+        public String getChildEidWeaningVisitId() { return childEidWeaningVisitId; }
         public LocalDate getChildDeathDate() { return childDeathDate; }
         public LocalDate getBirthTestAnsweredDob() { return birthTestAnsweredDob; }
         public Map<Stage, TestRecord> getTests() { return MotherMentorHeiSchedule.immutableTests(tests); }

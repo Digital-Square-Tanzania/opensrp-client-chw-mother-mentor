@@ -176,6 +176,14 @@
         }
       },
       {
+        "key": "mtoto_weaning_carried",
+        "type": "hidden",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "mtoto_weaning_carried",
+        "value": ""
+      },
+      {
         "key": "mama_tarehe_acha_kunyonyesha",
         "type": "date_picker",
         "openmrs_entity_parent": "",
@@ -518,7 +526,7 @@
           },
           {
             "key": "three_months_after_weaning",
-            "text": "3 months after breastfeeding stopped",
+            "text": "3 months after stopping breastfeeding",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "three_months_after_weaning"

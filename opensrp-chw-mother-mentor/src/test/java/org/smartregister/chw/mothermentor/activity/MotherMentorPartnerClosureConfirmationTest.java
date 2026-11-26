@@ -35,9 +35,9 @@ import org.smartregister.repository.AllSharedPreferences;
 @Config(application = Application.class, sdk = 28, manifest = Config.NONE)
 public class MotherMentorPartnerClosureConfirmationTest {
     @Test
-    public void confirmingDeathAndRelocationSubmitsOnlyAfterConsent() throws Exception {
-        for (String reason : new String[] {"deceased", "moved"}) {
-            TestActivity activity = activity(reason);
+    public void laterDeathMoveAndTransferSubmitOnlyAfterConsent() throws Exception {
+        for (String reason : new String[] {"deceased", "moved", "transferred_facility"}) {
+            TestActivity activity = activity(reason, "en", "mothermentor_partner_arrival");
             activity.submitVisit();
             verify(activity.presenter, never()).submitVisit();
             AlertDialog dialog = (AlertDialog) ShadowAlertDialog.getLatestDialog();
@@ -53,9 +53,10 @@ public class MotherMentorPartnerClosureConfirmationTest {
     @Test
     @Config(qualifiers = "sw")
     public void cancellingReturnsToTheFormWithTheSelectionIntact() throws Exception {
-        TestActivity activity = activity("moved", "sw");
+        TestActivity activity = activity("moved", "sw", "mothermentor_partner_arrival");
         activity.submitVisit();
         AlertDialog dialog = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+        assertEquals("Ndiyo, Funga", dialog.getButton(DialogInterface.BUTTON_POSITIVE).getText().toString());
         assertEquals("Ghairi", dialog.getButton(DialogInterface.BUTTON_NEGATIVE).getText().toString());
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).performClick();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
@@ -67,16 +68,46 @@ public class MotherMentorPartnerClosureConfirmationTest {
 
     @Test
     public void nonImmediateOutcomesSubmitWithoutConfirmation() throws Exception {
-        TestActivity activity = activity("travelled");
+        TestActivity activity = activity("travelled", "en", "mothermentor_partner_arrival");
         activity.submitVisit();
         verify(activity.presenter).submitVisit();
     }
 
-    private TestActivity activity(String reason) throws Exception {
-        return activity(reason, "en");
+    @Test
+    public void tracingTransferAlsoRequiresConfirmation() throws Exception {
+        TestActivity activity = activity("transferred_facility", "en", "mothermentor_partner_follow_up_status");
+        activity.submitVisit();
+        verify(activity.presenter, never()).submitVisit();
+        assertTrue(ShadowAlertDialog.getLatestDialog().isShowing());
     }
 
-    private TestActivity activity(String reason, String language) throws Exception {
+    @Test
+    public void attendanceTransferCanBeCancelledAndConfirmedOnRetryInBothLanguages() throws Exception {
+        for (String language : new String[] {"en", "sw"}) {
+            TestActivity activity = activity("transferred_facility", language, "mothermentor_partner_arrival");
+            activity.submitVisit();
+            AlertDialog dialog = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(dialog.isShowing());
+            assertEquals(activity.getString(R.string.mothermentor_partner_close_confirm),
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).getText().toString());
+            dialog.getButton(DialogInterface.BUTTON_NEGATIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            verify(activity.presenter, never()).submitVisit();
+            assertTrue(activity.cancelled);
+            assertEquals("transferred_facility", activity.reopened.getJSONObject("step1")
+                    .getJSONArray("fields").getJSONObject(1).getString("value"));
+
+            activity.submitVisit();
+            dialog = (AlertDialog) ShadowAlertDialog.getLatestDialog();
+            assertTrue(dialog.isShowing());
+            verify(activity.presenter, never()).submitVisit();
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            verify(activity.presenter).submitVisit();
+        }
+    }
+
+    private TestActivity activity(String reason, String language, String form) throws Exception {
         RuntimeEnvironment.setQualifiers(language);
         new AllSharedPreferences(PreferenceManager.getDefaultSharedPreferences(
                 RuntimeEnvironment.getApplication())).saveLanguagePreference(language);
@@ -84,7 +115,7 @@ public class MotherMentorPartnerClosureConfirmationTest {
         activity.setTheme(androidx.appcompat.R.style.Theme_AppCompat);
         activity.presenter = mock(BaseMotherMentorVisitContract.Presenter.class);
         BaseMotherMentorVisitAction action = mock(BaseMotherMentorVisitAction.class);
-        when(action.getFormName()).thenReturn("mothermentor_partner_follow_up_status");
+        when(action.getFormName()).thenReturn(form);
         when(action.getTitle()).thenReturn("Status");
         when(action.isValid()).thenReturn(true);
         when(action.getActionStatus()).thenReturn(BaseMotherMentorVisitAction.Status.COMPLETED);

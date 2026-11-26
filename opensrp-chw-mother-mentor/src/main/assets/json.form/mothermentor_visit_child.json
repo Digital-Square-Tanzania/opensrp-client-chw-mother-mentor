@@ -156,14 +156,14 @@
         "options": [
           {
             "key": "male",
-            "text": "Male (Boy)",
+            "text": "Male",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "male",
             "openmrs_entity_parent": ""
           },
           {
             "key": "female",
-            "text": "Female (Girl)",
+            "text": "Female",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "female",
             "openmrs_entity_parent": ""
@@ -617,7 +617,7 @@
           },
           {
             "key": "three_months_after_weaning",
-            "text": "3 months after breastfeeding stopped",
+            "text": "3 months after stopping breastfeeding",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "three_months_after_weaning",
             "openmrs_entity_parent": ""

@@ -116,6 +116,49 @@ public class MotherMentorChildEidDirectEnrollmentTest {
     }
 
     @Test
+    public void lastTestOptionsFollowWeaningDateAndClearIneligibleDraftAnswers() throws Exception {
+        for (String locale : new String[] {"", "-sw"}) {
+            LocalDate dob = day.minusMonths(14);
+            JSONObject form = prepare(child(dob), locale);
+            MotherMentorMotherChildUtils.put(form, BREASTFEEDING_STATUS, "stop_breast_feeding");
+            MotherMentorMotherChildUtils.put(form, WEANING_DATE, dob.plusMonths(5).toString());
+            MotherMentorChildEidDirectEnrollment.refreshLastTestOptions(context, form, day);
+            JSONArray options = MotherMentorMotherChildUtils.field(form, WEANED_LAST_TEST).getJSONArray("options");
+            assertFalse(options.toString().contains("three_months_after_weaning"));
+
+            MotherMentorMotherChildUtils.put(form, WEANING_DATE, dob.plusMonths(10).toString());
+            MotherMentorChildEidDirectEnrollment.refreshLastTestOptions(context, form, day);
+            assertEquals("three_months_after_weaning", options.getJSONObject(options.length() - 1).getString("key"));
+            MotherMentorMotherChildUtils.put(form, WEANED_LAST_TEST, "three_months_after_weaning");
+            MotherMentorMotherChildUtils.put(form, LAST_TEST_RESULT, "pending");
+            MotherMentorMotherChildUtils.put(form, MTOTO_ENTRY_TEST_DATE, day.toString());
+
+            MotherMentorMotherChildUtils.put(form, WEANING_DATE, dob.plusMonths(9).toString());
+            MotherMentorChildEidDirectEnrollment.refreshLastTestOptions(context, form, day);
+            assertFalse(options.toString().contains("three_months_after_weaning"));
+            assertEquals("", MotherMentorMotherChildUtils.values(form).get(WEANED_LAST_TEST));
+            assertEquals("", MotherMentorMotherChildUtils.values(form).get(LAST_TEST_RESULT));
+            assertEquals("", MotherMentorMotherChildUtils.values(form).get(MTOTO_ENTRY_TEST_DATE));
+        }
+    }
+
+    @Test
+    public void lastTestListOmitsPostWeaningDatesAtOrAfterEighteenMonths() throws Exception {
+        for (String locale : new String[] {"", "-sw"}) {
+            LocalDate dob = day.minusMonths(20).withDayOfMonth(15);
+            LocalDate cutoff = dob.plusMonths(18);
+            JSONObject form = prepare(child(dob), locale);
+            MotherMentorMotherChildUtils.put(form, BREASTFEEDING_STATUS, "stop_breast_feeding");
+            JSONArray options = MotherMentorMotherChildUtils.field(form, WEANED_LAST_TEST).getJSONArray("options");
+            for (int offset : new int[]{-1, 0, 1}) {
+                MotherMentorMotherChildUtils.put(form, WEANING_DATE, cutoff.plusDays(offset).minusMonths(3).toString());
+                MotherMentorChildEidDirectEnrollment.refreshLastTestOptions(context, form, day);
+                assertEquals(offset < 0, options.toString().contains("three_months_after_weaning"));
+            }
+        }
+    }
+
+    @Test
     public void nativeOptionalHeiPlaceholderRemainsBlankOnEnrollment() throws Exception {
         Map<String, String> child = child(day.minusWeeks(10));
         JSONObject form = prepare(child, "");
@@ -125,6 +168,41 @@ public class MotherMentorChildEidDirectEnrollmentTest {
         assertEquals("", MotherMentorMotherChildUtils.values(form).get(HEI_NUMBER));
         assertEquals("01-00-0000-000000-C00",
                 MotherMentorChildEidDirectEnrollment.normalizeHeiNumber("01-00-0000-000000-C00"));
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    public void englishRegistrationShowsSexAndSavesTheChildIdentityValue() throws Exception {
+        assertChildSex("", "Male", "Female");
+    }
+
+    @Test
+    @Config(qualifiers = "sw")
+    public void swahiliRegistrationShowsSexAndSavesTheChildIdentityValue() throws Exception {
+        assertChildSex("-sw", "Wa kiume", "Wa kike");
+    }
+
+    private void assertChildSex(String directory, String male, String female) throws Exception {
+        String[] storedValues = {"male", "female", "Ke (Msichana)", "Me (Mvulana)"};
+        String[] captions = {male, female, female, male};
+        for (int i = 0; i < storedValues.length; i++) {
+            Map<String, String> child = child(day.minusWeeks(10));
+            child.put(GENDER, storedValues[i]);
+            JSONObject form = prepare(child, directory);
+            JSONObject sex = MotherMentorMotherChildUtils.field(form, CHILD_SEX);
+            assertEquals(captions[i], sex.getString("value"));
+            assertTrue(sex.getBoolean("read_only"));
+            assertFalse(sex.has("relevance"));
+            assertEquals("concept", sex.getString("openmrs_entity"));
+            assertEquals(CHILD_SEX, sex.getString("openmrs_entity_id"));
+            assertTrue(MotherMentorChildEidLabels.cardSummary(context, child).startsWith(captions[i]));
+
+            MotherMentorMotherChildUtils.put(form, LAST_TEST, "no_test_has_been_done_yet");
+            MotherMentorChildEidDirectEnrollment.prepareForEvent(context, null, form, child, "Family");
+            assertEquals(storedValues[i], sex.getString("value"));
+            assertEquals(storedValues[i], child.get(GENDER));
+            assertEquals(child.get(BASE_ENTITY_ID), form.getString("entity_id"));
+        }
     }
 
     private JsonFormActivity nativeActivity(JSONObject form) throws Exception {

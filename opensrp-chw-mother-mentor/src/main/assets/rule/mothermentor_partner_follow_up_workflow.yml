@@ -26,7 +26,7 @@ actions:
 name: step1_comments
 description: Show optional tracing comments after an outcome is selected
 priority: 1
-condition: "(step1_follow_up_status == 'found' && (step1_partner_facility_agreement == 'agreed' || step1_partner_facility_agreement == 'refused')) || (step1_follow_up_status == 'not_found' && (step1_partner_not_found_reason == 'deceased' || step1_partner_not_found_reason == 'moved' || step1_partner_not_found_reason == 'travelled' || step1_partner_not_found_reason == 'other'))"
+condition: "(step1_follow_up_status == 'found' && (step1_partner_facility_agreement == 'agreed' || step1_partner_facility_agreement == 'refused')) || (step1_follow_up_status == 'not_found' && (step1_partner_not_found_reason == 'deceased' || step1_partner_not_found_reason == 'moved' || step1_partner_not_found_reason == 'transferred_facility' || step1_partner_not_found_reason == 'travelled' || step1_partner_not_found_reason == 'other'))"
 actions:
   - "isRelevant = true"
 

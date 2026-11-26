@@ -49,18 +49,25 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     private static final String COMMENT_FORM = "mothermentor_child_eid_follow_up_comment";
     private final LinkedHashMap<String, BaseMotherMentorVisitAction> childActions =
             new LinkedHashMap<>();
+    private final String historyVisitId;
     private BaseMotherMentorVisitContract.InteractorCallBack childCallback;
     private boolean actionsReady;
     private boolean statusSaved;
     private boolean legacyVisit;
     private String originalSchema;
     private LocalDate serviceDate = LocalDate.now();
+    private String editingVisitId;
     private MotherMentorChildEidRepository.State enrollmentState;
     private Map<String, String> originalEpisode = Collections.emptyMap();
     private Event linkedHei;
 
     public ChildEidFollowUpVisitInteractor(String eventType) {
+        this(eventType, null);
+    }
+
+    public ChildEidFollowUpVisitInteractor(String eventType, String historyVisitId) {
         super(eventType);
+        this.historyVisitId = historyVisitId;
     }
 
     @Override
@@ -71,12 +78,14 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
         originalSchema = null;
         statusSaved = false;
         serviceDate = LocalDate.now();
+        editingVisitId = null;
         enrollmentState = null;
         originalEpisode = new LinkedHashMap<>();
         if (member == null) return;
         Visit visit = Boolean.TRUE.equals(view.getEditMode())
                 ? loadEditingVisit(member.getBaseEntityId()) : null;
         if (visit != null) {
+            editingVisitId = visit.getVisitId();
             details = loadVisitDetails(visit);
             LocalDate recorded = MotherMentorMotherVisitDao.getServiceDate(visit);
             if (recorded != null) serviceDate = recorded;
@@ -116,7 +125,16 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     }
 
     protected Visit loadEditingVisit(String memberId) {
+        if (historyVisitId != null) return findVisitForEdit(memberId);
         return visitRepository().getLatestVisit(memberId, getCurrentVisitType());
+    }
+
+    @Override
+    protected Visit findVisitForEdit(String memberId) {
+        if (historyVisitId == null) return super.findVisitForEdit(memberId);
+        Visit visit = visitRepository().getVisitByVisitId(historyVisitId);
+        return visit != null && memberId.equals(visit.getBaseEntityId())
+                && getCurrentVisitType().equals(visit.getVisitType()) ? visit : null;
     }
 
     protected Map<String, List<VisitDetail>> loadVisitDetails(Visit visit) {
@@ -182,7 +200,7 @@ public class ChildEidFollowUpVisitInteractor extends LegacyChildEidFollowUpVisit
     /** Child-specific HEI action; legacy visits retain their original section helpers. */
     protected BaseMotherMentorVisitAction.MotherMentorVisitActionHelper
             createHeiActionHelper(Runnable changed) {
-        return new MotherMentorChildEidHeiActionHelper(memberObject, serviceDate, changed);
+        return new MotherMentorChildEidHeiActionHelper(memberObject, serviceDate, editingVisitId, changed);
     }
 
     protected String getHeiFormName() {

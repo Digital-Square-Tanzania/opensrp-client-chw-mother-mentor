@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class MotherMentorChildEidSamplingScheduleTest {
@@ -48,14 +49,19 @@ public class MotherMentorChildEidSamplingScheduleTest {
     }
 
     @Test
-    public void nineMonthsAndWeaningCanBothBeDueWithoutAFifteenMonthAgeFloor() {
-        LocalDate cessation = birth.plusMonths(4);
-        assertEquals(java.util.Arrays.asList(Stage.NINE_MONTHS, Stage.AFTER_WEANING),
-                MotherMentorHeiSchedule.eligibleForSampling(birth, cessation,
-                        Collections.emptyMap(), birth.plusMonths(10)));
-        assertEquals(java.util.Arrays.asList(Stage.SIX_WEEKS, Stage.AFTER_WEANING),
-                MotherMentorHeiSchedule.eligibleForSampling(birth, cessation,
-                        Collections.emptyMap(), birth.plusMonths(7)));
+    public void fiveMonthWeaningKeepsTheNineMonthTestAndTenThroughTwelveWeaningHaveSeparateDueDates() {
+        assertEquals(Stage.NINE_MONTHS, MotherMentorHeiSchedule.next(birth, birth.plusMonths(5),
+                Collections.emptyMap(), birth.plusMonths(8)));
+        LocalDate dob = new LocalDate(2025, 1, 15);
+        for (int age : new int[]{10, 11, 12}) {
+            LocalDate stop = dob.plusMonths(age);
+            LocalDate due = dob.plusMonths(age + 3);
+            assertEquals(due, MotherMentorHeiSchedule.dueDate(Stage.AFTER_WEANING, dob, stop));
+            assertEquals(Collections.singletonList(Stage.NINE_MONTHS),
+                    MotherMentorHeiSchedule.eligibleForSampling(dob, stop, Collections.emptyMap(), due.minusDays(1)));
+            assertEquals(java.util.Arrays.asList(Stage.NINE_MONTHS, Stage.AFTER_WEANING),
+                    MotherMentorHeiSchedule.eligibleForSampling(dob, stop, Collections.emptyMap(), due));
+        }
     }
 
     @Test
@@ -81,14 +87,15 @@ public class MotherMentorChildEidSamplingScheduleTest {
     }
 
     @Test
-    public void nextTestChoosesEarlierWeaningDateInsteadOfStageDeclarationOrder() {
+    public void nextTestUsesThePostWeaningDateAfterPriorTestsAreComplete() {
         Map<Stage, TestRecord> tests = new LinkedHashMap<>();
         tests.put(Stage.SIX_WEEKS, new TestRecord("negative", birth.plusDays(42), false,
                 birth.plusDays(42)));
-        LocalDate stop = new LocalDate(2025, 4, 30);
+        tests.put(Stage.NINE_MONTHS, new TestRecord("negative", birth.plusMonths(9), false, birth.plusMonths(9)));
+        LocalDate stop = birth.plusMonths(10);
         assertEquals(Stage.AFTER_WEANING, MotherMentorHeiSchedule.next(birth, stop,
-                tests, new LocalDate(2025, 6, 1)));
-        assertEquals(new LocalDate(2025, 7, 30),
+                tests, stop.plusDays(1)));
+        assertEquals(stop.plusMonths(3),
                 MotherMentorHeiSchedule.dueDate(Stage.AFTER_WEANING, birth, stop));
     }
 
@@ -97,23 +104,42 @@ public class MotherMentorChildEidSamplingScheduleTest {
         Map<Stage, TestRecord> tests = new LinkedHashMap<>();
         tests.put(Stage.SIX_WEEKS, new TestRecord("negative", birth.plusDays(42), false,
                 birth.plusDays(42)));
-        assertEquals(new LocalDate(2025, 4, 30), MotherMentorHeiSchedule.dueDate(
-                Stage.AFTER_WEANING, birth, birth));
-        assertTrue(MotherMentorHeiSchedule.eligibleForSampling(birth, birth, tests,
-                new LocalDate(2025, 4, 29)).isEmpty());
+        tests.put(Stage.NINE_MONTHS, new TestRecord("negative", birth.plusMonths(9), false, birth.plusMonths(9)));
+        LocalDate stop = new LocalDate(2026, 1, 31);
+        assertEquals(new LocalDate(2026, 4, 30), MotherMentorHeiSchedule.dueDate(
+                Stage.AFTER_WEANING, birth, stop));
+        assertTrue(MotherMentorHeiSchedule.eligibleForSampling(birth, stop, tests,
+                new LocalDate(2026, 4, 29)).isEmpty());
         assertEquals(Collections.singletonList(Stage.AFTER_WEANING),
-                MotherMentorHeiSchedule.eligibleForSampling(birth, birth, tests,
-                        new LocalDate(2025, 4, 30)));
+                MotherMentorHeiSchedule.eligibleForSampling(birth, stop, tests,
+                        new LocalDate(2026, 4, 30)));
     }
 
     @Test
-    public void futureWeaningTestIsNotScheduledAfterItsEighteenMonthWindow() {
+    public void postWeaningDueDateMustBeBeforeTheEighteenMonthBirthday() {
+        LocalDate dob = new LocalDate(2025, 1, 15);
         Map<Stage, TestRecord> tests = new LinkedHashMap<>();
-        tests.put(Stage.SIX_WEEKS, new TestRecord("negative", birth.plusDays(42), false,
-                birth.plusDays(42)));
-        tests.put(Stage.NINE_MONTHS, new TestRecord("negative", birth.plusMonths(9), false,
-                birth.plusMonths(9)));
-        assertEquals(Stage.EIGHTEEN_MONTHS, MotherMentorHeiSchedule.next(birth,
-                birth.plusMonths(17), tests, birth.plusMonths(17)));
+        tests.put(Stage.SIX_WEEKS, new TestRecord("negative", dob.plusDays(42), false,
+                dob.plusDays(42)));
+        tests.put(Stage.NINE_MONTHS, new TestRecord("negative", dob.plusMonths(9), false,
+                dob.plusMonths(9)));
+        LocalDate cutoff = dob.plusMonths(18);
+        LocalDate stopBefore = new LocalDate(2026, 4, 14);
+        assertEquals(cutoff.minusDays(1), MotherMentorHeiSchedule.dueDate(Stage.AFTER_WEANING, dob, stopBefore));
+        assertEquals(Stage.AFTER_WEANING, MotherMentorHeiSchedule.next(dob, stopBefore, tests, stopBefore));
+        assertEquals(Collections.singletonList(Stage.AFTER_WEANING),
+                MotherMentorHeiSchedule.eligibleForSampling(dob, stopBefore, tests, cutoff.minusDays(1)));
+        assertEquals(Collections.singletonList(Stage.EIGHTEEN_MONTHS),
+                MotherMentorHeiSchedule.eligibleForSampling(dob, stopBefore, tests, cutoff));
+
+        for (int daysAfterCutoff : new int[]{0, 1}) {
+            LocalDate stop = new LocalDate(2026, 4, 15).plusDays(daysAfterCutoff);
+            LocalDate lateDue = cutoff.plusDays(daysAfterCutoff);
+            assertEquals(lateDue, stop.plusMonths(3));
+            assertNull(MotherMentorHeiSchedule.dueDate(Stage.AFTER_WEANING, dob, stop));
+            assertEquals(Stage.EIGHTEEN_MONTHS, MotherMentorHeiSchedule.next(dob, stop, tests, stop));
+            assertEquals(Collections.singletonList(Stage.EIGHTEEN_MONTHS),
+                    MotherMentorHeiSchedule.eligibleForSampling(dob, stop, tests, lateDue));
+        }
     }
 }

@@ -25,6 +25,16 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
         return matches(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA), "2", REFERRAL_SCHEMA);
     }
 
+    public static boolean isWorkflowDeath(Map<String, String> values) {
+        String phase = values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE);
+        return hasWorkflowSchema(values)
+                && (TRACING.equals(phase) || (ATTENDANCE.equals(phase)
+                    && REFERRAL_SCHEMA.equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA))))
+                && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
+                && "deceased".equals(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON))
+                && "deceased".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END));
+    }
+
     public static boolean hasReferralAnswer(Map<String, String> values) {
         return matches(values.get(DBConstants.KEY.PARTNER_TESTING_REFERRAL_GIVEN), "yes", "no");
     }
@@ -135,13 +145,20 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                 return educationComplete(values) && ("refused".equals(agreement)
                         || ("agreed".equals(agreement) && (!usesReferral || hasReferralAnswer(values))));
             }
-            if (!"not_found".equals(status)) return false;
-            String reason = values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON);
-            return matches(reason, "deceased", "moved", "travelled", "other")
-                    && (!"other".equals(reason)
-                            || answered(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER)));
+            return "not_found".equals(status) && isNotFoundComplete(
+                    values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON),
+                    values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER));
         }
         if (!ATTENDANCE.equals(phase)) return false;
+        // Earlier attendance forms recorded attendance directly, without a tracing answer.
+        if (usesReferral && values.containsKey(DBConstants.KEY.FOLLOW_UP_STATUS)) {
+            String status = values.get(DBConstants.KEY.FOLLOW_UP_STATUS);
+            if ("not_found".equals(status)) {
+                return isNotFoundComplete(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON),
+                        values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON_OTHER));
+            }
+            if (!"found".equals(status)) return false;
+        }
         String attendance = values.get(DBConstants.KEY.PARTNER_ARRIVED_AT_FACILITY);
         if ("no".equals(attendance)) return true;
         if (!"yes".equals(attendance)
@@ -161,6 +178,12 @@ public final class MotherMentorPartnerFollowUpVisitUtils {
                         DBConstants.KEY.PARTNER_HEPATITIS_B_RESULT,
                         DBConstants.KEY.PARTNER_HEPATITIS_B_NOT_TESTED_REASON,
                         DBConstants.KEY.PARTNER_HEPATITIS_B_NOT_TESTED_REASON_OTHER, false);
+    }
+
+    public static boolean isNotFoundComplete(String reason, String other) {
+        return MotherMentorPartnerClosure.isImmediateNotFoundReason(reason)
+                || "travelled".equals(reason)
+                || ("other".equals(reason) && answered(other));
     }
 
     private static boolean educationComplete(Map<String, String> values) {

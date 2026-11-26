@@ -172,13 +172,21 @@ public final class MotherMentorPartnerFollowUpDao {
                 + deathCondition(f) + ")";
     }
 
-    private static String deathCondition(String f) {
+    static String workflowDeathCondition(String f) {
         String schema = f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA;
-        return "((" + schema + " IN ('2', '3') AND "
-                + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' AND "
+        String referralSchema = MotherMentorPartnerFollowUpVisitUtils.REFERRAL_SCHEMA;
+        return "(" + schema + " IN ('2', '" + referralSchema + "') AND "
+                + "(" + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'tracing' OR ("
+                + schema + " = '" + referralSchema + "' AND "
+                + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE + " = 'attendance')) AND "
                 + f + "." + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'not_found' AND "
                 + f + "." + DBConstants.KEY.PARTNER_NOT_FOUND_REASON + " = 'deceased' AND "
-                + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'deceased') OR ("
+                + f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_END + " = 'deceased')";
+    }
+
+    private static String deathCondition(String f) {
+        String schema = f + "." + DBConstants.KEY.PARTNER_FOLLOW_UP_SCHEMA;
+        return "(" + workflowDeathCondition(f) + " OR ("
                 + "coalesce(" + schema + ", '') NOT IN ('2', '3') AND "
                 + f + "." + DBConstants.KEY.FOLLOW_UP_STATUS + " = 'deceased'))";
     }
@@ -355,10 +363,7 @@ public final class MotherMentorPartnerFollowUpDao {
 
     private static boolean deceased(Map<String, String> values) {
         if (MotherMentorPartnerFollowUpVisitUtils.hasWorkflowSchema(values)) {
-            return "deceased".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_END))
-                    && "tracing".equals(values.get(DBConstants.KEY.PARTNER_FOLLOW_UP_PHASE))
-                    && "not_found".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS))
-                    && "deceased".equals(values.get(DBConstants.KEY.PARTNER_NOT_FOUND_REASON));
+            return MotherMentorPartnerFollowUpVisitUtils.isWorkflowDeath(values);
         }
         return "deceased".equals(values.get(DBConstants.KEY.FOLLOW_UP_STATUS));
     }

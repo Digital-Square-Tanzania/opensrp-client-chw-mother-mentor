@@ -160,6 +160,21 @@ public class MotherMentorPartnerFollowUpDaoTest {
     }
 
     @Test
+    public void postAcceptanceDeathBlocksActiveFollowUpAndRelinkingAfterSave() throws Exception {
+        Map<String, String> values = death();
+        values.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        values.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        addVisit("draft", "28-10-2026", false, values);
+        assertTrue(active("2026-10-28 12:00:00"));
+        assertFalse(deceased());
+        addVisit("death", "28-10-2026", true, values);
+        assertFalse(active("2026-10-28 12:00:00"));
+        assertFalse(context("2026-10-28 12:00:00").isActive());
+        assertTrue(deceased());
+        assertFalse(MotherMentorPartnerFollowUpDao.canLinkPartner("partner", date("2026-10-29 12:00:00")));
+    }
+
+    @Test
     public void sharedDeathWithoutPartnerHistoryCannotReopenUnderANewLinkageUuid() throws Exception {
         insert("ec_family_member", map(BASE_ENTITY_ID, "partner", DOD, "2026-10-28"));
         assertFalse(active("2026-10-28 12:00:00"));

@@ -7,6 +7,8 @@ import static org.smartregister.chw.mothermentor.util.DBConstants.KEY.*;
 import android.app.Activity;
 import android.app.Application;
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
@@ -24,6 +26,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDialog;
+import java.util.Locale;
 import java.util.Scanner;
 
 @RunWith(RobolectricTestRunner.class)
@@ -84,8 +87,60 @@ public class MotherMentorMotherChildUiTest {
     }
 
     @Test
+    public void postWeaningLabelAndNextDateUseTheSavedDateInBothLanguages() throws Exception {
+        LocalDate dob = new LocalDate(2025, 9, 1);
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            boolean swahili = "json.form-sw".equals(directory);
+            Fixture fixture = new Fixture(directory, dob, dob.plusMonths(12));
+            fixture.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+            fixture.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\"}}");
+            fixture.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-07-2026");
+            fixture.refresh();
+            String next = fixture.value(MAMA_HEI_NEXT_TEST_NOTE);
+            assertTrue(next, next.contains(swahili ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding"));
+            assertTrue(next, next.endsWith("01-10-2026"));
+
+            fixture.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-06-2026");
+            fixture.refresh();
+            assertTrue(fixture.value(MAMA_HEI_NEXT_TEST_NOTE).endsWith("01-03-2027"));
+            assertEquals(View.GONE, fixture.option("three_months_after_weaning").getVisibility());
+        }
+    }
+
+    @Test
+    public void mamaKadiHidesPostWeaningDueDatesAtAndAfterEighteenMonthsInBothLanguages() throws Exception {
+        LocalDate dob = new LocalDate(2025, 1, 15);
+        LocalDate cutoff = dob.plusMonths(18);
+        for (String directory : new String[] {"json.form", "json.form-sw"}) {
+            String postWeaning = "json.form-sw".equals(directory) ? "Miezi 3 baada ya kuacha kunyonya"
+                    : "3 months after stopping breastfeeding";
+            for (int offset : new int[]{-1, 0, 1}) {
+                LocalDate wouldBeDue = cutoff.plusDays(offset);
+                String stop = wouldBeDue.minusMonths(3).toString();
+                Fixture upcoming = new Fixture(directory, dob, cutoff.minusDays(2));
+                upcoming.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+                upcoming.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\"}}");
+                upcoming.put(MAMA_TAREHE_ACHA_KUNYONYESHA, stop);
+                upcoming.refresh();
+                String next = upcoming.value(MAMA_HEI_NEXT_TEST_NOTE);
+                assertEquals(next, offset < 0, next.contains(postWeaning));
+                assertTrue(next, next.endsWith(offset < 0 ? "14-07-2026" : "15-07-2026"));
+
+                Fixture visit = new Fixture(directory, dob, wouldBeDue);
+                visit.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
+                visit.put(MAMA_HEI_TEST_HISTORY, "{\"nine_months\":{\"result\":\"negative\"}}");
+                visit.put(MAMA_TAREHE_ACHA_KUNYONYESHA, stop);
+                visit.refresh();
+                assertEquals(offset < 0 ? View.VISIBLE : View.GONE, visit.option("three_months_after_weaning").getVisibility());
+                assertEquals(offset < 0 ? View.GONE : View.VISIBLE, visit.option("eighteen_months").getVisibility());
+            }
+        }
+    }
+
+    @Test
     public void weaningAndBranchCorrectionsClearInvalidPreviousAnswers() throws Exception {
-        Fixture fixture = new Fixture("json.form", new LocalDate(2026, 1, 1), new LocalDate(2026, 10, 1));
+        Fixture fixture = new Fixture("json.form", new LocalDate(2025, 9, 1), new LocalDate(2026, 10, 1));
         fixture.put(MAMA_BREASTFEEDING_STATUS, "not_breastfeeding");
         fixture.put(MAMA_TAREHE_ACHA_KUNYONYESHA, "01-07-2026");
         fixture.put(MAMA_HEI_TEST_DONE, "yes");
@@ -194,7 +249,11 @@ public class MotherMentorMotherChildUiTest {
         private final MotherMentorMotherChildUi helper = new MotherMentorMotherChildUi();
 
         Fixture(String directory, LocalDate dob, LocalDate date) throws Exception {
-            try (Scanner scanner = new Scanner(RuntimeEnvironment.getApplication().getAssets()
+            Context app = RuntimeEnvironment.getApplication();
+            Configuration configuration = new Configuration(app.getResources().getConfiguration());
+            configuration.setLocale("json.form-sw".equals(directory) ? new Locale("sw") : Locale.ENGLISH);
+            Context context = app.createConfigurationContext(configuration);
+            try (Scanner scanner = new Scanner(context.getAssets()
                     .open(directory + "/mothermentor_visit_child.json"), "UTF-8").useDelimiter("\\A")) {
                 form = new JSONObject(scanner.next());
             }
@@ -223,13 +282,13 @@ public class MotherMentorMotherChildUiTest {
             when(activity.getmJSONObject()).thenReturn(form);
             when(activity.getWindow()).thenReturn(window);
             when(window.getDecorView()).thenReturn(root);
-            when(activity.getResources()).thenReturn(RuntimeEnvironment.getApplication().getResources());
-            when(activity.getPackageName()).thenReturn(RuntimeEnvironment.getApplication().getPackageName());
-            doAnswer(call -> RuntimeEnvironment.getApplication().getString(call.getArgument(0), new Object[] {call.getArgument(1)}))
+            when(activity.getResources()).thenReturn(context.getResources());
+            when(activity.getPackageName()).thenReturn(context.getPackageName());
+            doAnswer(call -> context.getString(call.getArgument(0), new Object[] {call.getArgument(1)}))
                     .when(activity).getString(anyInt(), any());
-            doAnswer(call -> RuntimeEnvironment.getApplication().getString(call.getArgument(0), new Object[] {call.getArgument(1), call.getArgument(2)}))
+            doAnswer(call -> context.getString(call.getArgument(0), new Object[] {call.getArgument(1), call.getArgument(2)}))
                     .when(activity).getString(anyInt(), any(), any());
-            doAnswer(call -> RuntimeEnvironment.getApplication().getString(call.getArgument(0)))
+            doAnswer(call -> context.getString(call.getArgument(0)))
                     .when(activity).getString(anyInt());
         }
         void put(String key, String value) { MotherMentorMotherChildUtils.put(form, key, value); }

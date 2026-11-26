@@ -240,7 +240,7 @@
     ]
   },
   "step2": {
-    "title": "Hali ya kunyonya",
+    "title": "Hali ya unyonyeshaji",
     "next": "step3",
     "fields": [
       {
@@ -248,7 +248,7 @@
         "openmrs_entity_parent": "",
         "openmrs_entity": "concept",
         "openmrs_entity_id": "breastfeeding_status",
-        "label": "Hali ya kunyonya",
+        "label": "Hali ya unyonyeshaji",
         "text_color": "#000000",
         "type": "native_radio",
         "options": [
@@ -261,14 +261,14 @@
           },
           {
             "key": "not_breast_feeding",
-            "text": "Hanyonyeshwi",
+            "text": "Hajawahi kunyonyeshwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "not_breast_feeding"
           },
           {
             "key": "stop_breast_feeding",
-            "text": "Ameacha kunyonya",
+            "text": "Ameacha kunyonyeshwa",
             "openmrs_entity_parent": "",
             "openmrs_entity": "concept",
             "openmrs_entity_id": "stop_breast_feeding"

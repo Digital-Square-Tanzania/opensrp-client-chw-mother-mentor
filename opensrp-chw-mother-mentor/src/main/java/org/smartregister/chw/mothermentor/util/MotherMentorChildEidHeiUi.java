@@ -118,6 +118,7 @@ public final class MotherMentorChildEidHeiUi {
         MotherMentorChildEidHeiUtils.clearInactiveAnswers(form);
         Map<String, String> values = MotherMentorMotherChildUtils.values(form);
         LocalDate dob = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.CHILD_DOB));
+        LocalDate cessation = MotherMentorChildEidHeiUtils.cessation(values);
         LocalDate day = MotherMentorHeiSchedule.parseDate(values.get(DBConstants.KEY.MAMA_HEI_ASSESSMENT_DATE));
         if (day == null) day = LocalDate.now();
         Map<Stage, TestRecord> tests = MotherMentorMotherChildUtils.parseTests(
@@ -135,8 +136,7 @@ public final class MotherMentorChildEidHeiUi {
                 reviewCodes.toString());
         if (first) {
             Stage stage = sampling.isEmpty() ? null : sampling.get(0);
-            LocalDate date = MotherMentorHeiSchedule.dueDate(stage, dob,
-                    MotherMentorChildEidHeiUtils.cessation(values));
+            LocalDate date = MotherMentorHeiSchedule.dueDate(stage, dob, cessation);
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_TEST,
                     stage == null ? "" : stage.getMetadataCode());
             MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MTOTO_RUFAA_DUE,
@@ -176,7 +176,10 @@ public final class MotherMentorChildEidHeiUi {
         MotherMentorMotherChildUtils.put(form, DBConstants.KEY.MAMA_CHILD_AGE_NOTE,
                 age(context, dob, day));
         String banner;
-        if (dob == null) banner = context == null ? "" : context.getString(
+        if ("not_breastfeeding".equals(values.get(DBConstants.KEY.MAMA_BREASTFEEDING_STATUS))
+                && cessation == null) {
+            banner = "";
+        } else if (dob == null) banner = context == null ? "" : context.getString(
                 R.string.mothermentor_child_eid_dob_required);
         else if (CONFIRMATION_NEEDED.equals(priorState) || CONFIRMATION_REFERRED.equals(priorState)) {
             Stage stage = Stage.fromCode(values.get(DBConstants.KEY.MTOTO_RUFAA_TEST));
@@ -188,12 +191,10 @@ public final class MotherMentorChildEidHeiUi {
             banner = label(context, Stage.fromCode(MotherMentorMotherChildUtils.values(form).get(DBConstants.KEY.MTOTO_PENDING_TEST)));
         } else if (!sampling.isEmpty()) banner = TextUtils.join(" / ", labels(context, sampling));
         else {
-            Stage next = MotherMentorHeiSchedule.next(dob,
-                    MotherMentorChildEidHeiUtils.cessation(values), tests, day);
+            Stage next = MotherMentorHeiSchedule.next(dob, cessation, tests, day);
             String none = context == null ? "none" : context.getString(
                     R.string.mothermentor_child_eid_hei_none);
-            LocalDate nextDate = MotherMentorHeiSchedule.dueDate(next, dob,
-                    MotherMentorChildEidHeiUtils.cessation(values));
+            LocalDate nextDate = MotherMentorHeiSchedule.dueDate(next, dob, cessation);
             banner = next == null ? none : none + "\n" + (context == null
                     ? next.getCode() + " — " + MotherMentorMotherPregnancyUtils.displayDate(nextDate)
                     : context.getString(R.string.mothermentor_child_eid_hei_next,

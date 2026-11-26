@@ -13,6 +13,7 @@
     <string name="mothermentor_partner_closure_attended_tested">Attended and tested</string>
     <string name="mothermentor_partner_closure_deceased">Deceased</string>
     <string name="mothermentor_partner_closure_moved">Moved from area</string>
+    <string name="mothermentor_partner_closure_transferred_facility">Transferred to another facility</string>
     <string name="mothermentor_partner_closure_refused_3">Refused</string>
     <string name="mothermentor_partner_closure_not_attended_3">Agreed but did not attend</string>
     <string name="mothermentor_partner_closure_travelled_3">Travelled</string>

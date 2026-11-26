@@ -107,6 +107,75 @@ public class MotherMentorPartnerClosureTest {
     }
 
     @Test
+    public void postAcceptanceNotFoundAndMissedAttendanceResetEachOther() {
+        Map<String, String> missed = attendance("no");
+        missed.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        missed.put(FOLLOW_UP_STATUS, "found");
+        Map<String, String> travel = attendanceNotFound("travelled");
+        MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active()
+                .advance(missed, FIRST_DAY).advance(missed, SECOND_DAY).advance(travel, THIRD_DAY);
+        assertFalse(state.isClosed());
+        assertCounters(state, 0, 0, 1, 0, 1);
+        state = state.advance(travel, "2026-11-04").advance(missed, "2026-11-05");
+        assertFalse(state.isClosed());
+        assertCounters(state, 0, 1, 0, 0, 0);
+        state = state.advance(missed, "2026-11-06").advance(missed, "2026-11-07");
+        assertClosed(state, MotherMentorPartnerClosure.NOT_ATTENDED_3, "2026-11-07");
+    }
+
+    @Test
+    public void threePostAcceptanceTravelVisitsUseTheTravelClosure() {
+        Map<String, String> travel = attendanceNotFound("travelled");
+        MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active()
+                .advance(travel, FIRST_DAY).advance(travel, SECOND_DAY);
+        assertFalse(state.isClosed());
+        assertCounters(state, 0, 0, 2, 0, 2);
+        state = state.advance(travel, THIRD_DAY);
+        assertClosed(state, MotherMentorPartnerClosure.TRAVELLED_3, THIRD_DAY);
+        assertCounters(state, 0, 0, 3, 0, 3);
+        assertTrue(state.isConsecutiveClosure());
+    }
+
+    @Test
+    public void threePostAcceptanceOtherVisitsUseTheOtherClosure() {
+        Map<String, String> other = attendanceNotFound("other");
+        MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active()
+                .advance(other, FIRST_DAY).advance(other, SECOND_DAY);
+        assertFalse(state.isClosed());
+        assertCounters(state, 0, 0, 0, 2, 2);
+        state = state.advance(other, THIRD_DAY);
+        assertClosed(state, MotherMentorPartnerClosure.OTHER_3, THIRD_DAY);
+        assertCounters(state, 0, 0, 0, 3, 3);
+        assertTrue(state.isConsecutiveClosure());
+    }
+
+    @Test
+    public void threeMixedPostAcceptanceNotFoundVisitsUseOverallLostToFollowUp() {
+        Map<String, String> travel = attendanceNotFound("travelled");
+        MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active()
+                .advance(travel, FIRST_DAY)
+                .advance(attendanceNotFound("other"), SECOND_DAY);
+        assertFalse(state.isClosed());
+        assertEquals("attendance", state.getNextPhase());
+        assertCounters(state, 0, 0, 0, 1, 2);
+        state = state.advance(travel, THIRD_DAY);
+        assertClosed(state, MotherMentorPartnerClosure.LOST_TO_FOLLOW_UP, THIRD_DAY);
+        assertCounters(state, 0, 0, 1, 0, 3);
+        assertTrue(state.isConsecutiveClosure());
+    }
+
+    @Test
+    public void postAcceptanceDeathMoveAndTransferAreImmediateAndIgnoreStaleAttendance() {
+        for (String reason : new String[] {"deceased", "moved", "transferred_facility"}) {
+            Map<String, String> values = attendanceNotFound(reason);
+            values.put(PARTNER_ARRIVED_AT_FACILITY, "yes");
+            MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active().advance(values, FIRST_DAY);
+            assertClosed(state, reason, FIRST_DAY);
+            assertFalse(state.isConsecutiveClosure());
+        }
+    }
+
+    @Test
     public void attendanceYesWithoutTestingResetsTheNonAttendanceStreak() {
         MotherMentorPartnerClosure state = MotherMentorPartnerClosure.active()
                 .advance(attendance("no"), FIRST_DAY)
@@ -225,6 +294,14 @@ public class MotherMentorPartnerClosureTest {
         Map<String, String> values = new HashMap<>();
         values.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
         values.put(PARTNER_ARRIVED_AT_FACILITY, answer);
+        return values;
+    }
+
+    private Map<String, String> attendanceNotFound(String reason) {
+        Map<String, String> values = notFound(reason);
+        values.put(PARTNER_FOLLOW_UP_PHASE, "attendance");
+        values.put(PARTNER_FOLLOW_UP_SCHEMA, "3");
+        if ("other".equals(reason)) values.put(PARTNER_NOT_FOUND_REASON_OTHER, "Return tomorrow");
         return values;
     }
 

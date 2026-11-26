@@ -335,7 +335,7 @@ public class MotherMentorMotherExitActionFlowTest {
         assertFalse(second.isOptional());
         answer(first, MotherMentorDeliveryChildren.SEX, "female", MAMA_CHILD_STATUS, "stillbirth");
         assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, first.getActionStatus());
-        assertEquals("Mtoto wa 1 (Ke)", first.getDisplayTitle());
+        assertEquals("Mtoto wa 1 (Wa kike)", first.getDisplayTitle());
         assertEquals(BaseMotherMentorVisitAction.Status.PENDING, second.getActionStatus());
         answer(first, MAMA_CHILD_STATUS, "alive", MAMA_BREASTFEEDING_STATUS, "breastfeeding",
                 MAMA_BIRTH_TEST_DONE, "no");
@@ -343,7 +343,7 @@ public class MotherMentorMotherExitActionFlowTest {
         assertEquals("alive", value(first, MAMA_CHILD_STATUS));
         answer(second, MotherMentorDeliveryChildren.SEX, "male", MAMA_CHILD_STATUS, "stillbirth");
         assertEquals(BaseMotherMentorVisitAction.Status.COMPLETED, second.getActionStatus());
-        assertEquals("Mtoto wa 2 (Me)", second.getDisplayTitle());
+        assertEquals("Mtoto wa 2 (Wa kiume)", second.getDisplayTitle());
         assertEquals(8, visible(actions));
     }
 

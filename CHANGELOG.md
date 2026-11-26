@@ -6,6 +6,57 @@ Android version code.
 
 ## Unreleased
 
+## 0.1.69-UCSW-149-HEI-BREASTFEEDING-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Use the same breastfeeding questions and answers on both Mtoto EID enrolment routes. [CHW #1252](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1252)
+
+## 0.1.68-UCSW-147-CONFIRMATION-RESULT-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Resolve the documented confirmation sample date from the saved attendance
+  event and use it when recording the result. [CHW #1248](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1248)
+
+## 0.1.67-UCSW-148-CHILD-SEX-CAPTIONS-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Use the approved child-sex captions in Mama Kadi and direct HEI enrolment
+  and follow-up while preserving saved values. [CHW #1247](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1247)
+
+## 0.1.66-UCSW-146-POST-WEANING-CUTOFF-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Show one post-weaning test label in both languages and schedule it three
+  calendar months after weaning when the child stopped breastfeeding after
+  nine months of age and the calculated due date falls before the 18-month
+  birthday. [CHW #1246](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1246)
+
+## 0.1.65-UCSW-140-MTOTO-EID-DUE-TEST-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Keep the Mtoto EID due-test display blank when breastfeeding has stopped and
+  the weaning date is missing. Show the calculated result as soon as a date is
+  entered or carried forward. [CHW #1245](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1245)
+
+## 0.1.64-UCSW-139-MWENZI-EXIT-ALIGNMENT-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Record found and not-found outcomes on open post-acceptance Mwenzi visits. Apply existing confirmations and household death projection. Use the Travel or Other closure when its streak reaches three, with lost to follow-up for mixed not-found exits. [CHW #1242](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1242)
+
+## 0.1.62-UCSW-142-WEANING-DATE-RECONCILED-SNAPSHOT — 2026-11-25
+
+### Fixed
+
+- Carry the recorded Mtoto EID weaning date into later HEI forms and use it
+  to calculate the due test. Preserve the original visit date when correcting
+  the recording visit. [CHW #1241](https://github.com/Digital-Square-Tanzania/opensrp-client-chw/issues/1241)
+
 ## 0.1.61-UCSW-151-MWENZI-DEATH-SNAPSHOT — 2026-11-25
 
 ### Fixed

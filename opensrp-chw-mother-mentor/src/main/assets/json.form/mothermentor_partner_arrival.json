@@ -25,8 +25,36 @@
   },
   "global": {},
   "step1": {
-    "title": "Attended facility",
+    "title": "Follow-up status",
     "fields": [
+      {
+        "key": "follow_up_status",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "follow_up_status",
+        "type": "native_radio",
+        "label": "Follow-up status",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "found",
+            "text": "Found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "found"
+          },
+          {
+            "key": "not_found",
+            "text": "Not found",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "not_found"
+          }
+        ]
+      },
       {
         "key": "partner_arrived_at_facility",
         "openmrs_entity_parent": "",
@@ -53,6 +81,13 @@
         "v_required": {
           "value": "true",
           "err": "Please select an answer"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_relevance.yml"
+            }
+          }
         }
       },
       {
@@ -74,6 +109,81 @@
           "rules-engine": {
             "ex-rules": {
               "rules-file": "mothermentor_partner_follow_up_relevance.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "partner_not_found_reason",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_not_found_reason",
+        "type": "native_radio",
+        "label": "Reason not found",
+        "v_required": {
+          "value": true,
+          "err": "Please select an answer"
+        },
+        "options": [
+          {
+            "key": "deceased",
+            "text": "Deceased",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "deceased"
+          },
+          {
+            "key": "moved",
+            "text": "Moved from area",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "moved"
+          },
+          {
+            "key": "transferred_facility",
+            "text": "Transferred to another facility",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "transferred_facility"
+          },
+          {
+            "key": "travelled",
+            "text": "Travelled",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "travelled"
+          },
+          {
+            "key": "other",
+            "text": "Other (specify)",
+            "openmrs_entity_parent": "",
+            "openmrs_entity": "concept",
+            "openmrs_entity_id": "other"
+          }
+        ],
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
+            }
+          }
+        }
+      },
+      {
+        "key": "partner_not_found_reason_other",
+        "openmrs_entity_parent": "",
+        "openmrs_entity": "concept",
+        "openmrs_entity_id": "partner_not_found_reason_other",
+        "type": "edit_text",
+        "hint": "Specify reason",
+        "v_required": {
+          "value": true,
+          "err": "Please specify the reason"
+        },
+        "relevance": {
+          "rules-engine": {
+            "ex-rules": {
+              "rules-file": "mothermentor_partner_follow_up_workflow.yml"
             }
           }
         }

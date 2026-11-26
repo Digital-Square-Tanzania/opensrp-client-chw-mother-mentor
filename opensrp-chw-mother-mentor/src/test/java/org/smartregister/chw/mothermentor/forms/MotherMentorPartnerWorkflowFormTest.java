@@ -36,7 +36,8 @@ public class MotherMentorPartnerWorkflowFormTest {
             JSONObject form = form(locale, "mothermentor_partner_follow_up_status");
             assertOptions(field(form, "follow_up_status"), "found", "not_found");
             assertOptions(field(form, "partner_facility_agreement"), "agreed", "refused");
-            assertOptions(field(form, "partner_not_found_reason"), "deceased", "moved", "travelled", "other");
+            assertOptions(field(form, "partner_not_found_reason"),
+                    "deceased", "moved", "transferred_facility", "travelled", "other");
             assertTrue(relevant(field(form, "partner_facility_agreement"), "found", "", "", ""));
             assertFalse(relevant(field(form, "partner_facility_agreement"), "not_found", "", "", ""));
             assertTrue(relevant(field(form, "partner_not_found_reason"), "not_found", "", "", ""));
@@ -45,6 +46,34 @@ public class MotherMentorPartnerWorkflowFormTest {
             assertFalse(relevant(field(form, "partner_not_found_reason_other"), "not_found", "travelled", "", ""));
             assertFalse(relevant(field(form, "partner_not_found_reason_other"), "found", "other", "", ""));
             assertTrue(field(form, "partner_not_found_reason_other").getJSONObject("v_required").getBoolean("value"));
+        }
+    }
+
+    @Test
+    public void laterFollowUpStartsWithStatusAndSharesAllMissingReasonsInBothLanguages()
+            throws Exception {
+        for (String locale : locales()) {
+            JSONObject arrival = form(locale, "mothermentor_partner_arrival");
+            JSONObject tracing = form(locale, "mothermentor_partner_follow_up_status");
+            JSONObject status = arrival.getJSONObject("step1").getJSONArray("fields").getJSONObject(0);
+            assertEquals("follow_up_status", status.getString("key"));
+            assertEquals("json.form-sw".equals(locale) ? "Hali ya Ufuatiliaji" : "Follow-up status",
+                    status.getString("label"));
+            for (String key : new String[] {
+                    "partner_not_found_reason", "partner_not_found_reason_other"}) {
+                JSONObject question = field(arrival, key);
+                assertEquals(field(tracing, key).toString(), question.toString());
+                assertTrue(question.getJSONObject("v_required").getBoolean("value"));
+                assertFalse(relevant(question, "found", "other", "yes", ""));
+            }
+            JSONObject attendance = field(arrival, "partner_arrived_at_facility");
+            assertFalse(relevant(attendance, "", "", "", ""));
+            assertFalse(relevant(attendance, "not_found", "other", "yes", ""));
+            assertTrue(relevant(attendance, "found", "", "", ""));
+            JSONObject date = field(arrival, "partner_facility_arrival_date");
+            assertTrue(relevant(date, "found", "", "yes", ""));
+            assertFalse(relevant(date, "found", "", "no", ""));
+            assertFalse(relevant(date, "not_found", "other", "yes", ""));
         }
     }
 
@@ -74,7 +103,7 @@ public class MotherMentorPartnerWorkflowFormTest {
             for (String agreement : new String[] {"agreed", "refused"}) {
                 assertTrue(relevant(comments, "found", "", "", "", agreement));
             }
-            for (String reason : new String[] {"deceased", "moved", "travelled", "other"}) {
+            for (String reason : new String[] {"deceased", "moved", "transferred_facility", "travelled", "other"}) {
                 assertTrue(relevant(comments, "not_found", reason, "", "", ""));
             }
             assertFalse(relevant(comments, "", "other", "", "", "agreed"));
@@ -139,6 +168,7 @@ public class MotherMentorPartnerWorkflowFormTest {
         facts.put("step1_partner_facility_agreement", agreement);
         facts.put("step1_follow_up_status", status);
         facts.put("step1_partner_not_found_reason", missingReason);
+        facts.put("step1_partner_arrived_at_facility", tested);
         facts.put("step1_partner_education_provided", tested);
         for (String disease : new String[] {"hiv", "syphilis", "hepatitis_b"}) {
             facts.put("step1_partner_" + disease + "_tested", tested);
